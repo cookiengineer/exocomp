@@ -4,7 +4,7 @@
 Attention, profit-seekers and visionaries!
 Are organics costing you time, wages, and - worst of all - benefits?
 
-![exocomp](./docs/exocomp.png)
+<img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
 
 Then upgrade your operation today with the all new Exocomp (tm) adaptive repair
 unit, the smartest investment this side of the Alpha Quadrant!
