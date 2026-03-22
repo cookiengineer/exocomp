@@ -8,10 +8,7 @@ import "exocomp/types"
 type Gadget struct {
 	Type      GadgetType
 	Method    GadgetMethod
-	Program   string
 	Arguments []string
-	File      string
-	Content   string
 }
 
 func UsesGadget(text string) bool {
@@ -143,18 +140,38 @@ func (gadget *Gadget) Execute(config *types.Config) (string, error) {
 	switch gadget.Type {
 	case GadgetTypeHelp:
 
+		help_gadget := gadgets.NewHelp(config)
+
+		if gadget.Method == "Help" {
+			return help_gadget.Help(gadget.Arguments)
+		}
+
 	case GadgetTypeFiles:
+
+		files_gadget := gadgets.NewFiles(config)
+
+		if gadget.Method == "Read" {
+			return files_gadget.Read(gadget.Arguments)
+		} else if gadget.Method == "Stat" {
+			return files_gadget.Stat(gadget.Arguments)
+		} else if gadget.Method == "Write" {
+			return files_gadget.Write(gadget.Arguments)
+		}
 
 	case GadgetTypePrograms:
 
+		// TODO
 
 	case GadgetTypeRevisions:
 
+		// TODO
 
 	case GadgetTypeTasks:
 
+		// TODO
+
 	}
 
-	return "", errors.New("Not implemented yet")
+	return "", fmt.Errorf("Gadget %s.%s is not implemented yet", gadget.Type.String(), gadget.Method.String())
 
 }
