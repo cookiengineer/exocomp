@@ -2,15 +2,15 @@
 # Exocomp
 
 Attention, profit-seekers and visionaries!
-Are organics costing you time, wages, and - worst of all - benefits?
 
-<img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
+Are organics costing you time, wages, and - worst of all - benefits?
 
 Then upgrade your operation today with the all new Exocomp (tm) adaptive repair
 unit, the smartest investment this side of the Alpha Quadrant!
 
-Why hire when you can own? The Exocomp (tm) isn't just a tool... it's a self-directed
-profit multiplier!
+<img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
+
+Why hire when you can own? The Exocomp (tm) isn't just a tool... it's so much more!
 
 - Rapid autonomous diagnostics
 - On-the-fly gadget fabrication
@@ -20,10 +20,10 @@ profit multiplier!
 - Tireless performance, no sleep cycles, no unions, no complaints!
 
 From starship maintenance to high-risk industrial operations, the Exocomp (tm)
-delivers maximum output with minimal oversight.
+delivers maximum output with minimal oversight. Think of it as an employee,
+except it doesn't cheat you out of your profits on the Dabo table.
 
-Think of it as an employee, except it doesn't cheat you out of your profits on
-the Dabo table. Ethical subroutines sold separately.
+Ethical subroutines sold separately.
 
 
 ## Requirements and Usage
