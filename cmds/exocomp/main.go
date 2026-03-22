@@ -3,12 +3,12 @@ package main
 import "bufio"
 import "fmt"
 import "os"
+import "exocomp/config"
 import "exocomp/ollama"
-import "exocomp/types"
 
 func main() {
 
-	config, err0 := types.ParseConfig()
+	config, err0 := config.ParseConfig()
 
 	if err0 == nil {
 

@@ -6,13 +6,13 @@ import "encoding/json"
 import "fmt"
 import "io"
 import "net/http"
-import "exocomp/types"
+import "exocomp/config"
 
 //go:embed prompt.txt
 var prompt []byte
 
 type Session struct {
-	config  *types.Config
+	config  *config.Config
 	client  *http.Client
 	history []*Message
 }
@@ -32,7 +32,7 @@ type ChatResponse struct {
 	Message Message `json:"message"`
 }
 
-func NewSession(config *types.Config) (*Session, error) {
+func NewSession(config *config.Config) (*Session, error) {
 
 	session := &Session{
 		config: config,

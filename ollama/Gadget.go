@@ -1,9 +1,9 @@
 package ollama
 
-import "errors"
+import "fmt"
 import "strings"
+import "exocomp/config"
 import "exocomp/gadgets"
-import "exocomp/types"
 
 type Gadget struct {
 	Type      GadgetType
@@ -33,7 +33,7 @@ func ParseGadget(text string) *Gadget {
 
 		if strings.HasPrefix(line, "#!" + GadgetTypeHelp.String() + " ") {
 
-			// #!go-go-gadgeto-help <topic> <subtopic> ...
+			// #!help <gadget>
 			arguments := strings.Fields(strings.TrimSpace(line[len(GadgetTypeHelp.String()) + 3:]))
 
 			return &Gadget{
@@ -42,20 +42,13 @@ func ParseGadget(text string) *Gadget {
 				Arguments: GadgetArguments(arguments),
 			}
 
-		} else if strings.HasPrefix(line, "#!" + GadgetTypePrograms.String() + " ") {
+		} else if strings.HasPrefix(line, "#!" + GadgetTypeFiles.String() + ".") {
 
-			// #!go-go-gadgeto-program <program> <arg1> <arg2> <arg3> ...
-			arguments := strings.Fields(strings.TrimSpace(line[len(GadgetTypePrograms.String()) + 3:]))
-
-			return &Gadget{
-				Type:      GadgetTypePrograms,
-				Method:    GadgetMethod("Execute"),
-				Arguments: GadgetArguments(arguments),
-			}
-
-		} else if strings.HasPrefix(line, "#!" + GadgetTypePrograms.String() + " ") {
-
-			// #!go-go-gadgeto-filesystem <method> <file>
+			// #!files.Read <path>
+			// #!files.Stat <path>
+			// #!files.Write <path> <<#!EOF
+			// ...
+			// #!EOF
 			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypeFiles.String()) + 3:]))
 			method := fields[0]
 
@@ -112,13 +105,35 @@ func ParseGadget(text string) *Gadget {
 					Arguments: GadgetArguments(arguments),
 				}
 
+			} else {
+				return nil
 			}
 
-		} else if strings.HasPrefix(line, "#!" + GadgetTypeRevisions.String() + " ") {
+		} else if strings.HasPrefix(line, "#!" + GadgetTypePrograms.String() + ".") {
+
+			// #!programs.Execute <arguments...>
+			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypePrograms.String()) + 3:]))
+			method := fields[0]
+
+			if method == "Execute" {
+
+				arguments := fields[1:]
+
+				return &Gadget{
+					Type:      GadgetTypePrograms,
+					Method:    GadgetMethod("Execute"),
+					Arguments: GadgetArguments(arguments),
+				}
+
+			} else {
+				return nil
+			}
+
+		} else if strings.HasPrefix(line, "#!" + GadgetTypeRevisions.String() + ".") {
 
 			// TODO: commit, add, remove
 
-		} else if strings.HasPrefix(line, "#!" + GadgetTypeTasks.String() + " ") {
+		} else if strings.HasPrefix(line, "#!" + GadgetTypeTasks.String() + ".") {
 
 			// TODO: Implement tasks.List()
 			// TODO: tasks.Add()
@@ -132,7 +147,7 @@ func ParseGadget(text string) *Gadget {
 
 }
 
-func (gadget *Gadget) Execute(config *types.Config) (string, error) {
+func (gadget *Gadget) Execute(config *config.Config) (string, error) {
 
 	// TODO: Implement delegation to actual APIs
 	// Is it possible to use an Interface here?
@@ -150,7 +165,9 @@ func (gadget *Gadget) Execute(config *types.Config) (string, error) {
 
 		files_gadget := gadgets.NewFiles(config)
 
-		if gadget.Method == "Read" {
+		if gadget.Method == "List" {
+			return files_gadget.List(gadget.Arguments)
+		} else if gadget.Method == "Read" {
 			return files_gadget.Read(gadget.Arguments)
 		} else if gadget.Method == "Stat" {
 			return files_gadget.Stat(gadget.Arguments)
@@ -160,7 +177,13 @@ func (gadget *Gadget) Execute(config *types.Config) (string, error) {
 
 	case GadgetTypePrograms:
 
-		// TODO
+		programs_gadget := gadgets.NewPrograms(config)
+
+		if gadget.method == "List" {
+			return programs_gadget.List(gadget.arguments)
+		} else if gadget.Method == "Execute" {
+			return programs_gadget.Execute(gadget.Arguments)
+		}
 
 	case GadgetTypeRevisions:
 

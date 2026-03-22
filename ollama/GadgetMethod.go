@@ -2,5 +2,6 @@ package ollama
 
 type GadgetMethod string
 
-// TODO: Method type implementation
-
+func (gadget_method GadgetMethod) String() string {
+	return string(gadget_method)
+}

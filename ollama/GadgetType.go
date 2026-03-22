@@ -29,6 +29,6 @@ func IsGadgetType(raw string) bool {
 
 }
 
-func (gadget GadgetType) String() string {
-	return string(gadget)
+func (gadget_type GadgetType) String() string {
+	return string(gadget_type)
 }

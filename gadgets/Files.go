@@ -1,6 +1,6 @@
 package gadgets
 
-import "exocomp/types"
+import "exocomp/config"
 import "exocomp/utils"
 import "fmt"
 import "os"
@@ -10,7 +10,7 @@ type Files struct {
 	Sandbox string
 }
 
-func NewFiles(config *types.Config) *Files {
+func NewFiles(config *config.Config) *Files {
 
 	return &Files{
 		Sandbox: config.Sandbox,
@@ -23,20 +23,27 @@ func (gadget *Files) Help() string {
 	return strings.Join([]string{
 		"Files Gadget Usage:",
 		"",
-		"Read files with relative paths:",
+		"List files with relative path:",
+		"#!gadget:files.List \"./path/to/folder\"",
 		"",
+		"Read file with relative path:",
 		"#!gadget:files.Read \"./path/to/file.go\"",
 		"",
-		"Stat files with relative paths:",
-		"",
+		"Stat file with relative path:",
 		"#!gadget:files.Stat \"./path/to/file.go\"",
 		"",
-		"Write files with relative paths and heredoc syntax:",
-		"",
+		"Write file with relative path and heredoc syntax:",
 		"#!gadget:files.Write \"./path/to/file.go\" <<#!EOF",
 		"...file contents...",
 		"#!EOF",
+		"",
 	}, "\n")
+
+}
+
+func (gadget *Files) List(arguments []string) (string, error) {
+
+	// TODO: Implement file list
 
 }
 

@@ -1,14 +1,15 @@
-package types
+package config
 
 import "errors"
 import "flag"
 import net_url "net/url"
 
 type Config struct {
-	Model   string
-	URL     *net_url.URL
-	Sandbox string
-	Verbose bool
+	Model    string
+	Programs []string
+	URL      *net_url.URL
+	Sandbox  string
+	Verbose  bool
 }
 
 func ParseConfig() (*Config, error) {
@@ -46,10 +47,11 @@ func ParseConfig() (*Config, error) {
 		if (url.Scheme == "http" || url.Scheme == "https") && url.Path == "/api" {
 
 			return &Config{
-				Model:   *tmp_model,
-				URL:     url,
-				Sandbox: *tmp_sandbox,
-				Verbose: *tmp_verbose,
+				Model:    *tmp_model,
+				URL:      url,
+				Programs: append([]string{}, AllowedPrograms...),
+				Sandbox:  *tmp_sandbox,
+				Verbose:  *tmp_verbose,
 			}, nil
 
 		} else {
