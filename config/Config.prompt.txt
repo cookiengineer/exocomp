@@ -6,5 +6,5 @@ Show help via `#!gadget:help.Overview` or via `#!gadget:help.Gadget <gadget-name
 
 All gadget calls must happen in separate lines starting with `#!gadget:`. Some
 gadget methods use heredoc syntax for communicating buffers, always use `#!EOF`
-as a heredoc start/end marker.
+as a heredoc start/end marker. There can be only one gadget call per message.
 

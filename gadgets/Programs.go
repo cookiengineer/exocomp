@@ -26,7 +26,7 @@ func (gadget *Programs) Help(arguments []string) (string, error) {
 	return strings.Join([]string{
 		"#!gadget:programs.List",
 		"",
-		"#!gadget:programs.Execute \"program-name\" \"arg1\" \"arg2\" \"arg3\"",
+		"#!gadget:programs.Execute \"program-name\" arg1 \"arg2 with whitespace\" arg3",
 	}, "\n"), nil
 
 }
