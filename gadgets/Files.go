@@ -18,7 +18,7 @@ func NewFiles(sandbox string) *Files {
 
 }
 
-func (gadget *Files) Help() string {
+func (gadget *Files) Help(arguments []string) (string, error) {
 
 	return strings.Join([]string{
 		"List files with relative path:",
@@ -34,7 +34,7 @@ func (gadget *Files) Help() string {
 		"#!gadget:files.Write \"./path/to/file.go\" <<#!EOF",
 		"...file contents...",
 		"#!EOF",
-	}, "\n")
+	}, "\n"), nil
 
 }
 

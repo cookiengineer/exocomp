@@ -10,6 +10,7 @@ import "slices"
 var prompt []byte
 
 type Config struct {
+	Agent    string
 	Model    string
 	Gadgets  []string
 	Programs []string
@@ -19,6 +20,12 @@ type Config struct {
 }
 
 func ParseConfig() (*Config, error) {
+
+	tmp_agent := flag.String(
+		"agent",
+		"coder",
+		"Agent type: coder, tester, manager",
+	)
 
 	tmp_model := flag.String(
 		"model",
@@ -34,8 +41,8 @@ func ParseConfig() (*Config, error) {
 
 	tmp_sandbox := flag.String(
 		"sandbox",
-		"/tmp/gomcp-project",
-		"Project sandbox folder",
+		"/tmp/project-codebase",
+		"Project sandbox",
 	)
 
 	tmp_verbose := flag.Bool(
@@ -60,6 +67,7 @@ func ParseConfig() (*Config, error) {
 			}
 
 			return &Config{
+				Agent:    *tmp_agent,
 				Model:    *tmp_model,
 				URL:      url,
 				Gadgets:  allowed_gadgets,

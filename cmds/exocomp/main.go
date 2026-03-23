@@ -3,6 +3,7 @@ package main
 import "bufio"
 import "fmt"
 import "os"
+import "exocomp/agents"
 import "exocomp/config"
 import "exocomp/ollama"
 
@@ -11,6 +12,8 @@ func main() {
 	config, err0 := config.ParseConfig()
 
 	if err0 == nil {
+
+		agent := agents.NewAgent(config.Agent)
 
 		if config.Verbose == true {
 			fmt.Println("Model:   %s", config.Model)
@@ -23,7 +26,7 @@ func main() {
 
 		if err1 == nil {
 
-			session, err2 := ollama.NewSession(config)
+			session, err2 := ollama.NewSession(agent, config)
 
 			if err2 == nil {
 

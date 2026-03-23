@@ -46,7 +46,7 @@ func NewAgent(agent_type string) *Agent {
 	default:
 
 		return &Agent{
-			Type:   AgentTypeDefault,
+			Type:   AgentType(""),
 			Prompt: string(default_prompt),
 		}
 

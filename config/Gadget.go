@@ -7,7 +7,7 @@ import "exocomp/gadgets"
 type Gadget struct {
 	Type      GadgetType
 	Method    GadgetMethod
-	Arguments []string
+	Arguments GadgetArguments
 }
 
 func UsesGadget(text string) bool {
@@ -144,7 +144,7 @@ func ParseGadget(text string) *Gadget {
 
 }
 
-func (gadget *Gadget) Execute(config *Config) (string, error) {
+func (gadget *Gadget) Call(config *Config) (string, error) {
 
 	// TODO: Implement delegation to actual APIs
 	// Is it possible to use an Interface here?
@@ -152,10 +152,26 @@ func (gadget *Gadget) Execute(config *Config) (string, error) {
 	switch gadget.Type {
 	case GadgetTypeHelp:
 
-		help_gadget := gadgets.NewHelp(config.Sandbox, config.Gadgets, config.Programs)
+		help_gadget := gadgets.NewHelp(config.Sandbox, config.Gadgets)
 
-		if gadget.Method == "Help" {
+		if gadget.Method == "Overview" {
 			return help_gadget.Help(gadget.Arguments)
+		} else if gadget.Method == "Gadget" {
+
+			topic := strings.ToLower(gadget.Arguments.Get(0))
+
+			if topic == GadgetTypeHelp.String() {
+				return help_gadget.Help(gadget.Arguments)
+			} else if topic == GadgetTypeFiles.String() {
+				return gadgets.NewFiles(config.Sandbox).Help(gadget.Arguments)
+			} else if topic == GadgetTypePrograms.String() {
+				return gadgets.NewPrograms(config.Sandbox, config.Programs).Help(gadget.Arguments)
+			} else if topic == GadgetTypeRevisions.String() {
+				// TODO: return gadgets.NewRevisions(config.Sandbox).Help(gadget.Arguments)
+			} else if topic == GadgetTypeTasks.String() {
+				// TODO: return gadgets.NewTasks(config.Sandbox).Help(gadget.Arguments)
+			}
+
 		}
 
 	case GadgetTypeFiles:

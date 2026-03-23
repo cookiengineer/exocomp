@@ -1,11 +1,13 @@
 package ollama
 
+import "exocomp/agents"
+import "exocomp/config"
 import "bytes"
 import "encoding/json"
 import "fmt"
 import "io"
 import "net/http"
-import "exocomp/config"
+import "strings"
 
 type Session struct {
 	agent   *agents.Agent
@@ -80,7 +82,7 @@ func (session *Session) Query(message string) (string, error) {
 
 		if gadget != nil && session.config.IsAllowedGadget(gadget.Type.String()) {
 
-			result, err2 := gadget.Execute(session.config)
+			result, err2 := gadget.Call(session.config)
 
 			if err2 != nil {
 				result = fmt.Sprintf("Gadget Error: %s", err2.Error())
@@ -88,7 +90,7 @@ func (session *Session) Query(message string) (string, error) {
 
 			session.history = append(session.history, &Message{
 				Role:    "user",
-				Content: formatGadgetResult(result),
+				Content: strings.TrimSpace(result),
 			})
 
 			return response.Content, nil
