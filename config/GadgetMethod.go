@@ -1,4 +1,4 @@
-package ollama
+package config
 
 type GadgetMethod string
 

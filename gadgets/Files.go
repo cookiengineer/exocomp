@@ -1,19 +1,19 @@
 package gadgets
 
-import "exocomp/config"
 import "exocomp/utils"
 import "fmt"
 import "os"
+import "sort"
 import "strings"
 
 type Files struct {
 	Sandbox string
 }
 
-func NewFiles(config *config.Config) *Files {
+func NewFiles(sandbox string) *Files {
 
 	return &Files{
-		Sandbox: config.Sandbox,
+		Sandbox: sandbox,
 	}
 
 }
@@ -21,8 +21,6 @@ func NewFiles(config *config.Config) *Files {
 func (gadget *Files) Help() string {
 
 	return strings.Join([]string{
-		"Files Gadget Usage:",
-		"",
 		"List files with relative path:",
 		"#!gadget:files.List \"./path/to/folder\"",
 		"",
@@ -36,14 +34,81 @@ func (gadget *Files) Help() string {
 		"#!gadget:files.Write \"./path/to/file.go\" <<#!EOF",
 		"...file contents...",
 		"#!EOF",
-		"",
 	}, "\n")
 
 }
 
 func (gadget *Files) List(arguments []string) (string, error) {
 
-	// TODO: Implement file list
+	if len(arguments) == 1 {
+
+		resolved, err0 := resolveSandboxPath(gadget.Sandbox, arguments[0])
+
+		if err0 == nil {
+
+			stat, err1 := os.Stat(resolved)
+
+			if err1 == nil {
+
+				if stat.IsDir() == true {
+
+					entries, err2 := os.ReadDir(resolved)
+
+					if err2 == nil {
+
+						lines := make([]string, 0)
+
+						for _, entry := range entries {
+
+							name := entry.Name()
+
+							if strings.HasPrefix(name, ".") == false {
+
+								typ := "file"
+
+								if entry.IsDir() == true {
+									typ = "folder"
+								}
+
+								lines = append(lines, strings.Join([]string{
+									"Name: " + stat.Name(),
+									"Type: " + typ,
+								}, ", "))
+
+							}
+
+						}
+
+						sort.Strings(lines)
+
+						result := make([]string, 0)
+						result = append(result, fmt.Sprintf("#!files.List: %s", resolved))
+
+						for l := 0; l < len(lines); l++ {
+							result = append(result, lines[l])
+						}
+
+						return strings.Join(result, "\n"), nil
+
+					} else {
+						return "", fmt.Errorf("#!files.List: %s", err2.Error())
+					}
+
+				} else {
+					return "", fmt.Errorf("#!files.List: \"%s\" is not a folder")
+				}
+
+			} else {
+				return "", fmt.Errorf("#!files.List: %s", err1.Error())
+			}
+
+		} else {
+			return "", fmt.Errorf("#!files.List: %s", err0.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("#!files.List: Only one argument allowed")
+	}
 
 }
 
@@ -92,13 +157,19 @@ func (gadget *Files) Stat(arguments []string) (string, error) {
 
 			if err1 == nil {
 
+				typ := "file"
+
+				if stat.IsDir() == true {
+					typ = "folder"
+				}
+
 				result := strings.Join([]string{
 					fmt.Sprintf("#!files.Stat: %s", resolved),
 					"Name: " + stat.Name(),
+					"Type: " + typ,
 					"Size: " + utils.FormatFileSize(stat.Size()),
 					"Mode: " + utils.FormatFileMode(stat.Mode()),
 					"Modified: " + utils.FormatTime(stat.ModTime()),
-					"IsDirectory: " + utils.FormatBool(stat.IsDir()),
 				}, "\n")
 
 				return result, nil

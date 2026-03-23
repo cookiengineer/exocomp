@@ -1,17 +1,14 @@
 package ollama
 
 import "bytes"
-import _ "embed"
 import "encoding/json"
 import "fmt"
 import "io"
 import "net/http"
 import "exocomp/config"
 
-//go:embed prompt.txt
-var prompt []byte
-
 type Session struct {
+	agent   *agents.Agent
 	config  *config.Config
 	client  *http.Client
 	history []*Message
@@ -32,16 +29,29 @@ type ChatResponse struct {
 	Message Message `json:"message"`
 }
 
-func NewSession(config *config.Config) (*Session, error) {
+func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 
 	session := &Session{
-		config: config,
-		client: &http.Client{},
-		history: []*Message{&Message{
-			Role:    "system",
-			Content: string(prompt),
-		}},
+		agent:   agent,
+		config:  config,
+		client:  &http.Client{},
+		history: make([]*Message, 0),
 	}
+
+	system_prompts := make([]string, 0)
+
+	if agent != nil {
+		system_prompts = append(system_prompts, agent.GetPrompt())
+	}
+
+	if config != nil {
+		system_prompts = append(system_prompts, config.GetPrompt())
+	}
+
+	session.history = append(session.history, &Message{
+		Role:    "system",
+		Content: strings.Join(system_prompts, "\n"),
+	})
 
 	_, err := session.send()
 
@@ -66,9 +76,9 @@ func (session *Session) Query(message string) (string, error) {
 
 		session.history = append(session.history, response)
 
-		gadget := ParseGadget(response.Content)
+		gadget := config.ParseGadget(response.Content)
 
-		if gadget != nil {
+		if gadget != nil && session.config.IsAllowedGadget(gadget.Type.String()) {
 
 			result, err2 := gadget.Execute(session.config)
 

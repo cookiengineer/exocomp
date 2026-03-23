@@ -1,11 +1,17 @@
 package config
 
+import _ "embed"
 import "errors"
 import "flag"
 import net_url "net/url"
+import "slices"
+
+//go:embed Config.prompt.txt
+var prompt []byte
 
 type Config struct {
 	Model    string
+	Gadgets  []string
 	Programs []string
 	URL      *net_url.URL
 	Sandbox  string
@@ -46,10 +52,18 @@ func ParseConfig() (*Config, error) {
 
 		if (url.Scheme == "http" || url.Scheme == "https") && url.Path == "/api" {
 
+			allowed_gadgets  := make([]string, 0)
+			allowed_programs := AllowedPrograms[0:]
+
+			for _, gadget_type := range AllowedGadgets {
+				allowed_gadgets = append(allowed_gadgets, gadget_type.String())
+			}
+
 			return &Config{
 				Model:    *tmp_model,
 				URL:      url,
-				Programs: append([]string{}, AllowedPrograms...),
+				Gadgets:  allowed_gadgets,
+				Programs: allowed_programs,
 				Sandbox:  *tmp_sandbox,
 				Verbose:  *tmp_verbose,
 			}, nil
@@ -62,6 +76,27 @@ func ParseConfig() (*Config, error) {
 		return nil, err
 	}
 
+}
+
+func (config *Config) GetPrompt() string {
+
+	prompt := string(prompt)
+	prompt += "The list of available gadgets is:"
+
+	for _, name := range config.Gadgets {
+		prompt += "#!" + name + "\n"
+	}
+
+	return prompt
+
+}
+
+func (config *Config) IsAllowedGadget(name string) bool {
+	return slices.Contains(config.Gadgets, name)
+}
+
+func (config *Config) IsAllowedProgram(name string) bool {
+	return slices.Contains(config.Programs, name)
 }
 
 func (config *Config) ResolvePath(path string) *net_url.URL {

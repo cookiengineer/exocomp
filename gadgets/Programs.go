@@ -1,6 +1,5 @@
 package gadgets
 
-import "exocomp/config"
 import "bytes"
 import "fmt"
 import "os"
@@ -13,11 +12,11 @@ type Programs struct {
 	Sandbox  string
 }
 
-func NewPrograms(config *config.Config) *Programs {
+func NewPrograms(sandbox string, programs []string) *Programs {
 
 	return &Programs{
-		Programs: config.Programs,
-		Sandbox:  config.Sandbox,
+		Programs: programs,
+		Sandbox:  sandbox,
 	}
 
 }
@@ -25,21 +24,30 @@ func NewPrograms(config *config.Config) *Programs {
 func (gadget *Programs) Help() string {
 
 	return strings.Join([]string{
-		"Programs Gadget Usage:",
-		"",
 		"List programs:",
 		"#!gadget:programs.List",
 		"",
-		"Execute programs ",
+		"Execute programs:",
 		"#!gadget:programs.Execute \"program-name\" \"arg1\" \"arg2\" \"arg3\"",
-		"",
 	}, "\n")
 
 }
 
-func (gadget *Programs) List() (string, error) {
+func (gadget *Programs) List(arguments []string) (string, error) {
 
-	// TODO: List available programs
+	if len(arguments) == 0 {
+
+		prompt := "The list of available programs is:"
+
+		for _, name := range gadget.Programs {
+			prompt += name + "\n"
+		}
+
+		return prompt, nil
+
+	} else {
+		return "", fmt.Errorf("#!programs.List: Only zero arguments allowed")
+	}
 
 }
 

@@ -1,0 +1,9 @@
+
+You have access to multiple gadgets, which are executed within a sandbox
+folder. All paths are relative with a `./` prefix.
+
+Show detailed help via `#!gadget:help <gadget-name>`. All gadget calls must
+happen in separate lines starting with `#!gadget:`. Some gadget methods use
+heredoc syntax for communicating buffers, always use `#!EOF` as a heredoc
+start/end marker.
+

@@ -1,8 +1,7 @@
-package ollama
+package config
 
 import "fmt"
 import "strings"
-import "exocomp/config"
 import "exocomp/gadgets"
 
 type Gadget struct {
@@ -31,10 +30,10 @@ func ParseGadget(text string) *Gadget {
 
 		line = strings.TrimSpace(line)
 
-		if strings.HasPrefix(line, "#!" + GadgetTypeHelp.String() + " ") {
+		if strings.HasPrefix(line, "#!gadget:" + GadgetTypeHelp.String() + " ") {
 
 			// #!help <gadget>
-			arguments := strings.Fields(strings.TrimSpace(line[len(GadgetTypeHelp.String()) + 3:]))
+			arguments := strings.Fields(strings.TrimSpace(line[len(GadgetTypeHelp.String()) + 10:]))
 
 			return &Gadget{
 				Type:      GadgetTypeHelp,
@@ -42,29 +41,27 @@ func ParseGadget(text string) *Gadget {
 				Arguments: GadgetArguments(arguments),
 			}
 
-		} else if strings.HasPrefix(line, "#!" + GadgetTypeFiles.String() + ".") {
+		} else if strings.HasPrefix(line, "#!gadget:" + GadgetTypeFiles.String() + ".") {
 
 			// #!files.Read <path>
 			// #!files.Stat <path>
 			// #!files.Write <path> <<#!EOF
 			// ...
 			// #!EOF
-			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypeFiles.String()) + 3:]))
+			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypeFiles.String()) + 10:]))
 			method := fields[0]
 
 			for f := 1; f < len(fields); f++ {
 
-				if fields[f] == "<<" && f < len(fields) - 1 {
+				if strings.HasPrefix(fields[f], "<<") {
 
-					seek := fields[f + 1]
+					seek := fields[f][2:]
 
 					for s := l + 1; s < len(lines); s++ {
 
 						if strings.HasPrefix(lines[s], seek) {
 
 							fields[f] = strings.Join(lines[l+1:s], "\n")
-							fields = append(fields[:f+1], fields[f+2:]...)
-							f--
 							break
 
 						}
@@ -109,10 +106,10 @@ func ParseGadget(text string) *Gadget {
 				return nil
 			}
 
-		} else if strings.HasPrefix(line, "#!" + GadgetTypePrograms.String() + ".") {
+		} else if strings.HasPrefix(line, "#!gadget:" + GadgetTypePrograms.String() + ".") {
 
 			// #!programs.Execute <arguments...>
-			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypePrograms.String()) + 3:]))
+			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypePrograms.String()) + 10:]))
 			method := fields[0]
 
 			if method == "Execute" {
@@ -129,11 +126,11 @@ func ParseGadget(text string) *Gadget {
 				return nil
 			}
 
-		} else if strings.HasPrefix(line, "#!" + GadgetTypeRevisions.String() + ".") {
+		} else if strings.HasPrefix(line, "#!gadget:" + GadgetTypeRevisions.String() + ".") {
 
 			// TODO: commit, add, remove
 
-		} else if strings.HasPrefix(line, "#!" + GadgetTypeTasks.String() + ".") {
+		} else if strings.HasPrefix(line, "#!gadget:" + GadgetTypeTasks.String() + ".") {
 
 			// TODO: Implement tasks.List()
 			// TODO: tasks.Add()
@@ -147,7 +144,7 @@ func ParseGadget(text string) *Gadget {
 
 }
 
-func (gadget *Gadget) Execute(config *config.Config) (string, error) {
+func (gadget *Gadget) Execute(config *Config) (string, error) {
 
 	// TODO: Implement delegation to actual APIs
 	// Is it possible to use an Interface here?
@@ -155,7 +152,7 @@ func (gadget *Gadget) Execute(config *config.Config) (string, error) {
 	switch gadget.Type {
 	case GadgetTypeHelp:
 
-		help_gadget := gadgets.NewHelp(config)
+		help_gadget := gadgets.NewHelp(config.Sandbox, config.Gadgets, config.Programs)
 
 		if gadget.Method == "Help" {
 			return help_gadget.Help(gadget.Arguments)
@@ -163,7 +160,7 @@ func (gadget *Gadget) Execute(config *config.Config) (string, error) {
 
 	case GadgetTypeFiles:
 
-		files_gadget := gadgets.NewFiles(config)
+		files_gadget := gadgets.NewFiles(config.Sandbox)
 
 		if gadget.Method == "List" {
 			return files_gadget.List(gadget.Arguments)
@@ -177,10 +174,10 @@ func (gadget *Gadget) Execute(config *config.Config) (string, error) {
 
 	case GadgetTypePrograms:
 
-		programs_gadget := gadgets.NewPrograms(config)
+		programs_gadget := gadgets.NewPrograms(config.Sandbox, config.Programs)
 
-		if gadget.method == "List" {
-			return programs_gadget.List(gadget.arguments)
+		if gadget.Method == "List" {
+			return programs_gadget.List(gadget.Arguments)
 		} else if gadget.Method == "Execute" {
 			return programs_gadget.Execute(gadget.Arguments)
 		}
