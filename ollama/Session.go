@@ -2,42 +2,29 @@ package ollama
 
 import "exocomp/agents"
 import "exocomp/config"
-import "bytes"
-import "encoding/json"
 import "fmt"
-import "io"
 import "net/http"
 import "strings"
+import "sync"
 
 type Session struct {
-	agent   *agents.Agent
-	config  *config.Config
-	client  *http.Client
-	history []*Message
-}
-
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-type ChatRequest struct {
-	Model    string     `json:"model"`
-	Messages []*Message `json:"messages"`
-	Stream   bool       `json:"stream"`
-}
-
-type ChatResponse struct {
-	Message Message `json:"message"`
+	Agent    *agents.Agent
+	Config   *config.Config
+	Client   *http.Client
+	Messages []*Message
+	Waiting  bool
+	mutex    *sync.Mutex
 }
 
 func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 
 	session := &Session{
-		agent:   agent,
-		config:  config,
-		client:  &http.Client{},
-		history: make([]*Message, 0),
+		Agent:    agent,
+		Config:   config,
+		Client:   &http.Client{},
+		Messages: make([]*Message, 0),
+		Waiting:  false,
+		mutex:    &sync.Mutex{},
 	}
 
 	system_prompts := make([]string, 0)
@@ -50,128 +37,53 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 		system_prompts = append(system_prompts, config.GetPrompt())
 	}
 
-	session.history = append(session.history, &Message{
+	session.mutex.Lock()
+	session.Messages = append(session.Messages, &Message{
 		Role:    "system",
 		Content: strings.Join(system_prompts, "\n"),
 	})
+	session.mutex.Unlock()
 
-	fmt.Println(system_prompts)
+	err := sendChatRequest(session)
 
-	_, err := session.send()
+	return session, err
 
-	if err == nil {
-		return session, nil
+}
+
+func (session *Session) LastMessage() *Message {
+
+	if len(session.Messages) > 0 {
+		return session.Messages[len(session.Messages) - 1]
 	} else {
-		return nil, err
+		return nil
 	}
 
 }
 
-func (session *Session) Query(message string) (string, error) {
+func (session *Session) Query(message Message) error {
 
-	session.history = append(session.history, &Message{
-		Role:    "user",
-		Content: message,
-	})
+	if session.Waiting == false {
 
-	response, err1 := session.send()
+		session.mutex.Lock()
+		session.Messages = append(session.Messages, &message)
+		session.Waiting = true
+		session.mutex.Unlock()
 
-	if response != nil && err1 == nil {
+		err := sendChatRequest(session)
 
-		session.history = append(session.history, response)
+		session.mutex.Lock()
+		session.Waiting = false
+		session.mutex.Unlock()
 
-		gadget := config.ParseGadget(response.Content)
-
-		fmt.Println("GADGET?", gadget)
-
-		if gadget != nil && session.config.IsAllowedGadget(gadget.Type.String()) {
-
-			result, err2 := gadget.Call(session.config)
-
-			if err2 != nil {
-				result = fmt.Sprintf("Gadget Error: %s", err2.Error())
-			}
-
-			session.history = append(session.history, &Message{
-				Role:    "tool",
-				Content: strings.TrimSpace(result),
-			})
-
-			fmt.Println("--------TOOL--------")
-			fmt.Println(strings.TrimSpace(result))
-
-			// TODO: What about reoccuring tool calls?
-			// TODO: Should this be inside a loop, while #!gadget:... calls are inside the response?
-			processed_response, err3 := session.send()
-
-			if err3 == nil {
-
-				session.history = append(session.history, processed_response)
-
-				return processed_response.Content, nil
-
-			} else {
-				return "", err3
-			}
-
+		if err == nil {
+			return nil
 		} else {
-			return response.Content, nil
+			return err
 		}
 
 	} else {
-		return "", err1
+		return fmt.Errorf("Session is busy, waiting for LLM response ...")
 	}
 
 }
 
-func (session *Session) send() (*Message, error) {
-
-	request_payload, err0 := json.Marshal(ChatRequest{
-		Model:    session.config.Model,
-		Messages: session.history,
-		Stream:   false,
-	})
-
-	if err0 == nil {
-
-		endpoint := session.config.ResolvePath("/api/chat")
-
-		if session.config.Verbose == true {
-			fmt.Println("POST", endpoint.String())
-		}
-
-		response, err1 := session.client.Post(
-			endpoint.String(),
-			"application/json",
-			bytes.NewReader(request_payload),
-		)
-
-		if err1 == nil {
-
-			response_payload, err2 := io.ReadAll(response.Body)
-
-			if err2 == nil {
-
-				var response ChatResponse
-
-				err3 := json.Unmarshal(response_payload, &response)
-
-				if err3 == nil {
-					return &response.Message, nil
-				} else {
-					return nil, err3
-				}
-
-			} else {
-				return nil, err2
-			}
-
-		} else {
-			return nil, err1
-		}
-
-	} else {
-		return nil, err0
-	}
-
-}

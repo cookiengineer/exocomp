@@ -1,11 +1,12 @@
 package main
 
-import "bufio"
-import "fmt"
-import "os"
 import "exocomp/agents"
 import "exocomp/config"
 import "exocomp/ollama"
+import "fmt"
+import "os"
+import "os/signal"
+import "syscall"
 
 func main() {
 
@@ -30,37 +31,47 @@ func main() {
 
 			if err2 == nil {
 
-				scanner := bufio.NewScanner(os.Stdin)
+				renderer := ollama.NewRenderer(session)
+				signals  := make(chan os.Signal, 1)
 
-				for {
+				signal.Notify(
+					signals,
+					syscall.SIGINT,
+					syscall.SIGTERM,
+				)
 
-					fmt.Printf("%s > ", config.Model)
+				go func() {
+					renderer.InputLoop()
+					signals<-syscall.SIGINT
+				}()
 
-					if scanner.Scan() == true {
+				go renderer.RenderLoop()
 
-						prompt := scanner.Text()
+				select {
+				case sig := <-signals:
 
-						if prompt == "exit" || prompt == "quit" {
+					switch sig {
+					case syscall.SIGINT:
 
-							break
+						renderer.Destroy()
+						fmt.Println("Received signal: SIGINT")
+						os.Exit(0)
 
-						} else {
+					case syscall.SIGTERM:
 
-							response, err3 := session.Query(prompt)
+						renderer.Destroy()
+						fmt.Println("Received signal: SIGTERM")
+						os.Exit(0)
 
-							if err3 == nil {
-								fmt.Printf("%s\n", response)
-							}
+					default:
 
-						}
+						renderer.Destroy()
+						fmt.Printf("Received signal: %s\n", sig.String())
+						os.Exit(0)
 
-					} else {
-						break
 					}
 
 				}
-
-				os.Exit(0)
 
 			} else {
 				fmt.Println(err2)
