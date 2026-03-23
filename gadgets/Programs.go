@@ -24,10 +24,8 @@ func NewPrograms(sandbox string, programs []string) *Programs {
 func (gadget *Programs) Help(arguments []string) (string, error) {
 
 	return strings.Join([]string{
-		"List programs:",
 		"#!gadget:programs.List",
 		"",
-		"Execute programs:",
 		"#!gadget:programs.Execute \"program-name\" \"arg1\" \"arg2\" \"arg3\"",
 	}, "\n"), nil
 

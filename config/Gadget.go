@@ -30,26 +30,52 @@ func ParseGadget(text string) *Gadget {
 
 		line = strings.TrimSpace(line)
 
-		if strings.HasPrefix(line, "#!gadget:" + GadgetTypeHelp.String() + " ") {
+		if strings.HasPrefix(line, "#!gadget:" + GadgetTypeHelp.String() + ".") {
 
-			// #!help <gadget>
-			arguments := strings.Fields(strings.TrimSpace(line[len(GadgetTypeHelp.String()) + 10:]))
+			// #!gadget:help.Overview
+			// #!gadget:help.Gadget <gadget>
+			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypeHelp.String()) + 10:]))
+			method := fields[0]
 
-			return &Gadget{
-				Type:      GadgetTypeHelp,
-				Method:    GadgetMethod("Help"),
-				Arguments: GadgetArguments(arguments),
+			if strings.ToLower(method) == "overview" {
+
+				return &Gadget{
+					Type:      GadgetTypeHelp,
+					Method:    GadgetMethod("Overview"),
+					Arguments: GadgetArguments([]string{}),
+				}
+
+			} else if strings.ToLower(method) == "gadget" {
+
+				arguments := fields[1:]
+
+				return &Gadget{
+					Type:      GadgetTypeHelp,
+					Method:    GadgetMethod("Gadget"),
+					Arguments: GadgetArguments(arguments),
+				}
+
 			}
 
 		} else if strings.HasPrefix(line, "#!gadget:" + GadgetTypeFiles.String() + ".") {
 
-			// #!files.Read <path>
-			// #!files.Stat <path>
-			// #!files.Write <path> <<#!EOF
+			// #!gadget:files.Read <path>
+			// #!gadget:files.Stat <path>
+			// #!gadget:files.Write <path> <<#!EOF
 			// ...
 			// #!EOF
 			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypeFiles.String()) + 10:]))
 			method := fields[0]
+
+			for f, field := range fields {
+
+				if strings.HasPrefix(field, "\"") && strings.HasSuffix(field, "\"") {
+					fields[f] = field[1:len(field)-1]
+				} else if strings.HasPrefix(field, "'") && strings.HasSuffix(field, "'") {
+					fields[f] = field[1:len(field)-1]
+				}
+
+			}
 
 			for f := 1; f < len(fields); f++ {
 
@@ -72,7 +98,17 @@ func ParseGadget(text string) *Gadget {
 
 			}
 
-			if method == "Read" {
+			if strings.ToLower(method) == "list" {
+
+				arguments := fields[1:]
+
+				return &Gadget{
+					Type:      GadgetTypeFiles,
+					Method:    GadgetMethod("List"),
+					Arguments: GadgetArguments(arguments),
+				}
+
+			} else if strings.ToLower(method) == "read" {
 
 				arguments := fields[1:]
 
@@ -82,7 +118,7 @@ func ParseGadget(text string) *Gadget {
 					Arguments: GadgetArguments(arguments),
 				}
 
-			} else if method == "Stat" {
+			} else if strings.ToLower(method) == "stat" {
 
 				arguments := fields[1:]
 
@@ -92,7 +128,7 @@ func ParseGadget(text string) *Gadget {
 					Arguments: GadgetArguments(arguments),
 				}
 
-			} else if method == "Write" {
+			} else if strings.ToLower(method) == "write" {
 
 				arguments := fields[1:]
 
@@ -112,7 +148,7 @@ func ParseGadget(text string) *Gadget {
 			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypePrograms.String()) + 10:]))
 			method := fields[0]
 
-			if method == "Execute" {
+			if strings.ToLower(method) == "execute" {
 
 				arguments := fields[1:]
 

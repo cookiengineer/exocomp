@@ -55,6 +55,8 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 		Content: strings.Join(system_prompts, "\n"),
 	})
 
+	fmt.Println(system_prompts)
+
 	_, err := session.send()
 
 	if err == nil {
@@ -80,6 +82,8 @@ func (session *Session) Query(message string) (string, error) {
 
 		gadget := config.ParseGadget(response.Content)
 
+		fmt.Println("GADGET?", gadget)
+
 		if gadget != nil && session.config.IsAllowedGadget(gadget.Type.String()) {
 
 			result, err2 := gadget.Call(session.config)
@@ -89,11 +93,26 @@ func (session *Session) Query(message string) (string, error) {
 			}
 
 			session.history = append(session.history, &Message{
-				Role:    "user",
+				Role:    "tool",
 				Content: strings.TrimSpace(result),
 			})
 
-			return response.Content, nil
+			fmt.Println("--------TOOL--------")
+			fmt.Println(strings.TrimSpace(result))
+
+			// TODO: What about reoccuring tool calls?
+			// TODO: Should this be inside a loop, while #!gadget:... calls are inside the response?
+			processed_response, err3 := session.send()
+
+			if err3 == nil {
+
+				session.history = append(session.history, processed_response)
+
+				return processed_response.Content, nil
+
+			} else {
+				return "", err3
+			}
 
 		} else {
 			return response.Content, nil

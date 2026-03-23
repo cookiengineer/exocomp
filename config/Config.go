@@ -1,13 +1,16 @@
 package config
 
+import "exocomp/gadgets"
 import _ "embed"
 import "errors"
 import "flag"
 import net_url "net/url"
+import "os"
 import "slices"
+import "strings"
 
 //go:embed Config.prompt.txt
-var prompt []byte
+var config_prompt []byte
 
 type Config struct {
 	Agent    string
@@ -20,6 +23,8 @@ type Config struct {
 }
 
 func ParseConfig() (*Config, error) {
+
+	cwd, _ := os.Getwd()
 
 	tmp_agent := flag.String(
 		"agent",
@@ -41,7 +46,7 @@ func ParseConfig() (*Config, error) {
 
 	tmp_sandbox := flag.String(
 		"sandbox",
-		"/tmp/project-codebase",
+		cwd,
 		"Project sandbox",
 	)
 
@@ -88,14 +93,22 @@ func ParseConfig() (*Config, error) {
 
 func (config *Config) GetPrompt() string {
 
-	prompt := string(prompt)
-	prompt += "The list of available gadgets is:"
+	prompts := make([]string, 0)
 
-	for _, name := range config.Gadgets {
-		prompt += "#!" + name + "\n"
-	}
+	files_help,    _ := gadgets.NewFiles(config.Sandbox).Help([]string{})
+	programs_help, _ := gadgets.NewPrograms(config.Sandbox, config.Programs).Help([]string{})
 
-	return prompt
+	// TODO: Other Gadgets
+
+	prompts = append(prompts, strings.TrimSpace(string(config_prompt)))
+	prompts = append(prompts, "")
+	prompts = append(prompts, "Available gadgets:")
+	prompts = append(prompts, "")
+	prompts = append(prompts, strings.TrimSpace(files_help))
+	prompts = append(prompts, "")
+	prompts = append(prompts, strings.TrimSpace(programs_help))
+
+	return strings.Join(prompts, "\n")
 
 }
 

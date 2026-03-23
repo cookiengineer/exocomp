@@ -21,16 +21,12 @@ func NewFiles(sandbox string) *Files {
 func (gadget *Files) Help(arguments []string) (string, error) {
 
 	return strings.Join([]string{
-		"List files with relative path:",
 		"#!gadget:files.List \"./path/to/folder\"",
 		"",
-		"Read file with relative path:",
 		"#!gadget:files.Read \"./path/to/file.go\"",
 		"",
-		"Stat file with relative path:",
 		"#!gadget:files.Stat \"./path/to/file.go\"",
 		"",
-		"Write file with relative path and heredoc syntax:",
 		"#!gadget:files.Write \"./path/to/file.go\" <<#!EOF",
 		"...file contents...",
 		"#!EOF",
@@ -71,7 +67,7 @@ func (gadget *Files) List(arguments []string) (string, error) {
 								}
 
 								lines = append(lines, strings.Join([]string{
-									"Name: " + stat.Name(),
+									"Name: " + name,
 									"Type: " + typ,
 								}, ", "))
 

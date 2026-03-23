@@ -19,7 +19,9 @@ func resolveSandboxPath(sandbox string, file_path string) (string, error) {
 
 			if err2 == nil {
 
-				if relative == ".." || relative[0:3] == ".." + string(os.PathSeparator) {
+				if relative == ".." {
+					return "", fmt.Errorf("Invalid file path \"%s\": Path tried to escape sandbox", relative)
+				} else if len(relative) >= 3 && relative[0:3] == ".." + string(os.PathSeparator) {
 					return "", fmt.Errorf("Invalid file path \"%s\": Path tried to escape sandbox", relative)
 				} else {
 
