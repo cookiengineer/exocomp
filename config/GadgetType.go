@@ -3,11 +3,10 @@ package config
 type GadgetType string
 
 const (
-	GadgetTypeHelp      GadgetType = "help"
-	GadgetTypeFiles     GadgetType = "files"
-	GadgetTypePrograms  GadgetType = "programs"
-	GadgetTypeRevisions GadgetType = "revisions"
-	GadgetTypeTasks     GadgetType = "tasks"
+	GadgetTypeHelp     GadgetType = "help"
+	GadgetTypeFiles    GadgetType = "files"
+	GadgetTypePrograms GadgetType = "programs"
+	GadgetTypeTasks    GadgetType = "tasks"
 )
 
 func IsGadgetType(raw string) bool {
@@ -18,8 +17,6 @@ func IsGadgetType(raw string) bool {
 	case GadgetTypeFiles:
 		return true
 	case GadgetTypePrograms:
-		return true
-	case GadgetTypeRevisions:
 		return true
 	case GadgetTypeTasks:
 		return true

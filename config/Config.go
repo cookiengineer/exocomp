@@ -13,13 +13,14 @@ import "strings"
 var config_prompt []byte
 
 type Config struct {
-	Agent    string
-	Model    string
-	Gadgets  []string
-	Programs []string
-	URL      *net_url.URL
-	Sandbox  string
-	Verbose  bool
+	Agent       string
+	Model       string
+	Gadgets     []string
+	Programs    []string
+	URL         *net_url.URL
+	Sandbox     string
+	Temperature float32
+	Verbose     bool
 }
 
 func ParseConfig() (*Config, error) {
@@ -56,6 +57,12 @@ func ParseConfig() (*Config, error) {
 		"Enable verbose logging",
 	)
 
+	tmp_temperature := flag.Float32(
+		"temperature",
+		0.3,
+		"0.3 code, 0.5 balanced, 0.7 creative, 1.0 hallucinations",
+	)
+
 	flag.Parse()
 
 	url, err := net_url.Parse(*tmp_url)
@@ -72,13 +79,14 @@ func ParseConfig() (*Config, error) {
 			}
 
 			return &Config{
-				Agent:    *tmp_agent,
-				Model:    *tmp_model,
-				URL:      url,
-				Gadgets:  allowed_gadgets,
-				Programs: allowed_programs,
-				Sandbox:  *tmp_sandbox,
-				Verbose:  *tmp_verbose,
+				Agent:       *tmp_agent,
+				Model:       *tmp_model,
+				URL:         url,
+				Gadgets:     allowed_gadgets,
+				Programs:    allowed_programs,
+				Sandbox:     *tmp_sandbox,
+				Temperature: *tmp_temperature,
+				Verbose:     *tmp_verbose,
 			}, nil
 
 		} else {

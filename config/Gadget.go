@@ -8,27 +8,17 @@ type Gadget struct {
 	Type      GadgetType
 	Method    GadgetMethod
 	Arguments GadgetArguments
+	Lines     [2]int
 }
 
-func UsesGadget(text string) bool {
+func ParseGadgets(text string) []*Gadget {
 
-	gadget := ParseGadget(text)
+	gadgets := make([]*Gadget, 0)
+	lines   := strings.Split(text, "\n")
 
-	if gadget != nil {
-		return true
-	}
+	for l := 0; l < len(lines); l++ {
 
-	return false
-
-}
-
-func ParseGadget(text string) *Gadget {
-
-	lines := strings.Split(text, "\n")
-
-	for l, line := range lines {
-
-		line = strings.TrimSpace(line)
+		line = strings.TrimSpace(lines[l])
 
 		if strings.HasPrefix(line, "#!gadget:" + GadgetTypeHelp.String() + ".") {
 
@@ -39,132 +29,44 @@ func ParseGadget(text string) *Gadget {
 
 			if strings.ToLower(method) == "overview" {
 
-				return &Gadget{
+				arguments := fields[1:]
+
+				gadgets = append(gadgets, &Gadget{
 					Type:      GadgetTypeHelp,
 					Method:    GadgetMethod("Overview"),
-					Arguments: GadgetArguments([]string{}),
-				}
+					Arguments: GadgetArguments(arguments),
+					Lines:     [2]int{l+1, l+1},
+				})
 
 			} else if strings.ToLower(method) == "gadget" {
 
 				arguments := fields[1:]
 
-				return &Gadget{
+				gadgets = append(gadgets, &Gadget{
 					Type:      GadgetTypeHelp,
 					Method:    GadgetMethod("Gadget"),
 					Arguments: GadgetArguments(arguments),
-				}
+					Lines:     [2]int{l+1, l+1},
+				})
+
+			} else {
+
+				arguments := fields[1:]
+
+				gadgets = append(gadgets, &Gadget{
+					Type:      GadgetTypeInvalid,
+					Method:    GadgetMethod(method),
+					Arguments: GadgetArguments(arguments),
+					Lines:     [2]int{l+1, l+1},
+				})
 
 			}
 
 		} else if strings.HasPrefix(line, "#!gadget:" + GadgetTypeFiles.String() + ".") {
 
-			// #!gadget:files.Read <path>
-			// #!gadget:files.Stat <path>
-			// #!gadget:files.Write <path> <<#!EOF
-			// ...
-			// #!EOF
-			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypeFiles.String()) + 10:]))
-			method := fields[0]
-
-			for f, field := range fields {
-
-				if strings.HasPrefix(field, "\"") && strings.HasSuffix(field, "\"") {
-					fields[f] = field[1:len(field)-1]
-				} else if strings.HasPrefix(field, "'") && strings.HasSuffix(field, "'") {
-					fields[f] = field[1:len(field)-1]
-				}
-
-			}
-
-			for f := 1; f < len(fields); f++ {
-
-				if strings.HasPrefix(fields[f], "<<") {
-
-					seek := fields[f][2:]
-
-					for s := l + 1; s < len(lines); s++ {
-
-						if strings.HasPrefix(lines[s], seek) {
-
-							fields[f] = strings.Join(lines[l+1:s], "\n")
-							break
-
-						}
-
-					}
-
-				}
-
-			}
-
-			if strings.ToLower(method) == "list" {
-
-				arguments := fields[1:]
-
-				return &Gadget{
-					Type:      GadgetTypeFiles,
-					Method:    GadgetMethod("List"),
-					Arguments: GadgetArguments(arguments),
-				}
-
-			} else if strings.ToLower(method) == "read" {
-
-				arguments := fields[1:]
-
-				return &Gadget{
-					Type:      GadgetTypeFiles,
-					Method:    GadgetMethod("Read"),
-					Arguments: GadgetArguments(arguments),
-				}
-
-			} else if strings.ToLower(method) == "stat" {
-
-				arguments := fields[1:]
-
-				return &Gadget{
-					Type:      GadgetTypeFiles,
-					Method:    GadgetMethod("Stat"),
-					Arguments: GadgetArguments(arguments),
-				}
-
-			} else if strings.ToLower(method) == "write" {
-
-				arguments := fields[1:]
-
-				return &Gadget{
-					Type:      GadgetTypeFiles,
-					Method:    GadgetMethod("Write"),
-					Arguments: GadgetArguments(arguments),
-				}
-
-			} else {
-				return nil
-			}
+			// TODO: Parse from here to the last line
 
 		} else if strings.HasPrefix(line, "#!gadget:" + GadgetTypePrograms.String() + ".") {
-
-			// #!programs.Execute <arguments...>
-			fields := strings.Fields(strings.TrimSpace(line[len(GadgetTypePrograms.String()) + 10:]))
-			method := fields[0]
-
-			if strings.ToLower(method) == "execute" {
-
-				arguments := fields[1:]
-
-				return &Gadget{
-					Type:      GadgetTypePrograms,
-					Method:    GadgetMethod("Execute"),
-					Arguments: GadgetArguments(arguments),
-				}
-
-			} else {
-				return nil
-			}
-
-		} else if strings.HasPrefix(line, "#!gadget:" + GadgetTypeRevisions.String() + ".") {
-
-			// TODO: commit, add, remove
 
 		} else if strings.HasPrefix(line, "#!gadget:" + GadgetTypeTasks.String() + ".") {
 
@@ -176,7 +78,7 @@ func ParseGadget(text string) *Gadget {
 
 	}
 
-	return nil
+	return gadgets
 
 }
 
@@ -191,7 +93,9 @@ func (gadget *Gadget) Call(config *Config) (string, error) {
 		help_gadget := gadgets.NewHelp(config.Sandbox, config.Gadgets)
 
 		if gadget.Method == "Overview" {
+
 			return help_gadget.Help(gadget.Arguments)
+
 		} else if gadget.Method == "Gadget" {
 
 			topic := strings.ToLower(gadget.Arguments.Get(0))
@@ -202,10 +106,8 @@ func (gadget *Gadget) Call(config *Config) (string, error) {
 				return gadgets.NewFiles(config.Sandbox).Help(gadget.Arguments)
 			} else if topic == GadgetTypePrograms.String() {
 				return gadgets.NewPrograms(config.Sandbox, config.Programs).Help(gadget.Arguments)
-			} else if topic == GadgetTypeRevisions.String() {
-				// TODO: return gadgets.NewRevisions(config.Sandbox).Help(gadget.Arguments)
 			} else if topic == GadgetTypeTasks.String() {
-				// TODO: return gadgets.NewTasks(config.Sandbox).Help(gadget.Arguments)
+				return gadgets.NewTasks(config.Sandbox).Help(gadget.Arguments)
 			}
 
 		}
