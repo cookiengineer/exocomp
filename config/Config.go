@@ -35,7 +35,8 @@ func ParseConfig() (*Config, error) {
 
 	tmp_model := flag.String(
 		"model",
-		"qwen3-coder:30b",
+		// "qwen3-coder:30b",
+		"codestral:22b",
 		"Ollama Model to use",
 	)
 
