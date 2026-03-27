@@ -1,6 +1,6 @@
 package config
 
-import "exocomp/gadgets"
+import "exocomp/tools"
 import _ "embed"
 import "errors"
 import "flag"
@@ -13,14 +13,19 @@ import "strings"
 var config_prompt []byte
 
 type Config struct {
-	Agent       string
+
+	// Exocomp settings
 	Model       string
-	Gadgets     []string
-	Programs    []string
 	URL         *net_url.URL
-	Sandbox     string
-	Temperature float32
+	Temperature float64
 	Verbose     bool
+
+	// Tool settings
+	Agent       string
+	Sandbox     string
+	Tools       []string
+	Programs    []string
+
 }
 
 func ParseConfig() (*Config, error) {
@@ -58,7 +63,7 @@ func ParseConfig() (*Config, error) {
 		"Enable verbose logging",
 	)
 
-	tmp_temperature := flag.Float32(
+	tmp_temperature := flag.Float64(
 		"temperature",
 		0.3,
 		"0.3 code, 0.5 balanced, 0.7 creative, 1.0 hallucinations",
@@ -72,22 +77,37 @@ func ParseConfig() (*Config, error) {
 
 		if (url.Scheme == "http" || url.Scheme == "https") && url.Path == "/api" {
 
-			allowed_gadgets  := make([]string, 0)
-			allowed_programs := AllowedPrograms[0:]
+			temperature := *tmp_temperature
 
-			for _, gadget_type := range AllowedGadgets {
-				allowed_gadgets = append(allowed_gadgets, gadget_type.String())
+			if temperature < 0.1 {
+				temperature = 0.1
+			} else if temperature > 1.0 {
+				temperature = 1.0
+			}
+
+			allowed_tools    := make([]string, 0)
+			allowed_programs := make([]string, 0)
+
+			for _, tool := range AllowedTools {
+				allowed_tools = append(allowed_tools, tool)
+			}
+
+			for _, program := range AllowedPrograms {
+				allowed_programs = append(allowed_programs, program)
 			}
 
 			return &Config{
-				Agent:       *tmp_agent,
+
 				Model:       *tmp_model,
 				URL:         url,
-				Gadgets:     allowed_gadgets,
-				Programs:    allowed_programs,
-				Sandbox:     *tmp_sandbox,
-				Temperature: *tmp_temperature,
+				Temperature: temperature,
 				Verbose:     *tmp_verbose,
+
+				Agent:       *tmp_agent,
+				Sandbox:     *tmp_sandbox,
+				Tools:       allowed_tools,
+				Programs:    allowed_programs,
+
 			}, nil
 
 		} else {
@@ -102,31 +122,44 @@ func ParseConfig() (*Config, error) {
 
 func (config *Config) GetPrompt() string {
 
-	prompts := make([]string, 0)
+	// TODO: Integrate Tasks Help when ready
 
-	files_help,    _ := gadgets.NewFiles(config.Sandbox).Help([]string{})
-	programs_help, _ := gadgets.NewPrograms(config.Sandbox, config.Programs).Help([]string{})
+	help := make([]string, 0)
 
-	// TODO: Other Gadgets
+	for _, tool := range config.Tools {
 
-	prompts = append(prompts, strings.TrimSpace(string(config_prompt)))
-	prompts = append(prompts, "")
-	prompts = append(prompts, "Available gadgets:")
-	prompts = append(prompts, "")
-	prompts = append(prompts, strings.TrimSpace(files_help))
-	prompts = append(prompts, "")
-	prompts = append(prompts, strings.TrimSpace(programs_help))
+		if tool == "files" {
+			tmp, _ := tools.NewFiles(config.Agent, config.Sandbox, config.Tools, config.Programs).Help([]string{})
+			help    = append(help, strings.TrimSpace(tmp))
+		} else if tool == "notes" {
+			tmp, _ := tools.NewNotes(config.Agent, config.Sandbox, config.Tools, config.Programs).Help([]string{})
+			help    = append(help, strings.TrimSpace(tmp))
+		} else if tool == "programs" {
+			tmp, _ := tools.NewPrograms(config.Agent, config.Sandbox, config.Tools, config.Programs).Help([]string{})
+			help    = append(help, strings.TrimSpace(tmp))
+		} else if tool == "tasks" {
+			// tmp, _ := tools.NewTasks(config.Agent, config.Sandbox, config.Tools, config.Programs).Help([]string{})
+			// help    = append(help, strings.TrimSpace(tmp))
+		}
 
-	return strings.Join(prompts, "\n")
+	}
 
-}
+	return strings.Join([]string{
+		strings.TrimSpace(string(config_prompt)),
+		"",
+		"Tool Overview:",
+		"",
+		strings.Join(help, "\n\n"),
+	}, "\n")
 
-func (config *Config) IsAllowedGadget(name string) bool {
-	return slices.Contains(config.Gadgets, name)
 }
 
 func (config *Config) IsAllowedProgram(name string) bool {
 	return slices.Contains(config.Programs, name)
+}
+
+func (config *Config) IsAllowedTool(name string) bool {
+	return slices.Contains(config.Tools, name)
 }
 
 func (config *Config) ResolvePath(path string) *net_url.URL {

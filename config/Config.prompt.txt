@@ -1,10 +1,10 @@
 
-You have access to multiple gadgets, which are executed within a sandbox
-folder. All paths are relative with a `./` prefix.
+You have access to multiple tools, which are executed within a sandboxed folder.
+All paths are relative with a `./` prefix.
 
-Show help via `#!gadget:help.Overview` or via `#!gadget:help.Gadget <gadget-name>`.
+Show help via `#!tool:help.Overview` or via `#!tool:help.Tool <tool-name>`.
 
-All gadget calls must happen in separate lines starting with `#!gadget:`. Some
-gadget methods use heredoc syntax for communicating buffers, always use `#!EOF`
-as a heredoc start/end marker. There can be only one gadget call per message.
+All tool calls must happen in separate lines starting with `#!tool:<tool-name>.<method-name>`.
+Some tool methods use heredoc syntax for communicating buffers, always use `#!EOF`
+as a heredoc marker. There can be only one tool call per response message.
 

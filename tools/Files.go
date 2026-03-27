@@ -12,7 +12,7 @@ type Files struct {
 	Sandbox   string
 }
 
-func NewFiles(sandbox string, tools []string, programs []string) *Files {
+func NewFiles(agent string, sandbox string, tools []string, programs []string) *Files {
 
 	return &Files{
 		Method:    "",
@@ -35,7 +35,7 @@ func (tool *Files) Call() (string, error) {
 	} else if tool.Method == "Write" {
 		return tool.List(tool.Arguments)
 	} else {
-		return "", fmt.Errorf("#!tool:files.%s: Unknown method", tool.Method)
+		return "", fmt.Errorf("#!tool:files.%s: Invalid method.", tool.Method)
 	}
 
 }
@@ -113,7 +113,7 @@ func (tool *Files) List(arguments []string) (string, error) {
 					}
 
 				} else {
-					return "", fmt.Errorf("#!tool:files.List: \"%s\" is not a folder")
+					return "", fmt.Errorf("#!tool:files.List: Invalid folder path \"%s\".")
 				}
 
 			} else {
@@ -125,7 +125,7 @@ func (tool *Files) List(arguments []string) (string, error) {
 		}
 
 	} else {
-		return "", fmt.Errorf("#!tool:files.List: Only one argument allowed")
+		return "", fmt.Errorf("#!tool:files.List: Invalid arguments, only one argument allowed.")
 	}
 
 }
@@ -142,19 +142,9 @@ func (tool *Files) Parse(text string) (Tool, [2]int, error) {
 
 	if len(lines) > 0 && strings.HasPrefix(lines[0], "#!tool:files.") {
 
-		fields := strings.Fields(strings.TrimSpace(lines[0][len("#!tool:files."):]))
+		fields := utils.SplitArguments(strings.TrimSpace(lines[0][len("#!tool:files."):]))
 		method := strings.ToUpper(fields[0][0:1]) + strings.ToLower(fields[0][1:])
 		parsed := [2]int{0, 1}
-
-		for f, field := range fields {
-
-			if strings.HasPrefix(field, "\"") && strings.HasSuffix(field, "\"") {
-				fields[f] = field[1:len(field)-1]
-			} else if strings.HasPrefix(field, "'") && strings.HasSuffix(field, "'") {
-				fields[f] = field[1:len(field)-1]
-			}
-
-		}
 
 		for f := 1; f < len(fields); f++ {
 
@@ -193,12 +183,12 @@ func (tool *Files) Parse(text string) (Tool, [2]int, error) {
 			return Tool(tool), parsed, nil
 
 		} else {
-			return nil, [2]int{0, len(lines)}, fmt.Errorf("Invalid tool Call line")
+			return nil, [2]int{0, len(lines)}, fmt.Errorf("#!tool:files.%s: Invalid method.", method)
 		}
 
+	} else {
+		return nil, [2]int{0, len(lines)}, fmt.Errorf("Invalid Tool Call line.")
 	}
-
-	return nil, [2]int{0, len(lines)}, fmt.Errorf("Invalid Tool Call line")
 
 }
 
@@ -230,7 +220,7 @@ func (tool *Files) Read(arguments []string) (string, error) {
 		}
 
 	} else {
-		return "", fmt.Errorf("#!tool:files.Read: Only one argument allowed")
+		return "", fmt.Errorf("#!tool:files.Read: Invalid arguments, only one argument allowed.")
 	}
 
 }
@@ -273,7 +263,7 @@ func (tool *Files) Stat(arguments []string) (string, error) {
 		}
 
 	} else {
-		return "", fmt.Errorf("#!tool:files.Stat: Only one argument allowed")
+		return "", fmt.Errorf("#!tool:files.Stat: Invalid arguments, only one argument allowed.")
 	}
 
 }
@@ -295,8 +285,7 @@ func (tool *Files) Write(arguments []string) (string, error) {
 				if err2 == nil {
 
 					result := strings.Join([]string{
-						fmt.Sprintf("#!tool:files.Write: %s", resolved),
-						fmt.Sprintf("Buffer with %s written.", utils.FormatFileSize(int64(len(buffer)))),
+						fmt.Sprintf("#!tool:files.Write: File %s with %s written.", resolved, utils.FormatFileSize(int64(len(buffer)))),
 					}, "\n")
 
 					return result, nil
@@ -314,7 +303,7 @@ func (tool *Files) Write(arguments []string) (string, error) {
 		}
 
 	} else {
-		return "", fmt.Errorf("#!tool:files.Write: Only two arguments allowed")
+		return "", fmt.Errorf("#!tool:files.Write: Invalid arguments, only two arguments allowed.")
 	}
 
 }

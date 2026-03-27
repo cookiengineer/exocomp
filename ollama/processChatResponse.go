@@ -1,6 +1,7 @@
 package ollama
 
-import "exocomp/config"
+import "fmt"
+import "exocomp/parsers"
 import "strings"
 
 func processChatResponse(session *Session, response Message) error {
@@ -11,26 +12,43 @@ func processChatResponse(session *Session, response Message) error {
 		session.Messages = append(session.Messages, &response)
 		session.mutex.Unlock()
 
-		gadget := config.ParseGadget(response.Content)
+		tools := parsers.ParseTools(
+			session.Config.Agent,
+			session.Config.Sandbox,
+			session.Config.Tools,
+			session.Config.Programs,
+			response.Content,
+		)
 
-		if gadget != nil && session.Config.IsAllowedGadget(gadget.Type.String()) == true {
+		if len(tools) > 0 {
 
-			result, err0 := gadget.Call(session.Config)
+			for _, tool := range tools {
 
-			if err0 == nil {
+				result, err0 := tool.Call()
 
-				session.mutex.Lock()
-				session.Messages = append(session.Messages, &Message{
-					Role:    "tool",
-					Content: strings.TrimSpace(result),
-				})
-				session.mutex.Unlock()
+				if err0 == nil {
 
-				return sendChatRequest(session)
+					session.mutex.Lock()
+					session.Messages = append(session.Messages, &Message{
+						Role:    "tool",
+						Content: strings.TrimSpace(result),
+					})
+					session.mutex.Unlock()
 
-			} else {
-				return err0
+				} else {
+
+					session.mutex.Lock()
+					session.Messages = append(session.Messages, &Message{
+						Role:    "tool",
+						Content: fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
+					})
+					session.mutex.Unlock()
+
+				}
+
 			}
+
+			return sendChatRequest(session)
 
 		} else {
 			return nil

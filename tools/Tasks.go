@@ -21,15 +21,23 @@ func NewTasks(agent string, sandbox string, tools []string, programs []string) *
 func (tool *Tasks) Call() (string, error) {
 
 	if tool.Method == "Create" {
+		return tool.NotImplemented(tool.Arguments)
 	} else if tool.Method == "List" {
+		return tool.NotImplemented(tool.Arguments)
 	} else if tool.Method == "Start" {
+		return tool.NotImplemented(tool.Arguments)
 	} else if tool.Method == "Pause" {
+		return tool.NotImplemented(tool.Arguments)
 	} else if tool.Method == "Stop" {
-	} else if tool.Method == "Reopen" {
+		return tool.NotImplemented(tool.Arguments)
 	} else {
-		return "", fmt.Errorf("#!tool:tasks.%s: Unknown method", tool.Method)
+		return "", fmt.Errorf("#!tool:tasks.%s: Invalid method.", tool.Method)
 	}
 
+}
+
+func (tool *Tasks) NotImplemented(arguments []string) (string, error) {
+	return "", fmt.Errorf("#!tool:tasks.NotImplemented: Method not implemented yet.")
 }
 
 // TODO: Rewrite tasks API to use TODO.md file instead

@@ -1,4 +1,4 @@
-package gadgets
+package tools
 
 import "fmt"
 import "os"
