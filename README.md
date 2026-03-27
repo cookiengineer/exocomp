@@ -5,25 +5,44 @@ Attention, profit-seekers and visionaries!
 
 Are organics costing you time, wages, and - worst of all - benefits?
 
-Then upgrade your operation today with the all new Exocomp (tm) adaptive repair
+Then upgrade your operation today with the all new Exocomp adaptive repair
 unit, the smartest investment this side of the Alpha Quadrant!
 
 <img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
 
-Why hire when you can own? The Exocomp (tm) isn't just a tool... it's so much more!
+## Why hire when you can own?
 
-- Rapid autonomous diagnostics
-- On-the-fly gadget fabrication
-- Precision repairs of broken code with unit tests
+The Exocomp isn't just a tool... it's so much more!
+
 - Supervised task queue functionality
-- Self-replicating in hazardous environments
-- Tireless performance, no sleep cycles, no unions, no complaints!
+- Multiple agent roles as `manager`, `coder`, `tester`
+- Precision repairs of broken code with unit tests
+- Cross-agent communication via `NOTES.md` and `TODO.md`
+- Self-replicating in malicious environments
+- Rapid autonomous diagnostics
+- Tireless performance with no sleep cycles, no unions, no complaints!
 
-From starship maintenance to high-risk industrial operations, the Exocomp (tm)
+From starship maintenance to high-risk industrial operations, the Exocomp
 delivers maximum output with minimal oversight. Think of it as an employee,
 except it doesn't cheat you out of your profits on the Dabo table.
 
 Ethical subroutines sold separately.
+
+## Architecture
+
+Exocomp uses multiple agent roles:
+
+- `manager` role writes features into backlog
+- `coder` implements features, reads `feature` backlog and `bug` reports
+- `tester` implements unit tests, writes `bug` reports
+
+Exocomp uses Tools to interact with the sandbox:
+
+- [Bugs](./tools/Bugs.go) tool to manage documentation of bugs.
+- [Features](./tools/Features.go) tool to manage documentation of features.
+- [Files](./tools/Files.go) tool to read/write/list files and folders.
+- [Notes](./tools/Notes.go) tool to manage development notes.
+- [Programs](./tools/Programs.go) tool to execute programs.
 
 
 ## Requirements and Usage
