@@ -2,9 +2,3 @@
 You have access to multiple tools, which are executed within a sandboxed folder.
 All paths are relative with a `./` prefix.
 
-Show help via `#!tool:help.Overview` or via `#!tool:help.Tool <tool-name>`.
-
-All tool calls must happen in separate lines starting with `#!tool:<tool-name>.<method-name>`.
-Some tool methods use heredoc syntax for communicating buffers, always use `#!EOF`
-as a heredoc marker. There can be only one tool call per response message.
-

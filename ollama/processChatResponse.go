@@ -1,5 +1,6 @@
 package ollama
 
+import "encoding/json"
 import "exocomp/schemas"
 import "fmt"
 import "strings"
@@ -32,10 +33,9 @@ func processChatResponse(session *Session, response schemas.Message) error {
 
 							session.mutex.Lock()
 							session.Messages = append(session.Messages, schemas.Message{
-								Role:      "tool",
-								Content:   strings.TrimSpace(result),
-								ToolName:  name + "." + method,
-								ToolCalls: []schemas.ToolCall{tool_call},
+								Role:     "tool",
+								Content:  strings.TrimSpace(result),
+								ToolName: name + "." + method,
 							})
 							session.mutex.Unlock()
 
@@ -43,14 +43,29 @@ func processChatResponse(session *Session, response schemas.Message) error {
 
 							session.mutex.Lock()
 							session.Messages = append(session.Messages, schemas.Message{
-								Role:      "tool",
-								Content:   fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
-								ToolName:  name + "." + method,
-								ToolCalls: []schemas.ToolCall{tool_call},
+								Role:     "tool",
+								Content:  fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
+								ToolName: name + "." + method,
 							})
 							session.mutex.Unlock()
 
 						}
+
+					} else {
+
+						json_blob, _ := json.MarshalIndent(tool_call, "", "\t")
+
+						session.mutex.Lock()
+						session.Messages = append(session.Messages, schemas.Message{
+							Role:     "tool",
+							Content:  strings.Join([]string{
+								fmt.Sprintf("Error: %s", "Invalid Tool Call"),
+								"",
+								string(json_blob),
+							}, "\n"),
+							ToolName: name + "." + method,
+						})
+						session.mutex.Unlock()
 
 					}
 

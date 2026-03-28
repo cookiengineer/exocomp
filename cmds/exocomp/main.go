@@ -31,7 +31,7 @@ func main() {
 
 			if err2 == nil {
 
-				renderer := ollama.NewRenderer(session)
+				renderer := ollama.NewDebugger(session)
 				signals  := make(chan os.Signal, 1)
 
 				signal.Notify(

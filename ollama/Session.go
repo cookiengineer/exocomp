@@ -87,46 +87,40 @@ func (session *Session) Query(message schemas.Message) error {
 
 func (session *Session) GetTool(name string) tools.Tool {
 
-	if strings.Contains(name, ".") {
+	allowed := false
 
-		allowed := false
+	for _, tool := range session.Tools {
 
-		for _, tool := range session.Tools {
-
-			if strings.HasPrefix(tool.Function.Name, name + ".") {
-				allowed = true
-				break
-			}
-
+		if strings.HasPrefix(tool.Function.Name, name + ".") {
+			allowed = true
+			break
 		}
 
-		if allowed == true {
+	}
 
-			if name == "bugs" {
+	if allowed == true {
 
-				// TODO
-				return nil
+		if name == "bugs" {
 
-			} else if name == "features" {
+			// TODO
+			return nil
 
-				// TODO
-				return nil
+		} else if name == "features" {
 
-			} else if name == "files" {
+			// TODO
+			return nil
 
-				return tools.Tool(tools.NewFiles(session.Config.Agent, session.Config.Sandbox))
+		} else if name == "files" {
 
-			} else if name == "notes" {
+			return tools.Tool(tools.NewFiles(session.Config.Agent, session.Config.Sandbox))
 
-				return tools.Tool(tools.NewNotes(session.Config.Agent, session.Config.Sandbox))
+		} else if name == "notes" {
 
-			} else if name == "programs" {
+			return tools.Tool(tools.NewNotes(session.Config.Agent, session.Config.Sandbox))
 
-				return tools.Tool(tools.NewPrograms(session.Config.Agent, session.Config.Sandbox, session.Config.Programs))
+		} else if name == "programs" {
 
-			} else {
-				return nil
-			}
+			return tools.Tool(tools.NewPrograms(session.Config.Agent, session.Config.Sandbox, session.Config.Programs))
 
 		} else {
 			return nil
