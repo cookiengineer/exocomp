@@ -1,15 +1,18 @@
 package ollama
 
+import "exocomp/schemas"
 import "bytes"
 import "encoding/json"
 import "io"
 
 func sendChatRequest(session *Session) error {
 
-	request_payload, err0 := json.Marshal(ChatRequest{
-		Model:    session.Config.Model,
-		Messages: session.Messages,
-		Stream:   false,
+	request_payload, err0 := json.Marshal(schemas.ChatRequest{
+		Model:       session.Config.Model,
+		Messages:    session.Messages,
+		Stream:      false,
+		Temperature: session.Config.Temperature,
+		Tools:       session.Tools,
 	})
 
 	if err0 == nil {
@@ -28,12 +31,12 @@ func sendChatRequest(session *Session) error {
 
 			if err2 == nil {
 
-				var response ChatResponse
+				var response schemas.ChatResponse
 
 				err3 := json.Unmarshal(response_payload, &response)
 
 				if err3 == nil {
-					return processChatResponse(session, *response.Message)
+					return processChatResponse(session, response.Message)
 				} else {
 					return err3
 				}

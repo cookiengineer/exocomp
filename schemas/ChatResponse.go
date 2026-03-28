@@ -1,5 +1,5 @@
 package schemas
 
 type ChatResponse struct {
-	Message *Message `json:"message"`
+	Message Message `json:"message"`
 }

@@ -1,6 +1,8 @@
 package schemas
 
 import "encoding/json"
+import "fmt"
+import "strings"
 
 type ToolCall struct {
 	ID       string           `json:"id,omitempty"`
@@ -12,6 +14,58 @@ type ToolCallFunction struct {
 	Name         string          `json:"name"`
 	ArgumentsRaw json.RawMessage `json:"arguments"` // some models return JSON string
 	// Arguments map[string]interface{} `json:"arguments"`
+}
+
+func (function *ToolCallFunction) Tool() (string, error) {
+
+	if strings.Contains(function.Name, ".") {
+
+		tmp := strings.Split(function.Name, ".")
+
+		if len(tmp) == 2 && len(tmp[0]) > 0 {
+
+			tool := strings.TrimSpace(strings.ToLower(tmp[0]))
+
+			if tool != "" {
+				return tool, nil
+			} else {
+				return "", fmt.Errorf("Invalid Tool Call")
+			}
+
+		} else {
+			return "", fmt.Errorf("Invalid Tool Call")
+		}
+
+	} else {
+		return "", fmt.Errorf("Invalid Tool Call")
+	}
+
+}
+
+func (function *ToolCallFunction) Method() (string, error) {
+
+	if strings.Contains(function.Name, ".") {
+
+		tmp := strings.Split(function.Name, ".")
+
+		if len(tmp) == 2 && len(tmp[0]) > 0 && len(tmp[1]) >= 2 {
+
+			method := strings.TrimSpace(strings.ToUpper(tmp[1][0:1]) + strings.ToLower(tmp[1][1:]))
+
+			if method != "" {
+				return method, nil
+			} else {
+				return "", fmt.Errorf("Invalid Tool Call")
+			}
+
+		} else {
+			return "", fmt.Errorf("Invalid Tool Call")
+		}
+
+	} else {
+		return "", fmt.Errorf("Invalid Tool Call")
+	}
+
 }
 
 func (function *ToolCallFunction) Arguments() (map[string]interface{}, error) {

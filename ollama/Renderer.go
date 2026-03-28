@@ -149,7 +149,7 @@ func (renderer *Renderer) ClearScreen() {
 
 }
 
-func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
+func (renderer *Renderer) RenderMessages(messages []schemas.Message) {
 
 	for _, message := range messages {
 

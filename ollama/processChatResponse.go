@@ -1,7 +1,6 @@
 package ollama
 
 import "exocomp/schemas"
-import "exocomp/tools"
 import "fmt"
 import "strings"
 
@@ -10,50 +9,48 @@ func processChatResponse(session *Session, response schemas.Message) error {
 	if response.Role == "assistant" {
 
 		session.mutex.Lock()
-		session.Messages = append(session.Messages, &response)
+		session.Messages = append(session.Messages, response)
 		session.mutex.Unlock()
 
 		if len(response.ToolCalls) > 0 {
 
 			for _, tool_call := range response.ToolCalls {
 
-				function  := strings.TrimSpace(tool_call.Function)
-				arguments := tool_call.Function.Arguments()
+				name,      err0 := tool_call.Function.Tool()
+				method,    err1 := tool_call.Function.Method()
+				arguments, err2 := tool_call.Function.Arguments()
 
-				var tool *tools.Tool = nil
+				if err0 == nil && err1 == nil && err2 == nil {
 
-				// TODO: Implement bugs.* tool
-				// TODO: Implement features.* tool
+					tool := session.GetTool(name)
 
-				if strings.HasPrefix(function, "files.") {
-					tool = session.RequestTool("files")
-				} else if strings.HasPrefix(function, "notes.") {
-					tool = session.RequestTool("notes")
-				} else if strings.HasPrefix(function, "programs.") {
-					tool = session.RequestTool("programs")
-				}
+					if tool != nil {
 
-				if tool != nil {
+						result, err0 := tool.Call(method, arguments)
 
-					result, err0 := tool.Call(method, arguments)
+						if err0 == nil {
 
-					if err0 == nil {
+							session.mutex.Lock()
+							session.Messages = append(session.Messages, schemas.Message{
+								Role:      "tool",
+								Content:   strings.TrimSpace(result),
+								ToolName:  name + "." + method,
+								ToolCalls: []schemas.ToolCall{tool_call},
+							})
+							session.mutex.Unlock()
 
-						session.mutex.Lock()
-						session.Messages = append(session.Messages, &Message{
-							Role:    "tool",
-							Content: strings.TrimSpace(result),
-						})
-						session.mutex.Unlock()
+						} else {
 
-					} else {
+							session.mutex.Lock()
+							session.Messages = append(session.Messages, schemas.Message{
+								Role:      "tool",
+								Content:   fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
+								ToolName:  name + "." + method,
+								ToolCalls: []schemas.ToolCall{tool_call},
+							})
+							session.mutex.Unlock()
 
-						session.mutex.Lock()
-						session.Messages = append(session.Messages, &Message{
-							Role:    "tool",
-							Content: fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
-						})
-						session.mutex.Unlock()
+						}
 
 					}
 
@@ -70,7 +67,7 @@ func processChatResponse(session *Session, response schemas.Message) error {
 	} else {
 
 		session.mutex.Lock()
-		session.Messages = append(session.Messages, &response)
+		session.Messages = append(session.Messages, response)
 		session.mutex.Unlock()
 
 		return nil

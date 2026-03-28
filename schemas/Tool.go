@@ -6,12 +6,12 @@ type Tool struct {
 }
 
 type ToolFunction struct {
-	Name        string                           `json:"name"`
-	Description string                           `json:"description"`
-	Parameters  map[string]ToolFunctionParameter `json:"parameters"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	Parameters  ToolFunctionParameters `json:"parameters"`
 }
 
-type ToolFunctionParameter struct {
+type ToolFunctionParameters struct {
 	Type       string                                   `json:"type"`
 	Properties map[string]ToolFunctionParameterProperty `json:"properties"`
 	Required   []string                                 `json:"required"`

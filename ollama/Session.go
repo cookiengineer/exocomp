@@ -13,8 +13,8 @@ type Session struct {
 	Agent    *agents.Agent
 	Config   *config.Config
 	Client   *http.Client
-	Messages []*schemas.Message
-	Tools    []*tools.Tool
+	Messages []schemas.Message
+	Tools    []schemas.Tool
 	Waiting  bool
 	mutex    *sync.Mutex
 }
@@ -25,27 +25,30 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 		Agent:    agent,
 		Config:   config,
 		Client:   &http.Client{},
-		Messages: make([]*schemas.Message, 0),
+		Messages: make([]schemas.Message, 0),
+		Tools:    make([]schemas.Tool, 0),
 		Waiting:  false,
 		mutex:    &sync.Mutex{},
 	}
 
+	if len(config.Tools) > 0 {
+		session.Tools = tools.EncodeSchema(config.Tools)
+	}
+
 	system_prompts := make([]string, 0)
-	system_tools   := tools.EncodeSchema(config.Tools)
 
 	if agent != nil {
 		system_prompts = append(system_prompts, agent.GetPrompt())
 	}
 
 	if config != nil {
-		system_prompts = append(system_prompts, config.GetPrompt(system_tools))
+		system_prompts = append(system_prompts, config.GetPrompt())
 	}
 
 	session.mutex.Lock()
-	session.Messages = append(session.Messages, &schemas.Message{
+	session.Messages = append(session.Messages, schemas.Message{
 		Role:    "system",
 		Content: strings.Join(system_prompts, "\n"),
-		Tools:   system_tools,
 	})
 	session.mutex.Unlock()
 
@@ -55,22 +58,12 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 
 }
 
-func (session *Session) LastMessage() *schemas.Message {
-
-	if len(session.Messages) > 0 {
-		return session.Messages[len(session.Messages) - 1]
-	} else {
-		return nil
-	}
-
-}
-
 func (session *Session) Query(message schemas.Message) error {
 
 	if session.Waiting == false {
 
 		session.mutex.Lock()
-		session.Messages = append(session.Messages, &message)
+		session.Messages = append(session.Messages, message)
 		session.Waiting = true
 		session.mutex.Unlock()
 
@@ -92,3 +85,55 @@ func (session *Session) Query(message schemas.Message) error {
 
 }
 
+func (session *Session) GetTool(name string) tools.Tool {
+
+	if strings.Contains(name, ".") {
+
+		allowed := false
+
+		for _, tool := range session.Tools {
+
+			if strings.HasPrefix(tool.Function.Name, name + ".") {
+				allowed = true
+				break
+			}
+
+		}
+
+		if allowed == true {
+
+			if name == "bugs" {
+
+				// TODO
+				return nil
+
+			} else if name == "features" {
+
+				// TODO
+				return nil
+
+			} else if name == "files" {
+
+				return tools.Tool(tools.NewFiles(session.Config.Agent, session.Config.Sandbox))
+
+			} else if name == "notes" {
+
+				return tools.Tool(tools.NewNotes(session.Config.Agent, session.Config.Sandbox))
+
+			} else if name == "programs" {
+
+				return tools.Tool(tools.NewPrograms(session.Config.Agent, session.Config.Sandbox, session.Config.Programs))
+
+			} else {
+				return nil
+			}
+
+		} else {
+			return nil
+		}
+
+	} else {
+		return nil
+	}
+
+}

@@ -7,3 +7,7 @@ const (
 	AgentTypeTester  AgentType = "tester"
 	AgentTypeManager AgentType = "manager"
 )
+
+func (agent_type AgentType) String() string {
+	return string(agent_type)
+}
