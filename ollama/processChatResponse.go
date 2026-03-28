@@ -1,9 +1,11 @@
 package ollama
 
+import "exocomp/schemas"
+import "exocomp/tools"
 import "fmt"
 import "strings"
 
-func processChatResponse(session *Session, response Message) error {
+func processChatResponse(session *Session, response schemas.Message) error {
 
 	if response.Role == "assistant" {
 

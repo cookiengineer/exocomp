@@ -2,6 +2,7 @@ package ollama
 
 import "exocomp/agents"
 import "exocomp/config"
+import "exocomp/schemas"
 import "exocomp/tools"
 import "fmt"
 import "net/http"
@@ -12,7 +13,7 @@ type Session struct {
 	Agent    *agents.Agent
 	Config   *config.Config
 	Client   *http.Client
-	Messages []*Message
+	Messages []*schemas.Message
 	Tools    []*tools.Tool
 	Waiting  bool
 	mutex    *sync.Mutex
@@ -24,13 +25,13 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 		Agent:    agent,
 		Config:   config,
 		Client:   &http.Client{},
-		Messages: make([]*Message, 0),
+		Messages: make([]*schemas.Message, 0),
 		Waiting:  false,
 		mutex:    &sync.Mutex{},
 	}
 
 	system_prompts := make([]string, 0)
-	system_tools   := tools.ToSchema(config.Tools)
+	system_tools   := tools.EncodeSchema(config.Tools)
 
 	if agent != nil {
 		system_prompts = append(system_prompts, agent.GetPrompt())
@@ -41,7 +42,7 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 	}
 
 	session.mutex.Lock()
-	session.Messages = append(session.Messages, &Message{
+	session.Messages = append(session.Messages, &schemas.Message{
 		Role:    "system",
 		Content: strings.Join(system_prompts, "\n"),
 		Tools:   system_tools,
@@ -54,7 +55,7 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 
 }
 
-func (session *Session) LastMessage() *Message {
+func (session *Session) LastMessage() *schemas.Message {
 
 	if len(session.Messages) > 0 {
 		return session.Messages[len(session.Messages) - 1]
@@ -64,7 +65,7 @@ func (session *Session) LastMessage() *Message {
 
 }
 
-func (session *Session) Query(message Message) error {
+func (session *Session) Query(message schemas.Message) error {
 
 	if session.Waiting == false {
 

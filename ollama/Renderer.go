@@ -1,6 +1,7 @@
 package ollama
 
 import "golang.org/x/term"
+import "exocomp/schemas"
 import "fmt"
 import "os"
 import "strings"
@@ -91,7 +92,7 @@ func (renderer *Renderer) InputLoop() {
 
 				} else {
 
-					go renderer.Session.Query(Message{
+					go renderer.Session.Query(schemas.Message{
 						Role:    "user",
 						Content: renderer.Prompt,
 					})
@@ -148,7 +149,7 @@ func (renderer *Renderer) ClearScreen() {
 
 }
 
-func (renderer *Renderer) RenderMessages(messages []*Message) {
+func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 
 	for _, message := range messages {
 
