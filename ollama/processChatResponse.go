@@ -1,7 +1,6 @@
 package ollama
 
 import "fmt"
-import "exocomp/parsers"
 import "strings"
 
 func processChatResponse(session *Session, response Message) error {
@@ -12,39 +11,49 @@ func processChatResponse(session *Session, response Message) error {
 		session.Messages = append(session.Messages, &response)
 		session.mutex.Unlock()
 
-		// TODO: response.ToolCalls is set
+		if len(response.ToolCalls) > 0 {
 
-		tools := parsers.ParseTools(
-			session.Config.Agent,
-			session.Config.Sandbox,
-			session.Config.Tools,
-			session.Config.Programs,
-			response.Content,
-		)
+			for _, tool_call := range response.ToolCalls {
 
-		if len(tools) > 0 {
+				function  := strings.TrimSpace(tool_call.Function)
+				arguments := tool_call.Function.Arguments()
 
-			for _, tool := range tools {
+				var tool *tools.Tool = nil
 
-				result, err0 := tool.Call()
+				// TODO: Implement bugs.* tool
+				// TODO: Implement features.* tool
 
-				if err0 == nil {
+				if strings.HasPrefix(function, "files.") {
+					tool = session.RequestTool("files")
+				} else if strings.HasPrefix(function, "notes.") {
+					tool = session.RequestTool("notes")
+				} else if strings.HasPrefix(function, "programs.") {
+					tool = session.RequestTool("programs")
+				}
 
-					session.mutex.Lock()
-					session.Messages = append(session.Messages, &Message{
-						Role:    "tool",
-						Content: strings.TrimSpace(result),
-					})
-					session.mutex.Unlock()
+				if tool != nil {
 
-				} else {
+					result, err0 := tool.Call(method, arguments)
 
-					session.mutex.Lock()
-					session.Messages = append(session.Messages, &Message{
-						Role:    "tool",
-						Content: fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
-					})
-					session.mutex.Unlock()
+					if err0 == nil {
+
+						session.mutex.Lock()
+						session.Messages = append(session.Messages, &Message{
+							Role:    "tool",
+							Content: strings.TrimSpace(result),
+						})
+						session.mutex.Unlock()
+
+					} else {
+
+						session.mutex.Lock()
+						session.Messages = append(session.Messages, &Message{
+							Role:    "tool",
+							Content: fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
+						})
+						session.mutex.Unlock()
+
+					}
 
 				}
 

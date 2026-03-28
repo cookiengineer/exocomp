@@ -2,6 +2,7 @@ package ollama
 
 import "exocomp/agents"
 import "exocomp/config"
+import "exocomp/tools"
 import "fmt"
 import "net/http"
 import "strings"
@@ -12,7 +13,7 @@ type Session struct {
 	Config   *config.Config
 	Client   *http.Client
 	Messages []*Message
-	Tools    []*schemas.Tool
+	Tools    []*tools.Tool
 	Waiting  bool
 	mutex    *sync.Mutex
 }
@@ -43,7 +44,7 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 	session.Messages = append(session.Messages, &Message{
 		Role:    "system",
 		Content: strings.Join(system_prompts, "\n"),
-		Tools:   tools.NewSchema(config.Tools),
+		Tools:   system_tools,
 	})
 	session.mutex.Unlock()
 

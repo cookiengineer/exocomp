@@ -1,6 +1,5 @@
 package config
 
-import "exocomp/tools"
 import _ "embed"
 import "errors"
 import "flag"
@@ -121,34 +120,8 @@ func ParseConfig() (*Config, error) {
 
 func (config *Config) GetPrompt() string {
 
-	// TODO: Integrate Tasks Help when ready
-
-	help := make([]string, 0)
-
-	for _, tool := range config.Tools {
-
-		if tool == "files" {
-			tmp, _ := tools.NewFiles(config.Agent, config.Sandbox, config.Tools, config.Programs).Help([]string{})
-			help    = append(help, strings.TrimSpace(tmp))
-		} else if tool == "notes" {
-			tmp, _ := tools.NewNotes(config.Agent, config.Sandbox, config.Tools, config.Programs).Help([]string{})
-			help    = append(help, strings.TrimSpace(tmp))
-		} else if tool == "programs" {
-			tmp, _ := tools.NewPrograms(config.Agent, config.Sandbox, config.Tools, config.Programs).Help([]string{})
-			help    = append(help, strings.TrimSpace(tmp))
-		} else if tool == "tasks" {
-			// tmp, _ := tools.NewTasks(config.Agent, config.Sandbox, config.Tools, config.Programs).Help([]string{})
-			// help    = append(help, strings.TrimSpace(tmp))
-		}
-
-	}
-
 	return strings.Join([]string{
 		strings.TrimSpace(string(config_prompt)),
-		"",
-		"You have access to the following tools:",
-		"",
-		strings.Join(help, "\n\n"),
 	}, "\n")
 
 }
