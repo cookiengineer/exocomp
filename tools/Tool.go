@@ -1,6 +1,5 @@
 package tools
 
 type Tool interface {
-	Call()        (string, error)
-	Parse(string) (Tool, [2]int, error)
+	Call(string, map[string]interface{}) (string, error)
 }

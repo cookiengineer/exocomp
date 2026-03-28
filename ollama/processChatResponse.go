@@ -12,6 +12,8 @@ func processChatResponse(session *Session, response Message) error {
 		session.Messages = append(session.Messages, &response)
 		session.mutex.Unlock()
 
+		// TODO: response.ToolCalls is set
+
 		tools := parsers.ParseTools(
 			session.Config.Agent,
 			session.Config.Sandbox,

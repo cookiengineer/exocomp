@@ -1,0 +1,39 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "programs.List",
+			"description": "List all available programs",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "programs.Execute",
+			"description": "Execute a program with given arguments",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"program": {
+						"type": "string",
+						"description": "The program binary"
+					},
+					"arguments": {
+						"type": "array",
+						"description": "The program arguments",
+						"items": {
+							"type": "string"
+						},
+						"default": []
+					}
+				},
+				"required": ["program"]
+			}
+		}
+	}
+]

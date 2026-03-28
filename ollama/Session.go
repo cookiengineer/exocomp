@@ -12,6 +12,7 @@ type Session struct {
 	Config   *config.Config
 	Client   *http.Client
 	Messages []*Message
+	Tools    []*schemas.Tool
 	Waiting  bool
 	mutex    *sync.Mutex
 }
@@ -28,19 +29,21 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 	}
 
 	system_prompts := make([]string, 0)
+	system_tools   := tools.ToSchema(config.Tools)
 
 	if agent != nil {
 		system_prompts = append(system_prompts, agent.GetPrompt())
 	}
 
 	if config != nil {
-		system_prompts = append(system_prompts, config.GetPrompt())
+		system_prompts = append(system_prompts, config.GetPrompt(system_tools))
 	}
 
 	session.mutex.Lock()
 	session.Messages = append(session.Messages, &Message{
 		Role:    "system",
 		Content: strings.Join(system_prompts, "\n"),
+		Tools:   tools.NewSchema(config.Tools),
 	})
 	session.mutex.Unlock()
 

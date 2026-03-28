@@ -40,8 +40,7 @@ func ParseConfig() (*Config, error) {
 
 	tmp_model := flag.String(
 		"model",
-		// "qwen3-coder:30b",
-		"codestral:22b",
+		"qwen3-coder:30b",
 		"Ollama Model to use",
 	)
 
@@ -147,7 +146,7 @@ func (config *Config) GetPrompt() string {
 	return strings.Join([]string{
 		strings.TrimSpace(string(config_prompt)),
 		"",
-		"Tool Overview:",
+		"You have access to the following tools:",
 		"",
 		strings.Join(help, "\n\n"),
 	}, "\n")

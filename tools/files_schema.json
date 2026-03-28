@@ -1,0 +1,74 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "files.List",
+			"description": "List files and folders in a directory. Hidden files are excluded.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the folder"
+					}
+				},
+				"required": ["path"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "files.Read",
+			"description": "Read the contents of a file",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					}
+				},
+				"required": ["path"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "files.Stat",
+			"description": "Stat the metadata of a file",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file or folder"
+					}
+				},
+				"required": ["path"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "files.Write",
+			"description": "Write content to a file. Creates or overwrites the file.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"content": {
+						"type": "string",
+						"description": "File content"
+					}
+				},
+				"required": ["path", "content"]
+			}
+		}
+	}
+]
