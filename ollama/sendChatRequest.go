@@ -4,6 +4,7 @@ import "exocomp/schemas"
 import "bytes"
 import "encoding/json"
 import "io"
+import "fmt"
 
 func sendChatRequest(session *Session) error {
 
@@ -25,7 +26,7 @@ func sendChatRequest(session *Session) error {
 			bytes.NewReader(request_payload),
 		)
 
-		if err1 == nil {
+		if err1 == nil && response.StatusCode == 200 {
 
 			response_payload, err2 := io.ReadAll(response.Body)
 
@@ -45,6 +46,8 @@ func sendChatRequest(session *Session) error {
 				return err2
 			}
 
+		} else if err1 == nil && response.StatusCode == 404 {
+			return fmt.Errorf("Ollama model %s not found", session.Config.Model)
 		} else {
 			return err1
 		}

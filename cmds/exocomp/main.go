@@ -1,90 +1,208 @@
 package main
 
 import "exocomp/agents"
-import "exocomp/config"
 import "exocomp/ollama"
+import "exocomp/types"
 import "fmt"
+import net_url "net/url"
 import "os"
 import "os/signal"
+import "strconv"
+import "strings"
 import "syscall"
+
+func showHelp() {
+
+	fmt.Println("Usage:")
+	fmt.Println("    exocomp <agent> [flags]")
+	fmt.Println("")
+	fmt.Println("Arguments:")
+	fmt.Println("    <agent> string         Type of agent")
+	fmt.Println("                           Either of: manager, coder, tester")
+	fmt.Println("")
+	fmt.Println("Flags:")
+	fmt.Println("    --model string         LLM model identifier (ollama format)")
+	fmt.Println("                           Run \"ollama list\" to see available models")
+	fmt.Println("                           Examples: qwen3-coder:30b, codestral:22b")
+	fmt.Println("                           (default: \"qwen3-coder:30b\")")
+	fmt.Println("")
+	fmt.Println("    --temperature float    LLM sampling temperature (0.1-1.0)")
+	fmt.Println("                           Lower = more deterministic, fewer hallucinations")
+	fmt.Println("                           Higher = more creative, more hallucinations")
+	fmt.Println("                           (default: 0.3)")
+	fmt.Println("")
+	fmt.Println("    --sandbox string       Path to sandbox directory")
+	fmt.Println("                           (default: current working directory)")
+	fmt.Println("")
+	fmt.Println("    --url string           API endpoint for LLM backend")
+	fmt.Println("                           (default: \"http://localhost:11434/api/chat\")")
+	fmt.Println("")
+	fmt.Println("Examples:")
+	fmt.Println("    exocomp coder --model=\"codestral:22b\" --temperature=0.1;")
+	fmt.Println("    exocomp manager --model=\"qwen3.5:35b\" --temperature=0.7;")
+	fmt.Println("")
+
+}
 
 func main() {
 
-	config, err0 := config.ParseConfig()
+	tmp_agent       := ""
+	tmp_model       := "qwen3-coder:30b"
+	tmp_sandbox, _  := os.Getwd()
+	tmp_temperature := float64(0.3)
+	tmp_url, _      := net_url.Parse("http://localhost:11434/api/chat")
 
-	if err0 == nil {
+	if len(os.Args) >= 2 {
 
-		agent := agents.NewAgent(config.Agent)
+		tmp := strings.TrimSpace(os.Args[1])
 
-		if config.Verbose == true {
-			fmt.Println("Model:   %s", config.Model)
-			fmt.Println("URL:     %s", config.URL.String())
-			fmt.Println("Sandbox: %s", config.Sandbox)
-			fmt.Println("Verbose: %b", config.Verbose)
+		if agents.IsAgentType(tmp) == true {
+
+			tmp_agent = tmp
+
+		} else {
+
+			showHelp()
+			os.Exit(1)
+
 		}
 
-		err1 := os.MkdirAll(config.Sandbox, 0755)
+		if len(os.Args) >= 3 {
 
-		if err1 == nil {
+			flags := os.Args[2:]
 
-			session, err2 := ollama.NewSession(agent, config)
+			for _, flag := range flags {
 
-			if err2 == nil {
+				if strings.HasPrefix(flag, "--") && strings.Contains(flag, "=") {
 
-				renderer := ollama.NewDebugger(session)
-				signals  := make(chan os.Signal, 1)
+					tmp := strings.Split(flag[2:], "=")
 
-				signal.Notify(
-					signals,
-					syscall.SIGINT,
-					syscall.SIGTERM,
-				)
+					if len(tmp) == 2 {
 
-				go func() {
-					renderer.InputLoop()
-					signals<-syscall.SIGINT
-				}()
+						switch tmp[0] {
+						case "model":
+							tmp_model = strings.TrimSpace(tmp[1])
+						case "sandbox":
 
-				go renderer.RenderLoop()
+							stat, err := os.Stat(strings.TrimSpace(tmp[1]))
 
-				select {
-				case sig := <-signals:
+							if err == nil && stat.IsDir() {
+								tmp_sandbox = strings.TrimSpace(tmp[1])
+							} else if err != nil && os.IsNotExist(err) {
+								tmp_sandbox = strings.TrimSpace(tmp[1])
+							}
 
-					switch sig {
-					case syscall.SIGINT:
+						case "temperature":
 
-						renderer.Destroy()
-						fmt.Println("Received signal: SIGINT")
-						os.Exit(0)
+							num, err := strconv.ParseFloat(strings.TrimSpace(tmp[1]), 10)
 
-					case syscall.SIGTERM:
+							if err == nil {
 
-						renderer.Destroy()
-						fmt.Println("Received signal: SIGTERM")
-						os.Exit(0)
+								if num >= 0.1 && num <= 1.0 {
+									tmp_temperature = num
+								}
 
-					default:
+							}
 
-						renderer.Destroy()
-						fmt.Printf("Received signal: %s\n", sig.String())
-						os.Exit(0)
+						case "url":
+
+							url, err := net_url.Parse(strings.TrimSpace(tmp[1]))
+
+							if err == nil {
+
+								if url.Scheme == "http" || url.Scheme == "https" {
+
+									if url.Path == "/api/chat" {
+										tmp_url = url
+									}
+
+								}
+
+							}
+
+						}
 
 					}
 
 				}
 
-			} else {
-				fmt.Println(err2)
-				os.Exit(1)
+			}
+
+		}
+
+	} else {
+		showHelp()
+		os.Exit(1)
+	}
+
+	config := types.NewConfig(tmp_agent, tmp_model, tmp_sandbox, tmp_temperature, tmp_url)
+	agent  := agents.NewAgent(config.Agent)
+
+	fmt.Fprintf(os.Stdout, "Agent:       %s\n", config.Agent)
+	fmt.Fprintf(os.Stdout, "Model:       %s\n", config.Model)
+	fmt.Fprintf(os.Stdout, "Sandbox:     %s\n", config.Sandbox)
+	fmt.Fprintf(os.Stdout, "Temperature: %.2f\n", config.Temperature)
+	fmt.Fprintf(os.Stdout, "URL:         %s\n", config.URL.String())
+	fmt.Fprintf(os.Stdout, "\n")
+	os.Stdout.Sync()
+
+	err1 := os.MkdirAll(config.Sandbox, 0755)
+
+	if err1 == nil {
+
+		session, err2 := ollama.NewSession(agent, config)
+
+		if err2 == nil {
+
+			renderer := ollama.NewDebugger(session)
+			signals  := make(chan os.Signal, 1)
+
+			signal.Notify(
+				signals,
+				syscall.SIGINT,
+				syscall.SIGTERM,
+			)
+
+			go func() {
+				renderer.InputLoop()
+				signals<-syscall.SIGINT
+			}()
+
+			go renderer.RenderLoop()
+
+			select {
+			case sig := <-signals:
+
+				switch sig {
+				case syscall.SIGINT:
+
+					renderer.Destroy()
+					fmt.Println("Received signal: SIGINT")
+					os.Exit(0)
+
+				case syscall.SIGTERM:
+
+					renderer.Destroy()
+					fmt.Println("Received signal: SIGTERM")
+					os.Exit(0)
+
+				default:
+
+					renderer.Destroy()
+					fmt.Printf("Received signal: %s\n", sig.String())
+					os.Exit(0)
+
+				}
+
 			}
 
 		} else {
-			fmt.Println(err1)
+			fmt.Println(err2)
 			os.Exit(1)
 		}
 
 	} else {
-		fmt.Println(err0)
+		fmt.Println(err1)
 		os.Exit(1)
 	}
 

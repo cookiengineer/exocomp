@@ -1,9 +1,9 @@
 package ollama
 
 import "exocomp/agents"
-import "exocomp/config"
 import "exocomp/schemas"
 import "exocomp/tools"
+import "exocomp/types"
 import "fmt"
 import "net/http"
 import "strings"
@@ -11,7 +11,7 @@ import "sync"
 
 type Session struct {
 	Agent    *agents.Agent
-	Config   *config.Config
+	Config   *types.Config
 	Client   *http.Client
 	Messages []schemas.Message
 	Tools    []schemas.Tool
@@ -19,7 +19,7 @@ type Session struct {
 	mutex    *sync.Mutex
 }
 
-func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
+func NewSession(agent *agents.Agent, config *types.Config) (*Session, error) {
 
 	session := &Session{
 		Agent:    agent,

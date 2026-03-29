@@ -165,13 +165,7 @@ func (renderer *Renderer) RenderMessages(messages []schemas.Message) {
 		case "tool":
 			color = ColorRed
 		case "system":
-
-			if renderer.Session.Config.Verbose == true {
-				color = ColorYellow
-			} else {
-				color = ColorReset
-			}
-
+			color = ColorYellow
 		default:
 			color = ColorReset
 		}
