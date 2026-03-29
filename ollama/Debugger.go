@@ -80,11 +80,13 @@ func (debugger *Debugger) RenderLoop() {
 	sort.Strings(tools)
 
 	info_agent       := fmt.Sprintf("Agent: %s", debugger.Session.Agent.Type)
+	info_model       := fmt.Sprintf("Model: %s", debugger.Session.Config.Model)
 	info_temperature := fmt.Sprintf("Temperature: %.2f", debugger.Session.Config.Temperature)
 	info_tools       := fmt.Sprintf("Tools: %s", strings.Join(tools, ", "))
 
 	fmt.Fprintf(os.Stdout, "\r%s[exocomp]%s:\n", ColorYellow, ColorReset)
 	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_agent)
+	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_model)
 	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_temperature)
 	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_tools)
 	fmt.Fprintf(os.Stdout, "\n")
