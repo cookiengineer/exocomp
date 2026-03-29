@@ -25,8 +25,8 @@ func ParseConfig() (*Config, error) {
 
 	tmp_agent := flag.String(
 		"agent",
-		"coder",
-		"Agent type: coder, tester, manager",
+		"manager",
+		"Agent type: manager, coder, tester",
 	)
 
 	tmp_model := flag.String(
