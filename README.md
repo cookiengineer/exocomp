@@ -38,11 +38,13 @@ Exocomp uses multiple agent roles:
 
 Exocomp uses Tools to interact with the sandbox:
 
-- [Bugs](./tools/Bugs.go) tool to manage documentation of bugs.
-- [Features](./tools/Features.go) tool to manage documentation of features.
-- [Files](./tools/Files.go) tool to read/write/list files and folders.
-- [Notes](./tools/Notes.go) tool to manage development notes.
-- [Programs](./tools/Programs.go) tool to execute programs.
+- [ ] [Agents](./tools/Agents.go) tool to manage the lifecycle of sub-agents.
+- [ ] [Bugs](./tools/Bugs.go) tool to manage documentation of bugs.
+- [x] [Changelog](./tools/Changelog.go) tool to manage development notes.
+- [ ] [Features](./tools/Features.go) tool to manage documentation of features.
+- [x] [Files](./tools/Files.go) tool to read/write/list files and folders.
+- [x] [Programs](./tools/Programs.go) tool to execute programs.
+- [ ] [Web](./tools/Web.go) tool to research things on the web.
 
 
 ## Requirements and Usage

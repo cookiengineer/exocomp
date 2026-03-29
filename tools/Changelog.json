@@ -1,0 +1,124 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "changelog.Add",
+			"description": "Create changelog entry for an Addition",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"note": {
+						"type": "string",
+						"description": "Single-line description, has to start with \"Added ...\""
+					}
+				},
+				"required": ["path", "note"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "changelog.Change",
+			"description": "Create changelog entry for a Change",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"note": {
+						"type": "string",
+						"description": "Single-line description, has to start with \"Changed ...\""
+					}
+				},
+				"required": ["path", "note"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "changelog.Deprecate",
+			"description": "Create changelog entry for a Deprecation",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"note": {
+						"type": "string",
+						"description": "Single-line description, has to start with \"Deprecated ...\""
+					}
+				},
+				"required": ["path", "note"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "changelog.Fix",
+			"description": "Create changelog entry for a Fix",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"note": {
+						"type": "string",
+						"description": "Single-line description, has to start with \"Fixed ...\""
+					}
+				},
+				"required": ["path", "note"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "changelog.Remove",
+			"description": "Create changelog entry for a Removal",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"note": {
+						"type": "string",
+						"description": "Single-line description, has to start with \"Removed ...\""
+					}
+				},
+				"required": ["path", "note"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "changelog.Search",
+			"description": "Search changelog for entries of a specific file",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					}
+				},
+				"required": ["path"]
+			}
+		}
+	}
+]

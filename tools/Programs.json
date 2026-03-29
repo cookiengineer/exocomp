@@ -21,7 +21,7 @@
 				"properties": {
 					"program": {
 						"type": "string",
-						"description": "The program binary"
+						"description": "The program binary name"
 					},
 					"arguments": {
 						"type": "array",

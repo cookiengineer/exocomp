@@ -4,6 +4,7 @@ import "exocomp/schemas"
 import "bufio"
 import "fmt"
 import "os"
+import "sort"
 import "strings"
 import "sync"
 
@@ -70,6 +71,25 @@ func (debugger *Debugger) InputLoop() {
 
 func (debugger *Debugger) RenderLoop() {
 
+	tools := make([]string, 0)
+
+	for _, tool := range debugger.Session.Agent.Tools {
+		tools = append(tools, tool)
+	}
+
+	sort.Strings(tools)
+
+	info_agent       := fmt.Sprintf("Agent: %s", debugger.Session.Agent.Type)
+	info_temperature := fmt.Sprintf("Temperature: %.2f", debugger.Session.Config.Temperature)
+	info_tools       := fmt.Sprintf("Tools: %s", strings.Join(tools, ", "))
+
+	fmt.Fprintf(os.Stdout, "\r%s[exocomp]%s:\n", ColorYellow, ColorReset)
+	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_agent)
+	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_temperature)
+	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_tools)
+	fmt.Fprintf(os.Stdout, "\n")
+	os.Stdout.Sync()
+
 	for {
 
 		if debugger.rendered < len(debugger.Session.Messages) {
@@ -129,6 +149,7 @@ func (debugger *Debugger) RenderMessages(messages []schemas.Message) {
 					fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", color, ColorReset, line)
 				}
 
+				fmt.Fprintf(os.Stdout, "\n")
 				os.Stdout.Sync()
 
 			} else {
@@ -140,6 +161,8 @@ func (debugger *Debugger) RenderMessages(messages []schemas.Message) {
 				}
 
 				fmt.Fprintf(os.Stdout, "\r%s[%s]%s: %s%s\n", color, role, ColorReset, content[0], resetline)
+
+				fmt.Fprintf(os.Stdout, "\n")
 				os.Stdout.Sync()
 
 			}

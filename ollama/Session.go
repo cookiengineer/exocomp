@@ -31,8 +31,8 @@ func NewSession(agent *agents.Agent, config *config.Config) (*Session, error) {
 		mutex:    &sync.Mutex{},
 	}
 
-	if len(config.Tools) > 0 {
-		session.Tools = tools.EncodeSchema(config.Tools)
+	if len(agent.Tools) > 0 {
+		session.Tools = tools.EncodeSchema(agent.Tools)
 	}
 
 	system_prompts := make([]string, 0)
@@ -100,10 +100,19 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 	if allowed == true {
 
-		if name == "bugs" {
+		if name == "agents" {
 
 			// TODO
 			return nil
+
+		} else if name == "bugs" {
+
+			// TODO
+			return nil
+
+		} else if name == "changelog" {
+
+			return tools.Tool(tools.NewChangelog(session.Config.Agent, session.Config.Sandbox))
 
 		} else if name == "features" {
 
@@ -114,13 +123,14 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 			return tools.Tool(tools.NewFiles(session.Config.Agent, session.Config.Sandbox))
 
-		} else if name == "notes" {
-
-			return tools.Tool(tools.NewNotes(session.Config.Agent, session.Config.Sandbox))
-
 		} else if name == "programs" {
 
-			return tools.Tool(tools.NewPrograms(session.Config.Agent, session.Config.Sandbox, session.Config.Programs))
+			return tools.Tool(tools.NewPrograms(session.Config.Agent, session.Config.Sandbox, session.Agent.Programs))
+
+		} else if name == "web" {
+
+			// TODO
+			return nil
 
 		} else {
 			return nil

@@ -4,18 +4,18 @@ import "exocomp/schemas"
 import "encoding/json"
 import _ "embed"
 
-//go:embed notes_schema.json
-var notes_json []byte
+//go:embed Files.json
+var files_json []byte
 
-var notes_schema []schemas.Tool
+var FilesSchema []schemas.Tool
 
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err    := json.Unmarshal(notes_json, &schema)
+	err    := json.Unmarshal(files_json, &schema)
 
 	if err == nil {
-		notes_schema = schema
+		FilesSchema = schema
 	} else {
 		panic(err)
 	}

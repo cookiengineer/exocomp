@@ -4,10 +4,10 @@ import "exocomp/schemas"
 import "encoding/json"
 import _ "embed"
 
-//go:embed programs_schema.json
+//go:embed Programs.json
 var programs_json []byte
 
-var programs_schema []schemas.Tool
+var ProgramsSchema []schemas.Tool
 
 func init() {
 
@@ -15,7 +15,7 @@ func init() {
 	err    := json.Unmarshal(programs_json, &schema)
 
 	if err == nil {
-		programs_schema = schema
+		ProgramsSchema = schema
 	} else {
 		panic(err)
 	}

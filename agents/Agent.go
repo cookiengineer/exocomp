@@ -15,8 +15,10 @@ var tester_prompt []byte
 var default_prompt []byte
 
 type Agent struct {
-	Type   AgentType
-	Prompt string
+	Type     AgentType
+	Prompt   string
+	Programs []string
+	Tools    []string
 }
 
 func NewAgent(agent_type string) *Agent {
@@ -25,29 +27,37 @@ func NewAgent(agent_type string) *Agent {
 	case "coder":
 
 		return &Agent{
-			Type:   AgentTypeCoder,
-			Prompt: string(coder_prompt),
+			Type:     AgentTypeCoder,
+			Prompt:   string(coder_prompt),
+			Programs: []string{"go", "gofmt", "gopls"},
+			Tools:    []string{"bugs", "changelog", "features", "files", "programs"},
 		}
 
 	case "tester":
 
 		return &Agent{
-			Type:   AgentTypeTester,
-			Prompt: string(tester_prompt),
+			Type:     AgentTypeTester,
+			Prompt:   string(tester_prompt),
+			Programs: []string{"go", "gofmt", "gopls"},
+			Tools:    []string{"bugs", "changelog", "features", "files", "programs"},
 		}
 
 	case "manager":
 
 		return &Agent{
-			Type:   AgentTypeManager,
-			Prompt: string(manager_prompt),
+			Type:     AgentTypeManager,
+			Prompt:   string(manager_prompt),
+			Programs: []string{},
+			Tools:    []string{"agents", "features", "web"},
 		}
 
 	default:
 
 		return &Agent{
-			Type:   AgentType(""),
-			Prompt: string(default_prompt),
+			Type:     AgentType(""),
+			Prompt:   string(default_prompt),
+			Programs: []string{"go", "gofmt", "gopls"},
+			Tools:    []string{"bugs", "changelog", "features", "files", "programs", "web"},
 		}
 
 	}
