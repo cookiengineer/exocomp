@@ -3,6 +3,7 @@ package main
 import "exocomp/agents"
 import "exocomp/ollama"
 import "exocomp/types"
+import ui_tty "exocomp/ui/tty"
 import "fmt"
 import net_url "net/url"
 import "os"
@@ -136,13 +137,12 @@ func main() {
 	}
 
 	config := types.NewConfig(tmp_agent, tmp_model, tmp_sandbox, tmp_temperature, tmp_url)
-	agent  := agents.NewAgent(config.Agent)
+	agent  := agents.NewAgent(config.Agent, config.Model, config.Temperature)
 
-	fmt.Fprintf(os.Stdout, "Agent:       %s\n", config.Agent)
-	fmt.Fprintf(os.Stdout, "Model:       %s\n", config.Model)
-	fmt.Fprintf(os.Stdout, "Sandbox:     %s\n", config.Sandbox)
-	fmt.Fprintf(os.Stdout, "Temperature: %.2f\n", config.Temperature)
-	fmt.Fprintf(os.Stdout, "URL:         %s\n", config.URL.String())
+	fmt.Fprintf(os.Stdout, "[config]:\n")
+	fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %.2f\n", agent.Type, agent.Model, agent.Temperature)
+	fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
+	fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
 	fmt.Fprintf(os.Stdout, "\n")
 	os.Stdout.Sync()
 
@@ -154,7 +154,7 @@ func main() {
 
 		if err2 == nil {
 
-			renderer := ollama.NewDebugger(session)
+			renderer := ui_tty.NewRenderer(session)
 			signals  := make(chan os.Signal, 1)
 
 			signal.Notify(

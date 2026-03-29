@@ -9,10 +9,10 @@ import "fmt"
 func sendChatRequest(session *Session) error {
 
 	request_payload, err0 := json.Marshal(schemas.ChatRequest{
-		Model:       session.Config.Model,
+		Model:       session.Agent.Model,
+		Temperature: session.Agent.Temperature,
 		Messages:    session.Messages,
 		Stream:      false,
-		Temperature: session.Config.Temperature,
 		Tools:       session.Tools,
 	})
 

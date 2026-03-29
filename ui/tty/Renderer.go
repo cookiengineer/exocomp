@@ -1,5 +1,6 @@
-package ollama
+package tty
 
+import "exocomp/ollama"
 import "exocomp/schemas"
 import "bufio"
 import "fmt"
@@ -8,15 +9,15 @@ import "sort"
 import "strings"
 import "sync"
 
-type Debugger struct {
+type Renderer struct {
 	Prompt    string
-	Session   *Session
+	Session   *ollama.Session
 	mutex     *sync.Mutex
 	rendered  int
 	resetline string
 }
 
-func NewDebugger(session *Session) *Debugger {
+func NewRenderer(session *ollama.Session) *Renderer {
 
 	resetline := ""
 
@@ -25,7 +26,7 @@ func NewDebugger(session *Session) *Debugger {
 	}
 
 
-	return &Debugger{
+	return &Renderer{
 		Prompt:    "",
 		Session:   session,
 		mutex:     &sync.Mutex{},
@@ -35,20 +36,20 @@ func NewDebugger(session *Session) *Debugger {
 
 }
 
-func (debugger *Debugger) ClearLine() {
+func (renderer *Renderer) ClearLine() {
 
 	fmt.Fprintf(os.Stdout, "\033[A")
 	fmt.Fprintf(os.Stdout, "\033[K")
-	fmt.Fprintf(os.Stdout, debugger.resetline)
+	fmt.Fprintf(os.Stdout, renderer.resetline)
 	fmt.Fprintf(os.Stdout, "\033[B")
 
 }
 
-func (debugger *Debugger) Destroy() {
+func (renderer *Renderer) Destroy() {
 
 }
 
-func (debugger *Debugger) InputLoop() {
+func (renderer *Renderer) InputLoop() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -58,7 +59,7 @@ func (debugger *Debugger) InputLoop() {
 
 		if prompt != "" {
 
-			go debugger.Session.Query(schemas.Message{
+			go renderer.Session.Query(schemas.Message{
 				Role:    "user",
 				Content: prompt,
 			})
@@ -69,42 +70,38 @@ func (debugger *Debugger) InputLoop() {
 
 }
 
-func (debugger *Debugger) RenderLoop() {
+func (renderer *Renderer) RenderLoop() {
 
 	tools := make([]string, 0)
 
-	for _, tool := range debugger.Session.Agent.Tools {
+	for _, tool := range renderer.Session.Agent.Tools {
 		tools = append(tools, tool)
 	}
 
 	sort.Strings(tools)
 
-	info_agent       := fmt.Sprintf("Agent:       %s", debugger.Session.Agent.Type)
-	info_model       := fmt.Sprintf("Model:       %s", debugger.Session.Config.Model)
-	info_temperature := fmt.Sprintf("Temperature: %.2f", debugger.Session.Config.Temperature)
-	info_tools       := fmt.Sprintf("Tools:       %s", strings.Join(tools, ", "))
+	info_agent := fmt.Sprintf("Agent: %s | %s | %.2f", renderer.Session.Agent.Type, renderer.Session.Agent.Model, renderer.Session.Agent.Temperature)
+	info_tools := fmt.Sprintf("Tools: %s", strings.Join(tools, ", "))
 
 	fmt.Fprintf(os.Stdout, "\r%s[exocomp]%s:\n", ColorYellow, ColorReset)
 	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_agent)
-	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_model)
-	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_temperature)
 	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_tools)
 	fmt.Fprintf(os.Stdout, "\n")
 	os.Stdout.Sync()
 
 	for {
 
-		if debugger.rendered < len(debugger.Session.Messages) {
+		if renderer.rendered < len(renderer.Session.Messages) {
 
-			next_message := debugger.Session.Messages[debugger.rendered]
+			next_message := renderer.Session.Messages[renderer.rendered]
 
 			if next_message.Role == "user" {
-				debugger.ClearLine()
+				renderer.ClearLine()
 			}
 
-			debugger.RenderMessages(debugger.Session.Messages[debugger.rendered:])
-			debugger.RenderPrompt()
-			debugger.rendered = len(debugger.Session.Messages)
+			renderer.RenderMessages(renderer.Session.Messages[renderer.rendered:])
+			renderer.RenderPrompt()
+			renderer.rendered = len(renderer.Session.Messages)
 
 		}
 
@@ -112,7 +109,7 @@ func (debugger *Debugger) RenderLoop() {
 
 }
 
-func (debugger *Debugger) RenderMessages(messages []schemas.Message) {
+func (renderer *Renderer) RenderMessages(messages []schemas.Message) {
 
 	for _, message := range messages {
 
@@ -143,7 +140,7 @@ func (debugger *Debugger) RenderMessages(messages []schemas.Message) {
 
 			if len(content) > 1 {
 
-				resetline := debugger.resetline[0:len(debugger.resetline) - len(role) - 3]
+				resetline := renderer.resetline[0:len(renderer.resetline) - len(role) - 3]
 
 				fmt.Fprintf(os.Stdout, "\r%s[%s]%s:%s\n", color, role, ColorReset, resetline)
 
@@ -158,8 +155,8 @@ func (debugger *Debugger) RenderMessages(messages []schemas.Message) {
 
 				resetline := ""
 
-				if len(content[0]) < len(debugger.resetline) - 4 {
-					resetline = debugger.resetline[0:len(debugger.resetline) - len(content[0]) - 4]
+				if len(content[0]) < len(renderer.resetline) - 4 {
+					resetline = renderer.resetline[0:len(renderer.resetline) - len(content[0]) - 4]
 				}
 
 				fmt.Fprintf(os.Stdout, "\r%s[%s]%s: %s%s\n", color, role, ColorReset, content[0], resetline)
@@ -175,12 +172,12 @@ func (debugger *Debugger) RenderMessages(messages []schemas.Message) {
 
 }
 
-func (debugger *Debugger) RenderPrompt() {
+func (renderer *Renderer) RenderPrompt() {
 
 	model := "unknown"
 
-	if debugger.Session != nil && debugger.Session.Config != nil {
-		model = debugger.Session.Config.Model
+	if renderer.Session != nil && renderer.Session.Config != nil {
+		model = renderer.Session.Config.Model
 	}
 
 	fmt.Fprintf(os.Stdout, "\r%s[to %s]%s > ", ColorGreen, model, ColorReset)
