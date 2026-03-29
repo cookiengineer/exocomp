@@ -12,33 +12,46 @@ func EncodeSchema(allowed_tools []string) []schemas.Tool {
 
 		// TODO
 
-	} else if slices.Contains(allowed_tools, "bugs") {
+	}
+
+	if slices.Contains(allowed_tools, "bugs") {
 
 		// TODO
 
-	} else if slices.Contains(allowed_tools, "changelog") {
+	}
+
+	if slices.Contains(allowed_tools, "changelog") {
 
 		for _, schema := range ChangelogSchema {
 			result = append(result, schema)
 		}
 
-	} else if slices.Contains(allowed_tools, "features") {
+	}
+
+	if slices.Contains(allowed_tools, "features") {
 
 		// TODO
 
-	} else if slices.Contains(allowed_tools, "files") {
+	}
+
+	if slices.Contains(allowed_tools, "files") {
 
 		for _, schema := range FilesSchema {
 			result = append(result, schema)
 		}
 
-	} else if slices.Contains(allowed_tools, "programs") {
+
+	}
+
+	if slices.Contains(allowed_tools, "programs") {
 
 		for _, schema := range ProgramsSchema {
 			result = append(result, schema)
 		}
 
-	} else if slices.Contains(allowed_tools, "web") {
+	}
+
+	if slices.Contains(allowed_tools, "web") {
 
 		// TODO
 
