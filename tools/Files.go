@@ -179,7 +179,7 @@ func (tool *Files) Stat(path string) (string, error) {
 			}
 
 			result := strings.Join([]string{
-				fmt.Sprintf("#!tool:files.Stat: %s", resolved),
+				fmt.Sprintf("files.Stat: %s", resolved),
 				"Name: " + stat.Name(),
 				"Type: " + typ,
 				"Size: " + utils.FormatFileSize(stat.Size()),
@@ -214,21 +214,21 @@ func (tool *Files) Write(path string, content string) (string, error) {
 			if err2 == nil {
 
 				result := strings.Join([]string{
-					fmt.Sprintf("#!tool:files.Write: File %s with %s written.", resolved, utils.FormatFileSize(int64(len(buffer)))),
+					fmt.Sprintf("files.Write: File %s with %s written.", resolved, utils.FormatFileSize(int64(len(buffer)))),
 				}, "\n")
 
 				return result, nil
 
 			} else {
-				return "", fmt.Errorf("#!tool:files.Write: %s", err2.Error())
+				return "", fmt.Errorf("files.Write: %s", err2.Error())
 			}
 
 		} else {
-			return "", fmt.Errorf("#!tool:files.Write: %s", err1.Error())
+			return "", fmt.Errorf("files.Write: %s", err1.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("#!tool:files.Write: %s", err0.Error())
+		return "", fmt.Errorf("files.Write: %s", err0.Error())
 	}
 
 }
