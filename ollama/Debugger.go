@@ -97,6 +97,7 @@ func (debugger *Debugger) RenderMessages(messages []schemas.Message) {
 		color   := ColorReset
 		role    := message.Role
 		content := formatContent(message.Content)
+		limit   := len(content)
 
 		switch message.Role {
 		case "user":
@@ -105,6 +106,7 @@ func (debugger *Debugger) RenderMessages(messages []schemas.Message) {
 			color = ColorBlue
 		case "tool":
 			color = ColorRed
+			limit = 1
 		case "system":
 			color = ColorYellow
 		default:
@@ -112,6 +114,10 @@ func (debugger *Debugger) RenderMessages(messages []schemas.Message) {
 		}
 
 		if color != ColorReset && len(content) > 0 {
+
+			if len(content) > limit {
+				content = content[0:limit]
+			}
 
 			if len(content) > 1 {
 

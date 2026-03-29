@@ -109,7 +109,7 @@ func (tool *Files) List(path string) (string, error) {
 					sort.Strings(lines)
 
 					result := make([]string, 0)
-					result = append(result, fmt.Sprintf("files.List: %s", resolved))
+					result = append(result, fmt.Sprintf("files.List: %s contains %d items.", resolved, len(lines)))
 
 					for l := 0; l < len(lines); l++ {
 						result = append(result, lines[l])
@@ -179,7 +179,7 @@ func (tool *Files) Stat(path string) (string, error) {
 			}
 
 			result := strings.Join([]string{
-				fmt.Sprintf("files.Stat: %s", resolved),
+				fmt.Sprintf("files.Stat: %s is a %s.", resolved, typ),
 				"Name: " + stat.Name(),
 				"Type: " + typ,
 				"Size: " + utils.FormatFileSize(stat.Size()),
@@ -214,7 +214,7 @@ func (tool *Files) Write(path string, content string) (string, error) {
 			if err2 == nil {
 
 				result := strings.Join([]string{
-					fmt.Sprintf("files.Write: File %s with %s written.", resolved, utils.FormatFileSize(int64(len(buffer)))),
+					fmt.Sprintf("files.Write: %s with %s written.", resolved, utils.FormatFileSize(int64(len(buffer)))),
 				}, "\n")
 
 				return result, nil
