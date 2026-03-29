@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Exocomp</title>
+		<link rel="stylesheet" href="/design/index.css">
+	</head>
+	<body>
+		<header>
+			<div>
+				<select title="Agent Type" id="agent">
+					<option value="manager">Manager</option>
+					<option value="coder">Coder</option>
+					<option value="tester">Tester</option>
+				</select>
+				<select title="Model" id="model">
+					<option value="qwen3-coder:30b">qwen3-coder:30b</option>
+				</select>
+			</div>
+			<div></div>
+			<div>
+				<label for="temperature">Temperature:</label>
+				<input title="Temperature" id="temperature" type="range" min="0.1" max="1.0" step="0.1" value="0.3"/>
+			</div>
+		</header>
+		<main>
+			<ul id="messages"></ul>
+		</main>
+		<footer>
+			<div><label>Send with<br>[Ctrl]+[Enter]</div>
+			<div><textarea id="prompt"></textarea></div>
+			<div></div>
+		</footer>
+		<script type="module" src="/index.mjs" defer></script>
+	</body>
+</html>

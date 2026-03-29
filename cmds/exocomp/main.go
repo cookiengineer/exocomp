@@ -1,24 +1,25 @@
 package main
 
 import "exocomp/agents"
-import "exocomp/ollama"
 import "exocomp/types"
 import ui_tty "exocomp/ui/tty"
+import ui_web "exocomp/ui/web"
 import "fmt"
 import net_url "net/url"
 import "os"
-import "os/signal"
 import "strconv"
 import "strings"
-import "syscall"
 
 func showHelp() {
 
 	fmt.Println("Usage:")
-	fmt.Println("    exocomp <agent> [flags]")
+	fmt.Println("    exocomp <ui> <agent> [flags]")
 	fmt.Println("")
 	fmt.Println("Arguments:")
-	fmt.Println("    <agent> string         Type of agent")
+	fmt.Println("    <ui> string            UI type")
+	fmt.Println("                           Either of: tty, web")
+	fmt.Println("")
+	fmt.Println("    <agent> string         LLM agent type")
 	fmt.Println("                           Either of: manager, coder, tester")
 	fmt.Println("")
 	fmt.Println("Flags:")
@@ -39,27 +40,32 @@ func showHelp() {
 	fmt.Println("                           (default: \"http://localhost:11434/api/chat\")")
 	fmt.Println("")
 	fmt.Println("Examples:")
-	fmt.Println("    exocomp coder --model=\"codestral:22b\" --temperature=0.1;")
-	fmt.Println("    exocomp manager --model=\"qwen3.5:35b\" --temperature=0.7;")
+	fmt.Println("    exocomp tty coder --model=\"codestral:22b\" --temperature=0.1;")
+	fmt.Println("    exocomp tty manager --model=\"qwen3.5:35b\" --temperature=0.7;")
+	fmt.Println("")
+	fmt.Println("    exocomp web manager --model=\"qwen3.5:35b\" --temperature=0.7;")
 	fmt.Println("")
 
 }
 
 func main() {
 
+	tmp_ui          := ""
 	tmp_agent       := ""
 	tmp_model       := "qwen3-coder:30b"
 	tmp_sandbox, _  := os.Getwd()
 	tmp_temperature := float64(0.3)
 	tmp_url, _      := net_url.Parse("http://localhost:11434/api/chat")
 
-	if len(os.Args) >= 2 {
+	if len(os.Args) >= 3 {
 
-		tmp := strings.TrimSpace(os.Args[1])
+		tmp1 := strings.TrimSpace(os.Args[1])
+		tmp2 := strings.TrimSpace(os.Args[2])
 
-		if agents.IsAgentType(tmp) == true {
+		if (tmp1 == "tty" || tmp1 == "web") && agents.IsAgentType(tmp2) {
 
-			tmp_agent = tmp
+			tmp_ui    = tmp1
+			tmp_agent = tmp2
 
 		} else {
 
@@ -150,55 +156,33 @@ func main() {
 
 	if err1 == nil {
 
-		session, err2 := ollama.NewSession(agent, config)
+		if tmp_ui == "tty" {
 
-		if err2 == nil {
+			client := ui_tty.NewClient(agent, config)
 
-			renderer := ui_tty.NewRenderer(session)
-			signals  := make(chan os.Signal, 1)
+			if client != nil {
+				client.Init()
+			}
 
-			signal.Notify(
-				signals,
-				syscall.SIGINT,
-				syscall.SIGTERM,
-			)
+		} else if tmp_ui == "web" {
 
-			go func() {
-				renderer.InputLoop()
-				signals<-syscall.SIGINT
-			}()
+			server := ui_web.NewServer(agent, config)
+			client := ui_web.NewClient(server.URL)
 
-			go renderer.RenderLoop()
+			if server != nil && client != nil {
 
-			select {
-			case sig := <-signals:
-
-				switch sig {
-				case syscall.SIGINT:
-
-					renderer.Destroy()
-					fmt.Println("Received signal: SIGINT")
-					os.Exit(0)
-
-				case syscall.SIGTERM:
-
-					renderer.Destroy()
-					fmt.Println("Received signal: SIGTERM")
-					os.Exit(0)
-
-				default:
-
-					renderer.Destroy()
-					fmt.Printf("Received signal: %s\n", sig.String())
-					os.Exit(0)
-
-				}
+				go client.Init()
+				server.Init()
 
 			}
 
+			// TODO: client.Destroy()
+
 		} else {
-			fmt.Println(err2)
+
+			showHelp()
 			os.Exit(1)
+
 		}
 
 	} else {
