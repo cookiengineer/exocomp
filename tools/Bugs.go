@@ -1,5 +1,7 @@
 package tools
 
+import "fmt"
+
 type Bugs struct {
 	Sandbox  string
 	contents map[string]map[string]bool // map[File.go#Method]map[bug_description]is_fixed
@@ -12,7 +14,7 @@ func NewBugs(agent string, sandbox string) *Bugs {
 		contents: make(map[string]map[string]bool),
 	}
 
-	readBugs(bugs)
+	// readBugs(bugs)
 
 	return bugs
 
@@ -62,7 +64,7 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 		method, ok2 := arguments["method"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Fix(path, method)
+			return tool.FixAll(path, method)
 		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"method\" is not a string.")
 		} else if ok1 == false && ok2 == true {
@@ -77,7 +79,7 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 		method, ok2 := arguments["method"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Fix(path, method)
+			return tool.Search(path, method)
 		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"method\" is not a string.")
 		} else if ok1 == false && ok2 == true {
@@ -86,18 +88,24 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameters.")
 		}
 
+	} else {
+		return "", fmt.Errorf("bugs.%s: Invalid method.", method)
 	}
 
 }
 
 func (tool *Bugs) Add(path string, method string, note string) (string, error) {
+	return "", fmt.Errorf("bugs.Add: TODO: Not implemented yet")
 }
 
 func (tool *Bugs) Fix(path string, method string, note string) (string, error) {
+	return "", fmt.Errorf("bugs.Fix: TODO: Not implemented yet")
 }
 
 func (tool *Bugs) FixAll(path string, method string) (string, error) {
+	return "", fmt.Errorf("bugs.FixAll: TODO: Not implemented yet")
 }
 
 func (tool *Bugs) Search(path string, method string) (string, error) {
+	return "", fmt.Errorf("bugs.Search: TODO: Not implemented yet")
 }
