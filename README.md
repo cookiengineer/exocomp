@@ -10,6 +10,7 @@ unit, the smartest investment this side of the Alpha Quadrant!
 
 <img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
 
+
 ## Why hire when you can own?
 
 The Exocomp isn't just a tool... it's so much more!
@@ -28,7 +29,8 @@ except it doesn't cheat you out of your profits on the Dabo table.
 
 Ethical subroutines sold separately.
 
-## Architecture
+
+## Agents
 
 Exocomp uses multiple Agent roles:
 
@@ -43,6 +45,16 @@ so the `coder` and `tester` roles are meant for short agent lifecycles.
 Each of those Agent roles is specialized on using `golang` as their programming
 language because `go test` allows to use integrated unit tests to document issues
 with generated code very easily in a standardized manner.
+
+
+## Models
+
+If you're using `ollama`, all models with the `tools` tag in the [ollama library](https://ollama.com/library)
+should be compatible. Use the API endpoint `http://ollama_instance:port/api/chat`.
+
+If you're using `vllm`, all models with `tools` support should be compatible.
+Use the API endpoint `http://vllm_instance:port/v1/chat/completions`.
+
 
 ## Tools
 
@@ -64,7 +76,7 @@ Operating System Tools:
 
 The `exocomp` program is a standalone binary, once compiled with the `go` toolchain.
 However, the models currently aren't embedded and are called via an external
-(locally hostable) ollama server.
+(locally hostable) `ollama` or `vllm` server.
 
 ```bash
 sudo pacman -S go ollama;
@@ -77,13 +89,16 @@ ollama pull qwen3-coder:30b
 
 # Run exocomp with ollama
 cd /path/to/exocomp;
-go run exocomp --url="http://localhost:11434/api" --model="qwen3-coder:30b";
+go run ./cmds/exocomp/main.go tty manager;
+
+# custom CLI flags usage
+# go run ./cmds/exocomp/main.go tty manager --url="http://localhost:11434/api" --model="qwen3-coder:30b";
 ```
 
 
 ## License
 
-Dual Licensed. AGPL3 for Open Source usage. EULA for Commercial usage available.
+Dual Licensed. AGPL3 for private usage. EULA for commercial usage available.
 For a commercial license, contact [Cookie Engineer](https://cookie.engineer).
 
 As you might have imagined, this is a not-so-serious project at this stage.
