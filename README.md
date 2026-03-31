@@ -30,19 +30,32 @@ Ethical subroutines sold separately.
 
 ## Architecture
 
-Exocomp uses multiple agent roles:
+Exocomp uses multiple Agent roles:
 
-- `manager` role writes features into backlog
-- `coder` implements features, reads `feature` backlog and `bug` reports
-- `tester` implements unit tests, writes `bug` reports
+- [manager](./agents/Agent.Manager.txt) discusses with humans and writes specifications
+- [coder](./agents/Agent.Coder.txt) implements features, reads `specifications` and `bugs`
+- [tester](./agents/Agent.Tester.txt) implements unit tests, writes reports into `bugs`
 
-Exocomp uses Tools to interact with the sandbox:
+Exocomp uses Tools to interact with the sandbox, so they're available differently
+for each Agent role. The `manager` starts sub-agents that work on specified tasks,
+so the `coder` and `tester` roles are meant for short agent lifecycles.
+
+Each of those Agent roles is specialized on using `golang` as their programming
+language because `go test` allows to use integrated unit tests to document issues
+with generated code very easily in a standardized manner.
+
+## Tools
+
+Cross-Agent Tools:
 
 - [ ] [Agents](./tools/Agents.go) tool to manage the lifecycle of sub-agents.
 - [ ] [Bugs](./tools/Bugs.go) tool to manage documentation of bugs.
-- [x] [Changelog](./tools/Changelog.go) tool to manage development notes.
-- [ ] [Features](./tools/Features.go) tool to manage documentation of features.
-- [x] [Files](./tools/Files.go) tool to read/write/list files and folders.
+- [x] [Changelog](./tools/Changelog.go) tool to manage documentation of development notes.
+- [ ] [Specifications](./tools/Specifications.go) tool to manage documentation of specifications.
+
+Operating System Tools:
+
+- [x] [Files](./tools/Files.go) tool to read/write/list/stat files and folders.
 - [x] [Programs](./tools/Programs.go) tool to execute programs.
 - [ ] [Web](./tools/Web.go) tool to research things on the web.
 
