@@ -7,6 +7,7 @@ import "embed"
 import "net/http"
 import "io/fs"
 import net_url "net/url"
+import "os"
 
 //go:embed public/*
 var embed_fs embed.FS
@@ -36,6 +37,9 @@ func NewServer(agent *agents.Agent, config *types.Config) *Server {
 }
 
 func (server *Server) Init() bool {
+
+	// TODO: Remove this when finished
+	embed_fs := os.DirFS("ui/web")
 
 	fsys, _ := fs.Sub(embed_fs, "public")
 	fsrv    := http.FileServer(http.FS(fsys))
