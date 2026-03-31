@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/utils"
 import "fmt"
 import "os"
 import "strings"
@@ -40,9 +41,13 @@ func readBugs(tool *Bugs) error {
 
 						anchor   := tmp2
 						file     := ""
-						note     := tmp3
+						note     := utils.FormatSingleLine(tmp3)
 						// method   := ""
 						is_fixed := false
+
+						if tmp1 == "x" {
+							is_fixed = true
+						}
 
 						if strings.Contains(tmp2, "#") {
 							file   = strings.TrimSpace(tmp2[0:strings.Index(tmp2, "#")])
@@ -50,10 +55,6 @@ func readBugs(tool *Bugs) error {
 						} else {
 							file   = strings.TrimSpace(tmp2)
 							// method = ""
-						}
-
-						if tmp1 == "x" {
-							is_fixed = true
 						}
 
 						if file != "" && note != "" {

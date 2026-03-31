@@ -6,7 +6,7 @@ import "encoding/json"
 import "io"
 import "fmt"
 
-func sendChatRequest(session *Session) error {
+func SendChatRequest(session *Session) error {
 
 	request_payload, err0 := json.Marshal(schemas.ChatRequest{
 		Model:       session.Agent.Model,
@@ -37,7 +37,7 @@ func sendChatRequest(session *Session) error {
 				err3 := json.Unmarshal(response_payload, &response)
 
 				if err3 == nil {
-					return processChatResponse(session, response.Message)
+					return ReceiveChatResponse(session, response.Message)
 				} else {
 					return err3
 				}

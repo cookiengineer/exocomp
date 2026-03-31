@@ -19,19 +19,12 @@ type Server struct {
 
 func NewServer(agent *agents.Agent, config *types.Config) *Server {
 
-	session, err0 := ollama.NewSession(agent, config)
+	session := ollama.NewSession(agent, config)
+	url, _ := net_url.Parse("http://localhost:1234/")
 
-	if err0 == nil {
-
-		url, _ := net_url.Parse("http://localhost:1234/")
-
-		return &Server{
-			Session: session,
-			URL:     url,
-		}
-
-	} else {
-		return nil
+	return &Server{
+		Session: session,
+		URL:     url,
 	}
 
 }
@@ -48,6 +41,12 @@ func (server *Server) Init() bool {
 	// func(response http.ResponseWriter, request *http.Request) {
 	// 	fsrv.ServeHTTP(response, request)
 	// })
+
+	http.HandleFunc("/api/init", func(response http.ResponseWriter, request *http.Request) {
+
+		// TODO: Call server.Session.Init()
+
+	})
 
 	http.HandleFunc("/api/chat", func(response http.ResponseWriter, request *http.Request) {
 

@@ -15,19 +15,12 @@ type Client struct {
 
 func NewClient(agent *agents.Agent, config *types.Config) *Client {
 
-	session, err0 := ollama.NewSession(agent, config)
+	session  := ollama.NewSession(agent, config)
+	renderer := NewRenderer(session)
 
-	if err0 == nil {
-
-		renderer := NewRenderer(session)
-
-		return &Client{
-			Session:  session,
-			Renderer: renderer,
-		}
-
-	} else {
-		return nil
+	return &Client{
+		Session:  session,
+		Renderer: renderer,
 	}
 
 }
@@ -41,6 +34,10 @@ func (client *Client) Init() {
 		syscall.SIGINT,
 		syscall.SIGTERM,
 	)
+
+	go func() {
+		client.Session.Init()
+	}()
 
 	go func() {
 		client.Renderer.InputLoop()

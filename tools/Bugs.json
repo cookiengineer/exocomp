@@ -1,0 +1,69 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "bugs.Add",
+			"description": "Add a bug report for a specific file and symbol.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"symbol": {
+						"type": "string",
+						"description": "Linkable symbol, method, function, or variable name"
+					},
+					"note": {
+						"type": "string",
+						"description": "Single-line description"
+					}
+				},
+				"required": ["path", "symbol", "note"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "bugs.Fix",
+			"description": "Mark all bug reports of a specific file and symbol as fixed.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"symbol": {
+						"type": "string",
+						"description": "Linkable symbol, method, function, or variable name"
+					}
+				},
+				"required": ["path", "symbol"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "bugs.Search",
+			"description": "Search for bug reports of a specific file and an optional symbol.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"symbol": {
+						"type": "string",
+						"description": "Linkable symbol, method, function, or variable name"
+					}
+				},
+				"required": ["path"]
+			}
+		}
+	}
+]

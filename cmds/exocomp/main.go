@@ -57,7 +57,7 @@ func main() {
 	tmp_temperature := float64(0.3)
 	tmp_url, _      := net_url.Parse("http://localhost:11434/api/chat")
 
-	if len(os.Args) >= 3 {
+	if len(os.Args) >= 2 {
 
 		tmp1 := strings.TrimSpace(os.Args[1])
 		tmp2 := strings.TrimSpace(os.Args[2])
@@ -74,55 +74,53 @@ func main() {
 
 		}
 
-		if len(os.Args) >= 3 {
+		flags := os.Args[2:]
 
-			flags := os.Args[2:]
+		for _, flag := range flags {
 
-			for _, flag := range flags {
+			if strings.HasPrefix(flag, "--") && strings.Contains(flag, "=") {
 
-				if strings.HasPrefix(flag, "--") && strings.Contains(flag, "=") {
+				tmp := strings.Split(flag[2:], "=")
 
-					tmp := strings.Split(flag[2:], "=")
+				if len(tmp) == 2 {
 
-					if len(tmp) == 2 {
+					switch tmp[0] {
+					case "model":
 
-						switch tmp[0] {
-						case "model":
-							tmp_model = strings.TrimSpace(tmp[1])
-						case "sandbox":
+						tmp_model = strings.TrimSpace(tmp[1])
 
-							stat, err := os.Stat(strings.TrimSpace(tmp[1]))
+					case "sandbox":
 
-							if err == nil && stat.IsDir() {
-								tmp_sandbox = strings.TrimSpace(tmp[1])
-							} else if err != nil && os.IsNotExist(err) {
-								tmp_sandbox = strings.TrimSpace(tmp[1])
+						stat, err := os.Stat(strings.TrimSpace(tmp[1]))
+
+						if err == nil && stat.IsDir() {
+							tmp_sandbox = strings.TrimSpace(tmp[1])
+						} else if err != nil && os.IsNotExist(err) {
+							tmp_sandbox = strings.TrimSpace(tmp[1])
+						}
+
+					case "temperature":
+
+						num, err := strconv.ParseFloat(strings.TrimSpace(tmp[1]), 10)
+
+						if err == nil {
+
+							if num >= 0.1 && num <= 1.0 {
+								tmp_temperature = num
 							}
 
-						case "temperature":
+						}
 
-							num, err := strconv.ParseFloat(strings.TrimSpace(tmp[1]), 10)
+					case "url":
 
-							if err == nil {
+						url, err := net_url.Parse(strings.TrimSpace(tmp[1]))
 
-								if num >= 0.1 && num <= 1.0 {
-									tmp_temperature = num
-								}
+						if err == nil {
 
-							}
+							if url.Scheme == "http" || url.Scheme == "https" {
 
-						case "url":
-
-							url, err := net_url.Parse(strings.TrimSpace(tmp[1]))
-
-							if err == nil {
-
-								if url.Scheme == "http" || url.Scheme == "https" {
-
-									if url.Path == "/api/chat" {
-										tmp_url = url
-									}
-
+								if url.Path == "/api/chat" {
+									tmp_url = url
 								}
 
 							}
@@ -159,22 +157,15 @@ func main() {
 		if tmp_ui == "tty" {
 
 			client := ui_tty.NewClient(agent, config)
-
-			if client != nil {
-				client.Init()
-			}
+			client.Init()
 
 		} else if tmp_ui == "web" {
 
 			server := ui_web.NewServer(agent, config)
 			client := ui_web.NewClient(server.URL)
 
-			if server != nil && client != nil {
-
-				go client.Init()
-				server.Init()
-
-			}
+			go client.Init()
+			server.Init()
 
 			// TODO: client.Destroy()
 

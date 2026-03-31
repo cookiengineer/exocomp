@@ -16,7 +16,9 @@ func EncodeSchema(allowed_tools []string) []schemas.Tool {
 
 	if slices.Contains(allowed_tools, "bugs") {
 
-		// TODO
+		for _, schema := range BugsSchema {
+			result = append(result, schema)
+		}
 
 	}
 

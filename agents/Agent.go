@@ -56,7 +56,7 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 			Prompt:      string(manager_prompt),
 			Programs:    []string{},
 			Temperature: 0.7,
-			Tools:       []string{"agents", "files", "features", "web"},
+			Tools:       []string{"agents", "bugs", "files", "features", "web"},
 		}
 
 	default:

@@ -19,7 +19,7 @@ type Session struct {
 	mutex    *sync.Mutex
 }
 
-func NewSession(agent *agents.Agent, config *types.Config) (*Session, error) {
+func NewSession(agent *agents.Agent, config *types.Config) *Session {
 
 	session := &Session{
 		Agent:    agent,
@@ -52,9 +52,17 @@ func NewSession(agent *agents.Agent, config *types.Config) (*Session, error) {
 	})
 	session.mutex.Unlock()
 
-	err := sendChatRequest(session)
+	return session
 
-	return session, err
+}
+
+func (session *Session) Init() error {
+
+	if len(session.Messages) > 0 {
+		return SendChatRequest(session)
+	}
+
+	return fmt.Errorf("Session is empty, waiting for LLM system prompt ...")
 
 }
 
@@ -67,7 +75,7 @@ func (session *Session) Query(message schemas.Message) error {
 		session.Waiting = true
 		session.mutex.Unlock()
 
-		err := sendChatRequest(session)
+		err := SendChatRequest(session)
 
 		session.mutex.Lock()
 		session.Waiting = false
@@ -107,8 +115,7 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 		} else if name == "bugs" {
 
-			// TODO
-			return nil
+			return tools.Tool(tools.NewBugs(session.Config.Agent, session.Config.Sandbox))
 
 		} else if name == "changelog" {
 

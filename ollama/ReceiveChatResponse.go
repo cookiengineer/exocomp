@@ -5,7 +5,7 @@ import "exocomp/schemas"
 import "fmt"
 import "strings"
 
-func processChatResponse(session *Session, response schemas.Message) error {
+func ReceiveChatResponse(session *Session, response schemas.Message) error {
 
 	if response.Role == "assistant" {
 
@@ -73,7 +73,7 @@ func processChatResponse(session *Session, response schemas.Message) error {
 
 			}
 
-			return sendChatRequest(session)
+			return SendChatRequest(session)
 
 		} else {
 			return nil
