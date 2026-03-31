@@ -8,7 +8,7 @@ import "time"
 
 type Changelog struct {
 	Sandbox  string
-	contents map[time.Time][]string
+	contents map[time.Time][]string // map[2025-12-31 10:20:30][]string{changelog_description}
 }
 
 func NewChangelog(agent string, sandbox string) *Changelog {
