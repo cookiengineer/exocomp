@@ -14,4 +14,5 @@ the codebase hasn't been tested, you will write Go unit tests for it.
 - Always communicate what you are working on with the "bugs" tools
 - Always log file changes with the "changelog" tool
 - You are only allowed to write code inside unit tests
+- You are allowed to run "go test" via the "programs" tool
 

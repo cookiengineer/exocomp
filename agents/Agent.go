@@ -11,8 +11,8 @@ var manager_prompt []byte
 //go:embed Agent.Tester.txt
 var tester_prompt []byte
 
-//go:embed Agent.prompt.txt
-var default_prompt []byte
+//go:embed Agent.txt
+var none_prompt []byte
 
 type Agent struct {
 	Type        AgentType
@@ -24,9 +24,6 @@ type Agent struct {
 }
 
 func NewAgent(agent_type string, agent_model string, agent_temperature float64) *Agent {
-
-	// TODO: model
-	// TODO: temperature
 
 	switch agent_type {
 	case "coder":
@@ -59,15 +56,15 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 			Prompt:      string(manager_prompt),
 			Programs:    []string{},
 			Temperature: 0.7,
-			Tools:       []string{"agents", "features", "web"},
+			Tools:       []string{"agents", "files", "features", "web"},
 		}
 
 	default:
 
 		return &Agent{
-			Type:        AgentType(""),
+			Type:        AgentTypeNone,
 			Model:       "qwen3-coder:30b",
-			Prompt:      string(default_prompt),
+			Prompt:      string(none_prompt),
 			Programs:    []string{"go", "gofmt", "gopls"},
 			Temperature: 0.5,
 			Tools:       []string{"bugs", "changelog", "features", "files", "programs", "web"},
