@@ -32,7 +32,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		note, ok2 := arguments["note"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Add(path, note)
+			return tool.Add(utils.FormatFilePath(path), utils.FormatSingleLine(note))
 		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
 		} else if ok1 == false && ok2 == true {
@@ -47,7 +47,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		note, ok2 := arguments["note"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Change(path, note)
+			return tool.Change(utils.FormatFilePath(path), utils.FormatSingleLine(note))
 		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
 		} else if ok1 == false && ok2 == true {
@@ -62,7 +62,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		note, ok2 := arguments["note"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Deprecate(path, note)
+			return tool.Deprecate(utils.FormatFilePath(path), utils.FormatSingleLine(note))
 		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
 		} else if ok1 == false && ok2 == true {
@@ -77,7 +77,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		note, ok2 := arguments["note"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Fix(path, note)
+			return tool.Fix(utils.FormatFilePath(path), utils.FormatSingleLine(note))
 		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
 		} else if ok1 == false && ok2 == true {
@@ -92,7 +92,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		note, ok2 := arguments["note"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Remove(path, note)
+			return tool.Remove(utils.FormatFilePath(path), utils.FormatSingleLine(note))
 		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
 		} else if ok1 == false && ok2 == true {
@@ -107,7 +107,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		path, ok := arguments["path"].(string)
 
 		if ok == true {
-			return tool.Search(path)
+			return tool.Search(utils.FormatFilePath(path))
 		} else {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string")
 		}
@@ -135,7 +135,7 @@ func (tool *Changelog) Add(path string, note string) (string, error) {
 				tool.contents[today] = make([]string, 0)
 			}
 
-			message := "`" + path + "`: " + utils.FormatSingleLine(note)
+			message := "`" + path + "`: " + note
 			tool.contents[today] = append(tool.contents[today], message)
 			writeChangelog(tool)
 
@@ -172,7 +172,7 @@ func (tool *Changelog) Change(path string, note string) (string, error) {
 				tool.contents[today] = make([]string, 0)
 			}
 
-			message := "`" + path + "`: " + utils.FormatSingleLine(note)
+			message := "`" + path + "`: " + note
 			tool.contents[today] = append(tool.contents[today], message)
 			writeChangelog(tool)
 
@@ -209,7 +209,7 @@ func (tool *Changelog) Deprecate(path string, note string) (string, error) {
 				tool.contents[today] = make([]string, 0)
 			}
 
-			message := "`" + path + "`: " + utils.FormatSingleLine(note)
+			message := "`" + path + "`: " + note
 			tool.contents[today] = append(tool.contents[today], message)
 			writeChangelog(tool)
 
@@ -246,7 +246,7 @@ func (tool *Changelog) Fix(path string, note string) (string, error) {
 				tool.contents[today] = make([]string, 0)
 			}
 
-			message := "`" + path + "`: " + utils.FormatSingleLine(note)
+			message := "`" + path + "`: " + note
 			tool.contents[today] = append(tool.contents[today], message)
 			writeChangelog(tool)
 
@@ -283,7 +283,7 @@ func (tool *Changelog) Remove(path string, note string) (string, error) {
 				tool.contents[today] = make([]string, 0)
 			}
 
-			message := "`" + path + "`: " + utils.FormatSingleLine(note)
+			message := "`" + path + "`: " + note
 			tool.contents[today] = append(tool.contents[today], message)
 			writeChangelog(tool)
 

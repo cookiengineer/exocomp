@@ -2,7 +2,7 @@ package utils
 
 import "strings"
 
-func FormatSingleLine(input string) string {
+func FormatMultiLine(input string) string {
 
 	formatted := make([]byte, 0)
 
@@ -12,6 +12,8 @@ func FormatSingleLine(input string) string {
 
 		// isPrintableASCII also filters \t, \r and \n
 		if isPrintableASCII(chr) {
+			formatted = append(formatted, chr)
+		} else if chr == '\t' || chr == '\n' {
 			formatted = append(formatted, chr)
 		}
 

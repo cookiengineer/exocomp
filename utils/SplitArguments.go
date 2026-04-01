@@ -4,10 +4,6 @@ func isSpace(b byte) bool {
 	return b == ' ' || b == '\t'
 }
 
-func isPrintableASCII(b byte) bool {
-	return b >= 0x20 && b <= 0x7E
-}
-
 func SplitArguments(input string) []string {
 
 	args    := make([]string, 0)
@@ -21,7 +17,7 @@ func SplitArguments(input string) []string {
 
 		chr := byte(input[i])
 
-		if isPrintableASCII(chr) == true {
+		if isPrintableASCII(chr) {
 
 			switch {
 			case escaped:
@@ -41,7 +37,7 @@ func SplitArguments(input string) []string {
 
 			case chr == '\\':
 
-				if in_single_quotes {
+				if in_single_quotes == true {
 					current = append(current, chr)
 				} else {
 					escaped = true

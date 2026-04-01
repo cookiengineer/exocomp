@@ -7,7 +7,8 @@ import "strings"
 
 type Bugs struct {
 	Sandbox  string
-	contents map[string]map[string]bool // map[File.go#Method]map[bug_description]is_fixed
+	//       map[./path/to/File.go#Symbol]map[note]is_fixed
+	contents map[string]map[string]bool
 }
 
 func NewBugs(agent string, sandbox string) *Bugs {
@@ -28,15 +29,15 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 	if method == "Add" {
 
 		path,   ok1 := arguments["path"].(string)
-		method, ok2 := arguments["method"].(string)
+		symbol, ok2 := arguments["symbol"].(string)
 		note,   ok3 := arguments["note"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Add(path, method, note)
+			return tool.Add(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(note))
 		} else if ok1 == true && ok2 == true && ok3 == false {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"note\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"method\" is not a string.")
+			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
 		} else if ok1 == false && ok2 == true && ok3 == true {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
@@ -46,12 +47,12 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 	} else if method == "Fix" {
 
 		path,   ok1 := arguments["path"].(string)
-		method, ok2 := arguments["method"].(string)
+		symbol, ok2 := arguments["symbol"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Fix(path, method)
+			return tool.Fix(utils.FormatFilePath(path), utils.FormatSymbol(symbol))
 		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"method\" is not a string.")
+			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
 		} else if ok1 == false && ok2 == true {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
@@ -61,10 +62,10 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 	} else if method == "Search" {
 
 		path,   ok1 := arguments["path"].(string)
-		method, ok2 := arguments["method"].(string)
+		symbol, ok2 := arguments["symbol"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Search(path, method)
+			return tool.Search(utils.FormatFilePath(path), utils.FormatSymbol(symbol))
 		} else if ok1 == true && ok2 == false {
 			return tool.Search(path, "")
 		} else if ok1 == false && ok2 == true {
@@ -79,25 +80,24 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 
 }
 
-func (tool *Bugs) Add(path string, method string, note string) (string, error) {
+func (tool *Bugs) Add(path string, symbol string, note string) (string, error) {
 
 	_, err0 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err0 == nil {
 
-		anchor := fmt.Sprintf("%s#%s", path, method)
+		anchor := fmt.Sprintf("%s#%s", path, symbol)
 		_, ok1 := tool.contents[anchor]
 
 		if ok1 == false {
 			tool.contents[anchor] = make(map[string]bool)
 		}
 
-		message := utils.FormatSingleLine(note)
-		tool.contents[anchor][message] = false
+		tool.contents[anchor][note] = false
 		writeBugs(tool)
 
 		result := strings.Join([]string{
-			fmt.Sprintf("bugs.Add: Report with %d B written.", len(message)),
+			fmt.Sprintf("bugs.Add: Report with %d B written.", len(note)),
 		}, "\n")
 
 		return result, nil
@@ -108,21 +108,21 @@ func (tool *Bugs) Add(path string, method string, note string) (string, error) {
 
 }
 
-func (tool *Bugs) Fix(path string, method string) (string, error) {
+func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 
 	_, err0 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err0 == nil {
 
-		anchor := fmt.Sprintf("%s#%s", path, method)
+		anchor := fmt.Sprintf("%s#%s", path, symbol)
 		_, ok1 := tool.contents[anchor]
 
 		if ok1 == true {
 
 			count := 0
 
-			for message, _ := range tool.contents[anchor] {
-				tool.contents[anchor][message] = true
+			for note, _ := range tool.contents[anchor] {
+				tool.contents[anchor][note] = true
 				count++
 			}
 
@@ -142,7 +142,7 @@ func (tool *Bugs) Fix(path string, method string) (string, error) {
 
 }
 
-func (tool *Bugs) Search(path string, method string) (string, error) {
+func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 	_, err0 := resolveSandboxPath(tool.Sandbox, path)
 
@@ -150,9 +150,9 @@ func (tool *Bugs) Search(path string, method string) (string, error) {
 
 		lines := make([]string, 0)
 
-		if method != "" {
+		if symbol != "" {
 
-			anchor     := fmt.Sprintf("%s#%s", path, method)
+			anchor     := fmt.Sprintf("%s#%s", path, symbol)
 			notes, ok1 := tool.contents[anchor]
 
 			if ok1 == true {

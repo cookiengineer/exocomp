@@ -36,8 +36,8 @@ func readBugs(tool *Bugs) error {
 					} else if strings.HasPrefix(line, "- [") && strings.Contains(line, "] `") && strings.Contains(line, "`: ") {
 
 						tmp1 := strings.TrimSpace(line[2:strings.Index(line, "] `")])
-						tmp2 := strings.TrimSpace(line[strings.Index(line, "] `"):strings.Index(line, "`: ")])
-						tmp3 := strings.TrimSpace(line[strings.Index(line, "`: "):])
+						tmp2 := strings.TrimSpace(line[strings.Index(line, "] `")+3:strings.Index(line, "`: ")])
+						tmp3 := strings.TrimSpace(line[strings.Index(line, "`: ")+3:])
 
 						anchor   := tmp2
 						file     := ""
