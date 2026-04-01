@@ -26,7 +26,11 @@ func NewBugs(agent string, sandbox string) *Bugs {
 
 func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "Add" {
+	if method == "List" {
+
+		return tool.List()
+
+	} else if method == "Add" {
 
 		path,   ok1 := arguments["path"].(string)
 		symbol, ok2 := arguments["symbol"].(string)
@@ -97,7 +101,7 @@ func (tool *Bugs) Add(path string, symbol string, note string) (string, error) {
 		writeBugs(tool)
 
 		result := strings.Join([]string{
-			fmt.Sprintf("bugs.Add: Report with %d B written.", len(note)),
+			fmt.Sprintf("bugs.Add: Bug report with %d B written.", len(note)),
 		}, "\n")
 
 		return result, nil
@@ -127,18 +131,47 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 			}
 
 			result := strings.Join([]string{
-				fmt.Sprintf("bugs.Fix: %d Reports marked as fixed.", count),
+				fmt.Sprintf("bugs.Fix: %d bug reports marked as fixed.", count),
 			}, "\n")
 
 			return result, nil
 
 		} else {
-			return "", fmt.Errorf("bugs.Fix: No matching Bug Reports found.")
+			return "", fmt.Errorf("bugs.Fix: 0 bug reports marked as fixed.")
 		}
 
 	} else {
 		return "", fmt.Errorf("bugs.Fix: %s", err0.Error())
 	}
+
+}
+
+func (tool *Bugs) List() (string, error) {
+
+	lines := make([]string, 0)
+
+	for anchor, notes := range tool.contents {
+
+		for note, is_fixed := range notes {
+
+			if is_fixed == false {
+				lines = append(lines, fmt.Sprintf("- [ ] `%s`: %s", anchor, note))
+			}
+
+		}
+
+	}
+
+	sort.Strings(lines)
+
+	result := make([]string, 0)
+	result = append(result, fmt.Sprintf("bugs.List: %d bug reports.", len(lines)))
+
+	for l := 0; l < len(lines); l++ {
+		result = append(result, lines[l])
+	}
+
+	return strings.Join(result, "\n"), nil
 
 }
 
@@ -165,8 +198,6 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 				}
 
-			} else {
-				return "", fmt.Errorf("bugs.Search: No matching Bug Reports found.")
 			}
 
 		} else {
@@ -192,7 +223,7 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 		sort.Strings(lines)
 
 		result := make([]string, 0)
-		result = append(result, fmt.Sprintf("bugs.Search: %s contains %d items.", path, len(lines)))
+		result = append(result, fmt.Sprintf("bugs.Search: %s contains %d bug reports.", path, len(lines)))
 
 		for l := 0; l < len(lines); l++ {
 			result = append(result, lines[l])

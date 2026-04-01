@@ -2,14 +2,17 @@ package agents
 
 import _ "embed"
 
+//go:embed Agent.Architect.txt
+var architect_prompt []byte
+
 //go:embed Agent.Coder.txt
 var coder_prompt []byte
 
-//go:embed Agent.Manager.txt
-var manager_prompt []byte
-
 //go:embed Agent.Tester.txt
 var tester_prompt []byte
+
+//go:embed Agent.Manager.txt
+var manager_prompt []byte
 
 //go:embed Agent.txt
 var none_prompt []byte
@@ -26,6 +29,35 @@ type Agent struct {
 func NewAgent(agent_type string, agent_model string, agent_temperature float64) *Agent {
 
 	switch agent_type {
+	case "architect":
+
+		return &Agent{
+			Type:        AgentTypeArchitect,
+			Model:       "qwen3-coder:30b",
+			Prompt:      string(architect_prompt),
+			Programs:    []string{},
+			Temperature: 0.5,
+			Tools:       []string{
+				"agents.List",
+				"agents.Message",
+				"agents.Report",
+				// No agents.Start
+				// No agents.Stop
+				// No bugs.Add
+				// No bugs.Fix
+				"bugs.List",
+				"bugs.Search",
+				"files.List",
+				"files.Read",
+				"files.Stat",
+				// No files.Write
+				"requirements.Add",
+				"requirements.List",
+				"requirements.Remove",
+				"requirements.Search",
+			},
+		}
+
 	case "coder":
 
 		return &Agent{
@@ -34,7 +66,33 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 			Prompt:      string(coder_prompt),
 			Programs:    []string{"go", "gofmt", "gopls"},
 			Temperature: 0.3,
-			Tools:       []string{"bugs", "changelog", "features", "files", "programs"},
+			Tools:       []string{
+				"agents.List",
+				"agents.Message",
+				"agents.Report",
+				// No agents.Start
+				// No agents.Stop
+				// No bugs.Add
+				"bugs.Fix",
+				"bugs.List",
+				"bugs.Search",
+				"changelog.Add",
+				"changelog.Change",
+				"changelog.Deprecate",
+				"changelog.Fix",
+				"changelog.Remove",
+				"changelog.Search",
+				"files.List",
+				"files.Read",
+				"files.Stat",
+				"files.Write",
+				"programs.List",
+				"programs.Execute",
+				// No requirements.Add
+				"requirements.List",
+				// No requirements.Remove
+				"requirements.Search",
+			},
 		}
 
 	case "tester":
@@ -45,7 +103,28 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 			Prompt:      string(tester_prompt),
 			Programs:    []string{"go", "gofmt", "gopls"},
 			Temperature: 0.3,
-			Tools:       []string{"bugs", "changelog", "features", "files", "programs"},
+			Tools:       []string{
+				"agents.List",
+				"agents.Message",
+				"agents.Report",
+				// No agents.Start
+				// No agents.Stop
+				"bugs.Add",
+				// No bugs.Fix
+				"bugs.List",
+				"bugs.Search",
+				// No changelog
+				"files.List",
+				"files.Read",
+				"files.Stat",
+				"files.Write",
+				"programs.List",
+				"programs.Execute",
+				// No requirements.Add
+				"requirements.List",
+				// No requirements.Remove
+				"requirements.Search",
+			},
 		}
 
 	case "manager":
@@ -56,7 +135,27 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 			Prompt:      string(manager_prompt),
 			Programs:    []string{},
 			Temperature: 0.7,
-			Tools:       []string{"agents", "bugs", "files", "features", "web"},
+			Tools:       []string{
+				"agents.List",
+				"agents.ListMessages",
+				"agents.ListReports",
+				"agents.Message",
+				"agents.Report",
+				"agents.Start",
+				"agents.Stop",
+				// No bugs.Add
+				// No bugs.Fix
+				"bugs.List",
+				"bugs.Search",
+				"files.List",
+				"files.Read",
+				"files.Stat",
+				// No files.Write
+				"requirements.Add",
+				"requirements.List",
+				"requirements.Remove",
+				"requirements.Search",
+			},
 		}
 
 	default:

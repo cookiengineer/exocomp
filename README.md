@@ -16,7 +16,7 @@ unit, the smartest investment this side of the Alpha Quadrant!
 The Exocomp isn't just a tool... it's so much more!
 
 - Supervised task queue functionality
-- Multiple agent roles as `manager`, `coder`, `tester`
+- Multiple agent roles as `architect`, `coder`, `tester`, `manager`
 - Precision repairs of broken code with unit tests
 - Cross-agent communication via `NOTES.md` and `TODO.md`
 - Self-replicating in malicious environments
@@ -34,13 +34,14 @@ Ethical subroutines sold separately.
 
 Exocomp uses multiple Agent roles:
 
-- [manager](./agents/Agent.Manager.txt) discusses with humans and writes specifications
+- [architect](./agents/Agent.Architect.txt) discusses with humans and writes specifications
 - [coder](./agents/Agent.Coder.txt) implements features, reads `specifications` and `bugs`
 - [tester](./agents/Agent.Tester.txt) implements unit tests, writes reports into `bugs`
+- [manager](./agents/Agent.Manager.txt) coordinates sub-agents and project phases
 
 Exocomp uses Tools to interact with the sandbox, so they're available differently
 for each Agent role. The `manager` starts sub-agents that work on specified tasks,
-so the `coder` and `tester` roles are meant for short agent lifecycles.
+so the `architect`, `coder` and `tester` roles are meant for short agent lifecycles.
 
 Each of those Agent roles is specialized on using `golang` as their programming
 language because `go test` allows to use integrated unit tests to document issues
@@ -63,7 +64,7 @@ Cross-Agent Tools:
 - [ ] [Agents](./tools/Agents.go) tool to manage the lifecycle of sub-agents.
 - [x] [Bugs](./tools/Bugs.go) tool to manage documentation of bugs.
 - [x] [Changelog](./tools/Changelog.go) tool to manage documentation of development notes.
-- [ ] [Specifications](./tools/Specifications.go) tool to manage documentation of specifications.
+- [ ] [Requirements](./tools/Requirements.go) tool to manage documentation of specifications.
 
 Operating System Tools:
 
@@ -89,10 +90,10 @@ ollama pull qwen3-coder:30b
 
 # Run exocomp with ollama
 cd /path/to/exocomp;
-go run ./cmds/exocomp/main.go tty manager;
+go run ./cmds/exocomp/main.go tty architect;
 
 # custom CLI flags usage
-# go run ./cmds/exocomp/main.go tty manager --url="http://localhost:11434/api" --model="qwen3-coder:30b";
+# go run ./cmds/exocomp/main.go tty architect --url="http://localhost:11434/api" --model="qwen3-coder:30b";
 ```
 
 

@@ -110,8 +110,7 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 		if name == "agents" {
 
-			// TODO
-			return nil
+			return tools.Tool(tools.NewAgents(session.Config.Agent, session.Config.Sandbox))
 
 		} else if name == "bugs" {
 
@@ -121,11 +120,6 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 			return tools.Tool(tools.NewChangelog(session.Config.Agent, session.Config.Sandbox))
 
-		} else if name == "features" {
-
-			// TODO
-			return nil
-
 		} else if name == "files" {
 
 			return tools.Tool(tools.NewFiles(session.Config.Agent, session.Config.Sandbox))
@@ -134,10 +128,9 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 			return tools.Tool(tools.NewPrograms(session.Config.Agent, session.Config.Sandbox, session.Agent.Programs))
 
-		} else if name == "web" {
+		} else if name == "requirements" {
 
-			// TODO
-			return nil
+			return tools.Tool(tools.NewRequirements(session.Config.Agent, session.Config.Sandbox))
 
 		} else {
 			return nil

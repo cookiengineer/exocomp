@@ -20,7 +20,7 @@ func showHelp() {
 	fmt.Println("                           Either of: tty, web")
 	fmt.Println("")
 	fmt.Println("    <agent> string         LLM agent type")
-	fmt.Println("                           Either of: manager, coder, tester")
+	fmt.Println("                           Either of: architect, coder, manager, tester")
 	fmt.Println("")
 	fmt.Println("Flags:")
 	fmt.Println("    --model string         LLM model identifier (ollama format)")
@@ -41,9 +41,9 @@ func showHelp() {
 	fmt.Println("")
 	fmt.Println("Examples:")
 	fmt.Println("    exocomp tty coder --model=\"codestral:22b\" --temperature=0.1;")
-	fmt.Println("    exocomp tty manager --model=\"qwen3.5:35b\" --temperature=0.7;")
+	fmt.Println("    exocomp tty architect --model=\"qwen3.5:35b\" --temperature=0.7;")
 	fmt.Println("")
-	fmt.Println("    exocomp web manager --model=\"qwen3.5:35b\" --temperature=0.7;")
+	fmt.Println("    exocomp web architect --model=\"qwen3.5:35b\" --temperature=0.7;")
 	fmt.Println("")
 
 }

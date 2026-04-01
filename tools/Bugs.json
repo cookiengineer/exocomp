@@ -48,8 +48,20 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "bugs.List",
+			"description": "List all unfixed bug reports.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "bugs.Search",
-			"description": "Search for bug reports of a specific file and an optional symbol.",
+			"description": "Search for unfixed bug reports of a specific file and an optional symbol.",
 			"parameters": {
 				"type": "object",
 				"properties": {

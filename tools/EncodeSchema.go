@@ -8,54 +8,51 @@ func EncodeSchema(allowed_tools []string) []schemas.Tool {
 
 	result := make([]schemas.Tool, 0)
 
-	if slices.Contains(allowed_tools, "agents") {
+	for _, schema := range AgentsSchema {
 
-		// TODO
-
-	}
-
-	if slices.Contains(allowed_tools, "bugs") {
-
-		for _, schema := range BugsSchema {
+		if slices.Contains(allowed_tools, schema.Function.Name) {
 			result = append(result, schema)
 		}
 
 	}
 
-	if slices.Contains(allowed_tools, "changelog") {
+	for _, schema := range BugsSchema {
 
-		for _, schema := range ChangelogSchema {
+		if slices.Contains(allowed_tools, schema.Function.Name) {
 			result = append(result, schema)
 		}
 
 	}
 
-	if slices.Contains(allowed_tools, "features") {
+	for _, schema := range ChangelogSchema {
 
-		// TODO
-
-	}
-
-	if slices.Contains(allowed_tools, "files") {
-
-		for _, schema := range FilesSchema {
-			result = append(result, schema)
-		}
-
-
-	}
-
-	if slices.Contains(allowed_tools, "programs") {
-
-		for _, schema := range ProgramsSchema {
+		if slices.Contains(allowed_tools, schema.Function.Name) {
 			result = append(result, schema)
 		}
 
 	}
 
-	if slices.Contains(allowed_tools, "web") {
+	for _, schema := range FilesSchema {
 
-		// TODO
+		if slices.Contains(allowed_tools, schema.Function.Name) {
+			result = append(result, schema)
+		}
+
+	}
+
+	for _, schema := range ProgramsSchema {
+
+		if slices.Contains(allowed_tools, schema.Function.Name) {
+			result = append(result, schema)
+		}
+
+	}
+
+	for _, schema := range RequirementsSchema {
+
+		if slices.Contains(allowed_tools, schema.Function.Name) {
+			result = append(result, schema)
+		}
 
 	}
 
