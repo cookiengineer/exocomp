@@ -18,6 +18,7 @@ var manager_prompt []byte
 var none_prompt []byte
 
 type Agent struct {
+	Name        string
 	Type        AgentType
 	Model       string
 	Prompt      string
@@ -32,6 +33,7 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 	case "architect":
 
 		return &Agent{
+			Name:        "Peanut Architect",
 			Type:        AgentTypeArchitect,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(architect_prompt),
@@ -61,6 +63,7 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 	case "coder":
 
 		return &Agent{
+			Name:        "Peanut Coder",
 			Type:        AgentTypeCoder,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(coder_prompt),
@@ -98,6 +101,7 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 	case "tester":
 
 		return &Agent{
+			Name:        "Peanut Tester",
 			Type:        AgentTypeTester,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(tester_prompt),
@@ -130,6 +134,7 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 	case "manager":
 
 		return &Agent{
+			Name:        "Peanut Manager",
 			Type:        AgentTypeManager,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(manager_prompt),
@@ -161,12 +166,35 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 	default:
 
 		return &Agent{
+			Name:        "Peanut Hamper",
 			Type:        AgentTypeNone,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(none_prompt),
 			Programs:    []string{"go", "gofmt", "gopls"},
 			Temperature: 0.5,
-			Tools:       []string{"bugs", "changelog", "features", "files", "programs", "web"},
+			Tools:       []string{
+				// No agents
+				"bugs.Add",
+				"bugs.Fix",
+				"bugs.List",
+				"bugs.Search",
+				"changelog.Add",
+				"changelog.Change",
+				"changelog.Deprecate",
+				"changelog.Fix",
+				"changelog.Remove",
+				"changelog.Search",
+				"files.List",
+				"files.Read",
+				"files.Stat",
+				"files.Write",
+				"programs.List",
+				"programs.Execute",
+				"requirements.Add",
+				"requirements.List",
+				"requirements.Remove",
+				"requirements.Search",
+			},
 		}
 
 	}
@@ -174,5 +202,11 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 }
 
 func (agent *Agent) GetPrompt() string {
-	return string(agent.Prompt)
+
+	prompt := agent.Prompt
+
+	prompt = strings.ReplaceAll(prompt, "{{NAME}}", agent.Name)
+
+	return strings.TrimSpace(prompt)
+
 }

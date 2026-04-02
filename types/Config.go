@@ -4,9 +4,6 @@ import _ "embed"
 import net_url "net/url"
 import "strings"
 
-//go:embed Config.prompt.txt
-var config_prompt []byte
-
 type Config struct {
 	Agent       string
 	Model       string
@@ -30,14 +27,6 @@ func NewConfig(agent string, model string, sandbox string, temperature float64, 
 		Temperature: temperature,
 		URL:         url,
 	}
-
-}
-
-func (config *Config) GetPrompt() string {
-
-	return strings.Join([]string{
-		strings.TrimSpace(string(config_prompt)),
-	}, "\n")
 
 }
 

@@ -70,7 +70,7 @@ Operating System Tools:
 
 - [x] [Files](./tools/Files.go) tool to read/write/list/stat files and folders.
 - [x] [Programs](./tools/Programs.go) tool to execute programs.
-- [ ] [Web](./tools/Web.go) tool to research things on the web.
+- [ ] [Websites](./tools/Websites.go) tool to research things on the web.
 
 
 ## Requirements and Usage
