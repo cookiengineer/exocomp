@@ -2,6 +2,7 @@ package main
 
 import "exocomp/agents"
 import "exocomp/types"
+import "exocomp/utils"
 import ui_tty "exocomp/ui/tty"
 import ui_web "exocomp/ui/web"
 import "fmt"
@@ -13,22 +14,26 @@ import "strings"
 func showHelp() {
 
 	fmt.Println("Usage:")
-	fmt.Println("    exocomp <ui> <agent> [flags]")
+	fmt.Println("    exocomp <ui> [flags]")
 	fmt.Println("")
 	fmt.Println("Arguments:")
 	fmt.Println("    <ui> string            UI type")
-	fmt.Println("                           Either of: tty, web")
-	fmt.Println("")
-	fmt.Println("    <agent> string         LLM agent type")
-	fmt.Println("                           Either of: architect, coder, manager, tester")
+	fmt.Println("                           Either of: jsonl, tty, web")
 	fmt.Println("")
 	fmt.Println("Flags:")
-	fmt.Println("    --model string         LLM model identifier (ollama format)")
+	fmt.Println("")
+	fmt.Println("    --name string          LLM agent name")
+	fmt.Println("                           (default: \"Peanut Hamper\")")
+	fmt.Println("")
+	fmt.Println("    --agent string         LLM agent type")
+	fmt.Println("                           Either of: architect, coder, manager, tester")
+	fmt.Println("")
+	fmt.Println("    --model string         LLM agent model (ollama format)")
 	fmt.Println("                           Run \"ollama list\" to see available models")
 	fmt.Println("                           Examples: qwen3-coder:30b, codestral:22b")
 	fmt.Println("                           (default: \"qwen3-coder:30b\")")
 	fmt.Println("")
-	fmt.Println("    --temperature float    LLM sampling temperature (0.1-1.0)")
+	fmt.Println("    --temperature float    LLM agent sampling temperature (0.1-1.0)")
 	fmt.Println("                           Lower = more deterministic, fewer hallucinations")
 	fmt.Println("                           Higher = more creative, more hallucinations")
 	fmt.Println("                           (default: 0.3)")
@@ -40,10 +45,14 @@ func showHelp() {
 	fmt.Println("                           (default: \"http://localhost:11434/api/chat\")")
 	fmt.Println("")
 	fmt.Println("Examples:")
-	fmt.Println("    exocomp tty coder --model=\"codestral:22b\" --temperature=0.1;")
-	fmt.Println("    exocomp tty architect --model=\"qwen3.5:35b\" --temperature=0.7;")
 	fmt.Println("")
-	fmt.Println("    exocomp web architect --model=\"qwen3.5:35b\" --temperature=0.7;")
+	fmt.Println("    # single-agent mode")
+	fmt.Println("    exocomp tty --agent=architect")
+	fmt.Println("    exocomp web --agent=architect --model=\"qwen3.5:35b\" --temperature=\"0.7\";")
+	fmt.Println("")
+	fmt.Println("    # multi-agent mode")
+	fmt.Println("    exocomp tty --agent=manager")
+	fmt.Println("    exocomp web --agent=manager --model=\"codestral:22b\" --temperature=\"0.2\";")
 	fmt.Println("")
 
 }
@@ -51,6 +60,7 @@ func showHelp() {
 func main() {
 
 	tmp_ui          := ""
+	tmp_name        := ""
 	tmp_agent       := ""
 	tmp_model       := "qwen3-coder:30b"
 	tmp_sandbox, _  := os.Getwd()
@@ -60,12 +70,10 @@ func main() {
 	if len(os.Args) >= 2 {
 
 		tmp1 := strings.TrimSpace(os.Args[1])
-		tmp2 := strings.TrimSpace(os.Args[2])
 
-		if (tmp1 == "tty" || tmp1 == "web") && agents.IsAgentType(tmp2) {
+		if (tmp1 == "jsonl" || tmp1 == "tty" || tmp1 == "web") {
 
-			tmp_ui    = tmp1
-			tmp_agent = tmp2
+			tmp_ui = tmp1
 
 		} else {
 
@@ -85,6 +93,18 @@ func main() {
 				if len(tmp) == 2 {
 
 					switch tmp[0] {
+					case "name":
+
+						if agents.IsAgentName(tmp[1]) {
+							tmp_name = utils.FormatAgentName(tmp[1])
+						}
+
+					case "agent":
+
+						if agents.IsAgentType(tmp[1]) {
+							tmp_agent = strings.TrimSpace(tmp[1])
+						}
+
 					case "model":
 
 						tmp_model = strings.TrimSpace(tmp[1])
@@ -140,26 +160,37 @@ func main() {
 		os.Exit(1)
 	}
 
-	config := types.NewConfig(tmp_agent, tmp_model, tmp_sandbox, tmp_temperature, tmp_url)
-	agent  := agents.NewAgent(config.Agent, config.Model, config.Temperature)
-
-	fmt.Fprintf(os.Stdout, "[config]:\n")
-	fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %.2f\n", agent.Type, agent.Model, agent.Temperature)
-	fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
-	fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
-	fmt.Fprintf(os.Stdout, "\n")
-	os.Stdout.Sync()
+	config := types.NewConfig(tmp_name, tmp_agent, tmp_model, tmp_sandbox, tmp_temperature, tmp_url)
+	agent  := agents.NewAgent(config.Name, config.Agent, config.Model, config.Temperature)
 
 	err1 := os.MkdirAll(config.Sandbox, 0755)
 
 	if err1 == nil {
 
-		if tmp_ui == "tty" {
+		if tmp_ui == "jsonl" {
+
+			// TODO: jsonl Client mode
+
+		} else if tmp_ui == "tty" {
+
+			fmt.Fprintf(os.Stdout, "[config]:\n")
+			fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
+			fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
+			fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
+			fmt.Fprintf(os.Stdout, "\n")
+			os.Stdout.Sync()
 
 			client := ui_tty.NewClient(agent, config)
 			client.Init()
 
 		} else if tmp_ui == "web" {
+
+			fmt.Fprintf(os.Stdout, "[config]:\n")
+			fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
+			fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
+			fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
+			fmt.Fprintf(os.Stdout, "\n")
+			os.Stdout.Sync()
 
 			server := ui_web.NewServer(agent, config)
 			client := ui_web.NewClient(server.URL)

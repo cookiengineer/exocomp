@@ -1,0 +1,74 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "agents.List",
+			"description": "List all currently working contractor agents.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "agents.Hire",
+			"description": "Hire a contractor agent with a unique name and a task prompt.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Contractor agent's unique name"
+					},
+					"agent": {
+						"type": "string",
+						"description": "Contractor agent's type",
+						"enum": ["coder", "tester"]
+					},
+					"prompt": {
+						"type": "string",
+						"description": "Contractor agent's task prompt"
+					}
+				},
+				"required": ["name", "agent", "prompt"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "agents.Fire",
+			"description": "Fire a contractor agent with a unique name.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Contractor agent's unique name"
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "agents.Quit",
+			"description": "Finish your work with a status report message to the hiring agent.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"message": {
+						"type": "string",
+						"description": "The final message and work report content"
+					}
+				},
+				"required": ["message"]
+			}
+		}
+	}
+]

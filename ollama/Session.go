@@ -106,7 +106,7 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 		if name == "agents" {
 
-			return tools.Tool(tools.NewAgents(session.Config.Agent, session.Config.Sandbox))
+			return tools.Tool(tools.NewAgents(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
 
 		} else if name == "bugs" {
 

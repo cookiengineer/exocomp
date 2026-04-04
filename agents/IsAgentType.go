@@ -7,9 +7,9 @@ func IsAgentType(raw string) bool {
 		return true
 	case "coder":
 		return true
-	case "tester":
-		return true
 	case "manager":
+		return true
+	case "tester":
 		return true
 	default:
 		return false

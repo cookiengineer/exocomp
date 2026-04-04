@@ -1,6 +1,7 @@
 package agents
 
 import _ "embed"
+import "strings"
 
 //go:embed Agent.Architect.txt
 var architect_prompt []byte
@@ -27,13 +28,19 @@ type Agent struct {
 	Tools       []string
 }
 
-func NewAgent(agent_type string, agent_model string, agent_temperature float64) *Agent {
+func NewAgent(agent_name string, agent_type string, agent_model string, agent_temperature float64) *Agent {
 
 	switch agent_type {
 	case "architect":
 
+		name := strings.TrimSpace(agent_name)
+
+		if name == "" {
+			name = "Peanut Architect"
+		}
+
 		return &Agent{
-			Name:        "Peanut Architect",
+			Name:        name,
 			Type:        AgentTypeArchitect,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(architect_prompt),
@@ -62,8 +69,14 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 
 	case "coder":
 
+		name := strings.TrimSpace(agent_name)
+
+		if name == "" {
+			name = "Peanut Coder"
+		}
+
 		return &Agent{
-			Name:        "Peanut Coder",
+			Name:        name,
 			Type:        AgentTypeCoder,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(coder_prompt),
@@ -100,8 +113,14 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 
 	case "tester":
 
+		name := strings.TrimSpace(agent_name)
+
+		if name == "" {
+			name = "Peanut Tester"
+		}
+
 		return &Agent{
-			Name:        "Peanut Tester",
+			Name:        name,
 			Type:        AgentTypeTester,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(tester_prompt),
@@ -133,8 +152,14 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 
 	case "manager":
 
+		name := strings.TrimSpace(agent_name)
+
+		if name == "" {
+			name = "Peanut Manager"
+		}
+
 		return &Agent{
-			Name:        "Peanut Manager",
+			Name:        name,
 			Type:        AgentTypeManager,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(manager_prompt),
@@ -142,8 +167,8 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 			Temperature: 0.7,
 			Tools:       []string{
 				"agents.List",
-				"agents.ListMessages",
-				"agents.ListReports",
+				"agents.ListMessagesOf",
+				"agents.ListReportsOf",
 				"agents.Message",
 				"agents.Report",
 				"agents.Start",
@@ -164,9 +189,14 @@ func NewAgent(agent_type string, agent_model string, agent_temperature float64) 
 		}
 
 	default:
+		name := strings.TrimSpace(agent_name)
+
+		if name == "" {
+			name = "Peanut Hamper"
+		}
 
 		return &Agent{
-			Name:        "Peanut Hamper",
+			Name:        name,
 			Type:        AgentTypeNone,
 			Model:       "qwen3-coder:30b",
 			Prompt:      string(none_prompt),

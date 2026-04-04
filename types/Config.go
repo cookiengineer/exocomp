@@ -2,17 +2,19 @@ package types
 
 import _ "embed"
 import net_url "net/url"
-import "strings"
+import "os"
 
 type Config struct {
+	Name        string
 	Agent       string
 	Model       string
+	Playground  string
 	Sandbox     string
 	Temperature float64
 	URL         *net_url.URL
 }
 
-func NewConfig(agent string, model string, sandbox string, temperature float64, url *net_url.URL) *Config {
+func NewConfig(name string, agent string, model string, sandbox string, temperature float64, url *net_url.URL) *Config {
 
 	if temperature < 0.1 {
 		temperature = 0.1
@@ -20,12 +22,23 @@ func NewConfig(agent string, model string, sandbox string, temperature float64, 
 		temperature = 1.0
 	}
 
-	return &Config{
-		Agent:       agent,
-		Model:       model,
-		Sandbox:     sandbox,
-		Temperature: temperature,
-		URL:         url,
+	base := os.TempDir()
+	playground, err := os.MkdirTemp(base, "exocomp-playground-*")
+
+	if err == nil {
+
+		return &Config{
+			Name:        name,
+			Agent:       agent,
+			Model:       model,
+			Playground:  playground,
+			Sandbox:     sandbox,
+			Temperature: temperature,
+			URL:         url,
+		}
+
+	} else {
+		panic(err)
 	}
 
 }
