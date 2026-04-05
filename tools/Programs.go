@@ -109,7 +109,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 		}
 
 	} else {
-		return "", fmt.Errorf("programs.Execute: Invalid program \"%s\", must be an allowed program.", arguments[0])
+		return "", fmt.Errorf("programs.Execute: Invalid program \"%s\", must be an allowed program.", program)
 	}
 
 }
