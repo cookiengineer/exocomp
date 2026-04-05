@@ -76,6 +76,8 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 					return "", fmt.Errorf("programs.Execute: %s", err.Error())
 				}
 
+			} else {
+				program_arguments = append(program_arguments, arguments[a])
 			}
 
 		}

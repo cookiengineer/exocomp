@@ -21,11 +21,11 @@
 				"properties": {
 					"program": {
 						"type": "string",
-						"description": "The program binary name"
+						"description": "The program binary name, e.g. \"go\""
 					},
 					"arguments": {
 						"type": "array",
-						"description": "The program arguments",
+						"description": "The program arguments, e.g. [\"test\", \"./...\"]",
 						"items": {
 							"type": "string"
 						},

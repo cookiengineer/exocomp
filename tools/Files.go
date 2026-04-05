@@ -119,7 +119,7 @@ func (tool *Files) List(path string) (string, error) {
 				}
 
 			} else {
-				return "", fmt.Errorf("files.List: Invalid folder path \"%s\".")
+				return "", fmt.Errorf("files.List: Invalid folder path \"%s\".", path)
 			}
 
 		} else {
