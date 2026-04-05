@@ -12,7 +12,7 @@ import "sync"
 type Renderer struct {
 	Prompt    string
 	Session   *ollama.Session
-	mutex     *sync.Mutex
+	mutex     *sync.RWMutex
 	rendered  int
 	resetline string
 }
@@ -29,7 +29,7 @@ func NewRenderer(session *ollama.Session) *Renderer {
 	return &Renderer{
 		Prompt:    "",
 		Session:   session,
-		mutex:     &sync.Mutex{},
+		mutex:     &sync.RWMutex{},
 		rendered:  0,
 		resetline: resetline,
 	}
@@ -91,27 +91,40 @@ func (renderer *Renderer) RenderLoop() {
 
 	for {
 
-		if renderer.rendered < len(renderer.Session.Messages) {
+		renderer.mutex.RLock()
+		from := renderer.rendered
+		renderer.mutex.RUnlock()
 
-			next_message := renderer.Session.Messages[renderer.rendered]
+		messages := renderer.Session.GetMessages(from)
 
-			if next_message.Role == "user" {
+		if len(messages) > 0 {
+
+			if messages[0] != nil && messages[0].Role == "user" {
 				renderer.ClearLine()
 			}
 
-			renderer.RenderMessages(renderer.Session.Messages[renderer.rendered:])
+			renderer.RenderMessages(messages)
 			renderer.RenderPrompt()
-			renderer.rendered = len(renderer.Session.Messages)
 
+			renderer.mutex.Lock()
+			renderer.rendered += len(messages)
+			renderer.mutex.Unlock()
+
+		} else {
+			continue
 		}
 
 	}
 
 }
 
-func (renderer *Renderer) RenderMessages(messages []schemas.Message) {
+func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 
 	for _, message := range messages {
+
+		if message == nil {
+			continue
+		}
 
 		color   := ColorReset
 		role    := message.Role
@@ -151,7 +164,7 @@ func (renderer *Renderer) RenderMessages(messages []schemas.Message) {
 				fmt.Fprintf(os.Stdout, "\n")
 				os.Stdout.Sync()
 
-			} else {
+			} else if len(content) == 1 {
 
 				resetline := ""
 

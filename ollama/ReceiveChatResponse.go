@@ -10,7 +10,8 @@ func ReceiveChatResponse(session *Session, response schemas.Message) error {
 	if response.Role == "assistant" {
 
 		session.mutex.Lock()
-		session.Messages = append(session.Messages, response)
+		msg := &response
+		session.Messages = append(session.Messages, msg)
 		session.mutex.Unlock()
 
 		if len(response.ToolCalls) > 0 {
@@ -32,21 +33,23 @@ func ReceiveChatResponse(session *Session, response schemas.Message) error {
 						if err0 == nil {
 
 							session.mutex.Lock()
-							session.Messages = append(session.Messages, schemas.Message{
+							message := &schemas.Message{
 								Role:     "tool",
 								Content:  strings.TrimSpace(result),
 								ToolName: name + "." + method,
-							})
+							}
+							session.Messages = append(session.Messages, message)
 							session.mutex.Unlock()
 
 						} else {
 
 							session.mutex.Lock()
-							session.Messages = append(session.Messages, schemas.Message{
+							message := &schemas.Message{
 								Role:     "tool",
 								Content:  fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
 								ToolName: name + "." + method,
-							})
+							}
+							session.Messages = append(session.Messages, message)
 							session.mutex.Unlock()
 
 						}
@@ -56,7 +59,7 @@ func ReceiveChatResponse(session *Session, response schemas.Message) error {
 						json_blob, _ := json.MarshalIndent(tool_call, "", "\t")
 
 						session.mutex.Lock()
-						session.Messages = append(session.Messages, schemas.Message{
+						message := &schemas.Message{
 							Role:     "tool",
 							Content:  strings.Join([]string{
 								fmt.Sprintf("Error: %s", "Invalid Tool Call"),
@@ -64,7 +67,8 @@ func ReceiveChatResponse(session *Session, response schemas.Message) error {
 								string(json_blob),
 							}, "\n"),
 							ToolName: name + "." + method,
-						})
+						}
+						session.Messages = append(session.Messages, message)
 						session.mutex.Unlock()
 
 					}
@@ -82,7 +86,8 @@ func ReceiveChatResponse(session *Session, response schemas.Message) error {
 	} else {
 
 		session.mutex.Lock()
-		session.Messages = append(session.Messages, response)
+		msg := &response
+		session.Messages = append(session.Messages, msg)
 		session.mutex.Unlock()
 
 		return nil

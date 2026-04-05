@@ -13,10 +13,10 @@ type Session struct {
 	Agent    *agents.Agent
 	Config   *types.Config
 	Client   *http.Client
-	Messages []schemas.Message
+	Messages []*schemas.Message
 	Tools    []schemas.Tool
 	Waiting  bool
-	mutex    *sync.Mutex
+	mutex    *sync.RWMutex
 }
 
 func NewSession(agent *agents.Agent, config *types.Config) *Session {
@@ -25,10 +25,10 @@ func NewSession(agent *agents.Agent, config *types.Config) *Session {
 		Agent:    agent,
 		Config:   config,
 		Client:   &http.Client{},
-		Messages: make([]schemas.Message, 0),
+		Messages: make([]*schemas.Message, 0),
 		Tools:    make([]schemas.Tool, 0),
 		Waiting:  false,
-		mutex:    &sync.Mutex{},
+		mutex:    &sync.RWMutex{},
 	}
 
 	if len(agent.Tools) > 0 {
@@ -38,17 +38,25 @@ func NewSession(agent *agents.Agent, config *types.Config) *Session {
 	session.mutex.Lock()
 
 	if agent != nil {
-		session.Messages = append(session.Messages, schemas.Message{
+
+		system_message := &schemas.Message{
 			Role:    "system",
 			Content: agent.GetPrompt(),
-		})
+		}
+
+		session.Messages = append(session.Messages, system_message)
+
 	}
 
 	if config != nil {
-		session.Messages = append(session.Messages, schemas.Message{
+
+		user_message := &schemas.Message{
 			Role:    "user",
 			Content: config.GetPrompt(),
-		})
+		}
+
+		session.Messages = append(session.Messages, user_message)
+
 	}
 
 	session.mutex.Unlock()
@@ -67,13 +75,22 @@ func (session *Session) Init() error {
 
 }
 
-func (session *Session) Query(message schemas.Message) error {
+func (session *Session) Query(raw schemas.Message) error {
 
-	if session.Waiting == false {
+	is_waiting := false
+
+	session.mutex.RLock()
+	is_waiting = session.Waiting
+	session.mutex.RUnlock()
+
+	if is_waiting == false {
 
 		session.mutex.Lock()
+
+		message := &raw
 		session.Messages = append(session.Messages, message)
 		session.Waiting = true
+
 		session.mutex.Unlock()
 
 		err := SendChatRequest(session)
@@ -90,6 +107,29 @@ func (session *Session) Query(message schemas.Message) error {
 
 	} else {
 		return fmt.Errorf("Session is busy, waiting for LLM response ...")
+	}
+
+}
+
+func (session *Session) GetMessages(from int) []*schemas.Message {
+
+    session.mutex.RLock()
+    defer session.mutex.RUnlock()
+
+	if len(session.Messages) > 0 && from < len(session.Messages) {
+
+		result := make([]*schemas.Message, 0)
+
+		for m := from; m < len(session.Messages); m++ {
+			result = append(result, session.Messages[m])
+		}
+
+		return result
+
+	} else {
+
+		return []*schemas.Message{}
+
 	}
 
 }
