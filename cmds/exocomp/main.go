@@ -86,7 +86,7 @@ func main() {
 
 		}
 
-		flags := os.Args[2:]
+		flags := os.Args[1:]
 
 		for _, flag := range flags {
 

@@ -17,7 +17,7 @@ type Config struct {
 	URL         *net_url.URL
 }
 
-func NewConfig(name string, agent string, model string, sandbox string, prompt string, temperature float64, url *net_url.URL) *Config {
+func NewConfig(name string, agent string, model string, prompt string, sandbox string, temperature float64, url *net_url.URL) *Config {
 
 	prompt = utils.FormatSingleLine(prompt)
 
