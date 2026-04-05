@@ -48,8 +48,12 @@ func (tool *Programs) Call(method string, arguments map[string]interface{}) (str
 
 			return tool.Execute(program, args)
 
+		} else if ok1 == true && ok2 == false {
+			return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"arguments\" is not an array of strings.")
+		} else if ok1 == false && ok2 == true {
+			return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"program\" is not a string.")
 		} else {
-			return "", fmt.Errorf("programs.Execute: Invalid parameters")
+			return "", fmt.Errorf("programs.%s: Invalid parameters.", method)
 		}
 
 	} else {

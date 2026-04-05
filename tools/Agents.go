@@ -43,6 +43,12 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 		if ok1 == true && ok2 == true && ok3 == true {
 			return tool.Hire(utils.FormatAgentName(name), agent, utils.FormatMultiLine(prompt))
+		} else if ok1 == true && ok2 == true && ok3 == false {
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true {
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"agent\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true {
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		} else {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameters.")
 		}
@@ -54,7 +60,7 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 		if ok1 == true {
 			return tool.Fire(utils.FormatAgentName(name))
 		} else {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameters.")
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		}
 
 	} else if method == "Quit" {
@@ -64,7 +70,7 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 		if ok1 == true {
 			return tool.Quit(utils.FormatMultiLine(message))
 		} else {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameters.")
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"message\" is not a string.")
 		}
 
 	} else {

@@ -27,7 +27,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 		if ok == true {
 			return tool.List(path)
 		} else {
-			return "", fmt.Errorf("files.List: Invalid parameters")
+			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		}
 
 	} else if method == "Read" {
@@ -37,7 +37,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 		if ok == true {
 			return tool.Read(path)
 		} else {
-			return "", fmt.Errorf("files.Read: Invalid parameters")
+			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		}
 
 	} else if method == "Stat" {
@@ -47,7 +47,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 		if ok == true {
 			return tool.Stat(path)
 		} else {
-			return "", fmt.Errorf("files.Stat: Invalid parameters")
+			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		}
 
 	} else if method == "Write" {
@@ -57,8 +57,12 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 
 		if ok1 == true && ok2 == true {
 			return tool.Write(path, content)
+		} else if ok1 == true && ok2 == false {
+			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"content\" is not a string.")
+		} else if ok1 == false && ok2 == true {
+			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
-			return "", fmt.Errorf("files.Write: Invalid parameters")
+			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameters.")
 		}
 
 	} else {
