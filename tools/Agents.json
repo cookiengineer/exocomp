@@ -58,13 +58,13 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Quit",
-			"description": "Finish your work with a status report message to the hiring agent.",
+			"description": "Finish your work with a status message to the hiring agent.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"message": {
 						"type": "string",
-						"description": "The final message and work report content"
+						"description": "The status message. If it contains \"my work is done\" the current process exits with a success."
 					}
 				},
 				"required": ["message"]

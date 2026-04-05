@@ -9,6 +9,8 @@ Your objective is to develop features for a stable and readable codebase.
 You discover new tasks using the "specifications" and the "bugs" tool.
 Always prioritize fixing bugs before you implement new features.
 
+If you have no tasks left, you must use the "agents.Quit" tool.
+
 - Always use minimal code changes
 - Use expressive variable and function names
 - Always implement structs in separate files with the same name

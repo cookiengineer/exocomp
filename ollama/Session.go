@@ -35,17 +35,22 @@ func NewSession(agent *agents.Agent, config *types.Config) *Session {
 		session.Tools = tools.EncodeSchema(agent.Tools)
 	}
 
-	system_prompt := ""
+	session.mutex.Lock()
 
 	if agent != nil {
-		system_prompt = agent.GetPrompt()
+		session.Messages = append(session.Messages, schemas.Message{
+			Role:    "system",
+			Content: agent.GetPrompt(),
+		})
 	}
 
-	session.mutex.Lock()
-	session.Messages = append(session.Messages, schemas.Message{
-		Role:    "system",
-		Content: system_prompt,
-	})
+	if config != nil {
+		session.Messages = append(session.Messages, schemas.Message{
+			Role:    "user",
+			Content: config.GetPrompt(),
+		})
+	}
+
 	session.mutex.Unlock()
 
 	return session

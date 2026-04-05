@@ -30,14 +30,14 @@ type Agent struct {
 
 func NewAgent(agent_name string, agent_type string, agent_model string, agent_temperature float64) *Agent {
 
-	switch agent_type {
-	case "architect":
+	if agent_type == "architect" {
 
 		name := strings.TrimSpace(agent_name)
 
 		if name == "" {
 			name = "Peanut Architect"
 		}
+
 
 		return &Agent{
 			Name:        name,
@@ -48,10 +48,9 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 			Temperature: 0.5,
 			Tools:       []string{
 				"agents.List",
-				"agents.Message",
-				"agents.Report",
-				// No agents.Start
-				// No agents.Stop
+				"agents.Hire",
+				"agents.Fire",
+				"agents.Quit",
 				// No bugs.Add
 				// No bugs.Fix
 				"bugs.List",
@@ -67,7 +66,7 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 			},
 		}
 
-	case "coder":
+	} else if agent_type == "coder" {
 
 		name := strings.TrimSpace(agent_name)
 
@@ -83,11 +82,7 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 			Programs:    []string{"go", "gofmt", "gopls"},
 			Temperature: 0.3,
 			Tools:       []string{
-				"agents.List",
-				"agents.Message",
-				"agents.Report",
-				// No agents.Start
-				// No agents.Stop
+				"agents.Quit",
 				// No bugs.Add
 				"bugs.Fix",
 				"bugs.List",
@@ -111,7 +106,7 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 			},
 		}
 
-	case "tester":
+	} else if agent_type == "tester" {
 
 		name := strings.TrimSpace(agent_name)
 
@@ -127,11 +122,7 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 			Programs:    []string{"go", "gofmt", "gopls"},
 			Temperature: 0.3,
 			Tools:       []string{
-				"agents.List",
-				"agents.Message",
-				"agents.Report",
-				// No agents.Start
-				// No agents.Stop
+				"agents.Quit",
 				"bugs.Add",
 				// No bugs.Fix
 				"bugs.List",
@@ -150,7 +141,7 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 			},
 		}
 
-	case "manager":
+	} else if agent_type == "manager" {
 
 		name := strings.TrimSpace(agent_name)
 
@@ -167,12 +158,8 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 			Temperature: 0.7,
 			Tools:       []string{
 				"agents.List",
-				"agents.ListMessagesOf",
-				"agents.ListReportsOf",
-				"agents.Message",
-				"agents.Report",
-				"agents.Start",
-				"agents.Stop",
+				"agents.Hire",
+				"agents.Fire",
 				// No bugs.Add
 				// No bugs.Fix
 				"bugs.List",
@@ -188,7 +175,8 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 			},
 		}
 
-	default:
+	} else {
+
 		name := strings.TrimSpace(agent_name)
 
 		if name == "" {
@@ -203,7 +191,10 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 			Programs:    []string{"go", "gofmt", "gopls"},
 			Temperature: 0.5,
 			Tools:       []string{
-				// No agents
+				"agents.List",
+				"agents.Hire",
+				"agents.Fire",
+				"agents.Quit",
 				"bugs.Add",
 				"bugs.Fix",
 				"bugs.List",

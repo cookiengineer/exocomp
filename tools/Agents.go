@@ -1,31 +1,27 @@
 package tools
 
 import "exocomp/agents"
-// import "exocomp/types"
 import "exocomp/utils"
 import "fmt"
 import "os"
+import "os/exec"
+import "sort"
+import "strings"
+import "sync"
 
 type Agents struct {
-
-	// TODO: running agents should be mapped to their states
-	// TODO: Instruct agents to do a specific task
-	// TODO: Start/Stop agents in a specific path, which must be in tool.Sandbox
-	// TODO: agent == "manager" then allow to spawn other agents
-	// TODO: agent == "coder" then allow to report back
-	// TODO: agent == "tester" then allow to report back
-
 	Sandbox   string
-	workers   map[string]*agents.Agent
+	mutex     *sync.Mutex
+	agents    map[string]*agents.Agent
 	processes map[string]*os.Process
-
 }
 
 func NewAgents(agent string, sandbox string, playground string) *Agents {
 
 	agents := &Agents{
 		Sandbox:   sandbox,
-		workers:   make(map[string]*agents.Agent),
+		mutex:     &sync.Mutex{},
+		agents:    make(map[string]*agents.Agent),
 		processes: make(map[string]*os.Process),
 	}
 
@@ -78,19 +74,106 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 }
 
 func (tool *Agents) List() (string, error) {
-	return "", fmt.Errorf("agents.List: Not implemented")
+
+	if len(tool.agents) > 0 {
+
+		lines := make([]string, 0)
+
+		for _, agent := range tool.agents {
+			lines = append(lines, fmt.Sprintf("- \"%s\" (%s)", agent.Name, agent.Type.String()))
+		}
+
+		sort.Strings(lines)
+
+		result := make([]string, 0)
+		result = append(result, fmt.Sprintf("agents.List: %d agents working for us.", len(lines)))
+
+		for l := 0; l < len(lines); l++ {
+			result = append(result, lines[l])
+		}
+
+		return strings.Join(result, "\n"), nil
+
+	} else {
+		return "", fmt.Errorf("agents.List: No agents are working for us!")
+	}
+
 }
 
 func (tool *Agents) Hire(name string, agent string, prompt string) (string, error) {
-	return "", fmt.Errorf("agents.Hire: Not implemented")
+
+	cmd := exec.Command(
+		os.Args[0],
+		"jsonl",
+		"--name",   name,
+		"--agent",  agent,
+		"--prompt", prompt,
+	)
+	cmd.Dir = tool.Sandbox
+
+	err := cmd.Start()
+
+	if err == nil {
+
+		tool.agents[name]    = agents.NewAgent(name, agent, "", 0.0)
+		tool.processes[name] = cmd.Process
+
+		// Background Reaper
+		go func(name string, cmd *exec.Cmd) {
+
+			cmd.Wait()
+
+			tool.mutex.Lock()
+			delete(tool.agents, name)
+			delete(tool.processes, name)
+			tool.mutex.Unlock()
+
+		}(name, cmd)
+
+		return fmt.Sprintf("agents.Hire: Agent \"%s\" got hired.", name), nil
+
+	} else {
+		return "", fmt.Errorf("agents.Hire: %s", err.Error())
+	}
 
 }
 
 func (tool *Agents) Fire(name string) (string, error) {
-	return "", fmt.Errorf("agents.Fire: Not implemented")
+
+	process, ok := tool.processes[name]
+
+	if ok == true {
+
+		err := process.Kill()
+
+		if err == nil {
+
+			tool.mutex.Lock()
+			delete(tool.agents, name)
+			delete(tool.processes, name)
+			tool.mutex.Unlock()
+
+			return fmt.Sprintf("agents.Fire: Agent \"%s\" got fired.", name), nil
+
+		} else {
+			return "", fmt.Errorf("agents.Fire: %s", err.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Fire: Agent \"%s\" doesn't work for us anymore?", name)
+	}
+
 }
 
 func (tool *Agents) Quit(message string) (string, error) {
-	return "", fmt.Errorf("agents.Quit: Not implemented")
+
+	if strings.Contains(strings.ToLower(message), "my work is done") {
+		os.Exit(0)
+		return "Quitting...", nil
+	} else {
+		os.Exit(1)
+		return "Quitting...", nil
+	}
+
 }
 

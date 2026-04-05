@@ -38,6 +38,9 @@ func showHelp() {
 	fmt.Println("                           Higher = more creative, more hallucinations")
 	fmt.Println("                           (default: 0.3)")
 	fmt.Println("")
+	fmt.Println("    --prompt string        Initial LLM instructions prompt")
+	fmt.Println("                           (default: \"\")")
+	fmt.Println("")
 	fmt.Println("    --sandbox string       Path to sandbox directory")
 	fmt.Println("                           (default: current working directory)")
 	fmt.Println("")
@@ -63,6 +66,7 @@ func main() {
 	tmp_name        := ""
 	tmp_agent       := ""
 	tmp_model       := "qwen3-coder:30b"
+	tmp_prompt      := ""
 	tmp_sandbox, _  := os.Getwd()
 	tmp_temperature := float64(0.3)
 	tmp_url, _      := net_url.Parse("http://localhost:11434/api/chat")
@@ -108,6 +112,10 @@ func main() {
 					case "model":
 
 						tmp_model = strings.TrimSpace(tmp[1])
+
+					case "prompt":
+
+						tmp_prompt = utils.FormatSingleLine(tmp[1])
 
 					case "sandbox":
 
@@ -160,7 +168,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	config := types.NewConfig(tmp_name, tmp_agent, tmp_model, tmp_sandbox, tmp_temperature, tmp_url)
+	config := types.NewConfig(tmp_name, tmp_agent, tmp_model, tmp_prompt, tmp_sandbox, tmp_temperature, tmp_url)
 	agent  := agents.NewAgent(config.Name, config.Agent, config.Model, config.Temperature)
 
 	err1 := os.MkdirAll(config.Sandbox, 0755)

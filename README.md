@@ -59,9 +59,12 @@ Use the API endpoint `http://vllm_instance:port/v1/chat/completions`.
 
 ## Tools
 
+The Tools are work in progress at the moment, some might not be stable and/or not
+work with LLMs at all.
+
 Cross-Agent Tools:
 
-- [ ] [Agents](./tools/Agents.go) tool to manage the lifecycle of sub-agents.
+- [x] [Agents](./tools/Agents.go) tool to manage the lifecycle of sub-agents.
 - [x] [Bugs](./tools/Bugs.go) tool to manage documentation of bugs.
 - [x] [Changelog](./tools/Changelog.go) tool to manage documentation of development notes.
 - [ ] [Requirements](./tools/Requirements.go) tool to manage documentation of specifications.
