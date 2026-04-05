@@ -64,11 +64,11 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		program_arguments := make([]string, 0)
 
-		for a := 1; a < len(arguments); a++ {
+		for a := 0; a < len(arguments); a++ {
 
 			if strings.Contains(arguments[a], string(os.PathSeparator)) {
 
-				resolved, err := resolveSandboxPath(tool.Sandbox, arguments[a])
+				resolved, err := sanitizeSandboxPath(tool.Sandbox, arguments[a])
 
 				if err == nil {
 					program_arguments = append(program_arguments, resolved)
