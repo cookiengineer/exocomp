@@ -34,10 +34,14 @@ Ethical subroutines sold separately.
 
 Exocomp uses multiple Agent roles:
 
-- [architect](./agents/Agent.Architect.txt) discusses with humans and writes specifications
-- [coder](./agents/Agent.Coder.txt) implements features, reads `specifications` and `bugs`
-- [tester](./agents/Agent.Tester.txt) implements unit tests, writes reports into `bugs`
-- [manager](./agents/Agent.Manager.txt) coordinates sub-agents and project phases
+| Role                                        | Default Model     | Description                                                   |
+|:--------------------------------------------|:-----------------:|:--------------------------------------------------------------|
+| [Manager](./agents/Agent.Manager.txt)       | `gemma4:31b`      | writes with humans, contracts agents and plans project phases |
+| [Architect](./agents/Agent.Architect.txt)   | `gemma4:31b`      | discusses with humans and writes specifications               |
+| [Coder](./agents/Agent.Coder.txt)           | `qwen3-coder:30b` | implements features, reads `specifications` and `bugs`        |
+| [Tester](./agents/Agent.Tester.txt)         | `qwen3-coder:30b` | implements unit tests, writes reports into `bugs`             |
+| [Summarizer](./agents/Agent.Summarizer.txt) | `qwen3-coder:30b` | reads long texts and summarizes them                          |
+| Researcher                                  | TBD               | reads websites, API documentation, and reports to `Architect` |
 
 Exocomp uses Tools to interact with the sandbox, so they're available differently
 for each Agent role. The `manager` starts sub-agents that work on specified tasks,
@@ -71,8 +75,9 @@ Cross-Agent Tools:
 
 Operating System Tools:
 
-- [x] [Files](./tools/Files.go) tool to read/write/list/stat files and folders.
-- [x] [Programs](./tools/Programs.go) tool to execute programs.
+- [x] [Files](./tools/Files.go) tool to interact with files and folders.
+- [ ] [Kiwix](./tools/Kiwix.go) tool to search things in offline knowledge bases.
+- [x] [Programs](./tools/Programs.go) tool to interact with programs.
 - [ ] [Websites](./tools/Websites.go) tool to research things on the web.
 
 

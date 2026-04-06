@@ -71,7 +71,7 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 		if ok1 == true && ok2 == true {
 			return tool.Search(utils.FormatFilePath(path), utils.FormatSymbol(symbol))
 		} else if ok1 == true && ok2 == false {
-			return tool.Search(path, "")
+			return tool.Search(utils.FormatFilePath(path), "")
 		} else if ok1 == false && ok2 == true {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
