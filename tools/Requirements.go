@@ -9,8 +9,17 @@ import "bytes"
 import "fmt"
 import "strings"
 
+type requirement struct {
+	Type        string `json:"type"`
+	File        string `json:"file"`
+	Symbol      string `json:"symbol"`
+	Declaration string `json:"declaration"`
+	Behavior    string `json:"behavior"`
+}
+
 type Requirements struct {
-	Sandbox string
+	Sandbox      string
+	requirements map[string]map[string]requirement
 }
 
 func NewRequirements(agent string, sandbox string) *Requirements {
@@ -18,7 +27,8 @@ func NewRequirements(agent string, sandbox string) *Requirements {
 	// TODO: Requirements need to be specified in different folder
 
 	requirements := &Requirements{
-		Sandbox: sandbox,
+		Sandbox:      sandbox,
+		requirements: make(map[string]map[string]requirement),
 	}
 
 	return requirements
@@ -33,8 +43,24 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 	} else if method == "DefineFunc" {
 
-		// TODO
-		return "", nil
+		path,        ok1 := arguments["path"].(string)
+		symbol,      ok2 := arguments["symbol"].(string)
+		declaration, ok3 := arguments["declaration"].(string)
+		behavior,    ok4 := arguments["behavior"].(string)
+
+		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
+			return tool.DefineFunc(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(declaration), utils.FormatSingleLine(behavior))
+		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"behavior\" is not a string.")
+		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"declaration\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+		} else {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameters.")
+		}
 
 	} else if method == "DefineStruct" {
 
@@ -71,47 +97,105 @@ func (tool *Requirements) List() (string, error) {
 	return "", nil
 }
 
-func (tool *Requirements) DefineFunc(path string, symbol string, definition string, description string) (string, error) {
+func (tool *Requirements) DefineFunc(path string, symbol string, declaration string, behavior string) (string, error) {
 
-	fileset    := token.NewFileSet()
-	file, err0 := parser.ParseFile(fileset, "", strings.Join([]string{
-		"package dummy",
-		definition,
-	}, "\n"), 0)
+	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err0 == nil {
 
-		var found *ast.FuncDecl = nil
+		fileset    := token.NewFileSet()
+		file, err1 := parser.ParseFile(fileset, "", strings.Join([]string{
+			"package dummy",
+			declaration,
+		}, "\n"), 0)
 
-		for _, decl := range file.Decls {
+		if err1 == nil {
 
-			declaration, ok0 := decl.(*ast.FuncDecl)
+			declaration_symbol := ""
+			declaration_code   := ""
 
-			if ok0 == true {
+			for _, decl := range file.Decls {
 
-				if declaration.Type.Params != nil && len(declaration.Type.Params.List) > 0 {
+				declaration, ok0 := decl.(*ast.FuncDecl)
+
+				if ok0 == true {
+
+					if declaration.Name != nil {
+
+						if declaration.Recv != nil && len(declaration.Recv.List) > 0 {
+
+							recv_type := declaration.Recv.List[0].Type
+							type_name := ""
+
+							switch typ := recv_type.(type) {
+
+							case *ast.Ident:
+								type_name = typ.Name
+
+							case *ast.StarExpr:
+
+								ident, ok := typ.X.(*ast.Ident)
+
+								if ok == true {
+									type_name = ident.Name
+								}
+
+							}
+
+							if type_name != "" {
+								declaration_symbol = type_name + "." + declaration.Name.Name
+							} else {
+								declaration_symbol = declaration.Name.Name
+							}
+
+						} else {
+							declaration_symbol = declaration.Name.Name
+						}
+
+					}
 
 					buffer := bytes.Buffer{}
-					printer.Fprint(&buffer, token.NewFileSet(), decl)
+					printer.Fprint(&buffer, token.NewFileSet(), declaration)
+					declaration_code = strings.TrimSpace(buffer.String())
 
-					fmt.Println(buffer.String())
+					break
 
 				}
 
 			}
 
-		}
+			if declaration_symbol == symbol {
 
-		if found != nil {
+				_, ok1 := tool.requirements[resolved]
 
-			// TODO: Write to a file
+				if ok1 == false {
+					tool.requirements[resolved] = make(map[string]requirement)
+				}
+
+				tool.requirements[resolved][symbol] = requirement{
+					File:        resolved,
+					Type:        "func",
+					Declaration: declaration_code,
+					Symbol:      declaration_symbol,
+					Behavior:    behavior,
+				}
+
+				result := make([]string, 0)
+				result = append(result, fmt.Sprintf("requirements.DefineFunc: %s defined as %s", declaration_symbol, declaration_code))
+
+				return strings.Join(result, "\n"), nil
+
+			} else {
+				return "", fmt.Errorf("requirements.DefineFunc: Invalid syntax, function symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
+			}
 
 		} else {
+			return "", fmt.Errorf("requirements.DefineFunc: %s", err1.Error())
 		}
 
+	} else {
+		return "", fmt.Errorf("requirements.DefineFunc: %s", err0.Error())
 	}
-
-	return "", nil
 
 }
 
