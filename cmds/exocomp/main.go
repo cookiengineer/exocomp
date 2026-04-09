@@ -5,6 +5,7 @@ import "exocomp/types"
 import "exocomp/utils"
 import ui_tty "exocomp/ui/tty"
 import ui_web "exocomp/ui/web"
+import ui_webview "exocomp/ui/webview"
 import "fmt"
 import net_url "net/url"
 import "os"
@@ -201,7 +202,7 @@ func main() {
 			os.Stdout.Sync()
 
 			server := ui_web.NewServer(agent, config)
-			client := ui_web.NewClient(server.URL)
+			client := ui_webview.NewClient(server.URL)
 
 			go client.Init()
 			server.Init()

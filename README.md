@@ -76,8 +76,12 @@ Cross-Agent Tools:
 Operating System Tools:
 
 - [x] [Files](./tools/Files.go) tool to interact with files and folders.
-- [ ] [Kiwix](./tools/Kiwix.go) tool to search things in offline knowledge bases.
 - [x] [Programs](./tools/Programs.go) tool to interact with programs.
+
+Knowledge-related Tools:
+
+- [ ] [Gogs](./tools/Gogs.go) tool to search things in offline Gogs/Gitea instances.
+- [ ] [Kiwix](./tools/Kiwix.go) tool to search things in offline knowledge bases.
 - [ ] [Websites](./tools/Websites.go) tool to research things on the web.
 
 
