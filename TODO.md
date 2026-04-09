@@ -1,11 +1,9 @@
 
 # TODO
 
-- [ ] Bug Reports should have a different resolveSandboxPath() because Playground is not Sandbox
+- [ ] Changelog needs to be stored via `playground_path`
+- [ ] Requirements need to be stored via `playground_path`
 - [ ] sandbox is now a nested folder, which means that path is actually relative to playground
-- [ ] Requirements have the same problem
-- [ ] Changelogs have the same problem
-
 - [ ] List() and Search() methods should also show only bugs and requirements for the current sandbox
 
 Maybe this can be easily fixed with a helper method like this:
