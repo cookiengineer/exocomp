@@ -5,17 +5,25 @@ import "fmt"
 import "sort"
 import "strings"
 
-type Bugs struct {
-	Sandbox  string
-	//       map[./path/to/File.go#Symbol]map[note]is_fixed
-	contents map[string]map[string]bool
+type bug_specification struct {
+	IsFixed     bool   `json:"is_fixed"`
+	File        string `json:"file"`
+	Symbol      string `json:"symbol"`
+	Description string `json:"description"`
 }
 
-func NewBugs(agent string, sandbox string) *Bugs {
+type Bugs struct {
+	Playground string
+	Sandbox    string
+	contents   map[string]map[string]bug_specification // map[resolved][symbol]
+}
+
+func NewBugs(agent string, sandbox string, playground string) *Bugs {
 
 	bugs := &Bugs{
-		Sandbox:  sandbox,
-		contents: make(map[string]map[string]bool),
+		Sandbox:    sandbox,
+		Playground: playground,
+		contents:   make(map[string]map[string]bug_specification),
 	}
 
 	readBugs(bugs)
@@ -32,14 +40,14 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 
 	} else if method == "Add" {
 
-		path,   ok1 := arguments["path"].(string)
-		symbol, ok2 := arguments["symbol"].(string)
-		note,   ok3 := arguments["note"].(string)
+		path,        ok1 := arguments["path"].(string)
+		symbol,      ok2 := arguments["symbol"].(string)
+		description, ok3 := arguments["description"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Add(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(note))
+			return tool.Add(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
 		} else if ok1 == true && ok2 == true && ok3 == false {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"note\" is not a string.")
+			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"description\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
 		} else if ok1 == false && ok2 == true && ok3 == true {
@@ -84,27 +92,65 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 
 }
 
-func (tool *Bugs) Add(path string, symbol string, note string) (string, error) {
+func (tool *Bugs) Add(path string, symbol string, description string) (string, error) {
 
 	_, err0 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err0 == nil {
 
-		anchor := fmt.Sprintf("%s#%s", path, symbol)
-		_, ok1 := tool.contents[anchor]
+		_, ok1 := tool.contents[path]
 
 		if ok1 == false {
-			tool.contents[anchor] = make(map[string]bool)
+			tool.contents[path] = make(map[string]bug_specification)
 		}
 
-		tool.contents[anchor][note] = false
-		writeBugs(tool)
+		_, ok2 := tool.contents[path][symbol]
 
-		result := strings.Join([]string{
-			fmt.Sprintf("bugs.Add: Bug report with %d B written.", len(note)),
-		}, "\n")
+		if ok2 == false {
 
-		return result, nil
+			tool.contents[path][symbol] = bug_specification{
+				IsFixed:     false,
+				File:        path,
+				Symbol:      symbol,
+				Description: description,
+			}
+
+			err1 := writeBugs(tool)
+
+			if err1 == nil {
+
+				result := strings.Join([]string{
+					fmt.Sprintf("bugs.Add: Bug report with %d B written.", len(description)),
+				}, "\n")
+
+				return result, nil
+
+			} else {
+				return "", fmt.Errorf("bugs.Add: %s", err1.Error())
+			}
+
+		} else {
+
+			bug_report := tool.contents[path][symbol]
+			bug_report.Description = description
+			bug_report.IsFixed     = false
+			tool.contents[path][symbol] = bug_report
+
+			err1 := writeBugs(tool)
+
+			if err1 == nil {
+
+				result := strings.Join([]string{
+					fmt.Sprintf("bugs.Add: Bug report with %d B updated.", len(description)),
+				}, "\n")
+
+				return result, nil
+
+			} else {
+				return "", fmt.Errorf("bugs.Add: %s", err1.Error())
+			}
+
+		}
 
 	} else {
 		return "", fmt.Errorf("bugs.Add: %s", err0.Error())
@@ -118,26 +164,37 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 
 	if err0 == nil {
 
-		anchor := fmt.Sprintf("%s#%s", path, symbol)
-		_, ok1 := tool.contents[anchor]
+		_, ok1 := tool.contents[path]
 
 		if ok1 == true {
 
-			count := 0
+			bug_report, ok2 := tool.contents[path][symbol]
 
-			for note, _ := range tool.contents[anchor] {
-				tool.contents[anchor][note] = true
-				count++
+			if ok2 == true {
+
+				bug_report.IsFixed = true
+				tool.contents[path][symbol] = bug_report
+
+				err1 := writeBugs(tool)
+
+				if err1 == nil {
+
+					result := strings.Join([]string{
+						fmt.Sprintf("bugs.Fix: Bug report marked as fixed."),
+					}, "\n")
+
+					return result, nil
+
+				} else {
+					return "", fmt.Errorf("bugs.Fix: %s", err1.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("bugs.Fix: No bug report available for path \"%s\" and symbol \"%s\"", path, symbol)
 			}
 
-			result := strings.Join([]string{
-				fmt.Sprintf("bugs.Fix: %d bug reports marked as fixed.", count),
-			}, "\n")
-
-			return result, nil
-
 		} else {
-			return "", fmt.Errorf("bugs.Fix: 0 bug reports marked as fixed.")
+			return "", fmt.Errorf("bugs.Fix: No bug reports available for path \"%s\".", path)
 		}
 
 	} else {
@@ -150,12 +207,12 @@ func (tool *Bugs) List() (string, error) {
 
 	lines := make([]string, 0)
 
-	for anchor, notes := range tool.contents {
+	for _, bug_reports := range tool.contents {
 
-		for note, is_fixed := range notes {
+		for _, bug_report := range bug_reports {
 
-			if is_fixed == false {
-				lines = append(lines, fmt.Sprintf("- [ ] `%s`: %s", anchor, note))
+			if bug_report.IsFixed == false {
+				lines = append(lines, "- File: %s, Symbol: %s, Description: %s", bug_report.File, bug_report.Symbol, bug_report.Description)
 			}
 
 		}
@@ -165,7 +222,7 @@ func (tool *Bugs) List() (string, error) {
 	sort.Strings(lines)
 
 	result := make([]string, 0)
-	result = append(result, fmt.Sprintf("bugs.List: %d bug reports.", len(lines)))
+	result = append(result, fmt.Sprintf("bugs.List: %d unfixed bug reports.", len(lines)))
 
 	for l := 0; l < len(lines); l++ {
 		result = append(result, lines[l])
@@ -185,51 +242,61 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 		if symbol != "" {
 
-			anchor     := fmt.Sprintf("%s#%s", path, symbol)
-			notes, ok1 := tool.contents[anchor]
+			bug_reports, ok1 := tool.contents[path]
 
 			if ok1 == true {
 
-				for note, is_fixed := range notes {
+				for _, bug_report := range bug_reports {
 
-					if is_fixed == false {
-						lines = append(lines, fmt.Sprintf("- [ ] `%s`: %s", anchor, note))
+					if bug_report.IsFixed == false {
+						lines = append(lines, "- File: %s, Symbol: %s, Description: %s", bug_report.File, bug_report.Symbol, bug_report.Description)
 					}
 
 				}
 
 			}
+
+			sort.Strings(lines)
+
+			result := make([]string, 0)
+			result = append(result, fmt.Sprintf("bugs.Search: %s contains %d bug reports.", path, len(lines)))
+
+			for l := 0; l < len(lines); l++ {
+				result = append(result, lines[l])
+			}
+
+			return strings.Join(result, "\n"), nil
 
 		} else {
 
-			for anchor, notes := range tool.contents {
+			_, ok1 := tool.contents[path]
 
-				if strings.HasPrefix(anchor, path + "#") {
+			if ok1 == true {
 
-					for note, is_fixed := range notes {
+				bug_report, ok2 := tool.contents[path][symbol]
 
-						if is_fixed == false {
-							lines = append(lines, fmt.Sprintf("- [ ] `%s`: %s", anchor, note))
-						}
+				if ok2 == true {
 
+					if bug_report.IsFixed == false {
+						lines = append(lines, "- File: %s, Symbol: %s, Description: %s", bug_report.File, bug_report.Symbol, bug_report.Description)
 					}
 
 				}
 
 			}
 
+			sort.Strings(lines)
+
+			result := make([]string, 0)
+			result = append(result, fmt.Sprintf("bugs.Search: %s#%s contains %d bug reports.", path, symbol, len(lines)))
+
+			for l := 0; l < len(lines); l++ {
+				result = append(result, lines[l])
+			}
+
+			return strings.Join(result, "\n"), nil
+
 		}
-
-		sort.Strings(lines)
-
-		result := make([]string, 0)
-		result = append(result, fmt.Sprintf("bugs.Search: %s contains %d bug reports.", path, len(lines)))
-
-		for l := 0; l < len(lines); l++ {
-			result = append(result, lines[l])
-		}
-
-		return strings.Join(result, "\n"), nil
 
 	} else {
 		return "", fmt.Errorf("bugs.Search: %s", err0.Error())

@@ -1,9 +1,25 @@
 
 # TODO
 
-- [ ] Implement `Bugs` tool to manage discovered bugs into the `BUGS.md` file.
-- [ ] Implement `Features` tool to manage planned features into the `TODO.md` file.
+- [ ] Bug Reports should have a different resolveSandboxPath() because Playground is not Sandbox
+- [ ] sandbox is now a nested folder, which means that path is actually relative to playground
+- [ ] Requirements have the same problem
+- [ ] Changelogs have the same problem
 
+- [ ] List() and Search() methods should also show only bugs and requirements for the current sandbox
+
+Maybe this can be easily fixed with a helper method like this:
+
+```go
+resolved, err0 := resolveSandboxPath(tool.Playground, path)
+
+if isWithinSandbox(tool.Sandbox, resolved) {
+    // old code
+}
+```
+
+- [ ] Bug in Time usage. Seconds in time leads to wrong serialization, and multiple headlines
+- [ ] Probably time.Time needs to be serialized to string first, and then iterated over the strings?
 
 ## Planner Agent
 

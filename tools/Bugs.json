@@ -15,12 +15,12 @@
 						"type": "string",
 						"description": "Linkable symbol, method, function, or variable name"
 					},
-					"note": {
+					"description": {
 						"type": "string",
 						"description": "Single-line description"
 					}
 				},
-				"required": ["path", "symbol", "note"]
+				"required": ["path", "symbol", "description"]
 			}
 		}
 	},

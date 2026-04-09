@@ -9,7 +9,7 @@ import "bytes"
 import "fmt"
 import "strings"
 
-type requirement struct {
+type requirement_specification struct {
 	Type        string `json:"type"`
 	File        string `json:"file"`
 	Symbol      string `json:"symbol"`
@@ -18,17 +18,19 @@ type requirement struct {
 }
 
 type Requirements struct {
-	Sandbox      string
-	requirements map[string]map[string]requirement
+	Sandbox    string
+	Playground string
+	contents   map[string]map[string]requirement_specification // map[resolved][symbol]
 }
 
-func NewRequirements(agent string, sandbox string) *Requirements {
+func NewRequirements(agent string, sandbox string, playground string) *Requirements {
 
 	// TODO: Requirements need to be specified in different folder
 
 	requirements := &Requirements{
-		Sandbox:      sandbox,
-		requirements: make(map[string]map[string]requirement),
+		Sandbox:    sandbox,
+		Playground: playground,
+		contents:   make(map[string]map[string]requirement_specification),
 	}
 
 	return requirements
@@ -64,8 +66,24 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 	} else if method == "DefineStruct" {
 
-		// TODO
-		return "", nil
+		path,        ok1 := arguments["path"].(string)
+		symbol,      ok2 := arguments["symbol"].(string)
+		declaration, ok3 := arguments["declaration"].(string)
+		behavior,    ok4 := arguments["behavior"].(string)
+
+		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
+			return tool.DefineFunc(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(declaration), utils.FormatSingleLine(behavior))
+		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"behavior\" is not a string.")
+		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"declaration\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+		} else {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameters.")
+		}
 
 	} else if method == "DefineTest" {
 
@@ -166,13 +184,13 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 			if declaration_symbol == symbol {
 
-				_, ok1 := tool.requirements[resolved]
+				_, ok1 := tool.contents[resolved]
 
 				if ok1 == false {
-					tool.requirements[resolved] = make(map[string]requirement)
+					tool.contents[resolved] = make(map[string]requirement_specification)
 				}
 
-				tool.requirements[resolved][symbol] = requirement{
+				tool.contents[resolved][symbol] = requirement_specification{
 					File:        resolved,
 					Type:        "func",
 					Declaration: declaration_code,
@@ -180,10 +198,18 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 					Behavior:    behavior,
 				}
 
-				result := make([]string, 0)
-				result = append(result, fmt.Sprintf("requirements.DefineFunc: %s defined as %s", declaration_symbol, declaration_code))
+				err2 := writeRequirements(tool)
 
-				return strings.Join(result, "\n"), nil
+				if err2 == nil {
+
+					result := make([]string, 0)
+					result = append(result, fmt.Sprintf("requirements.DefineFunc: %s defined as %s", declaration_symbol, declaration_code))
+
+					return strings.Join(result, "\n"), nil
+
+				} else {
+					return "", fmt.Errorf("requirements.DefineFunc: %s", err2.Error())
+				}
 
 			} else {
 				return "", fmt.Errorf("requirements.DefineFunc: Invalid syntax, function symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
@@ -199,7 +225,9 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 }
 
-func (tool *Requirements) DefineStruct(path string, symbol string, fields []string, description string) (string, error) {
+func (tool *Requirements) DefineStruct(path string, symbol string, declaration string, behavior string) (string, error) {
+
+
 	return "", nil
 }
 

@@ -10,19 +10,21 @@ import "strings"
 import "sync"
 
 type Agents struct {
-	Sandbox   string
-	mutex     *sync.Mutex
-	agents    map[string]*agents.Agent
-	processes map[string]*os.Process
+	Sandbox    string
+	Playground string
+	mutex      *sync.Mutex
+	agents     map[string]*agents.Agent
+	processes  map[string]*os.Process
 }
 
 func NewAgents(agent string, sandbox string, playground string) *Agents {
 
 	agents := &Agents{
-		Sandbox:   sandbox,
-		mutex:     &sync.Mutex{},
-		agents:    make(map[string]*agents.Agent),
-		processes: make(map[string]*os.Process),
+		Sandbox:    sandbox,
+		Playground: playground,
+		mutex:      &sync.Mutex{},
+		agents:     make(map[string]*agents.Agent),
+		processes:  make(map[string]*os.Process),
 	}
 
 	return agents
@@ -108,14 +110,21 @@ func (tool *Agents) List() (string, error) {
 
 func (tool *Agents) Hire(name string, agent string, prompt string) (string, error) {
 
+	// TODO: Hire should allow to hire agents working on a specific sandbox
+	// So path should be e.g. ./path/to/package
+
+	sandbox    := tool.Sandbox
+	playground := tool.Playground
+
 	cmd := exec.Command(
 		os.Args[0],
 		"jsonl",
-		"--name",   name,
-		"--agent",  agent,
-		"--prompt", prompt,
+		"--name",       name,
+		"--agent",      agent,
+		"--playground", playground,
+		"--prompt",     prompt,
 	)
-	cmd.Dir = tool.Sandbox
+	cmd.Dir = sandbox
 
 	err := cmd.Start()
 

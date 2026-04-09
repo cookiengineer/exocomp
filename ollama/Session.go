@@ -155,11 +155,11 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 		} else if name == "bugs" {
 
-			return tools.Tool(tools.NewBugs(session.Config.Agent, session.Config.Sandbox))
+			return tools.Tool(tools.NewBugs(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
 
 		} else if name == "changelog" {
 
-			return tools.Tool(tools.NewChangelog(session.Config.Agent, session.Config.Sandbox))
+			return tools.Tool(tools.NewChangelog(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
 
 		} else if name == "files" {
 
@@ -171,7 +171,7 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 		} else if name == "requirements" {
 
-			return tools.Tool(tools.NewRequirements(session.Config.Agent, session.Config.Sandbox))
+			return tools.Tool(tools.NewRequirements(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
 
 		} else {
 			return nil

@@ -63,14 +63,15 @@ func showHelp() {
 
 func main() {
 
-	tmp_ui          := ""
-	tmp_name        := ""
-	tmp_agent       := ""
-	tmp_model       := "qwen3-coder:30b"
-	tmp_prompt      := ""
-	tmp_sandbox, _  := os.Getwd()
-	tmp_temperature := float64(0.3)
-	tmp_url, _      := net_url.Parse("http://localhost:11434/api/chat")
+	tmp_ui            := ""
+	tmp_name          := ""
+	tmp_agent         := ""
+	tmp_model         := "qwen3-coder:30b"
+	tmp_playground, _ := os.Getwd()
+	tmp_prompt        := ""
+	tmp_sandbox, _    := os.Getwd()
+	tmp_temperature   := float64(0.3)
+	tmp_url, _        := net_url.Parse("http://localhost:11434/api/chat")
 
 	if len(os.Args) >= 2 {
 
@@ -113,6 +114,16 @@ func main() {
 					case "model":
 
 						tmp_model = strings.TrimSpace(tmp[1])
+
+					case "playground":
+
+						stat, err := os.Stat(strings.TrimSpace(tmp[1]))
+
+						if err == nil && stat.IsDir() {
+							tmp_playground = strings.TrimSpace(tmp[1])
+						} else if err != nil && os.IsNotExist(err) {
+							tmp_playground = strings.TrimSpace(tmp[1])
+						}
 
 					case "prompt":
 
@@ -169,56 +180,65 @@ func main() {
 		os.Exit(1)
 	}
 
-	config := types.NewConfig(tmp_name, tmp_agent, tmp_model, tmp_prompt, tmp_sandbox, tmp_temperature, tmp_url)
-	agent  := agents.NewAgent(config.Name, config.Agent, config.Model, config.Temperature)
+	if tmp_playground == tmp_sandbox || strings.HasPrefix(tmp_sandbox, tmp_playground + string(os.PathSeparator)) {
 
-	err1 := os.MkdirAll(config.Sandbox, 0755)
+		config := types.NewConfig(tmp_name, tmp_agent, tmp_model, tmp_playground, tmp_prompt, tmp_sandbox, tmp_temperature, tmp_url)
+		agent  := agents.NewAgent(config.Name, config.Agent, config.Model, config.Temperature)
 
-	if err1 == nil {
+		err1 := os.MkdirAll(config.Sandbox, 0755)
 
-		if tmp_ui == "jsonl" {
+		if err1 == nil {
 
-			// TODO: jsonl Client mode
+			if tmp_ui == "jsonl" {
 
-		} else if tmp_ui == "tty" {
+				// TODO: jsonl Client mode
 
-			fmt.Fprintf(os.Stdout, "[config]:\n")
-			fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
-			fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
-			fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
-			fmt.Fprintf(os.Stdout, "\n")
-			os.Stdout.Sync()
+			} else if tmp_ui == "tty" {
 
-			client := ui_tty.NewClient(agent, config)
-			client.Init()
+				fmt.Fprintf(os.Stdout, "[config]:\n")
+				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
+				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
+				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
+				fmt.Fprintf(os.Stdout, "\n")
+				os.Stdout.Sync()
 
-		} else if tmp_ui == "web" {
+				client := ui_tty.NewClient(agent, config)
+				client.Init()
 
-			fmt.Fprintf(os.Stdout, "[config]:\n")
-			fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
-			fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
-			fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
-			fmt.Fprintf(os.Stdout, "\n")
-			os.Stdout.Sync()
+			} else if tmp_ui == "web" {
 
-			server := ui_web.NewServer(agent, config)
-			client := ui_webview.NewClient(server.URL)
+				fmt.Fprintf(os.Stdout, "[config]:\n")
+				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
+				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
+				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
+				fmt.Fprintf(os.Stdout, "\n")
+				os.Stdout.Sync()
 
-			go client.Init()
-			server.Init()
+				server := ui_web.NewServer(agent, config)
+				client := ui_webview.NewClient(server.URL)
 
-			// TODO: client.Destroy()
+				go client.Init()
+				server.Init()
+
+				// TODO: client.Destroy()
+
+			} else {
+
+				showHelp()
+				os.Exit(1)
+
+			}
 
 		} else {
-
-			showHelp()
+			fmt.Println(err1)
 			os.Exit(1)
-
 		}
 
 	} else {
-		fmt.Println(err1)
+
+		fmt.Println("Invalid sandbox path, must be inside playground.")
 		os.Exit(1)
+
 	}
 
 }

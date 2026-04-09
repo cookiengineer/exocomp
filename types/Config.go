@@ -17,7 +17,7 @@ type Config struct {
 	URL         *net_url.URL
 }
 
-func NewConfig(name string, agent string, model string, prompt string, sandbox string, temperature float64, url *net_url.URL) *Config {
+func NewConfig(name string, agent string, model string, playground string, prompt string, sandbox string, temperature float64, url *net_url.URL) *Config {
 
 	prompt = utils.FormatSingleLine(prompt)
 
@@ -27,25 +27,28 @@ func NewConfig(name string, agent string, model string, prompt string, sandbox s
 		temperature = 1.0
 	}
 
+	if playground == "" {
 
-	base := os.TempDir()
-	playground, err := os.MkdirTemp(base, "exocomp-playground-*")
+		base := os.TempDir()
+		tmp, err := os.MkdirTemp(base, "exocomp-playground-*")
 
-	if err == nil {
-
-		return &Config{
-			Name:        name,
-			Agent:       agent,
-			Model:       model,
-			Playground:  playground,
-			Prompt:      prompt,
-			Sandbox:     sandbox,
-			Temperature: temperature,
-			URL:         url,
+		if err == nil {
+			playground = tmp
+		} else {
+			playground = "/tmp/exocomp"
 		}
 
-	} else {
-		panic(err)
+	}
+
+	return &Config{
+		Name:        name,
+		Agent:       agent,
+		Model:       model,
+		Playground:  playground,
+		Prompt:      prompt,
+		Sandbox:     sandbox,
+		Temperature: temperature,
+		URL:         url,
 	}
 
 }
