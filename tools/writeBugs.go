@@ -12,7 +12,7 @@ func writeBugs(tool *Bugs) error {
 
 		if err0 == nil {
 
-			bytes, err1 := json.MarshalIndent(tool.contents, "", "\n")
+			bytes, err1 := json.MarshalIndent(tool.contents, "", "\t")
 
 			if err1 == nil {
 

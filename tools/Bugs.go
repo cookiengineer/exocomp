@@ -94,34 +94,34 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 
 func (tool *Bugs) Add(path string, symbol string, description string) (string, error) {
 
-	resolved_path, err0 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
-	if err0 == nil {
+	if err1 == nil {
 
-		playground_path, err1 := resolveSandboxPath(tool.Playground, resolved_path)
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
-		if err1 == nil {
+		if err2 == nil {
 
-			_, ok1 := tool.contents[playground_path]
+			_, ok1 := tool.contents[internal_path]
 
 			if ok1 == false {
-				tool.contents[playground_path] = make(map[string]bug_specification)
+				tool.contents[internal_path] = make(map[string]bug_specification)
 			}
 
-			_, ok2 := tool.contents[playground_path][symbol]
+			_, ok2 := tool.contents[internal_path][symbol]
 
 			if ok2 == false {
 
-				tool.contents[playground_path][symbol] = bug_specification{
+				tool.contents[internal_path][symbol] = bug_specification{
 					IsFixed:     false,
-					File:        playground_path,
+					File:        internal_path,
 					Symbol:      symbol,
 					Description: description,
 				}
 
-				err1 := writeBugs(tool)
+				err3 := writeBugs(tool)
 
-				if err1 == nil {
+				if err3 == nil {
 
 					result := strings.Join([]string{
 						fmt.Sprintf("bugs.Add: Bug report with %d B written.", len(description)),
@@ -130,19 +130,19 @@ func (tool *Bugs) Add(path string, symbol string, description string) (string, e
 					return result, nil
 
 				} else {
-					return "", fmt.Errorf("bugs.Add: %s", err1.Error())
+					return "", fmt.Errorf("bugs.Add: %s", err3.Error())
 				}
 
 			} else {
 
-				bug_report := tool.contents[playground_path][symbol]
+				bug_report := tool.contents[internal_path][symbol]
 				bug_report.Description = description
 				bug_report.IsFixed     = false
-				tool.contents[playground_path][symbol] = bug_report
+				tool.contents[internal_path][symbol] = bug_report
 
-				err1 := writeBugs(tool)
+				err3 := writeBugs(tool)
 
-				if err1 == nil {
+				if err3 == nil {
 
 					result := strings.Join([]string{
 						fmt.Sprintf("bugs.Add: Bug report with %d B updated.", len(description)),
@@ -151,46 +151,45 @@ func (tool *Bugs) Add(path string, symbol string, description string) (string, e
 					return result, nil
 
 				} else {
-					return "", fmt.Errorf("bugs.Add: %s", err1.Error())
+					return "", fmt.Errorf("bugs.Add: %s", err3.Error())
 				}
 
 			}
 
 		} else {
-			return "", fmt.Errorf("bugs.Add: %s", err1.Error())
+			return "", fmt.Errorf("bugs.Add: %s", err2.Error())
 		}
 
-
 	} else {
-		return "", fmt.Errorf("bugs.Add: %s", err0.Error())
+		return "", fmt.Errorf("bugs.Add: %s", err1.Error())
 	}
 
 }
 
 func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 
-	resolved_path, err0 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
-	if err0 == nil {
+	if err1 == nil {
 
-		playground_path, err1 := resolveSandboxPath(tool.Playground, resolved_path)
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
-		if err1 == nil {
+		if err2 == nil {
 
-			_, ok1 := tool.contents[playground_path]
+			_, ok1 := tool.contents[internal_path]
 
 			if ok1 == true {
 
-				bug_report, ok2 := tool.contents[playground_path][symbol]
+				bug_report, ok2 := tool.contents[internal_path][symbol]
 
 				if ok2 == true {
 
 					bug_report.IsFixed = true
-					tool.contents[playground_path][symbol] = bug_report
+					tool.contents[internal_path][symbol] = bug_report
 
-					err1 := writeBugs(tool)
+					err3 := writeBugs(tool)
 
-					if err1 == nil {
+					if err3 == nil {
 
 						result := strings.Join([]string{
 							fmt.Sprintf("bugs.Fix: Bug report marked as fixed."),
@@ -199,7 +198,7 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 						return result, nil
 
 					} else {
-						return "", fmt.Errorf("bugs.Fix: %s", err1.Error())
+						return "", fmt.Errorf("bugs.Fix: %s", err3.Error())
 					}
 
 				} else {
@@ -211,11 +210,11 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 			}
 
 		} else {
-			return "", fmt.Errorf("bugs.Fix: %s", err1.Error())
+			return "", fmt.Errorf("bugs.Fix: %s", err2.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("bugs.Fix: %s", err0.Error())
+		return "", fmt.Errorf("bugs.Fix: %s", err1.Error())
 	}
 
 }
@@ -234,10 +233,10 @@ func (tool *Bugs) List() (string, error) {
 
 				if err1 == nil {
 
-					sandbox_path, err2 := resolveSandboxPath(tool.Sandbox, resolved_path)
+					sandbox_path, err2 := sanitizeSandboxPath(tool.Sandbox, resolved_path)
 
 					if err2 == nil {
-						lines = append(lines, "- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description)
+						lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description))
 					}
 
 				}
@@ -263,55 +262,33 @@ func (tool *Bugs) List() (string, error) {
 
 func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
-	resolved_path, err0 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
-	if err0 == nil {
+	if err1 == nil {
 
-		playground_path, err1 := resolveSandboxPath(tool.Playground, resolved_path)
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
-		if err1 == nil {
+		if err2 == nil {
 
 			lines := make([]string, 0)
 
 			if symbol != "" {
 
-				bug_reports, ok1 := tool.contents[playground_path]
+				bug_reports, ok1 := tool.contents[internal_path]
 
 				if ok1 == true {
+
 
 					for _, bug_report := range bug_reports {
 
 						if bug_report.IsFixed == false {
-							lines = append(lines, "- File: %s, Symbol: %s, Description: %s", path, bug_report.Symbol, bug_report.Description)
-						}
 
-					}
+							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, bug_report.File)
 
-				}
+							if err3 == nil {
+								lines = append(lines, "- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description)
+							}
 
-				sort.Strings(lines)
-
-				result := make([]string, 0)
-				result = append(result, fmt.Sprintf("bugs.Search: %s contains %d bug reports.", path, len(lines)))
-
-				for l := 0; l < len(lines); l++ {
-					result = append(result, lines[l])
-				}
-
-				return strings.Join(result, "\n"), nil
-
-			} else {
-
-				_, ok1 := tool.contents[playground_path]
-
-				if ok1 == true {
-
-					bug_report, ok2 := tool.contents[playground_path][symbol]
-
-					if ok2 == true {
-
-						if bug_report.IsFixed == false {
-							lines = append(lines, "- File: %s, Symbol: %s, Description: %s", path, bug_report.Symbol, bug_report.Description)
 						}
 
 					}
@@ -329,14 +306,49 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 				return strings.Join(result, "\n"), nil
 
+			} else {
+
+				_, ok1 := tool.contents[internal_path]
+
+				if ok1 == true {
+
+					bug_report, ok2 := tool.contents[internal_path][symbol]
+
+					if ok2 == true {
+
+						if bug_report.IsFixed == false {
+
+							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, bug_report.File)
+
+							if err3 == nil {
+								lines = append(lines, "- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description)
+							}
+
+						}
+
+					}
+
+				}
+
+				sort.Strings(lines)
+
+				result := make([]string, 0)
+				result = append(result, fmt.Sprintf("bugs.Search: %s contains %d bug reports.", path, len(lines)))
+
+				for l := 0; l < len(lines); l++ {
+					result = append(result, lines[l])
+				}
+
+				return strings.Join(result, "\n"), nil
+
 			}
 
 		} else {
-			return "", fmt.Errorf("bugs.Search: %s", err1.Error())
+			return "", fmt.Errorf("bugs.Search: %s", err2.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("bugs.Search: %s", err0.Error())
+		return "", fmt.Errorf("bugs.Search: %s", err1.Error())
 	}
 
 }
