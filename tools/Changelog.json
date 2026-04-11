@@ -11,12 +11,16 @@
 						"type": "string",
 						"description": "Relative path to the file"
 					},
-					"note": {
+					"symbol": {
 						"type": "string",
-						"description": "Single-line description, has to start with \"Added ...\""
+						"description": "Linkable symbol, method, function, or variable name"
+					},
+					"description": {
+						"type": "string",
+						"description": "Single-line concise change description"
 					}
 				},
-				"required": ["path", "note"]
+				"required": ["path", "symbol", "description"]
 			}
 		}
 	},
@@ -32,12 +36,16 @@
 						"type": "string",
 						"description": "Relative path to the file"
 					},
-					"note": {
+					"symbol": {
 						"type": "string",
-						"description": "Single-line description, has to start with \"Changed ...\""
+						"description": "Linkable symbol, method, function, or variable name"
+					},
+					"description": {
+						"type": "string",
+						"description": "Single-line concise change description"
 					}
 				},
-				"required": ["path", "note"]
+				"required": ["path", "symbol", "description"]
 			}
 		}
 	},
@@ -53,12 +61,16 @@
 						"type": "string",
 						"description": "Relative path to the file"
 					},
-					"note": {
+					"symbol": {
 						"type": "string",
-						"description": "Single-line description, has to start with \"Deprecated ...\""
+						"description": "Linkable symbol, method, function, or variable name"
+					},
+					"description": {
+						"type": "string",
+						"description": "Single-line concise change description"
 					}
 				},
-				"required": ["path", "note"]
+				"required": ["path", "symbol", "description"]
 			}
 		}
 	},
@@ -74,12 +86,16 @@
 						"type": "string",
 						"description": "Relative path to the file"
 					},
-					"note": {
+					"symbol": {
 						"type": "string",
-						"description": "Single-line description, has to start with \"Fixed ...\""
+						"description": "Linkable symbol, method, function, or variable name"
+					},
+					"description": {
+						"type": "string",
+						"description": "Single-line concise change description"
 					}
 				},
-				"required": ["path", "note"]
+				"required": ["path", "symbol", "description"]
 			}
 		}
 	},
@@ -95,12 +111,16 @@
 						"type": "string",
 						"description": "Relative path to the file"
 					},
-					"note": {
+					"symbol": {
 						"type": "string",
-						"description": "Single-line description, has to start with \"Removed ...\""
+						"description": "Linkable symbol, method, function, or variable name"
+					},
+					"description": {
+						"type": "string",
+						"description": "Single-line concise change description"
 					}
 				},
-				"required": ["path", "note"]
+				"required": ["path", "symbol", "description"]
 			}
 		}
 	},
@@ -108,13 +128,17 @@
 		"type": "function",
 		"function": {
 			"name": "changelog.Search",
-			"description": "Search changelog for entries of a specific file",
+			"description": "Search for changelog entries of a specific file and an optional symbol.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
 						"description": "Relative path to the file"
+					},
+					"symbol": {
+						"type": "string",
+						"description": "Linkable symbol, method, function, or variable name"
 					}
 				},
 				"required": ["path"]

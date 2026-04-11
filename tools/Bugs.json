@@ -17,7 +17,7 @@
 					},
 					"description": {
 						"type": "string",
-						"description": "Single-line description"
+						"description": "Single-line concise bug description"
 					}
 				},
 				"required": ["path", "symbol", "description"]

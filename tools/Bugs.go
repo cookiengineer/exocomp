@@ -15,7 +15,7 @@ type bug_specification struct {
 type Bugs struct {
 	Playground string
 	Sandbox    string
-	contents   map[string]map[string]bug_specification // map[resolved][symbol]
+	contents   map[string]map[string]bug_specification // map[path][symbol]
 }
 
 func NewBugs(agent string, sandbox string, playground string) *Bugs {
@@ -122,13 +122,7 @@ func (tool *Bugs) Add(path string, symbol string, description string) (string, e
 				err3 := writeBugs(tool)
 
 				if err3 == nil {
-
-					result := strings.Join([]string{
-						fmt.Sprintf("bugs.Add: Bug report with %d B written.", len(description)),
-					}, "\n")
-
-					return result, nil
-
+					return fmt.Sprintf("bugs.Add: Bug report with %d B written.", len(description)), nil
 				} else {
 					return "", fmt.Errorf("bugs.Add: %s", err3.Error())
 				}
@@ -143,13 +137,7 @@ func (tool *Bugs) Add(path string, symbol string, description string) (string, e
 				err3 := writeBugs(tool)
 
 				if err3 == nil {
-
-					result := strings.Join([]string{
-						fmt.Sprintf("bugs.Add: Bug report with %d B updated.", len(description)),
-					}, "\n")
-
-					return result, nil
-
+					return fmt.Sprintf("bugs.Add: Bug report with %d B updated.", len(description)), nil
 				} else {
 					return "", fmt.Errorf("bugs.Add: %s", err3.Error())
 				}
@@ -190,13 +178,7 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 					err3 := writeBugs(tool)
 
 					if err3 == nil {
-
-						result := strings.Join([]string{
-							fmt.Sprintf("bugs.Fix: Bug report marked as fixed."),
-						}, "\n")
-
-						return result, nil
-
+						return fmt.Sprintf("bugs.Fix: Bug report marked as fixed."), nil
 					} else {
 						return "", fmt.Errorf("bugs.Fix: %s", err3.Error())
 					}

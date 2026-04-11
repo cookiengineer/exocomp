@@ -6,10 +6,18 @@ import "sort"
 import "strings"
 import "time"
 
+type changelog_entry struct {
+	Date        time.Time `json:"date"`
+	Type        string    `json:"type"`
+	File        string    `json:"file"`
+	Symbol      string    `json:"symbol"`
+	Description string    `json:"description"`
+}
+
 type Changelog struct {
 	Sandbox    string
 	Playground string
-	contents   map[time.Time][]string // map[2025-12-31 10:20:30][]string{changelog_description}
+	contents   map[string]map[string][]changelog_entry // map[path][symbol]
 }
 
 func NewChangelog(agent string, sandbox string, playground string) *Changelog {
@@ -17,7 +25,7 @@ func NewChangelog(agent string, sandbox string, playground string) *Changelog {
 	changelog := &Changelog{
 		Sandbox:    sandbox,
 		Playground: playground,
-		contents:   make(map[time.Time][]string, 0),
+		contents:   make(map[string]map[string][]changelog_entry, 0),
 	}
 
 	readChangelog(changelog)
@@ -30,14 +38,17 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 	if method == "Add" {
 
-		path, ok1 := arguments["path"].(string)
-		note, ok2 := arguments["note"].(string)
+		path,        ok1 := arguments["path"].(string)
+		symbol,      ok2 := arguments["symbol"].(string)
+		description, ok3 := arguments["description"].(string)
 
-		if ok1 == true && ok2 == true {
-			return tool.Add(utils.FormatFilePath(path), utils.FormatSingleLine(note))
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
-		} else if ok1 == false && ok2 == true {
+		if ok1 == true && ok2 == true && ok3 == true {
+			return tool.Add(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+		} else if ok1 == true && ok2 == true && ok3 == false {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
@@ -45,14 +56,17 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 	} else if method == "Change" {
 
-		path, ok1 := arguments["path"].(string)
-		note, ok2 := arguments["note"].(string)
+		path,        ok1 := arguments["path"].(string)
+		symbol,      ok2 := arguments["symbol"].(string)
+		description, ok3 := arguments["description"].(string)
 
-		if ok1 == true && ok2 == true {
-			return tool.Change(utils.FormatFilePath(path), utils.FormatSingleLine(note))
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
-		} else if ok1 == false && ok2 == true {
+		if ok1 == true && ok2 == true && ok3 == true {
+			return tool.Change(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+		} else if ok1 == true && ok2 == true && ok3 == false {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
@@ -60,14 +74,17 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 	} else if method == "Deprecate" {
 
-		path, ok1 := arguments["path"].(string)
-		note, ok2 := arguments["note"].(string)
+		path,        ok1 := arguments["path"].(string)
+		symbol,      ok2 := arguments["symbol"].(string)
+		description, ok3 := arguments["description"].(string)
 
-		if ok1 == true && ok2 == true {
-			return tool.Deprecate(utils.FormatFilePath(path), utils.FormatSingleLine(note))
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
-		} else if ok1 == false && ok2 == true {
+		if ok1 == true && ok2 == true && ok3 == true {
+			return tool.Deprecate(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+		} else if ok1 == true && ok2 == true && ok3 == false {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
@@ -75,14 +92,17 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 	} else if method == "Fix" {
 
-		path, ok1 := arguments["path"].(string)
-		note, ok2 := arguments["note"].(string)
+		path,        ok1 := arguments["path"].(string)
+		symbol,      ok2 := arguments["symbol"].(string)
+		description, ok3 := arguments["description"].(string)
 
-		if ok1 == true && ok2 == true {
-			return tool.Fix(utils.FormatFilePath(path), utils.FormatSingleLine(note))
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
-		} else if ok1 == false && ok2 == true {
+		if ok1 == true && ok2 == true && ok3 == true {
+			return tool.Fix(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+		} else if ok1 == true && ok2 == true && ok3 == false {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
@@ -90,28 +110,35 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 	} else if method == "Remove" {
 
-		path, ok1 := arguments["path"].(string)
-		note, ok2 := arguments["note"].(string)
+		path,        ok1 := arguments["path"].(string)
+		symbol,      ok2 := arguments["symbol"].(string)
+		description, ok3 := arguments["description"].(string)
 
-		if ok1 == true && ok2 == true {
-			return tool.Remove(utils.FormatFilePath(path), utils.FormatSingleLine(note))
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"note\" is not a string.")
-		} else if ok1 == false && ok2 == true {
+		if ok1 == true && ok2 == true && ok3 == true {
+			return tool.Remove(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+		} else if ok1 == true && ok2 == true && ok3 == false {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
 		}
 
-
 	} else if method == "Search" {
 
-		path, ok := arguments["path"].(string)
+		path,   ok1 := arguments["path"].(string)
+		symbol, ok2 := arguments["symbol"].(string)
 
-		if ok == true {
-			return tool.Search(utils.FormatFilePath(path))
+		if ok1 == true && ok2 == true {
+			return tool.Search(utils.FormatFilePath(path), utils.FormatSymbol(symbol))
+		} else if ok1 == true && ok2 == false {
+			return tool.Search(utils.FormatFilePath(path), "")
+		} else if ok1 == false && ok2 == true {
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string")
+			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
 		}
 
 	} else {
@@ -120,255 +147,94 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 }
 
-func (tool *Changelog) Add(path string, note string) (string, error) {
-
-	_, err0 := resolveSandboxPath(tool.Sandbox, path)
-
-	if err0 == nil {
-
-		if strings.HasPrefix(note, "Added ") {
-
-			now   := time.Now()
-			today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-
-			_, ok := tool.contents[today]
-
-			if ok == false {
-				tool.contents[today] = make([]string, 0)
-			}
-
-			message := "`" + path + "`: " + note
-			tool.contents[today] = append(tool.contents[today], message)
-			writeChangelog(tool)
-
-			result := strings.Join([]string{
-				fmt.Sprintf("changelog.Add: Note with %d B written.", len(message)),
-			}, "\n")
-
-			return result, nil
-
-		} else {
-			return "", fmt.Errorf("changelog.Add: Note must start with \"Added\".")
-		}
-
-	} else {
-		return "", fmt.Errorf("changelog.Add: %s", err0.Error())
-	}
-
+func (tool *Changelog) Add(path string, symbol string, description string) (string, error) {
+	return tool.createEntry("Add", path, symbol, description)
 }
 
-func (tool *Changelog) Change(path string, note string) (string, error) {
-
-	_, err0 := resolveSandboxPath(tool.Sandbox, path)
-
-	if err0 == nil {
-
-		if strings.HasPrefix(note, "Changed ") {
-
-			now   := time.Now()
-			today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-
-			_, ok := tool.contents[today]
-
-			if ok == false {
-				tool.contents[today] = make([]string, 0)
-			}
-
-			message := "`" + path + "`: " + note
-			tool.contents[today] = append(tool.contents[today], message)
-			writeChangelog(tool)
-
-			result := strings.Join([]string{
-				fmt.Sprintf("changelog.Change: Note with %d B written.", len(message)),
-			}, "\n")
-
-			return result, nil
-
-		} else {
-			return "", fmt.Errorf("changelog.Change: Note must start with \"Changed\".")
-		}
-
-	} else {
-		return "", fmt.Errorf("changelog.Change: %s", err0.Error())
-	}
-
+func (tool *Changelog) Change(path string, symbol string, description string) (string, error) {
+	return tool.createEntry("Change", path, symbol, description)
 }
 
-func (tool *Changelog) Deprecate(path string, note string) (string, error) {
-
-	_, err0 := resolveSandboxPath(tool.Sandbox, path)
-
-	if err0 == nil {
-
-		if strings.HasPrefix(note, "Deprecated ") {
-
-			now   := time.Now()
-			today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-
-			_, ok := tool.contents[today]
-
-			if ok == false {
-				tool.contents[today] = make([]string, 0)
-			}
-
-			message := "`" + path + "`: " + note
-			tool.contents[today] = append(tool.contents[today], message)
-			writeChangelog(tool)
-
-			result := strings.Join([]string{
-				fmt.Sprintf("changelog.Deprecate: Note with %d B written.", len(message)),
-			}, "\n")
-
-			return result, nil
-
-		} else {
-			return "", fmt.Errorf("changelog.Deprecate: Note must start with \"Deprecated\".")
-		}
-
-	} else {
-		return "", fmt.Errorf("changelog.Deprecate: %s", err0.Error())
-	}
-
+func (tool *Changelog) Deprecate(path string, symbol string, description string) (string, error) {
+	return tool.createEntry("Deprecate", path, symbol, description)
 }
 
-func (tool *Changelog) Fix(path string, note string) (string, error) {
-
-	_, err0 := resolveSandboxPath(tool.Sandbox, path)
-
-	if err0 == nil {
-
-		if strings.HasPrefix(note, "Fixed ") {
-
-			now   := time.Now()
-			today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-
-			_, ok := tool.contents[today]
-
-			if ok == false {
-				tool.contents[today] = make([]string, 0)
-			}
-
-			message := "`" + path + "`: " + note
-			tool.contents[today] = append(tool.contents[today], message)
-			writeChangelog(tool)
-
-			result := strings.Join([]string{
-				fmt.Sprintf("changelog.Fix: Note with %d B written.", len(message)),
-			}, "\n")
-
-			return result, nil
-
-		} else {
-			return "", fmt.Errorf("changelog.Fix: Note must start with \"Fixed\".")
-		}
-
-	} else {
-		return "", fmt.Errorf("changelog.Fix: %s", err0.Error())
-	}
-
+func (tool *Changelog) Fix(path string, symbol string, description string) (string, error) {
+	return tool.createEntry("Fix", path, symbol, description)
 }
 
-func (tool *Changelog) Remove(path string, note string) (string, error) {
-
-	_, err0 := resolveSandboxPath(tool.Sandbox, path)
-
-	if err0 == nil {
-
-		if strings.HasPrefix(note, "Removed ") {
-
-			now   := time.Now()
-			today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-
-			_, ok := tool.contents[today]
-
-			if ok == false {
-				tool.contents[today] = make([]string, 0)
-			}
-
-			message := "`" + path + "`: " + note
-			tool.contents[today] = append(tool.contents[today], message)
-			writeChangelog(tool)
-
-			result := strings.Join([]string{
-				fmt.Sprintf("changelog.Remove: Note with %d B written.", len(message)),
-			}, "\n")
-
-			return result, nil
-
-		} else {
-			return "", fmt.Errorf("changelog.Remove: Note must start with \"Removed\".")
-		}
-
-	} else {
-		return "", fmt.Errorf("changelog.Remove: %s", err0.Error())
-	}
-
+func (tool *Changelog) Remove(path string, symbol string, description string) (string, error) {
+	return tool.createEntry("Remove", path, symbol, description)
 }
 
-func (tool *Changelog) Search(path string) (string, error) {
+func (tool *Changelog) Search(path string, symbol string) (string, error) {
+	return "", fmt.Errorf("changelog.Search: %s", "Not implemented")
+}
 
-	_, err0 := resolveSandboxPath(tool.Sandbox, path)
+func (tool *Changelog) createEntry(method string, path string, symbol string, description string) (string, error) {
 
-	if err0 == nil {
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
-		results := make(map[time.Time][]string, 0)
+	if err1 == nil {
 
-		for date, entries := range tool.contents {
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
-			for _, entry := range entries {
+		if err2 == nil {
 
-				if strings.HasPrefix(entry, fmt.Sprintf("`%s`: ", path)) {
+			_, ok1 := tool.contents[internal_path]
 
-					_, ok := results[date]
+			if ok1 == false {
+				tool.contents[internal_path] = make(map[string][]changelog_entry, 0)
+			}
 
-					if ok == false {
-						results[date] = make([]string, 0)
-					}
+			_, ok2 := tool.contents[internal_path][symbol]
 
-					results[date] = append(results[date], entry)
+			if ok2 == false {
+				tool.contents[internal_path][symbol] = make([]changelog_entry, 0)
+			}
 
+			found := false
+
+			for _, entry := range tool.contents[internal_path][symbol] {
+
+				if entry.Type == method && entry.File == internal_path && entry.Symbol == symbol && entry.Description == description {
+					found = true
+					break
 				}
 
 			}
 
-		}
+			if found == false {
 
-		dates  := make([]time.Time, 0)
-		result := make([]string, 0)
+				now   := time.Now()
+				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-		result = append(result, fmt.Sprintf("changelog.Search: %s", path))
-		result = append(result, "")
+				tool.contents[internal_path][symbol] = append(tool.contents[internal_path][symbol], changelog_entry{
+					Date:        today,
+					Type:        method,
+					File:        internal_path,
+					Symbol:      symbol,
+					Description: description,
+				})
 
-		for date, _ := range results {
-			dates = append(dates, date)
-		}
+				err3 := writeChangelog(tool)
 
-		sort.Slice(dates, func(a int, b int) bool {
-			return dates[a].After(dates[b])
-		})
+				if err3 == nil {
+					return fmt.Sprintf("changelog.%s: Entry created for %s#%s at %s.", method, path, symbol, today.Format("2006-01-02")), nil
+				} else {
+					return "", fmt.Errorf("changelog.%s: %s", method, err3.Error())
+				}
 
-		for _, date := range dates {
-
-			entries := results[date]
-
-			result = append(result, fmt.Sprintf("Date: %s", date.Format("2006-01-02 15:04:05")))
-			result = append(result, "")
-
-			sort.Strings(entries)
-
-			for _, note := range entries {
-				result = append(result, fmt.Sprintf("%s", note))
+			} else {
+				return fmt.Sprintf("changelog.%s: Entry already exists for %s#%s.", method, path, symbol), nil
 			}
 
-			result = append(result, "")
-
+		} else {
+			return "", fmt.Errorf("changelog.%s: %s", method, err2.Error())
 		}
 
-		return strings.Join(result, "\n"), nil
-
 	} else {
-		return "", fmt.Errorf("changelog.Search: Invalid file path \"%s\".", path)
+		return "", fmt.Errorf("changelog.%s: %s", method, err1.Error())
 	}
 
 }
-
