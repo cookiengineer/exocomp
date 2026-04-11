@@ -66,23 +66,15 @@ Use the API endpoint `http://vllm_instance:port/v1/chat/completions`.
 The Tools are work in progress at the moment, some might not be stable and/or not
 work with LLMs at all.
 
-Cross-Agent Tools:
-
-- [x] [Agents](./tools/Agents.go) tool to manage the lifecycle of sub-agents.
-- [x] [Bugs](./tools/Bugs.go) tool to manage documentation of bugs.
-- [x] [Changelog](./tools/Changelog.go) tool to manage documentation of development notes.
-- [ ] [Requirements](./tools/Requirements.go) tool to manage documentation of specifications.
-
-Operating System Tools:
-
-- [x] [Files](./tools/Files.go) tool to interact with files and folders.
-- [x] [Programs](./tools/Programs.go) tool to interact with programs.
-
-Knowledge-related Tools:
-
-- [ ] [Gogs](./tools/Gogs.go) tool to search things in offline Gogs/Gitea instances.
-- [ ] [Kiwix](./tools/Kiwix.go) tool to search things in offline knowledge bases.
-- [ ] [Websites](./tools/Websites.go) tool to research things on the web.
+| Tool                                    | Unit Tests? | Description                                                   | Agent User Roles                                        |
+|:----------------------------------------|:-----------:|:--------------------------------------------------------------|:-------------------------------------------------------:|
+| [Agents](./tools/Agents.go)             |             | Manages the lifecycle of contractor sub-agents.               | `manager`                                               |
+| [Bugs](./tools/Bugs.go)                 | YES         | Manages documentation of discovered bugs.                     | `tester`                                                |
+| [Changelog](./tools/Changelog.go)       |             | Manages documentation of development changelog.               | `coder`                                                 |
+| [Files](./tools/Files.go)               |             | Interacts with files and folders.                             | `manager`, `architect`, `coder`, `summarizer`, `tester` |
+| [Programs](./tools/Files.go)            |             | Interacts with installed programs.                            | `coder`, `summarizer`, `tester`                         |
+| [Requirements](./tools/Requirements.go) |             | Manages specifications of implementations.                    | `architect`, `coder`, `summarizer`, `tester`            |
+| Websites                                |             | Researches knowledge from the web.                            | `researcher`                                            |
 
 
 ## Requirements and Usage

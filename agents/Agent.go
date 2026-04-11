@@ -72,6 +72,7 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 				"files.Read",
 				"files.Stat",
 				// No files.Write
+				// No programs
 				"requirements.DefineFunc",
 				"requirements.DefineStruct",
 				"requirements.DefineTest",
@@ -276,6 +277,7 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 				"files.Read",
 				"files.Stat",
 				// No files.Write
+				// No programs
 				// No requirements.DefineFunc
 				// No requirements.DefineStruct
 				// No requirements.DefineTest
