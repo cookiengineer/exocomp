@@ -274,19 +274,20 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 			if symbol != "" {
 
-				bug_reports, ok1 := tool.contents[internal_path]
+				_, ok1 := tool.contents[internal_path]
 
 				if ok1 == true {
 
+					bug_report, ok2 := tool.contents[internal_path][symbol]
 
-					for _, bug_report := range bug_reports {
+					if ok2 == true {
 
 						if bug_report.IsFixed == false {
 
 							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, bug_report.File)
 
 							if err3 == nil {
-								lines = append(lines, "- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description)
+								lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description))
 							}
 
 						}
@@ -308,20 +309,18 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 			} else {
 
-				_, ok1 := tool.contents[internal_path]
+				bug_reports, ok1 := tool.contents[internal_path]
 
 				if ok1 == true {
 
-					bug_report, ok2 := tool.contents[internal_path][symbol]
-
-					if ok2 == true {
+					for _, bug_report := range bug_reports {
 
 						if bug_report.IsFixed == false {
 
 							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, bug_report.File)
 
 							if err3 == nil {
-								lines = append(lines, "- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description)
+								lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description))
 							}
 
 						}
