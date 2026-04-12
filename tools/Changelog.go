@@ -2,8 +2,8 @@ package tools
 
 import "exocomp/utils"
 import "fmt"
-import "sort"
-import "strings"
+// import "sort"
+// import "strings"
 import "time"
 
 type changelog_entry struct {
@@ -193,18 +193,18 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 				tool.contents[internal_path][symbol] = make([]changelog_entry, 0)
 			}
 
-			found := false
+			var found *changelog_entry = nil
 
 			for _, entry := range tool.contents[internal_path][symbol] {
 
 				if entry.Type == method && entry.File == internal_path && entry.Symbol == symbol && entry.Description == description {
-					found = true
+					found = &entry
 					break
 				}
 
 			}
 
-			if found == false {
+			if found == nil {
 
 				now   := time.Now()
 				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
@@ -220,13 +220,13 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 				err3 := writeChangelog(tool)
 
 				if err3 == nil {
-					return fmt.Sprintf("changelog.%s: Entry created for %s#%s at %s.", method, path, symbol, today.Format("2006-01-02")), nil
+					return fmt.Sprintf("changelog.%s: Log entry created for %s#%s at %s.", method, path, symbol, today.Format("2006-01-02")), nil
 				} else {
 					return "", fmt.Errorf("changelog.%s: %s", method, err3.Error())
 				}
 
 			} else {
-				return fmt.Sprintf("changelog.%s: Entry already exists for %s#%s.", method, path, symbol), nil
+				return fmt.Sprintf("changelog.%s: Log entry already exists for %s#%s at %s.", method, found.File, found.Symbol, found.Date.Format("2006-01-02")), nil
 			}
 
 		} else {

@@ -1,15 +1,14 @@
 package tools
 
+import "encoding/json"
 import "fmt"
 import "os"
-import "strings"
-import "time"
 
 func readChangelog(tool *Changelog) error {
 
-	if tool.Sandbox != "" {
+	if tool.Playground != "" {
 
-		resolved, err0 := resolveSandboxPath(tool.Sandbox, "./CHANGELOG.md")
+		resolved, err0 := resolveSandboxPath(tool.Playground, "./exocomp-changelog.json")
 
 		if err0 == nil {
 
@@ -17,57 +16,24 @@ func readChangelog(tool *Changelog) error {
 
 			if err1 == nil {
 
-				for date, _ := range tool.contents {
-					delete(tool.contents, date)
-				}
+				contents := make(map[string]map[string][]changelog_entry)
+				err2     := json.Unmarshal(bytes, &contents)
 
-				lines := strings.Split(strings.TrimSpace(string(bytes)), "\n")
-				today := time.Time{}
+				if err2 == nil {
 
-				for _, line := range lines {
-
-					if strings.TrimSpace(line) == "# Changelog" {
-
-						continue
-
-					} else if strings.TrimSpace(line) == "" {
-
-						continue
-
-					} else if strings.HasPrefix(line, "## ") {
-
-						tmp1      := strings.TrimSpace(line[3:])
-						tmp2, err := time.Parse("2006-01-02 15:04:05", tmp1)
-
-						if err == nil {
-							today = tmp2
-						}
-
-					} else if strings.HasPrefix(line, "`") && strings.Contains(line, "`: ") {
-
-						if today.IsZero() == false {
-
-							_, err := resolveSandboxPath(tool.Sandbox, line[1:strings.Index(line, "`:")])
-
-							if err == nil {
-
-								_, ok := tool.contents[today]
-
-								if ok == false {
-									tool.contents[today] = make([]string, 0)
-								}
-
-								tool.contents[today] = append(tool.contents[today], strings.TrimSpace(line))
-
-							}
-
-						}
-
+					for file, _ := range tool.contents {
+						delete(tool.contents, file)
 					}
 
-				}
+					for file, symbols := range contents {
+						tool.contents[file] = symbols
+					}
 
-				return nil
+					return nil
+
+				} else {
+					return fmt.Errorf("readChangelog: %s", err2.Error())
+				}
 
 			} else {
 				return fmt.Errorf("readChangelog: %s", err1.Error())
@@ -78,7 +44,7 @@ func readChangelog(tool *Changelog) error {
 		}
 
 	} else {
-		return fmt.Errorf("readChangelog: Invalid Tool Sandbox")
+		return fmt.Errorf("readChangelog: Invalid tool playground")
 	}
 
 }
