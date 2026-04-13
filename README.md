@@ -66,15 +66,15 @@ Use the API endpoint `http://vllm_instance:port/v1/chat/completions`.
 The Tools are work in progress at the moment, some might not be stable and/or not
 work with LLMs at all.
 
-| Tool                                    | Unit Tests? | Description                                                   | Agent User Roles                                        |
-|:----------------------------------------|:-----------:|:--------------------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./tools/Agents.go)             |             | Manages the lifecycle of contractor sub-agents.               | `manager`                                               |
-| [Bugs](./tools/Bugs.go)                 | YES         | Manages documentation of discovered bugs.                     | `tester`                                                |
-| [Changelog](./tools/Changelog.go)       |             | Manages documentation of development changelog.               | `coder`                                                 |
-| [Files](./tools/Files.go)               |             | Interacts with files and folders.                             | `manager`, `architect`, `coder`, `summarizer`, `tester` |
-| [Programs](./tools/Files.go)            |             | Interacts with installed programs.                            | `coder`, `summarizer`, `tester`                         |
-| [Requirements](./tools/Requirements.go) |             | Manages specifications of implementations.                    | `architect`, `coder`, `summarizer`, `tester`            |
-| Websites                                |             | Researches knowledge from the web.                            | `researcher`                                            |
+| Tool                                    | Unit Tests?                      | Description                                     | Agent User Roles                                        |
+|:----------------------------------------|:--------------------------------:|:------------------------------------------------|:-------------------------------------------------------:|
+| [Agents](./tools/Agents.go)             |                                  | Manages the lifecycle of contractor sub-agents. | `manager`                                               |
+| [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)      | Manages documentation of discovered bugs.       | `tester`                                                |
+| [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go) | Manages documentation of development changelog. | `coder`                                                 |
+| [Files](./tools/Files.go)               |                                  | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
+| [Programs](./tools/Files.go)            |                                  | Interacts with installed programs.              | `coder`, `summarizer`, `tester`                         |
+| [Requirements](./tools/Requirements.go) |                                  | Manages specifications of implementations.      | `architect`, `coder`, `summarizer`, `tester`            |
+| Websites                                |                                  | Researches knowledge from the web.              | `researcher`                                            |
 
 
 ## Requirements and Usage

@@ -14,6 +14,7 @@ func TestBugs_Add(t *testing.T) {
 	if tool != nil {
 
 		result1, err1 := tool.Add("./path/to/File.go", "Whatever", "A new feature broke the Whatever method.")
+		result2, err2 := tool.Add("./path/to/File.go", "Whatever", "A new feature broke the Whatever method.")
 
 		if result1 != "bugs.Add: Bug report with 40 B written." {
 			t.Errorf("Expected Bug report to be written")
@@ -21,6 +22,14 @@ func TestBugs_Add(t *testing.T) {
 
 		if err1 != nil {
 			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if result2 != "bugs.Add: Bug report with 40 B updated." {
+			t.Errorf("Expected Bug report to be written")
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
 		}
 
 	} else {

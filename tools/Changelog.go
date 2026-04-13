@@ -2,8 +2,8 @@ package tools
 
 import "exocomp/utils"
 import "fmt"
-// import "sort"
-// import "strings"
+import "sort"
+import "strings"
 import "time"
 
 type changelog_entry struct {
@@ -108,6 +108,10 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
 		}
 
+	} else if method == "List" {
+
+		return tool.List()
+
 	} else if method == "Remove" {
 
 		path,        ok1 := arguments["path"].(string)
@@ -161,6 +165,64 @@ func (tool *Changelog) Deprecate(path string, symbol string, description string)
 
 func (tool *Changelog) Fix(path string, symbol string, description string) (string, error) {
 	return tool.createEntry("Fix", path, symbol, description)
+}
+
+func (tool *Changelog) List() (string, error) {
+
+	mapped_entries := make(map[time.Time][]string, 0)
+
+	for _, symbols := range tool.contents {
+
+		for _, entries := range symbols {
+
+			for _, entry := range entries {
+
+				resolved_path, err1 := resolveSandboxPath(tool.Playground, entry.File)
+
+				if err1 == nil {
+
+					sandbox_path, err2 := sanitizeSandboxPath(tool.Sandbox, resolved_path)
+
+					if err2 == nil {
+						mapped_entries[entry.Date] = append(mapped_entries[entry.Date], fmt.Sprintf("- Date: %s, Type: %s, File: %s, Symbol: %s, Description: %s", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+
+	dates := make([]time.Time, 0)
+	lines := make([]string, 0)
+
+	for date, _ := range mapped_entries {
+		dates = append(dates, date)
+	}
+
+	sort.Slice(dates, func(a int, b int) bool {
+		return dates[a].Before(dates[b])
+	})
+
+	for _, date := range dates {
+
+		for _, line := range mapped_entries[date] {
+			lines = append(lines, line)
+		}
+
+	}
+
+	result := make([]string, 0)
+	result = append(result, fmt.Sprintf("changelog.List: %d changelog entries.", len(lines)))
+
+	for l := 0; l < len(lines); l++ {
+		result = append(result, lines[l])
+	}
+
+	return strings.Join(result, "\n"), nil
+
 }
 
 func (tool *Changelog) Remove(path string, symbol string, description string) (string, error) {
@@ -226,7 +288,7 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 				}
 
 			} else {
-				return fmt.Sprintf("changelog.%s: Log entry already exists for %s#%s at %s.", method, found.File, found.Symbol, found.Date.Format("2006-01-02")), nil
+				return fmt.Sprintf("changelog.%s: Log entry already exists for %s#%s at %s.", method, path, found.Symbol, found.Date.Format("2006-01-02")), nil
 			}
 
 		} else {
