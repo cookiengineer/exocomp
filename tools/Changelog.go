@@ -169,7 +169,7 @@ func (tool *Changelog) Fix(path string, symbol string, description string) (stri
 
 func (tool *Changelog) List() (string, error) {
 
-	mapped_entries := make(map[time.Time][]string, 0)
+	found := make(map[time.Time][]string, 0)
 
 	for _, symbols := range tool.contents {
 
@@ -184,7 +184,7 @@ func (tool *Changelog) List() (string, error) {
 					sandbox_path, err2 := sanitizeSandboxPath(tool.Sandbox, resolved_path)
 
 					if err2 == nil {
-						mapped_entries[entry.Date] = append(mapped_entries[entry.Date], fmt.Sprintf("- Date: %s, Type: %s, File: %s, Symbol: %s, Description: %s", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
+						found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: %s, File: %s, Symbol: %s, Description: %s", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
 					}
 
 				}
@@ -198,7 +198,7 @@ func (tool *Changelog) List() (string, error) {
 	dates := make([]time.Time, 0)
 	lines := make([]string, 0)
 
-	for date, _ := range mapped_entries {
+	for date, _ := range found {
 		dates = append(dates, date)
 	}
 
@@ -208,7 +208,7 @@ func (tool *Changelog) List() (string, error) {
 
 	for _, date := range dates {
 
-		for _, line := range mapped_entries[date] {
+		for _, line := range found[date] {
 			lines = append(lines, line)
 		}
 
@@ -230,7 +230,139 @@ func (tool *Changelog) Remove(path string, symbol string, description string) (s
 }
 
 func (tool *Changelog) Search(path string, symbol string) (string, error) {
-	return "", fmt.Errorf("changelog.Search: %s", "Not implemented")
+
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			found := make(map[time.Time][]string, 0)
+
+			if symbol != "" {
+
+				_, ok1 := tool.contents[internal_path]
+
+				if ok1 == true {
+
+					entries, ok2 := tool.contents[internal_path][symbol]
+
+					if ok2 == true {
+
+						for _, entry := range entries {
+
+							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, entry.File)
+
+							if err3 == nil {
+								found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: %s, File: %s, Symbol: %s, Description: %s", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
+							}
+
+						}
+
+					}
+
+				}
+
+				dates := make([]time.Time, 0)
+				lines := make([]string, 0)
+
+				for date, _ := range found {
+					dates = append(dates, date)
+				}
+
+				sort.Slice(dates, func(a int, b int) bool {
+					return dates[a].Before(dates[b])
+				})
+
+				for _, date := range dates {
+
+					for _, line := range found[date] {
+						lines = append(lines, line)
+					}
+
+				}
+
+				result := make([]string, 0)
+				result = append(result, fmt.Sprintf("changelog.Search: %s#%s contains %d changelog entries.", path, symbol, len(lines)))
+
+				for l := 0; l < len(lines); l++ {
+					result = append(result, lines[l])
+				}
+
+				return strings.Join(result, "\n"), nil
+
+			} else {
+
+				symbols, ok1 := tool.contents[internal_path]
+
+				if ok1 == true {
+
+					sorted_symbols := make([]string, 0)
+
+					for symbol, _ := range symbols {
+						sorted_symbols = append(sorted_symbols, symbol)
+					}
+
+					sort.Strings(sorted_symbols)
+
+					for _, symbol := range sorted_symbols {
+
+						entries := tool.contents[internal_path][symbol]
+
+						for _, entry := range entries {
+
+							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, entry.File)
+
+							if err3 == nil {
+								found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: %s, File: %s, Symbol: %s, Description: %s", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
+							}
+
+						}
+
+					}
+
+				}
+
+				dates := make([]time.Time, 0)
+				lines := make([]string, 0)
+
+				for date, _ := range found {
+					dates = append(dates, date)
+				}
+
+				sort.Slice(dates, func(a int, b int) bool {
+					return dates[a].Before(dates[b])
+				})
+
+				for _, date := range dates {
+
+					for _, line := range found[date] {
+						lines = append(lines, line)
+					}
+
+				}
+
+				result := make([]string, 0)
+				result = append(result, fmt.Sprintf("changelog.Search: %s contains %d changelog entries.", path, len(lines)))
+
+				for l := 0; l < len(lines); l++ {
+					result = append(result, lines[l])
+				}
+
+				return strings.Join(result, "\n"), nil
+
+			}
+
+		} else {
+			return "", fmt.Errorf("changelog.Search: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("changelog.Search: %s", err1.Error())
+	}
+
 }
 
 func (tool *Changelog) createEntry(method string, path string, symbol string, description string) (string, error) {

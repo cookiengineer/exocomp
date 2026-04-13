@@ -1,6 +1,5 @@
 package tools
 
-import "fmt"
 import "os"
 import "path/filepath"
 import "strings"
@@ -201,59 +200,38 @@ func TestChangelog_List(t *testing.T) {
 		tool.Add("./sub/Another.go", "Hidden", "Added secret functionality")
 		tool.Sandbox = sandbox
 
-		result1, err1 := tool.Add("./path/to/Cache.go", "Store", "Added new cache implementation")
+		_, err1 := tool.Add("./path/to/Cache.go", "Store", "Added new cache implementation")
 		time.Sleep(2 * time.Second)
-		result2, err2 := tool.Change("./path/to/Cache.go", "Store", "Changed new cache implementation")
+		_, err2 := tool.Change("./path/to/Cache.go", "Store", "Changed new cache implementation")
 		time.Sleep(2 * time.Second)
-		result3, err3 := tool.Fix("./path/to/Cache.go", "Store", "Fixed new cache implementation")
+		_, err3 := tool.Fix("./path/to/Cache.go", "Store", "Fixed new cache implementation")
 		time.Sleep(2 * time.Second)
-		result4, err4 := tool.Deprecate("./path/to/Cache.go", "Store", "Deprecated new cache implementation")
+		_, err4 := tool.Deprecate("./path/to/Cache.go", "Store", "Deprecated new cache implementation")
 		time.Sleep(2 * time.Second)
-		result5, err5 := tool.Remove("./path/to/Cache.go", "Store", "Removed new cache implementation")
-
-		if strings.Contains(result1, "changelog.Add: Log entry created for ./path/to/Cache.go#Store at") == false {
-			t.Errorf("Expected \"Add\" changelog entry to be created")
-		}
+		_, err5 := tool.Remove("./path/to/Cache.go", "Store", "Removed new cache implementation")
 
 		if err1 != nil {
 			t.Errorf("Expected %v to be nil", err1)
-		}
-
-		if strings.Contains(result2, "changelog.Change: Log entry created for ./path/to/Cache.go#Store at") == false {
-			t.Errorf("Expected \"Change\" changelog entry to be created")
 		}
 
 		if err2 != nil {
 			t.Errorf("Expected %v to be nil", err2)
 		}
 
-		if strings.Contains(result3, "changelog.Fix: Log entry created for ./path/to/Cache.go#Store at") == false {
-			t.Errorf("Expected \"Fix\" changelog entry to be created")
-		}
-
 		if err3 != nil {
 			t.Errorf("Expected %v to be nil", err3)
-		}
-
-		if strings.Contains(result4, "changelog.Deprecate: Log entry created for ./path/to/Cache.go#Store at") == false {
-			t.Errorf("Expected \"Deprecate\" changelog entry to be created")
 		}
 
 		if err4 != nil {
 			t.Errorf("Expected %v to be nil", err4)
 		}
 
-		if strings.Contains(result5, "changelog.Remove: Log entry created for ./path/to/Cache.go#Store at") == false {
-			t.Errorf("Expected \"Remove\" changelog entry to be created")
-		}
-
 		if err5 != nil {
 			t.Errorf("Expected %v to be nil", err5)
 		}
 
-		result6, err6 := tool.List()
-
-		lines := strings.Split(result6, "\n")
+		result, err6 := tool.List()
+		lines := strings.Split(result, "\n")
 
 		if len(lines) == 6 {
 
@@ -339,7 +317,212 @@ func TestChangelog_Remove(t *testing.T) {
 }
 
 func TestChangelog_Search(t *testing.T) {
-	// TODO
-	fmt.Println("TODO")
-	t.Errorf("Changelog.Search unit test is not implemented yet")
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-*")
+	sandbox       := filepath.Join(playground, "sub", "package")
+	tool          := NewChangelog("tester", sandbox, playground)
+
+	if tool != nil {
+
+		// This should not be listed
+		tool.Sandbox = playground
+		tool.Add("./sub/Another.go", "Hidden", "Added secret functionality")
+		tool.Sandbox = sandbox
+
+		_, err1 := tool.Add("./path/to/Cache.go", "Store", "Added new cache implementation")
+		time.Sleep(2 * time.Second)
+		_, err2 := tool.Add("./path/to/Cache.go", "StoreItem", "Added new cache implementation")
+		time.Sleep(2 * time.Second)
+		_, err3 := tool.Change("./path/to/Cache.go", "Store", "Changed new cache implementation")
+		time.Sleep(2 * time.Second)
+		_, err4 := tool.Fix("./path/to/Cache.go", "StoreItem", "Fixed new cache implementation")
+		time.Sleep(2 * time.Second)
+		_, err5 := tool.Deprecate("./path/to/Cache.go", "Store", "Deprecated new cache implementation")
+		time.Sleep(2 * time.Second)
+		_, err6 := tool.Remove("./path/to/Cache.go", "Store", "Removed new cache implementation")
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if err4 != nil {
+			t.Errorf("Expected %v to be nil", err4)
+		}
+
+		if err5 != nil {
+			t.Errorf("Expected %v to be nil", err5)
+		}
+
+		if err6 != nil {
+			t.Errorf("Expected %v to be nil", err6)
+		}
+
+		result1, err7 := tool.Search("./path/to/Cache.go", "")
+		result2, err8 := tool.Search("./path/to/Cache.go", "Store")
+		result3, err9 := tool.Search("./path/to/Cache.go", "StoreItem")
+
+		lines1 := strings.Split(result1, "\n")
+		lines2 := strings.Split(result2, "\n")
+		lines3 := strings.Split(result3, "\n")
+
+		if len(lines1) == 7 {
+
+			if lines1[0] != "changelog.Search: ./path/to/Cache.go contains 6 changelog entries." {
+				t.Errorf("Expected %d changelog entries", 6)
+			}
+
+			if strings.Contains(lines1[1], "Type: Add,") == false {
+				t.Errorf("Expected %s to be Type: Add", lines1[1])
+			}
+
+			if strings.Contains(lines1[1], "Symbol: Store,") == false {
+				t.Errorf("Expected %s to be Symbol: Store", lines1[1])
+			}
+
+			if strings.Contains(lines1[2], "Type: Change,") == false {
+				t.Errorf("Expected %s to be Type: Change", lines1[2])
+			}
+
+			if strings.Contains(lines1[2], "Symbol: Store,") == false {
+				t.Errorf("Expected %s to be Symbol: Store", lines1[2])
+			}
+
+			if strings.Contains(lines1[3], "Type: Deprecate,") == false {
+				t.Errorf("Expected %s to be Type: Deprecate", lines1[3])
+			}
+
+			if strings.Contains(lines1[3], "Symbol: Store,") == false {
+				t.Errorf("Expected %s to be Symbol: Store", lines1[3])
+			}
+
+			if strings.Contains(lines1[4], "Type: Remove,") == false {
+				t.Errorf("Expected %s to be Type: Remove", lines1[4])
+			}
+
+			if strings.Contains(lines1[4], "Symbol: Store,") == false {
+				t.Errorf("Expected %s to be Symbol: Store", lines1[4])
+			}
+
+			if strings.Contains(lines1[5], "Type: Add,") == false {
+				t.Errorf("Expected %s to be Type: Add", lines1[4])
+			}
+
+			if strings.Contains(lines1[5], "Symbol: StoreItem,") == false {
+				t.Errorf("Expected %s to be Symbol: StoreItem", lines1[5])
+			}
+
+			if strings.Contains(lines1[6], "Type: Fix,") == false {
+				t.Errorf("Expected %s to be Type: Fix", lines1[6])
+			}
+
+			if strings.Contains(lines1[6], "Symbol: StoreItem,") == false {
+				t.Errorf("Expected %s to be Symbol: StoreItem", lines1[6])
+			}
+
+		} else {
+			t.Errorf("Expected %d lines to be %d", len(lines1), 7)
+		}
+
+		if err7 != nil {
+			t.Errorf("Expected %v to be nil", err7)
+		}
+
+		if len(lines2) == 5 {
+
+			if lines2[0] != "changelog.Search: ./path/to/Cache.go#Store contains 4 changelog entries." {
+				t.Errorf("Expected %d changelog entries", 4)
+			}
+
+			if strings.Contains(lines2[1], "Type: Add,") == false {
+				t.Errorf("Expected %s to be Type: Add", lines2[1])
+			}
+
+			if strings.Contains(lines2[1], "Symbol: Store,") == false {
+				t.Errorf("Expected %s to be Symbol: Store", lines2[1])
+			}
+
+			if strings.Contains(lines2[2], "Type: Change,") == false {
+				t.Errorf("Expected %s to be Type: Change", lines2[2])
+			}
+
+			if strings.Contains(lines2[2], "Symbol: Store,") == false {
+				t.Errorf("Expected %s to be Symbol: Store", lines2[2])
+			}
+
+			if strings.Contains(lines2[3], "Type: Deprecate,") == false {
+				t.Errorf("Expected %s to be Type: Deprecate", lines2[3])
+			}
+
+			if strings.Contains(lines2[3], "Symbol: Store,") == false {
+				t.Errorf("Expected %s to be Symbol: Store", lines2[3])
+			}
+
+			if strings.Contains(lines2[4], "Type: Remove,") == false {
+				t.Errorf("Expected %s to be Type: Remove", lines2[4])
+			}
+
+			if strings.Contains(lines2[4], "Symbol: Store,") == false {
+				t.Errorf("Expected %s to be Symbol: Store", lines2[4])
+			}
+
+		} else {
+			t.Errorf("Expected %d lines to be %d", len(lines2), 5)
+		}
+
+		if err8 != nil {
+			t.Errorf("Expected %v to be nil", err8)
+		}
+
+		if len(lines3) == 3 {
+
+			if lines3[0] != "changelog.Search: ./path/to/Cache.go#StoreItem contains 2 changelog entries." {
+				t.Errorf("Expected %d changelog entries", 2)
+			}
+
+			if strings.Contains(lines3[1], "Type: Add,") == false {
+				t.Errorf("Expected %s to be Type: Add", lines1[1])
+			}
+
+			if strings.Contains(lines3[1], "Symbol: StoreItem,") == false {
+				t.Errorf("Expected %s to be Symbol: StoreItem", lines3[1])
+			}
+
+			if strings.Contains(lines3[2], "Type: Fix,") == false {
+				t.Errorf("Expected %s to be Type: Fix", lines1[2])
+			}
+
+			if strings.Contains(lines3[2], "Symbol: StoreItem,") == false {
+				t.Errorf("Expected %s to be Symbol: StoreItem", lines3[2])
+			}
+
+		} else {
+			t.Errorf("Expected %d lines to be %d", len(lines3), 3)
+		}
+
+		if err9 != nil {
+			t.Errorf("Expected %v to be nil", err9)
+		}
+
+	} else {
+		t.Errorf("Expected %s to be not nil", tool)
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
 }
