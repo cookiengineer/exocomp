@@ -11,6 +11,8 @@ func resolveSandboxPath(sandbox string, file_path string) (string, error) {
 
 		if len(file_path) > len(sandbox) && strings.HasPrefix(file_path, sandbox + string(os.PathSeparator)) {
 			file_path = "." + string(os.PathSeparator) + strings.TrimSpace(file_path[len(sandbox):])
+		} else {
+			return "", fmt.Errorf("Cannot resolve file path of \"%s\"", file_path)
 		}
 
 	}
