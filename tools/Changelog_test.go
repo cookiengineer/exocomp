@@ -43,7 +43,7 @@ func TestChangelog_Add(t *testing.T) {
 		}
 
 	} else {
-		t.Errorf("Expected %s to be not nil", tool)
+		t.Errorf("Expected tool to be not nil")
 	}
 
 	t.Cleanup(func() {
@@ -86,7 +86,7 @@ func TestChangelog_Change(t *testing.T) {
 		}
 
 	} else {
-		t.Errorf("Expected %s to be not nil", tool)
+		t.Errorf("Expected tool to be not nil")
 	}
 
 	t.Cleanup(func() {
@@ -129,7 +129,7 @@ func TestChangelog_Deprecate(t *testing.T) {
 		}
 
 	} else {
-		t.Errorf("Expected %s to be not nil", tool)
+		t.Errorf("Expected tool to be not nil")
 	}
 
 	t.Cleanup(func() {
@@ -172,7 +172,7 @@ func TestChangelog_Fix(t *testing.T) {
 		}
 
 	} else {
-		t.Errorf("Expected %s to be not nil", tool)
+		t.Errorf("Expected tool to be not nil")
 	}
 
 	t.Cleanup(func() {
@@ -268,7 +268,7 @@ func TestChangelog_List(t *testing.T) {
 		}
 
 	} else {
-		t.Errorf("Expected %s to be not nil", tool)
+		t.Errorf("Expected tool to be not nil")
 	}
 
 }
@@ -301,7 +301,7 @@ func TestChangelog_Remove(t *testing.T) {
 		}
 
 	} else {
-		t.Errorf("Expected %s to be not nil", tool)
+		t.Errorf("Expected tool to be not nil")
 	}
 
 	t.Cleanup(func() {
@@ -512,7 +512,7 @@ func TestChangelog_Search(t *testing.T) {
 		}
 
 	} else {
-		t.Errorf("Expected %s to be not nil", tool)
+		t.Errorf("Expected tool to be not nil")
 	}
 
 	t.Cleanup(func() {

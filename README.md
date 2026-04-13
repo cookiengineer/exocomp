@@ -72,7 +72,7 @@ work with LLMs at all.
 | [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)      | Manages documentation of discovered bugs.       | `tester`                                                |
 | [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go) | Manages documentation of development changelog. | `coder`                                                 |
 | [Files](./tools/Files.go)               |                                  | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
-| [Programs](./tools/Files.go)            |                                  | Interacts with installed programs.              | `coder`, `summarizer`, `tester`                         |
+| [Programs](./tools/Programs.go)         |                                  | Interacts with installed programs.              | `coder`, `summarizer`, `tester`                         |
 | [Requirements](./tools/Requirements.go) |                                  | Manages specifications of implementations.      | `architect`, `coder`, `summarizer`, `tester`            |
 | Websites                                |                                  | Researches knowledge from the web.              | `researcher`                                            |
 
