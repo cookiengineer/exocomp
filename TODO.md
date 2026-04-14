@@ -1,23 +1,15 @@
 
 # TODO
 
-- [ ] Changelog needs to be stored via `playground_path`
-- [ ] Requirements need to be stored via `playground_path`
-- [ ] sandbox is now a nested folder, which means that path is actually relative to playground
-- [ ] List() and Search() methods should also show only bugs and requirements for the current sandbox
+- [ ] `Requirements` need to use `tool.Playground`, like `Bugs` and `Changelog` already do
+- [ ] `tool.Sandbox` is now a nested folder, which means that `internal_path` is relative to `tool.Playground`
+- [ ] `List()` should show only requirements within current sandbox
+- [ ] `Search()` should show only requirements within current sandbox
 
-Maybe this can be easily fixed with a helper method like this:
+## Web UI
 
-```go
-resolved, err0 := resolveSandboxPath(tool.Playground, path)
-
-if isWithinSandbox(tool.Sandbox, resolved) {
-    // old code
-}
-```
-
-- [ ] Bug in Time usage. Seconds in time leads to wrong serialization, and multiple headlines
-- [ ] Probably time.Time needs to be serialized to string first, and then iterated over the strings?
+- [ ] Implement `/api/models`
+- [ ] Implement `/api/chat` and `/api/completions` as a canonical URL
 
 ## Planner Agent
 
