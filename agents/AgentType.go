@@ -14,3 +14,4 @@ const (
 func (agent_type AgentType) String() string {
 	return string(agent_type)
 }
+

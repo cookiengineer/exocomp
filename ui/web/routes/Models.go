@@ -14,7 +14,7 @@ func Models(session *types.Session, request *http.Request, response http.Respons
 
 	if request.Method == http.MethodGet {
 
-		endpoint       := session.Config.ResolvePath("/v1/models")
+		endpoint        := session.Config.ResolvePath("/v1/models")
 		response1, err1 := session.Client.Get(endpoint.String())
 
 		if err1 == nil && response1.StatusCode == 200 {
