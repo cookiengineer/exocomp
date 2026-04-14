@@ -207,14 +207,16 @@ func main() {
 
 			} else if tmp_ui == "web" {
 
+				server := ui_web.NewServer(agent, config)
+
 				fmt.Fprintf(os.Stdout, "[config]:\n")
 				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
 				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
 				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
+				fmt.Fprintf(os.Stdout, "| Web:     %s\n", server.URL.String())
 				fmt.Fprintf(os.Stdout, "\n")
 				os.Stdout.Sync()
 
-				server := ui_web.NewServer(agent, config)
 				server.Init()
 
 			} else if tmp_ui == "webview" {

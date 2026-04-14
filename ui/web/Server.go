@@ -48,12 +48,17 @@ func (server *Server) Init() bool {
 
 	})
 
+
 	http.HandleFunc("/api/chat", func(response http.ResponseWriter, request *http.Request) {
-		routes.Chat(server.Session, response, request)
+		routes.Chat(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/agents", func(response http.ResponseWriter, request *http.Request) {
+		routes.Agents(server.Session, request, response)
 	})
 
 	http.HandleFunc("/api/models", func(response http.ResponseWriter, request *http.Request) {
-		routes.Models(server.Session, response, request)
+		routes.Models(server.Session, request, response)
 	})
 
 	err := http.ListenAndServe(":" + server.URL.Port(), nil)

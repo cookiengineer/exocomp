@@ -18,6 +18,7 @@ type Session struct {
 	Console  *Console
 	Client   *http.Client
 	Messages []*schemas.Message
+	Models   []*schemas.Model
 	Tools    []schemas.Tool
 	Waiting  bool
 	mutex    *sync.RWMutex
@@ -73,7 +74,7 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 func (session *Session) Init() error {
 
 	if len(session.Messages) > 0 {
-		return session.infer_chat_request()
+		return session.infer_chat_completions()
 	}
 
 	return fmt.Errorf("Session is empty, waiting for LLM system prompt ...")
@@ -170,7 +171,7 @@ func (session *Session) SendChatRequest(raw schemas.Message) error {
 
 		session.mutex.Unlock()
 
-		err := session.infer_chat_request()
+		err := session.infer_chat_completions()
 
 		session.mutex.Lock()
 		session.Waiting = false
@@ -260,7 +261,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 			}
 
-			return session.infer_chat_request()
+			return session.infer_chat_completions()
 
 		} else {
 			return nil
@@ -279,7 +280,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 }
 
-func (session *Session) infer_chat_request() error {
+func (session *Session) infer_chat_completions() error {
 
 	request_payload, err0 := json.Marshal(schemas.ChatRequest{
 		Model:       session.Agent.Model,
@@ -291,7 +292,7 @@ func (session *Session) infer_chat_request() error {
 
 	if err0 == nil {
 
-		endpoint := session.Config.ResolvePath("/api/chat")
+		endpoint := session.Config.ResolvePath("/v1/chat/completions")
 
 		response, err1 := session.Client.Post(
 			endpoint.String(),
@@ -310,7 +311,13 @@ func (session *Session) infer_chat_request() error {
 				err3 := json.Unmarshal(response_payload, &response)
 
 				if err3 == nil {
-					return session.ReceiveChatResponse(response.Message)
+
+					if len(response.Choices) > 0 {
+						return session.ReceiveChatResponse(response.Choices[0].Message)
+					} else {
+						return fmt.Errorf("Empty choices, maybe incompatible API?")
+					}
+
 				} else {
 					return err3
 				}
@@ -320,7 +327,7 @@ func (session *Session) infer_chat_request() error {
 			}
 
 		} else if err1 == nil && response.StatusCode == 404 {
-			return fmt.Errorf("Ollama model %s not found", session.Config.Model)
+			return fmt.Errorf("Model %s not found", session.Config.Model)
 		} else {
 			return err1
 		}
