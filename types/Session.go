@@ -8,12 +8,14 @@ import "encoding/json"
 import "fmt"
 import "io"
 import "net/http"
+import "os"
 import "strings"
 import "sync"
 
 type Session struct {
 	Agent    *agents.Agent
 	Config   *Config
+	Console  *Console
 	Client   *http.Client
 	Messages []*schemas.Message
 	Tools    []schemas.Tool
@@ -26,6 +28,7 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 	session := &Session{
 		Agent:    agent,
 		Config:   config,
+		Console:  NewConsole(os.Stdout, os.Stderr, 0),
 		Client:   &http.Client{},
 		Messages: make([]*schemas.Message, 0),
 		Tools:    make([]schemas.Tool, 0),

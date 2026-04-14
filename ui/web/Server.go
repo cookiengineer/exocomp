@@ -56,12 +56,6 @@ func (server *Server) Init() bool {
 		routes.Models(server.Session, response, request)
 	})
 
-	http.HandleFunc("/api/models", func(response http.ResponseWriter, request *http.Request) {
-
-		// TODO: session.QueryModels()
-
-	})
-
 	err := http.ListenAndServe(":" + server.URL.Port(), nil)
 
 	if err == nil {
