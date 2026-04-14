@@ -1,6 +1,6 @@
 package tools
 
-import "exocomp/utils"
+import utils_fmt "exocomp/utils/fmt"
 import "fmt"
 import "os"
 import "sort"
@@ -183,9 +183,9 @@ func (tool *Files) Stat(path string) (string, error) {
 				fmt.Sprintf("files.Stat: %s is a %s.", path, typ),
 				"Name: " + stat.Name(),
 				"Type: " + typ,
-				"Size: " + utils.FormatFileSize(stat.Size()),
-				"Mode: " + utils.FormatFileMode(stat.Mode()),
-				"Modified: " + utils.FormatTime(stat.ModTime()),
+				"Size: " + utils_fmt.FormatFileSize(stat.Size()),
+				"Mode: " + utils_fmt.FormatFileMode(stat.Mode()),
+				"Modified: " + utils_fmt.FormatTime(stat.ModTime()),
 			}, "\n")
 
 			return result, nil
@@ -206,7 +206,7 @@ func (tool *Files) Write(path string, content string) (string, error) {
 
 	if err0 == nil {
 
-		buffer, err1 := utils.FormatFileBuffer(content)
+		buffer, err1 := utils_fmt.FormatFileBuffer(content)
 
 		if err1 == nil {
 
@@ -215,7 +215,7 @@ func (tool *Files) Write(path string, content string) (string, error) {
 			if err2 == nil {
 
 				result := strings.Join([]string{
-					fmt.Sprintf("files.Write: %s with %s written.", path, utils.FormatFileSize(int64(len(buffer)))),
+					fmt.Sprintf("files.Write: %s with %s written.", path, utils_fmt.FormatFileSize(int64(len(buffer)))),
 				}, "\n")
 
 				return result, nil

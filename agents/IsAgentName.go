@@ -1,9 +1,9 @@
 package agents
 
-import "exocomp/utils"
+import utils_fmt "exocomp/utils/fmt"
 
 func IsAgentName(raw string) bool {
 
-	return raw == utils.FormatAgentName(raw)
+	return raw == utils_fmt.FormatAgentName(raw)
 
 }

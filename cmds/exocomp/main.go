@@ -2,7 +2,7 @@ package main
 
 import "exocomp/agents"
 import "exocomp/types"
-import "exocomp/utils"
+import utils_fmt "exocomp/utils/fmt"
 import ui_tty "exocomp/ui/tty"
 import ui_web "exocomp/ui/web"
 import ui_webview "exocomp/ui/webview"
@@ -102,7 +102,7 @@ func main() {
 					case "name":
 
 						if agents.IsAgentName(tmp[1]) {
-							tmp_name = utils.FormatAgentName(tmp[1])
+							tmp_name = utils_fmt.FormatAgentName(tmp[1])
 						}
 
 					case "agent":
@@ -127,7 +127,7 @@ func main() {
 
 					case "prompt":
 
-						tmp_prompt = utils.FormatSingleLine(tmp[1])
+						tmp_prompt = utils_fmt.FormatSingleLine(tmp[1])
 
 					case "sandbox":
 
