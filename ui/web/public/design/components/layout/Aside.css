@@ -1,0 +1,37 @@
+
+body > aside {
+	position: fixed;
+	top: 50px;
+	right: auto;
+	bottom: 160px;
+	left: 0px;
+	z-index: 20;
+}
+
+aside {
+	width: 200px;
+	height: auto;
+	margin: 0px;
+	padding: 9px 16px;
+	color: var(--aside-color);
+	background: var(--aside-background);
+	text-align: left;
+	box-sizing: border-box;
+}
+
+aside nav {
+	display: block;
+	margin: 0px;
+	padding: 0px;
+}
+
+aside nav ul {
+	display: block;
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+}
+
+aside nav ul li {
+	border: 1px solid red;
+}

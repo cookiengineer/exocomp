@@ -100,6 +100,7 @@ footer label {
 	font-size: 16px;
 	font-style: normal;
 	font-weight: normal;
+	user-select: none;
 }
 
 footer div:first-of-type button[data-action][disabled],

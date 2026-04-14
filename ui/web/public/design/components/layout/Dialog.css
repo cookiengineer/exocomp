@@ -48,6 +48,7 @@ dialog article {
 	display: block;
 	position: fixed;
 	width: auto;
+	min-width: 512px;
 	height: auto;
 	top: 50%;
 	right: auto;
@@ -92,31 +93,38 @@ dialog article button[data-action="close"]:before {
 }
 
 dialog article fieldset {
-	margin: 16px;
+	margin: 0px;
+	border: 0px solid transparent;
 }
 
-dialog article table {
-	margin: 16px;
+dialog article fieldset div {
+	display: block;
+	margin: 8px;
+	padding: 0px;
 }
 
-dialog article table tbody td {
-	padding: 0px 8px;
+dialog article fieldset div label {
+	display: inline-block;
+	width: 128px;
+	height: auto;
+	line-height: 30px;
 	font-family: 'vera-mono';
-	font-weight: normal;
-	font-size: 16px;
+	vertical-align: top;
+}
+
+dialog article fieldset div label + select,
+dialog article fieldset div label + input {
+	display: inline-block;
+	width: 384px;
 	line-height: 30px;
 	vertical-align: middle;
 }
 
-dialog article table tbody td:first-of-type {
-	border-bottom: 1px solid var(--input-default-border);
+dialog article fieldset div label + textarea {
+	width: 384px;
+	min-height: 10em;
+	vertical-align: top;
 }
 
-dialog article table tbody td:last-of-type {
-	border-left: 1px solid var(--input-default-border);
-	border-bottom: 1px solid var(--input-default-border);
-}
-
-dialog article table tbody td input {
-	vertical-align: middle;
+dialog article footer {
 }

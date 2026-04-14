@@ -16,23 +16,19 @@
 	</head>
 	<body>
 		<header>
-			<div>
-				<select title="Agent Type" data-name="agents">
-					<option value="manager">Manager</option>
-					<option value="architect">Architect</option>
-					<option value="coder">Coder</option>
-					<option value="tester">Tester</option>
-				</select>
-				<select title="Model" data-name="models">
-					<option value="qwen3-coder:30b">qwen3-coder:30b</option>
-				</select>
-			</div>
+			<div><button data-action="create-agent">Create Agent</button></div>
 			<div></div>
-			<div>
-				<label for="temperature">Temperature:</label>
-				<input title="Temperature" id="temperature" data-name="temperature" type="range" min="0.1" max="1.0" step="0.1" value="0.3"/>
-			</div>
+			<div></div>
 		</header>
+		<aside>
+			<nav aria-label="Agents">
+				<ul>
+					<li title="Agent #1 (coder) working on ./path/to/sandbox">Agent #1</li>
+					<li title="Agent #2 (tester) working on ./path/to/sandbox">Agent #2</li>
+					<li title="Agent #3 (architect) working on ./path/to/sandbox">Agent #3</li>
+				</ul>
+			</nav>
+		</aside>
 		<main>
 			<article data-role="assistant">
 				Hello, my name is Exocomp. I'm here to help, what can I do for you?
@@ -54,5 +50,41 @@
 			<div><textarea id="prompt"></textarea></div>
 			<div></div>
 		</footer>
+		<dialog>
+			<article>
+				<h3>Create Agent</h3>
+				<button data-action="close"></button>
+				<fieldset>
+					<div>
+						<label data-type="user" for="dialog-select-agent">Agent</label>
+						<select id="dialog-select-agent" title="Agent Type" data-name="agent">
+							<option value="manager">Manager</option>
+							<option value="architect">Architect</option>
+							<option value="coder">Coder</option>
+							<option value="tester">Tester</option>
+						</select>
+					</div>
+					<div>
+						<label data-type="rebel" for="dialog-select-model">Model</label>
+						<select id="dialog-select-model" title="Model" data-name="model">
+							<option value="qwen3-coder:30b">qwen3-coder:30b</option>
+						</select>
+					</div>
+					<div>
+						<label data-type="folder" for="dialog-input-sandbox">Sandbox</label>
+						<input id="dialog-input-sandbox" type="text" data-name="sandbox" value="" placeholder="./sandbox">
+					</div>
+					<div>
+						<label data-type="text" for="dialog-input-prompt">Prompt</label>
+						<textarea id="dialog-input-prompt" data-name="prompt"></textarea>
+					</div>
+				</fieldset>
+				<footer>
+					<div><button data-action="cancel">Cancel</button></div>
+					<div></div>
+					<div><button data-action="confirm">Confirm</button></div>
+				</footer>
+			</article>
+		</dialog>
 	</body>
 </html>

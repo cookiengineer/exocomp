@@ -18,7 +18,7 @@ body > main {
 	top: 50px;
 	right: 0px;
 	bottom: 50px;
-	left: 0px;
+	left: 160px;
 	overflow-x: hidden;
 	overflow-y: scroll;
 }
@@ -54,6 +54,10 @@ body > main > article[data-role="user"] {
 	border-color: #4e9906;
 }
 
+body > aside {
+	width: 200px;
+}
+
 body > footer {
 	padding: 16px 16px 16px 0px;
 	height: unset;
@@ -66,7 +70,7 @@ body > footer > div:nth-of-type(1) {
 }
 
 body > footer > div:nth-of-type(2) {
-	width: calc(100%);
+	width: calc(100% - 200px);
 }
 
 body > footer > div:nth-of-type(2) textarea {
