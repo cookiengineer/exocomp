@@ -52,24 +52,32 @@ func (client *Client) Init() {
 		switch sig {
 		case syscall.SIGINT:
 
-			client.Renderer.Destroy()
+			client.Destroy()
 			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGINT")
 			os.Exit(0)
 
 		case syscall.SIGTERM:
 
-			client.Renderer.Destroy()
+			client.Destroy()
 			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGTERM")
 			os.Exit(0)
 
 		default:
 
-			client.Renderer.Destroy()
+			client.Destroy()
 			fmt.Printf("Received signal: %s\n", sig.String())
 			os.Exit(0)
 
 		}
 
+	}
+
+}
+
+func (client *Client) Destroy() {
+
+	if client.Renderer != nil {
+		client.Renderer.Destroy()
 	}
 
 }
