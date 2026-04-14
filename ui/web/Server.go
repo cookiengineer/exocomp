@@ -1,8 +1,8 @@
 package web
 
 import "exocomp/agents"
-import "exocomp/ollama"
 import "exocomp/types"
+import "exocomp/ui/web/routes"
 import "embed"
 import "net/http"
 import "io/fs"
@@ -13,13 +13,13 @@ import "os"
 var embed_fs embed.FS
 
 type Server struct {
-	Session  *ollama.Session
+	Session  *types.Session
 	URL      *net_url.URL
 }
 
 func NewServer(agent *agents.Agent, config *types.Config) *Server {
 
-	session := ollama.NewSession(agent, config)
+	session := types.NewSession(agent, config)
 	url, _ := net_url.Parse("http://localhost:3000/")
 
 	return &Server{
@@ -49,11 +49,11 @@ func (server *Server) Init() bool {
 	})
 
 	http.HandleFunc("/api/chat", func(response http.ResponseWriter, request *http.Request) {
+		routes.Chat(server.Session, response, request)
+	})
 
-		// TODO: Deserialize message payload
-		// TODO: session.Query(message)
-		// TODO: Respond with response messages
-
+	http.HandleFunc("/api/models", func(response http.ResponseWriter, request *http.Request) {
+		routes.Models(server.Session, response, request)
 	})
 
 	http.HandleFunc("/api/models", func(response http.ResponseWriter, request *http.Request) {

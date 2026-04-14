@@ -1,7 +1,6 @@
 package tty
 
 import "exocomp/agents"
-import "exocomp/ollama"
 import "exocomp/types"
 import "fmt"
 import "os"
@@ -9,13 +8,13 @@ import "os/signal"
 import "syscall"
 
 type Client struct {
-	Session  *ollama.Session
+	Session  *types.Session
 	Renderer *Renderer
 }
 
 func NewClient(agent *agents.Agent, config *types.Config) *Client {
 
-	session  := ollama.NewSession(agent, config)
+	session  := types.NewSession(agent, config)
 	renderer := NewRenderer(session)
 
 	return &Client{

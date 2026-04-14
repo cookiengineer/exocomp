@@ -1,7 +1,7 @@
 package tty
 
-import "exocomp/ollama"
 import "exocomp/schemas"
+import "exocomp/types"
 import "bufio"
 import "fmt"
 import "os"
@@ -11,13 +11,13 @@ import "sync"
 
 type Renderer struct {
 	Prompt    string
-	Session   *ollama.Session
+	Session   *types.Session
 	mutex     *sync.RWMutex
 	rendered  int
 	resetline string
 }
 
-func NewRenderer(session *ollama.Session) *Renderer {
+func NewRenderer(session *types.Session) *Renderer {
 
 	resetline := ""
 
@@ -59,7 +59,7 @@ func (renderer *Renderer) InputLoop() {
 
 		if prompt != "" {
 
-			go renderer.Session.Query(schemas.Message{
+			go renderer.Session.SendChatRequest(schemas.Message{
 				Role:    "user",
 				Content: prompt,
 			})
