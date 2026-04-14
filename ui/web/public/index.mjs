@@ -1,4 +1,5 @@
 
+import { GetAgents } from "./utils/GetAgents.mjs";
 import { GetModels } from "./utils/GetModels.mjs";
 
 async function init() {
