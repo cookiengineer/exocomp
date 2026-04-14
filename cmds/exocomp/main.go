@@ -19,7 +19,7 @@ func showHelp() {
 	fmt.Println("")
 	fmt.Println("Arguments:")
 	fmt.Println("    <ui> string            UI type")
-	fmt.Println("                           Either of: jsonl, tty, web")
+	fmt.Println("                           Either of: jsonl, tty, web, webview")
 	fmt.Println("")
 	fmt.Println("Flags:")
 	fmt.Println("")
@@ -77,7 +77,7 @@ func main() {
 
 		tmp1 := strings.TrimSpace(os.Args[1])
 
-		if (tmp1 == "jsonl" || tmp1 == "tty" || tmp1 == "web") {
+		if (tmp1 == "jsonl" || tmp1 == "tty" || tmp1 == "web" || tmp1 == "webview") {
 
 			tmp_ui = tmp1
 
@@ -215,12 +215,22 @@ func main() {
 				os.Stdout.Sync()
 
 				server := ui_web.NewServer(agent, config)
+				server.Init()
+
+			} else if tmp_ui == "webview" {
+
+				fmt.Fprintf(os.Stdout, "[config]:\n")
+				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
+				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
+				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
+				fmt.Fprintf(os.Stdout, "\n")
+				os.Stdout.Sync()
+
+				server := ui_web.NewServer(agent, config)
 				client := ui_webview.NewClient(server.URL)
 
 				go client.Init()
 				server.Init()
-
-				// TODO: client.Destroy()
 
 			} else {
 

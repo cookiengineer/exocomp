@@ -20,7 +20,7 @@ type Server struct {
 func NewServer(agent *agents.Agent, config *types.Config) *Server {
 
 	session := ollama.NewSession(agent, config)
-	url, _ := net_url.Parse("http://localhost:1234/")
+	url, _ := net_url.Parse("http://localhost:3000/")
 
 	return &Server{
 		Session: session,
@@ -53,6 +53,12 @@ func (server *Server) Init() bool {
 		// TODO: Deserialize message payload
 		// TODO: session.Query(message)
 		// TODO: Respond with response messages
+
+	})
+
+	http.HandleFunc("/api/models", func(response http.ResponseWriter, request *http.Request) {
+
+		// TODO: session.QueryModels()
 
 	})
 
