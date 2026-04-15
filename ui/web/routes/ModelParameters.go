@@ -10,7 +10,7 @@ import "sort"
 import "strconv"
 import "strings"
 
-func Models(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func ModelParameters(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 

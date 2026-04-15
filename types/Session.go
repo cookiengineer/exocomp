@@ -19,9 +19,10 @@ type Session struct {
 	Client   *http.Client
 	Messages []*schemas.Message
 	Models   []*schemas.Model
-	Tools    []schemas.Tool
+	Tools    []*schemas.Tool
 	Waiting  bool
 	mutex    *sync.RWMutex
+	tools    map[string]tools.Tool
 }
 
 func NewSession(agent *agents.Agent, config *Config) *Session {
@@ -32,14 +33,17 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 		Console:  NewConsole(os.Stdout, os.Stderr, 0),
 		Client:   &http.Client{},
 		Messages: make([]*schemas.Message, 0),
-		Tools:    make([]schemas.Tool, 0),
+		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
 		mutex:    &sync.RWMutex{},
+		tools:    make(map[string]tools.Tool),
 	}
 
 	if len(agent.Tools) > 0 {
 		session.Tools = tools.EncodeSchema(agent.Tools)
 	}
+
+	auto_init := false
 
 	session.mutex.Lock()
 
@@ -54,7 +58,7 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 
 	}
 
-	if config != nil {
+	if config != nil && config.GetPrompt() != "" {
 
 		user_message := &schemas.Message{
 			Role:    "user",
@@ -62,10 +66,15 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 		}
 
 		session.Messages = append(session.Messages, user_message)
+		auto_init = true
 
 	}
 
 	session.mutex.Unlock()
+
+	if auto_init == true {
+		session.Init()
+	}
 
 	return session
 
@@ -81,36 +90,42 @@ func (session *Session) Init() error {
 
 }
 
+func (session *Session) GetConsoleMessages(from int) []ConsoleMessage {
+
+	if session.Console != nil {
+		return session.Console.GetMessages(from)
+	} else {
+		return []ConsoleMessage{}
+	}
+
+}
+
 func (session *Session) GetMessages(from int) []*schemas.Message {
 
     session.mutex.RLock()
     defer session.mutex.RUnlock()
 
-	if len(session.Messages) > 0 && from < len(session.Messages) {
+	result := make([]*schemas.Message, 0)
 
-		result := make([]*schemas.Message, 0)
+	if len(session.Messages) > 0 && from < len(session.Messages) {
 
 		for m := from; m < len(session.Messages); m++ {
 			result = append(result, session.Messages[m])
 		}
 
-		return result
-
-	} else {
-
-		return []*schemas.Message{}
-
 	}
+
+	return result
 
 }
 
-func (session *Session) GetTool(name string) tools.Tool {
+func (session *Session) GetTool(identifier string) tools.Tool {
 
 	allowed := false
 
 	for _, tool := range session.Tools {
 
-		if strings.HasPrefix(tool.Function.Name, name + ".") {
+		if tool.Function.Name == identifier {
 			allowed = true
 			break
 		}
@@ -119,33 +134,32 @@ func (session *Session) GetTool(name string) tools.Tool {
 
 	if allowed == true {
 
-		if name == "agents" {
+		name  := strings.TrimSpace(identifier[0:strings.Index(identifier, ".")])
+		_, ok := session.tools[name]
 
-			return tools.Tool(tools.NewAgents(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
+		if ok == false {
 
-		} else if name == "bugs" {
 
-			return tools.Tool(tools.NewBugs(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
+			switch name {
+			case "agents":
+				session.tools[name] = tools.Tool(tools.NewAgents(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
+			case "bugs":
+				session.tools[name] = tools.Tool(tools.NewBugs(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
+			case "changelog":
+				session.tools[name] = tools.Tool(tools.NewChangelog(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
+			case "files":
+				session.tools[name] = tools.Tool(tools.NewFiles(session.Config.Agent, session.Config.Sandbox))
+			case "programs":
+				session.tools[name] = tools.Tool(tools.NewPrograms(session.Config.Agent, session.Config.Sandbox, session.Agent.Programs))
+			case "requirements":
+				session.tools[name] = tools.Tool(tools.NewRequirements(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
+			default:
+				session.tools[name] = nil
+			}
 
-		} else if name == "changelog" {
-
-			return tools.Tool(tools.NewChangelog(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
-
-		} else if name == "files" {
-
-			return tools.Tool(tools.NewFiles(session.Config.Agent, session.Config.Sandbox))
-
-		} else if name == "programs" {
-
-			return tools.Tool(tools.NewPrograms(session.Config.Agent, session.Config.Sandbox, session.Agent.Programs))
-
-		} else if name == "requirements" {
-
-			return tools.Tool(tools.NewRequirements(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
-
-		} else {
-			return nil
 		}
+
+		return session.tools[name]
 
 	} else {
 		return nil
@@ -202,13 +216,13 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 			for _, tool_call := range response.ToolCalls {
 
-				name,      err0 := tool_call.Function.Tool()
-				method,    err1 := tool_call.Function.Method()
-				arguments, err2 := tool_call.Function.Arguments()
+				identifier, err0 := tool_call.Function.Tool()
+				method,     err1 := tool_call.Function.Method()
+				arguments,  err2 := tool_call.Function.Arguments()
 
 				if err0 == nil && err1 == nil && err2 == nil {
 
-					tool := session.GetTool(name)
+					tool := session.GetTool(identifier)
 
 					if tool != nil {
 
@@ -220,7 +234,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 							message := &schemas.Message{
 								Role:     "tool",
 								Content:  strings.TrimSpace(result),
-								ToolName: name + "." + method,
+								ToolName: identifier,
 							}
 							session.Messages = append(session.Messages, message)
 							session.mutex.Unlock()
@@ -231,7 +245,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 							message := &schemas.Message{
 								Role:     "tool",
 								Content:  fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
-								ToolName: name + "." + method,
+								ToolName: identifier,
 							}
 							session.Messages = append(session.Messages, message)
 							session.mutex.Unlock()
@@ -250,7 +264,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 								"",
 								string(json_blob),
 							}, "\n"),
-							ToolName: name + "." + method,
+							ToolName: identifier,
 						}
 						session.Messages = append(session.Messages, message)
 						session.mutex.Unlock()

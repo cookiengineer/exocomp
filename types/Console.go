@@ -109,6 +109,22 @@ func NewConsole(stdout *os.File, stderr *os.File, offset int) *Console {
 
 }
 
+func (console *Console) GetMessages(from int) []ConsoleMessage {
+
+	result := make([]ConsoleMessage, 0)
+
+	if len(console.Messages) > 0 && from < len(console.Messages) {
+
+		for m := 0; m < len(console.Messages); m++ {
+			result = append(result, console.Messages[m])
+		}
+
+	}
+
+	return result
+
+}
+
 func (console *Console) GetOffset() int {
 
 	var result int
@@ -320,30 +336,6 @@ func (console *Console) Length() int {
 	return result
 
 }
-
-// func (console *Console) ClearScreen() {
-// 
-// 	message := NewConsoleMessage("Clear", "")
-// 
-// 	if console.HasErrors() == false {
-// 
-// 		if console.Stdout != nil {
-// 
-// 			// Clear Screen and Reset Cursor
-// 			console.Stdout.WriteString("\u001b[2J\u001b[0f")
-// 
-// 			// Clear Scroll Buffer
-// 			console.Stdout.WriteString("\u001b[3J")
-// 
-// 		}
-// 
-// 		console.mutex.Lock()
-// 		console.Messages = append(console.Messages, message)
-// 		console.mutex.Unlock()
-// 
-// 	}
-// 
-// }
 
 func (console *Console) Clear(raw string) {
 

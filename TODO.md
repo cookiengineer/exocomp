@@ -8,8 +8,11 @@
 
 ## Web UI
 
-- [ ] Implement `/api/models`
-- [ ] Implement `/api/chat` and `/api/completions` as a canonical URL
+- [ ] Implement `routes.Agents` that shows overview of contractor agents
+- [ ] Implement `routes.AgentSettings`
+- [ ] Implement `routes.Tools` to execute/simulate tool calls
+- [ ] Implement Sidebar showing active agents
+
 
 ## Planner Agent
 

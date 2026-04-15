@@ -8,7 +8,7 @@ import "io"
 import "net/http"
 import "strconv"
 
-func Chat(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func SendMessage(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodPost {
 
@@ -31,8 +31,7 @@ func Chat(session *types.Session, request *http.Request, response http.ResponseW
 
 					if err2 == nil {
 
-						messages := session.GetMessages(from)
-
+						messages               := session.GetMessages(from)
 						response_payload, err3 := json.MarshalIndent(messages, "", "\t")
 
 						if err3 == nil {
@@ -67,3 +66,4 @@ func Chat(session *types.Session, request *http.Request, response http.ResponseW
 	}
 
 }
+
