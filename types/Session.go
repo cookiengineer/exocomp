@@ -288,6 +288,7 @@ func (session *Session) infer_chat_completions() error {
 		Messages:    session.Messages,
 		Stream:      false,
 		Tools:       session.Tools,
+		ToolChoice:  "auto",
 	})
 
 	if err0 == nil {

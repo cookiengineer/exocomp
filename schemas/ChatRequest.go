@@ -6,5 +6,6 @@ type ChatRequest struct {
 	Stream      bool       `json:"stream"`
 	Temperature float64    `json:"temperature"`
 	Tools       []Tool     `json:"tools"`
+	ToolChoice  string     `json:"tool_choice"`
 }
 
