@@ -66,6 +66,7 @@ func main() {
 	tmp_ui            := ""
 	tmp_name          := ""
 	tmp_agent         := ""
+	tmp_debug         := false
 	tmp_model         := "qwen3-coder:30b"
 	tmp_playground, _ := os.Getwd()
 	tmp_prompt        := ""
@@ -171,6 +172,15 @@ func main() {
 
 				}
 
+			} else if strings.HasPrefix(flag, "--") {
+
+				tmp := strings.TrimSpace(flag[2:])
+
+				switch tmp {
+				case "debug":
+					tmp_debug = true
+				}
+
 			}
 
 		}
@@ -182,7 +192,7 @@ func main() {
 
 	if tmp_playground == tmp_sandbox || strings.HasPrefix(tmp_sandbox, tmp_playground + string(os.PathSeparator)) {
 
-		config := types.NewConfig(tmp_name, tmp_agent, tmp_model, tmp_playground, tmp_prompt, tmp_sandbox, tmp_temperature, tmp_url)
+		config := types.NewConfig(tmp_name, tmp_agent, tmp_debug, tmp_model, tmp_playground, tmp_prompt, tmp_sandbox, tmp_temperature, tmp_url)
 		agent  := agents.NewAgent(config.Name, config.Agent, config.Model, config.Temperature)
 
 		err1 := os.MkdirAll(config.Sandbox, 0755)

@@ -2,7 +2,6 @@ package tty
 
 import "exocomp/schemas"
 import "exocomp/types"
-import "bufio"
 import "fmt"
 import "os"
 import "sort"
@@ -49,27 +48,6 @@ func (renderer *Renderer) Destroy() {
 
 }
 
-func (renderer *Renderer) InputLoop() {
-
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for scanner.Scan() {
-
-		prompt := strings.TrimSpace(scanner.Text())
-
-		if prompt != "" {
-
-			go renderer.Session.SendChatRequest(schemas.Message{
-				Role:    "user",
-				Content: prompt,
-			})
-
-		}
-
-	}
-
-}
-
 func (renderer *Renderer) RenderLoop() {
 
 	tools := make([]string, 0)
@@ -80,7 +58,7 @@ func (renderer *Renderer) RenderLoop() {
 
 	sort.Strings(tools)
 
-	info_agent := fmt.Sprintf("Agent: %s | %s | %.2f", renderer.Session.Agent.Type, renderer.Session.Agent.Model, renderer.Session.Agent.Temperature)
+	info_agent := fmt.Sprintf("Agent: %s | %s | %s | %.2f", renderer.Session.Agent.Name, renderer.Session.Agent.Type, renderer.Session.Agent.Model, renderer.Session.Agent.Temperature)
 	info_tools := fmt.Sprintf("Tools: %s", strings.Join(tools, ", "))
 
 	fmt.Fprintf(os.Stdout, "\r%s[exocomp]%s:\n", ColorYellow, ColorReset)

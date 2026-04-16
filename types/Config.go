@@ -9,6 +9,7 @@ import "strings"
 type Config struct {
 	Name        string
 	Agent       string
+	Debug       bool
 	Model       string
 	Playground  string
 	Prompt      string
@@ -17,7 +18,7 @@ type Config struct {
 	URL         *net_url.URL
 }
 
-func NewConfig(name string, agent string, model string, playground string, prompt string, sandbox string, temperature float64, url *net_url.URL) *Config {
+func NewConfig(name string, agent string, debug bool, model string, playground string, prompt string, sandbox string, temperature float64, url *net_url.URL) *Config {
 
 	prompt = utils_fmt.FormatSingleLine(prompt)
 
@@ -43,6 +44,7 @@ func NewConfig(name string, agent string, model string, playground string, promp
 	return &Config{
 		Name:        name,
 		Agent:       agent,
+		Debug:       debug,
 		Model:       model,
 		Playground:  playground,
 		Prompt:      prompt,
