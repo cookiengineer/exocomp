@@ -1,6 +1,6 @@
 package tools
 
-import "exocomp/utils"
+import utils_fmt "exocomp/utils/fmt"
 import "go/ast"
 import "go/parser"
 import "go/printer"
@@ -51,7 +51,7 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 		behavior,    ok4 := arguments["behavior"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
-			return tool.DefineFunc(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(declaration), utils.FormatSingleLine(behavior))
+			return tool.DefineFunc(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(declaration), utils_fmt.FormatSingleLine(behavior))
 		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
 			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"behavior\" is not a string.")
 		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
@@ -72,7 +72,7 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 		behavior,    ok4 := arguments["behavior"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
-			return tool.DefineFunc(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(declaration), utils.FormatSingleLine(behavior))
+			return tool.DefineFunc(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(declaration), utils_fmt.FormatSingleLine(behavior))
 		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
 			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"behavior\" is not a string.")
 		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
@@ -96,9 +96,9 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 		symbol, ok2 := arguments["symbol"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Search(utils.FormatFilePath(path), utils.FormatSymbol(symbol))
+			return tool.Search(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
 		} else if ok1 == true && ok2 == false {
-			return tool.Search(utils.FormatFilePath(path), "")
+			return tool.Search(utils_fmt.FormatFilePath(path), "")
 		} else if ok1 == false && ok2 == true {
 			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {

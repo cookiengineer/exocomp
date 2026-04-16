@@ -1,6 +1,9 @@
 
 # TODO
 
+- [ ] Implement a `--debug` flag that dumps the JSON directly to the sandbox folder, so it can be
+      sent again to ollama/vllm server
+
 - [ ] `Requirements` need to use `tool.Playground`, like `Bugs` and `Changelog` already do
 - [ ] `tool.Sandbox` is now a nested folder, which means that `internal_path` is relative to `tool.Playground`
 - [ ] `List()` should show only requirements within current sandbox
@@ -8,8 +11,11 @@
 
 ## Web UI
 
-- [ ] Implement `/api/models`
-- [ ] Implement `/api/chat` and `/api/completions` as a canonical URL
+- [ ] Implement `routes.Agents` that shows overview of contractor agents
+- [ ] Implement `routes.AgentSettings`
+- [ ] Implement `routes.Tools` to execute/simulate tool calls
+- [ ] Implement Sidebar showing active agents
+
 
 ## Planner Agent
 

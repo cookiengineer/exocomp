@@ -22,12 +22,13 @@ func (function *ToolCallFunction) Tool() (string, error) {
 
 		tmp := strings.Split(function.Name, ".")
 
-		if len(tmp) == 2 && len(tmp[0]) > 0 {
+		if len(tmp) == 2 && len(tmp[0]) > 0 && len(tmp[1]) >= 2 {
 
-			tool := strings.TrimSpace(strings.ToLower(tmp[0]))
+			tool   := strings.TrimSpace(strings.ToLower(tmp[0]))
+			method := strings.TrimSpace(strings.ToUpper(tmp[1][0:1]) + strings.ToLower(tmp[1][1:]))
 
-			if tool != "" {
-				return tool, nil
+			if tool != "" && method != "" {
+				return tool + "." + method, nil
 			} else {
 				return "", fmt.Errorf("Invalid Tool Call")
 			}

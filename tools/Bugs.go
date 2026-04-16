@@ -1,6 +1,6 @@
 package tools
 
-import "exocomp/utils"
+import utils_fmt "exocomp/utils/fmt"
 import "fmt"
 import "sort"
 import "strings"
@@ -45,7 +45,7 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 		description, ok3 := arguments["description"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Add(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+			return tool.Add(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
 		} else if ok1 == true && ok2 == true && ok3 == false {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"description\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true {
@@ -62,7 +62,7 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 		symbol, ok2 := arguments["symbol"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Fix(utils.FormatFilePath(path), utils.FormatSymbol(symbol))
+			return tool.Fix(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
 		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
 		} else if ok1 == false && ok2 == true {
@@ -77,9 +77,9 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 		symbol, ok2 := arguments["symbol"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Search(utils.FormatFilePath(path), utils.FormatSymbol(symbol))
+			return tool.Search(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
 		} else if ok1 == true && ok2 == false {
-			return tool.Search(utils.FormatFilePath(path), "")
+			return tool.Search(utils_fmt.FormatFilePath(path), "")
 		} else if ok1 == false && ok2 == true {
 			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {

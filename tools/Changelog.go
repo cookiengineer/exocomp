@@ -1,6 +1,6 @@
 package tools
 
-import "exocomp/utils"
+import utils_fmt "exocomp/utils/fmt"
 import "fmt"
 import "sort"
 import "strings"
@@ -43,7 +43,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		description, ok3 := arguments["description"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Add(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+			return tool.Add(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
 		} else if ok1 == true && ok2 == true && ok3 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true {
@@ -61,7 +61,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		description, ok3 := arguments["description"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Change(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+			return tool.Change(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
 		} else if ok1 == true && ok2 == true && ok3 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true {
@@ -79,7 +79,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		description, ok3 := arguments["description"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Deprecate(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+			return tool.Deprecate(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
 		} else if ok1 == true && ok2 == true && ok3 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true {
@@ -97,7 +97,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		description, ok3 := arguments["description"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Fix(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+			return tool.Fix(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
 		} else if ok1 == true && ok2 == true && ok3 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true {
@@ -119,7 +119,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		description, ok3 := arguments["description"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Remove(utils.FormatFilePath(path), utils.FormatSymbol(symbol), utils.FormatSingleLine(description))
+			return tool.Remove(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
 		} else if ok1 == true && ok2 == true && ok3 == false {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true {
@@ -136,9 +136,9 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 		symbol, ok2 := arguments["symbol"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Search(utils.FormatFilePath(path), utils.FormatSymbol(symbol))
+			return tool.Search(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
 		} else if ok1 == true && ok2 == false {
-			return tool.Search(utils.FormatFilePath(path), "")
+			return tool.Search(utils_fmt.FormatFilePath(path), "")
 		} else if ok1 == false && ok2 == true {
 			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		} else {

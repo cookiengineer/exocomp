@@ -1,7 +1,7 @@
 package tools
 
 import "exocomp/agents"
-import "exocomp/utils"
+import utils_fmt "exocomp/utils/fmt"
 import "fmt"
 import "os"
 import "os/exec"
@@ -44,7 +44,7 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 		prompt, ok3 := arguments["prompt"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Hire(utils.FormatAgentName(name), agent, utils.FormatMultiLine(prompt))
+			return tool.Hire(utils_fmt.FormatAgentName(name), agent, utils_fmt.FormatMultiLine(prompt))
 		} else if ok1 == true && ok2 == true && ok3 == false {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true {
@@ -60,7 +60,7 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 		name, ok1 := arguments["name"].(string)
 
 		if ok1 == true {
-			return tool.Fire(utils.FormatAgentName(name))
+			return tool.Fire(utils_fmt.FormatAgentName(name))
 		} else {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		}
@@ -70,7 +70,7 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 		message, ok1 := arguments["message"].(string)
 
 		if ok1 == true {
-			return tool.Quit(utils.FormatMultiLine(message))
+			return tool.Quit(utils_fmt.FormatMultiLine(message))
 		} else {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"message\" is not a string.")
 		}

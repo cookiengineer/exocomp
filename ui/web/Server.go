@@ -42,23 +42,32 @@ func (server *Server) Init() bool {
 	// 	fsrv.ServeHTTP(response, request)
 	// })
 
-	http.HandleFunc("/api/init", func(response http.ResponseWriter, request *http.Request) {
-
-		// TODO: Call server.Session.Init()
-
+	http.HandleFunc("/api/parameters/agents", func(response http.ResponseWriter, request *http.Request) {
+		routes.AgentParameters(server.Session, request, response)
 	})
 
+	http.HandleFunc("/api/parameters/models", func(response http.ResponseWriter, request *http.Request) {
+		routes.ModelParameters(server.Session, request, response)
+	})
 
-	http.HandleFunc("/api/chat", func(response http.ResponseWriter, request *http.Request) {
-		routes.Chat(server.Session, request, response)
+	http.HandleFunc("/api/console", func(response http.ResponseWriter, request *http.Request) {
+		routes.Console(server.Session, request, response)
 	})
 
 	http.HandleFunc("/api/agents", func(response http.ResponseWriter, request *http.Request) {
 		routes.Agents(server.Session, request, response)
 	})
 
-	http.HandleFunc("/api/models", func(response http.ResponseWriter, request *http.Request) {
-		routes.Models(server.Session, request, response)
+	http.HandleFunc("/api/messages", func(response http.ResponseWriter, request *http.Request) {
+		routes.Messages(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/messages/send", func(response http.ResponseWriter, request *http.Request) {
+		routes.SendMessage(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/settings/agent", func(response http.ResponseWriter, request *http.Request) {
+		routes.AgentSettings(server.Session, request, response)
 	})
 
 	err := http.ListenAndServe(":" + server.URL.Port(), nil)

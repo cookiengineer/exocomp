@@ -8,7 +8,7 @@ import "net/http"
 import "sort"
 import "strconv"
 
-func Agents(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func AgentParameters(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 
