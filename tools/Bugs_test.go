@@ -7,7 +7,7 @@ import "testing"
 
 func TestBugs_Add(t *testing.T) {
 
-	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-*")
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
 	sandbox       := filepath.Join(playground, "sub", "package")
 	tool          := NewBugs("tester", sandbox, playground)
 
@@ -50,7 +50,7 @@ func TestBugs_Add(t *testing.T) {
 
 func TestBugs_List(t *testing.T) {
 
-	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-*")
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
 	sandbox       := filepath.Join(playground, "sub", "package")
 	tool          := NewBugs("tester", sandbox, playground)
 
@@ -105,7 +105,7 @@ func TestBugs_List(t *testing.T) {
 
 func TestBugs_Fix(t *testing.T) {
 
-	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-*")
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
 	sandbox       := filepath.Join(playground, "sub", "package")
 	tool          := NewBugs("tester", sandbox, playground)
 
@@ -164,7 +164,7 @@ func TestBugs_Fix(t *testing.T) {
 
 func TestBugs_Search(t *testing.T) {
 
-	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-*")
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
 	sandbox       := filepath.Join(playground, "sub", "package")
 	tool          := NewBugs("tester", sandbox, playground)
 

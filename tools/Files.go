@@ -101,7 +101,7 @@ func (tool *Files) List(path string) (string, error) {
 								typ = "folder"
 							}
 
-							lines = append(lines, fmt.Sprintf("- \"%s\" (%s)", name, typ))
+							lines = append(lines, fmt.Sprintf("- Name: %s, Type: %s", name, typ))
 
 						}
 
@@ -110,7 +110,7 @@ func (tool *Files) List(path string) (string, error) {
 					sort.Strings(lines)
 
 					result := make([]string, 0)
-					result = append(result, fmt.Sprintf("files.List: %s contains %d items.", path, len(lines)))
+					result = append(result, fmt.Sprintf("files.List: %s contains %d entries.", path, len(lines)))
 
 					for l := 0; l < len(lines); l++ {
 						result = append(result, lines[l])
