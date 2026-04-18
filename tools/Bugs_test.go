@@ -8,7 +8,7 @@ import "testing"
 func TestBugs_Add(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "bugs")
 	tool          := NewBugs("tester", sandbox, playground)
 
 	if tool != nil {
@@ -51,7 +51,7 @@ func TestBugs_Add(t *testing.T) {
 func TestBugs_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "bugs")
 	tool          := NewBugs("tester", sandbox, playground)
 
 	if tool != nil {
@@ -106,7 +106,7 @@ func TestBugs_List(t *testing.T) {
 func TestBugs_Fix(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "bugs")
 	tool          := NewBugs("tester", sandbox, playground)
 
 	if tool != nil {
@@ -165,7 +165,7 @@ func TestBugs_Fix(t *testing.T) {
 func TestBugs_Search(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "bugs")
 	tool          := NewBugs("tester", sandbox, playground)
 
 	if tool != nil {

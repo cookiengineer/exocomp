@@ -1,7 +1,9 @@
 package tools
 
 import utils_fmt "exocomp/utils/fmt"
+import "errors"
 import "fmt"
+import "io/fs"
 import "os"
 import "sort"
 import "strings"
@@ -191,7 +193,15 @@ func (tool *Files) Stat(path string) (string, error) {
 			return result, nil
 
 		} else {
-			return "", fmt.Errorf("files.Stat: %s", err1.Error())
+
+			if errors.Is(err1, fs.ErrPermission) {
+				return "", fmt.Errorf("files.Stat: Invalid path \"%s\": Permission denied.", path)
+			} else if errors.Is(err1, fs.ErrNotExist) {
+				return "", fmt.Errorf("files.Stat: Invalid path \"%s\": File doesn't exist.", path)
+			} else {
+				return "", fmt.Errorf("files.Stat: Invalid path \"%s\".", path)
+			}
+
 		}
 
 	} else {

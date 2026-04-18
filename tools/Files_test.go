@@ -8,7 +8,7 @@ import "testing"
 func TestFiles_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "files")
 	tool          := NewFiles("coder", sandbox)
 
 	if tool != nil {
@@ -36,11 +36,11 @@ func TestFiles_List(t *testing.T) {
 			}
 
 			if strings.Contains(lines3[1], "Name: First.txt") == false {
-				t.Errorf("Expected entry %s to be Name: First.txt", lines3[1])
+				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines3[1], "Name: First.txt")
 			}
 
 			if strings.Contains(lines3[1], "Type: file") == false {
-				t.Errorf("Expected entry %s to be Type: file", lines3[1])
+				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines3[1], "Type: file")
 			}
 
 		} else {
@@ -64,19 +64,19 @@ func TestFiles_List(t *testing.T) {
 			}
 
 			if strings.Contains(lines5[1], "Name: 2nd.txt") == false {
-				t.Errorf("Expected entry %s to be Name: 2nd.txt", lines5[1])
+				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines5[1], "Name: 2nd.txt")
 			}
 
 			if strings.Contains(lines5[1], "Type: file") == false {
-				t.Errorf("Expected entry %s to be Type: file", lines5[1])
+				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines5[1], "Type: file")
 			}
 
 			if strings.Contains(lines5[2], "Name: First.txt") == false {
-				t.Errorf("Expected entry %s to be Name: First.txt", lines5[2])
+				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines5[2], "Name: First.txt")
 			}
 
 			if strings.Contains(lines5[2], "Type: file") == false {
-				t.Errorf("Expected entry %s to be Type: file", lines5[2])
+				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines5[2], "Type: file")
 			}
 
 		} else {
@@ -106,7 +106,7 @@ func TestFiles_List(t *testing.T) {
 func TestFiles_Read(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "files")
 	tool          := NewFiles("coder", sandbox)
 
 	if tool != nil {
@@ -195,14 +195,104 @@ func TestFiles_Read(t *testing.T) {
 		t.Errorf("Expected tool to be not nil")
 	}
 
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
 }
 
 func TestFiles_Stat(t *testing.T) {
-	// TODO
-	t.Errorf("TODO: Implement Files.Stat unit test")
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
+	sandbox       := filepath.Join(playground, "files")
+	tool          := NewFiles("coder", sandbox)
+
+	if tool != nil {
+
+		_, err0 := tool.Write("./file.txt", "This is the file content!")
+
+		if err0 != nil {
+			t.Errorf("Expected %v to be nil", err0)
+		}
+
+		result1, err1 := tool.Stat("./does-not-exist.txt")
+		result2, err2 := tool.Stat("./file.txt")
+
+		if result1 != "" {
+			t.Errorf("Expected %s to be empty", result1)
+		}
+
+		if err1 != nil {
+
+			if strings.Contains(err1.Error(), "File doesn't exist") == false {
+				t.Errorf("Expected %v to be file doesn't exist error", err1)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err1)
+		}
+
+		lines2 := strings.Split(result2, "\n")
+
+		if len(lines2) == 6 {
+
+			if lines2[0] != "files.Stat: ./file.txt is a file." {
+				t.Errorf("Expected \"%s\" to be a file", lines2[0])
+			}
+
+			if strings.Contains(lines2[1], "Name: file.txt") == false {
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines2[1], "Name: file.txt")
+			}
+
+			if strings.Contains(lines2[2], "Type: file") == false {
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines2[2], "Type: file")
+			}
+
+			if strings.Contains(lines2[3], "Size: 26 B") == false {
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines2[3], "Size: 26 B")
+			}
+
+			if strings.Contains(lines2[4], "Mode: file (readable, writable)") == false {
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines2[4], "Mode: file (readable, writable)")
+			}
+
+			if strings.Contains(lines2[5], "Modified: ") == false {
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[5], "Modified: YYYY-MM-DD HH:ii:ss")
+			}
+
+		} else {
+			t.Errorf("Expected %d lines to be %d", len(lines2), 6)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
 }
 
 func TestFiles_Write(t *testing.T) {
+
 	// TODO
 	t.Errorf("TODO: Implement Files.Write unit test")
+
 }

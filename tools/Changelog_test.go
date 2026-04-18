@@ -9,7 +9,7 @@ import "time"
 func TestChangelog_Add(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "changelogs")
 	tool          := NewChangelog("tester", sandbox, playground)
 
 	if tool != nil {
@@ -61,7 +61,7 @@ func TestChangelog_Add(t *testing.T) {
 func TestChangelog_Change(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "changelogs")
 	tool          := NewChangelog("tester", sandbox, playground)
 
 	if tool != nil {
@@ -104,7 +104,7 @@ func TestChangelog_Change(t *testing.T) {
 func TestChangelog_Deprecate(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "changelogs")
 	tool          := NewChangelog("tester", sandbox, playground)
 
 	if tool != nil {
@@ -147,7 +147,7 @@ func TestChangelog_Deprecate(t *testing.T) {
 func TestChangelog_Fix(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "changelogs")
 	tool          := NewChangelog("tester", sandbox, playground)
 
 	if tool != nil {
@@ -190,7 +190,7 @@ func TestChangelog_Fix(t *testing.T) {
 func TestChangelog_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "changelogs")
 	tool          := NewChangelog("tester", sandbox, playground)
 
 	if tool != nil {
@@ -240,23 +240,23 @@ func TestChangelog_List(t *testing.T) {
 			}
 
 			if strings.Contains(lines[1], "Type: Add") == false {
-				t.Errorf("Expected %s to be Type: Add", lines[1])
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[1], "Type: Add")
 			}
 
 			if strings.Contains(lines[2], "Type: Change") == false {
-				t.Errorf("Expected %s to be Type: Change", lines[2])
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[2], "Type: Change")
 			}
 
 			if strings.Contains(lines[3], "Type: Fix") == false {
-				t.Errorf("Expected %s to be Type: Fix", lines[3])
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[3], "Type: Fix")
 			}
 
 			if strings.Contains(lines[4], "Type: Deprecate") == false {
-				t.Errorf("Expected %s to be Type: Deprecate", lines[4])
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[4], "Type: Deprecate")
 			}
 
 			if strings.Contains(lines[5], "Type: Remove") == false {
-				t.Errorf("Expected %s to be Type: Remove", lines[5])
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[5], "Type: Remove")
 			}
 
 		} else {
@@ -276,7 +276,7 @@ func TestChangelog_List(t *testing.T) {
 func TestChangelog_Remove(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "changelogs")
 	tool          := NewChangelog("tester", sandbox, playground)
 
 	if tool != nil {
@@ -319,7 +319,7 @@ func TestChangelog_Remove(t *testing.T) {
 func TestChangelog_Search(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "sub", "package")
+	sandbox       := filepath.Join(playground, "changelogs")
 	tool          := NewChangelog("tester", sandbox, playground)
 
 	if tool != nil {
@@ -380,51 +380,51 @@ func TestChangelog_Search(t *testing.T) {
 			}
 
 			if strings.Contains(lines1[1], "Type: Add,") == false {
-				t.Errorf("Expected %s to be Type: Add", lines1[1])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[1], "Type: Add")
 			}
 
 			if strings.Contains(lines1[1], "Symbol: Store,") == false {
-				t.Errorf("Expected %s to be Symbol: Store", lines1[1])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[1], "Symbol: Store")
 			}
 
 			if strings.Contains(lines1[2], "Type: Change,") == false {
-				t.Errorf("Expected %s to be Type: Change", lines1[2])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[2], "Type: Change")
 			}
 
 			if strings.Contains(lines1[2], "Symbol: Store,") == false {
-				t.Errorf("Expected %s to be Symbol: Store", lines1[2])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[2], "Symbol: Store")
 			}
 
 			if strings.Contains(lines1[3], "Type: Deprecate,") == false {
-				t.Errorf("Expected %s to be Type: Deprecate", lines1[3])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[3], "Type: Deprecate")
 			}
 
 			if strings.Contains(lines1[3], "Symbol: Store,") == false {
-				t.Errorf("Expected %s to be Symbol: Store", lines1[3])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[3], "Symbol: Store")
 			}
 
 			if strings.Contains(lines1[4], "Type: Remove,") == false {
-				t.Errorf("Expected %s to be Type: Remove", lines1[4])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[4], "Type: Remove")
 			}
 
 			if strings.Contains(lines1[4], "Symbol: Store,") == false {
-				t.Errorf("Expected %s to be Symbol: Store", lines1[4])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[4], "Symbol: Store")
 			}
 
 			if strings.Contains(lines1[5], "Type: Add,") == false {
-				t.Errorf("Expected %s to be Type: Add", lines1[4])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[4], "Type: Add")
 			}
 
 			if strings.Contains(lines1[5], "Symbol: StoreItem,") == false {
-				t.Errorf("Expected %s to be Symbol: StoreItem", lines1[5])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[5], "Symbol: StoreItem")
 			}
 
 			if strings.Contains(lines1[6], "Type: Fix,") == false {
-				t.Errorf("Expected %s to be Type: Fix", lines1[6])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[6], "Type: Fix")
 			}
 
 			if strings.Contains(lines1[6], "Symbol: StoreItem,") == false {
-				t.Errorf("Expected %s to be Symbol: StoreItem", lines1[6])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines1[6], "Symbol: StoreItem")
 			}
 
 		} else {
@@ -442,35 +442,35 @@ func TestChangelog_Search(t *testing.T) {
 			}
 
 			if strings.Contains(lines2[1], "Type: Add,") == false {
-				t.Errorf("Expected %s to be Type: Add", lines2[1])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[1], "Type: Add")
 			}
 
 			if strings.Contains(lines2[1], "Symbol: Store,") == false {
-				t.Errorf("Expected %s to be Symbol: Store", lines2[1])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[1], "Symbol: Store")
 			}
 
 			if strings.Contains(lines2[2], "Type: Change,") == false {
-				t.Errorf("Expected %s to be Type: Change", lines2[2])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[2], "Type: Change")
 			}
 
 			if strings.Contains(lines2[2], "Symbol: Store,") == false {
-				t.Errorf("Expected %s to be Symbol: Store", lines2[2])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[2], "Symbol: Store")
 			}
 
 			if strings.Contains(lines2[3], "Type: Deprecate,") == false {
-				t.Errorf("Expected %s to be Type: Deprecate", lines2[3])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[3], "Type: Deprecate")
 			}
 
 			if strings.Contains(lines2[3], "Symbol: Store,") == false {
-				t.Errorf("Expected %s to be Symbol: Store", lines2[3])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[3], "Symbol: Store")
 			}
 
 			if strings.Contains(lines2[4], "Type: Remove,") == false {
-				t.Errorf("Expected %s to be Type: Remove", lines2[4])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[4], "Type: Remove")
 			}
 
 			if strings.Contains(lines2[4], "Symbol: Store,") == false {
-				t.Errorf("Expected %s to be Symbol: Store", lines2[4])
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[4], "Symbol: Store")
 			}
 
 		} else {
