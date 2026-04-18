@@ -231,7 +231,15 @@ func (tool *Files) Write(path string, content string) (string, error) {
 				return result, nil
 
 			} else {
-				return "", fmt.Errorf("files.Write: %s", err2.Error())
+
+				if errors.Is(err2, fs.ErrPermission) {
+					return "", fmt.Errorf("files.Write: Invalid path \"%s\": Permission denied.", path)
+				} else if errors.Is(err2, fs.ErrNotExist) {
+					return "", fmt.Errorf("files.Write: Invalid path \"%s\": Folder doesn't exist.", path)
+				} else {
+					return "", fmt.Errorf("files.Write: Invalid path \"%s\".", path)
+				}
+
 			}
 
 		} else {

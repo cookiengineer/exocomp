@@ -1,7 +1,9 @@
 package tools
 
 import "bytes"
+import "errors"
 import "fmt"
+import "io/fs"
 import "os"
 import "os/exec"
 import "slices"
@@ -94,10 +96,23 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		err := cmd.Run()
 
+		// TODO: Better errors for permission denied
+		// fmt.Println("RUN ERROR", err)
+		// fmt.Println(program, program_arguments)
+		// fmt.Println(cmd.Dir)
+
+		first_line := ""
+
+		if len(program_arguments) > 0 {
+			first_line = fmt.Sprintf("programs.Execute: %s %s", program, strings.Join(program_arguments, " "))
+		} else {
+			first_line = fmt.Sprintf("programs.Execute: %s", program)
+		}
+
 		if err == nil {
 
 			result := strings.Join([]string{
-				fmt.Sprintf("programs.Execute: %s %s", program, strings.Join(program_arguments, " ")),
+				first_line,
 				buffer.String(),
 			}, "\n")
 
@@ -105,17 +120,25 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		} else {
 
-			result := strings.Join([]string{
-				fmt.Sprintf("programs.Execute: %s %s", program, strings.Join(program_arguments, " ")),
-				err.Error(),
-			}, "\n")
+			if errors.Is(err, fs.ErrPermission) {
+				return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Permission denied.", program)
+			} else if errors.Is(err, fs.ErrNotExist) || strings.Contains(err.Error(), "executable file not found") {
+				return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Program doesn't exist.", program)
+			} else {
 
-			return result, nil
+				result := strings.Join([]string{
+					first_line,
+					buffer.String(),
+				}, "\n")
+
+				return result, fmt.Errorf("programs.Execute: Program \"%s\" execution error \"%s\".", program, err.Error())
+
+			}
 
 		}
 
 	} else {
-		return "", fmt.Errorf("programs.Execute: Invalid program \"%s\", must be an allowed program.", program)
+		return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Attempt to execute unallowed program", program)
 	}
 
 }

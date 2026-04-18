@@ -292,7 +292,64 @@ func TestFiles_Stat(t *testing.T) {
 
 func TestFiles_Write(t *testing.T) {
 
-	// TODO
-	t.Errorf("TODO: Implement Files.Write unit test")
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
+	sandbox       := filepath.Join(playground, "files")
+	tool          := NewFiles("coder", sandbox)
+
+	if tool != nil {
+
+		result1, err1 := tool.Write("./file.txt", "This is the file content!")
+		result2, err2 := tool.Write("./../../../file.txt", "This is the file content!")
+		result3, err3 := tool.Write("/etc/passwd", "This is the file content!")
+
+		if result1 != "files.Write: ./file.txt with 26 B written." {
+			t.Errorf("Expected file to be written")
+		}
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if result2 != "" {
+			t.Errorf("Expected %s to be empty", result2)
+		}
+
+		if err2 != nil {
+
+			if strings.Contains(err2.Error(), "Attempt to escape sandbox") == false {
+				t.Errorf("Expected %v to detect attempt to escape sandbox", err2)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err2)
+		}
+
+		if result3 != "" {
+			t.Errorf("Expected %s to be empty", result3)
+		}
+
+		if err3 != nil {
+
+			if strings.Contains(err3.Error(), "Attempt to escape sandbox") == false {
+				t.Errorf("Expected %v to detect attempt to escape sandbox", err3)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err3)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
 
 }

@@ -271,6 +271,16 @@ func TestChangelog_List(t *testing.T) {
 		t.Errorf("Expected tool to be not nil")
 	}
 
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
 }
 
 func TestChangelog_Remove(t *testing.T) {
