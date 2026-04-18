@@ -54,11 +54,12 @@ with generated code very easily in a standardized manner.
 
 ## Models
 
-If you're using `ollama`, all models with the `tools` tag in the [ollama library](https://ollama.com/library)
-should be compatible. Use the API endpoint `http://ollama_instance:port/api/chat`.
+If you're using `ollama` or `vllm`, all models with the `tools` tag in the
+[ollama library](https://ollama.com/library) should be compatible. Exocomp
+uses the following OpenAI compatible endpoints:
 
-If you're using `vllm`, all models with `tools` support should be compatible.
-Use the API endpoint `http://vllm_instance:port/v1/chat/completions`.
+- `http://server:port/v1/chat/completions`
+- `http://server:port/v1/models`
 
 
 ## Tools
@@ -71,7 +72,7 @@ work with LLMs at all.
 | [Agents](./tools/Agents.go)             |                                  | Manages the lifecycle of contractor sub-agents. | `manager`                                               |
 | [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)      | Manages documentation of discovered bugs.       | `tester`                                                |
 | [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go) | Manages documentation of development changelog. | `coder`                                                 |
-| [Files](./tools/Files.go)               |                                  | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
+| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)     | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
 | [Programs](./tools/Programs.go)         |                                  | Interacts with installed programs.              | `coder`, `summarizer`, `tester`                         |
 | [Requirements](./tools/Requirements.go) |                                  | Manages specifications of implementations.      | `architect`, `coder`, `summarizer`, `tester`            |
 | Websites                                |                                  | Researches knowledge from the web.              | `researcher`                                            |

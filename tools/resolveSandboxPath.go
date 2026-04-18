@@ -12,9 +12,17 @@ func resolveSandboxPath(sandbox string, file_path string) (string, error) {
 		if len(file_path) > len(sandbox) && strings.HasPrefix(file_path, sandbox + string(os.PathSeparator)) {
 			file_path = "." + string(os.PathSeparator) + strings.TrimSpace(file_path[len(sandbox):])
 		} else {
-			return "", fmt.Errorf("Cannot resolve file path of \"%s\"", file_path)
+			return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", file_path)
 		}
 
+	}
+
+	if strings.Contains(file_path, "/") && string(os.PathSeparator) == "\\" {
+		return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", file_path)
+	}
+
+	if strings.Contains(file_path, "\\") && string(os.PathSeparator) == "/" {
+		return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", file_path)
 	}
 
 	tmp1 := filepath.Join(sandbox, file_path)
@@ -31,9 +39,9 @@ func resolveSandboxPath(sandbox string, file_path string) (string, error) {
 			if err2 == nil {
 
 				if relative == ".." {
-					return "", fmt.Errorf("Invalid file path \"%s\": Path tried to escape sandbox", relative)
+					return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", relative)
 				} else if len(relative) >= 3 && relative[0:3] == ".." + string(os.PathSeparator) {
-					return "", fmt.Errorf("Invalid file path \"%s\": Path tried to escape sandbox", relative)
+					return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", relative)
 				} else {
 
 					parent_folder := filepath.Dir(resolved_path)
@@ -43,21 +51,21 @@ func resolveSandboxPath(sandbox string, file_path string) (string, error) {
 					if err3 == nil {
 						return resolved_path, nil
 					} else {
-						return "", fmt.Errorf("Cannot create parent folder of file path \"%s\": %s", resolved_path, err3.Error())
+						return "", fmt.Errorf("Invalid path \"%s\": Cannot create parent folder", relative)
 					}
 
 				}
 
 			} else {
-				return "", fmt.Errorf("Cannot resolve relative path \"%s\": %s", resolved_path, err2.Error())
+				return "", fmt.Errorf("Invalid path \"%s\": Cannot resolve sandbox path", relative)
 			}
 
 		} else {
-			return "", fmt.Errorf("Cannot resolve path of sandbox \"%s\": %s", sandbox, err1.Error())
+			return "", fmt.Errorf("Invalid path \"%s\": Invalid sandbox \"%s\"", file_path, sandbox)
 		}
 
 	} else {
-		return "", fmt.Errorf("Cannot resolve file path of \"%s\": %s", tmp1, err0.Error())
+		return "", fmt.Errorf("Invalid path \"%s\": Cannot resolve file path", file_path)
 	}
 
 }

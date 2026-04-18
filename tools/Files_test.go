@@ -104,8 +104,97 @@ func TestFiles_List(t *testing.T) {
 }
 
 func TestFiles_Read(t *testing.T) {
-	// TODO
-	t.Errorf("TODO: Implement Files.Read unit test")
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
+	sandbox       := filepath.Join(playground, "sub", "package")
+	tool          := NewFiles("coder", sandbox)
+
+	if tool != nil {
+
+		_, err01 := tool.Write("./file.txt", "This is the file content!")
+		_, err02 := tool.Write("./file.txt", "This is the file content!")
+		result1, err1 := tool.Read("./file.txt")
+		result2, err2 := tool.Read("./../../../file.txt")
+		result3, err3 := tool.Read("./..\\..\\../file.txt")
+		result4, err4 := tool.Read("/etc/passwd")
+		result5, err5 := tool.Read("../../../../../../../../etc/passwd")
+
+		if err01 != nil {
+			t.Errorf("Expected %v to be nil", err01)
+		}
+
+		if err02 != nil {
+			t.Errorf("Expected %v to be nil", err02)
+		}
+
+		if strings.Contains(result1, "This is the file content!") == false {
+			t.Errorf("Expected %s to be allowed", "./file.txt")
+		}
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if result2 != "" {
+			t.Errorf("Expected %s to be empty", result2)
+		}
+
+		if err2 != nil {
+
+			if strings.Contains(err2.Error(), "Attempt to escape sandbox") == false {
+				t.Errorf("Expected %v to detect attempt to escape sandbox", err2)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err2)
+		}
+
+		if result3 != "" {
+			t.Errorf("Expected %s to be empty", result3)
+		}
+
+		if err3 != nil {
+
+			if strings.Contains(err3.Error(), "Attempt to escape sandbox") == false {
+				t.Errorf("Expected %v to detect attempt to escape sandbox", err3)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err3)
+		}
+
+		if result4 != "" {
+			t.Errorf("Expected %s to be empty", result4)
+		}
+
+		if err4 != nil {
+
+			if strings.Contains(err4.Error(), "Attempt to escape sandbox") == false {
+				t.Errorf("Expected %v to detect attempt to escape sandbox", err4)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err4)
+		}
+
+		if result5 != "" {
+			t.Errorf("Expected %s to be empty", result5)
+		}
+
+		if err5 != nil {
+
+			if strings.Contains(err5.Error(), "Attempt to escape sandbox") == false {
+				t.Errorf("Expected %v to detect attempt to escape sandbox", err5)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err5)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
 }
 
 func TestFiles_Stat(t *testing.T) {
