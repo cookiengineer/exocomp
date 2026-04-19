@@ -3,6 +3,7 @@ package main
 import "exocomp/agents"
 import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
+import ui_jsonl "exocomp/ui/jsonl"
 import ui_tty "exocomp/ui/tty"
 import ui_web "exocomp/ui/web"
 import ui_webview "exocomp/ui/webview"
@@ -201,7 +202,10 @@ func main() {
 
 			if tmp_ui == "jsonl" {
 
-				// TODO: jsonl Client mode
+				os.Stdout.Sync()
+
+				client := ui_jsonl.NewClient(agent, config)
+				client.Init()
 
 			} else if tmp_ui == "tty" {
 

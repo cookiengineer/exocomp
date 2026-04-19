@@ -21,19 +21,23 @@
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Contractor agent's unique name"
+						"description": "Contractor agent's unique pseudonym name"
 					},
 					"agent": {
 						"type": "string",
 						"description": "Contractor agent's type",
-						"enum": ["coder", "tester"]
+						"enum": ["architect", "coder", "researcher", "tester"]
+					},
+					"sandbox": {
+						"type": "string",
+						"description": "Relative path to the folder"
 					},
 					"prompt": {
 						"type": "string",
-						"description": "Contractor agent's task prompt"
+						"description": "Specific task instructions, agent will quit with a report after completion"
 					}
 				},
-				"required": ["name", "agent", "prompt"]
+				"required": ["name", "agent", "sandbox", "prompt"]
 			}
 		}
 	},
@@ -57,8 +61,25 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "agents.Inquire",
+			"description": "Inquire a status report of the contractor agent with a unique name.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Contractor agent's unique name"
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "agents.Quit",
-			"description": "Finish your work with a status message to the hiring agent.",
+			"description": "Finish your work with a status report to the hiring agent.",
 			"parameters": {
 				"type": "object",
 				"properties": {

@@ -6,6 +6,12 @@
 - [ ] `List()` should show only requirements within current sandbox
 - [ ] `Search()` should show only requirements within current sandbox
 
+## JSONL UI
+
+- [ ] Implement `Renderer` which renders messages per line (64kB per line limit)
+- [ ] Messages with `role=tool` should be shortened without showing their contents
+- [ ] Implement `agents.Inquire(name)` which should summarize the status reports by using a separate summarizer agent and return the result.
+
 ## Web UI
 
 - [ ] Implement `routes.Agents` that shows overview of contractor agents

@@ -1,7 +1,10 @@
 package tools
 
 import "exocomp/agents"
+import "exocomp/schemas"
 import utils_fmt "exocomp/utils/fmt"
+import "bufio"
+import "encoding/json"
 import "fmt"
 import "os"
 import "os/exec"
@@ -14,6 +17,7 @@ type Agents struct {
 	Playground string
 	mutex      *sync.Mutex
 	agents     map[string]*agents.Agent
+	chats      map[string][]*schemas.Message
 	processes  map[string]*os.Process
 }
 
@@ -24,6 +28,7 @@ func NewAgents(agent string, sandbox string, playground string) *Agents {
 		Playground: playground,
 		mutex:      &sync.Mutex{},
 		agents:     make(map[string]*agents.Agent),
+		chats:      make(map[string][]*schemas.Message, 0),
 		processes:  make(map[string]*os.Process),
 	}
 
@@ -39,17 +44,20 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 	} else if method == "Hire" {
 
-		name,   ok1 := arguments["name"].(string)
-		agent,  ok2 := arguments["agent"].(string)
-		prompt, ok3 := arguments["prompt"].(string)
+		name,    ok1 := arguments["name"].(string)
+		agent,   ok2 := arguments["agent"].(string)
+		sandbox, ok3 := arguments["sandbox"].(string)
+		prompt,  ok4 := arguments["prompt"].(string)
 
-		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Hire(utils_fmt.FormatAgentName(name), agent, utils_fmt.FormatMultiLine(prompt))
-		} else if ok1 == true && ok2 == true && ok3 == false {
+		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
+			return tool.Hire(utils_fmt.FormatAgentName(name), agent, sandbox, utils_fmt.FormatMultiLine(prompt))
+		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
-		} else if ok1 == true && ok2 == false && ok3 == true {
+		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"sandbox\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"agent\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true {
+		} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		} else {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameters.")
@@ -61,6 +69,16 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 		if ok1 == true {
 			return tool.Fire(utils_fmt.FormatAgentName(name))
+		} else {
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
+		}
+
+	} else if method == "Inquire" {
+
+		name, ok1 := arguments["name"].(string)
+
+		if ok1 == true {
+			return tool.Inquire(utils_fmt.FormatAgentName(name))
 		} else {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		}
@@ -108,47 +126,91 @@ func (tool *Agents) List() (string, error) {
 
 }
 
-func (tool *Agents) Hire(name string, agent string, prompt string) (string, error) {
+func (tool *Agents) Hire(name string, agent string, sandbox string, prompt string) (string, error) {
 
-	// TODO: Hire should allow to hire agents working on a specific sandbox
-	// So path should be e.g. ./path/to/package
+	resolved, err0 := resolveSandboxPath(tool.Sandbox, sandbox)
 
-	sandbox    := tool.Sandbox
-	playground := tool.Playground
+	if err0 == nil {
 
-	cmd := exec.Command(
-		os.Args[0],
-		"jsonl",
-		"--name",       name,
-		"--agent",      agent,
-		"--playground", playground,
-		"--prompt",     prompt,
-	)
-	cmd.Dir = sandbox
+		cmd := exec.Command(
+			os.Args[0],
+			"jsonl",
+			"--name",       name,
+			"--agent",      agent,
+			"--playground", tool.Playground,
+			"--sandbox",    resolved,
+			"--prompt",     prompt,
+		)
+		cmd.Dir = resolved
 
-	err := cmd.Start()
 
-	if err == nil {
+		stdout_pipe, err1 := cmd.StdoutPipe()
 
-		tool.agents[name]    = agents.NewAgent(name, agent, "", 0.0)
-		tool.processes[name] = cmd.Process
+		if err1 == nil {
 
-		// Background Reaper
-		go func(name string, cmd *exec.Cmd) {
+			err2 := cmd.Start()
 
-			cmd.Wait()
+			if err2 == nil {
 
-			tool.mutex.Lock()
-			delete(tool.agents, name)
-			delete(tool.processes, name)
-			tool.mutex.Unlock()
+				tool.agents[name]    = agents.NewAgent(name, agent, "", 0.0)
+				tool.processes[name] = cmd.Process
 
-		}(name, cmd)
+				// Background Reader
+				go func(name string) {
 
-		return fmt.Sprintf("agents.Hire: Agent \"%s\" got hired.", name), nil
+					scanner := bufio.NewScanner(stdout_pipe)
+
+					for scanner.Scan() {
+
+						line    := scanner.Bytes()
+						message := schemas.Message{}
+
+						err := json.Unmarshal(line, &message)
+
+						if err == nil {
+
+							tool.mutex.Lock()
+
+							_, ok := tool.chats[name]
+
+							if ok == false {
+								tool.chats[name] = make([]*schemas.Message, 0)
+							}
+
+							tool.chats[name] = append(tool.chats[name], &message)
+
+							tool.mutex.Unlock()
+
+						}
+
+					}
+
+				}(name)
+
+				// Background Reaper
+				go func(name string, cmd *exec.Cmd) {
+
+					cmd.Wait()
+
+					tool.mutex.Lock()
+					delete(tool.agents, name)
+					delete(tool.processes, name)
+					tool.mutex.Unlock()
+
+				}(name, cmd)
+
+				return fmt.Sprintf("agents.Hire: Agent \"%s\" got hired.", name), nil
+
+			} else {
+				return "", fmt.Errorf("agents.Hire: %s", err2.Error())
+			}
+
+		} else {
+			return "", fmt.Errorf("agents.Hire: %s", err1.Error())
+		}
 
 	} else {
-		return "", fmt.Errorf("agents.Hire: %s", err.Error())
+		return "", fmt.Errorf("agents.Hire: %s", err0.Error())
 	}
 
 }
