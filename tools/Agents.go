@@ -138,6 +138,14 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 		if err0 == nil {
 
+			stat, err1 := os.Stat(resolved)
+
+			if err1 == nil && stat.IsDir() == true {
+				// Do Nothing
+			} else {
+				os.MkdirAll(resolved, 0755)
+			}
+
 			cmd := exec.Command(
 				os.Args[0],
 				"jsonl",
@@ -150,13 +158,13 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 			cmd.Dir = resolved
 
 
-			stdout_pipe, err1 := cmd.StdoutPipe()
+			stdout_pipe, err2 := cmd.StdoutPipe()
 
-			if err1 == nil {
+			if err2 == nil {
 
-				err2 := cmd.Start()
+				err3 := cmd.Start()
 
-				if err2 == nil {
+				if err3 == nil {
 
 					tool.agents[name]    = agents.NewAgent(name, agent, "", 0.0)
 					tool.processes[name] = cmd.Process
@@ -208,11 +216,11 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 					return fmt.Sprintf("agents.Hire: Agent \"%s\" got hired.", name), nil
 
 				} else {
-					return "", fmt.Errorf("agents.Hire: %s", err2.Error())
+					return "", fmt.Errorf("agents.Hire: %s", err3.Error())
 				}
 
 			} else {
-				return "", fmt.Errorf("agents.Hire: %s", err1.Error())
+				return "", fmt.Errorf("agents.Hire: %s", err2.Error())
 			}
 
 		} else {

@@ -15,7 +15,7 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Hire",
-			"description": "Hire a contractor agent with a unique name and a task prompt.",
+			"description": "Hire a contractor agent with a unique name and a task prompt inside a sandbox.",
 			"parameters": {
 				"type": "object",
 				"properties": {
@@ -79,13 +79,13 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Quit",
-			"description": "Finish your work with a status report to the hiring agent.",
+			"description": "Finish your own work with a work report to the hiring agent.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"message": {
 						"type": "string",
-						"description": "The status message. If it contains \"my work is done\" the current process exits with a success."
+						"description": "The work report. If it contains \"my work is done\" the current process exits with a success."
 					}
 				},
 				"required": ["message"]
