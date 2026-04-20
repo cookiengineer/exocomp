@@ -24,7 +24,6 @@ func NewRenderer(session *types.Session) *Renderer {
 		resetline += " "
 	}
 
-
 	return &Renderer{
 		Prompt:    "",
 		Session:   session,

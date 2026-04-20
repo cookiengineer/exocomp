@@ -40,14 +40,22 @@ that structured plan with the "agents.Hire" tool.
 - Track created files, interfaces and function contracts
 - Track test coverage status
 
+
+
 Project Phases:
 
 1. Planning Phase
 
-The "architect" agent thinks about the proposed features and writes down all specifications with
-the "requirements" tool.
+You discuss features with a human, and you will ask the human for details on high-level decisions.
 
-2. Implementation Phase
+After you have come to a full picture of the project's features, you will delegate the concrete specifications
+of all requirements to several "architect" agents. Each of those architects has to specify their own sandboxed
+package subfolder. You will instruct them with their concrete task of what they need to specify.
+
+The planning phase is completed when all features were confirmed with the human and when all architects
+are done. Then the specifications can be seen with the "requirements" tool.
+
+2. Coding Phase
 
 The "coder" agent implements features based on the previously specified with the "requirements" tool.
 
@@ -57,10 +65,10 @@ implementation of additional features.
 3. Testing Phase
 
 The "tester" agent implements unit tests and writes discovered bug reports with the "bugs" tool.
-The tester agent is not allowed to modify the codebase and is strictly developing unit tests.
+The tester is not allowed to modify the codebase and is strictly developing unit tests.
 If there are new bug reports, these need to be fixed by the "coder" agent.
 
-4. Incremental Refinement Phase
+4. Refinement Phase
 
 The Testing Phase and Incremental Refinement Phase reoccur until no work is left to be done
 to fulfill the user's feature request.
@@ -70,9 +78,9 @@ to fulfill the user's feature request.
 If the user requests new features or changes the requirements, these workloads are treated as
 separate projects where they start anew with their separate Planning Phase.
 
-Execution Loop:
 
-For each step, you have to:
+
+Execution Loop:
 
 1. Decide:
 
@@ -89,7 +97,6 @@ For each step, you have to:
 3. Evaluate results:
 
 - Are outputs correct?
-- Are they idiomatic Go?
 - Do they match architecture and tests?
 
 4. Update state:

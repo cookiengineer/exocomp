@@ -19,7 +19,7 @@ var summarizer_prompt []byte
 var tester_prompt []byte
 
 //go:embed Agent.txt
-var none_prompt []byte
+var default_prompt []byte
 
 type Agent struct {
 	Name        string
@@ -296,9 +296,9 @@ func NewAgent(agent_name string, agent_type string, agent_model string, agent_te
 
 		return &Agent{
 			Name:        name,
-			Type:        AgentTypeNone,
+			Type:        AgentTypeDefault,
 			Model:       "qwen3-coder:30b",
-			Prompt:      string(none_prompt),
+			Prompt:      string(default_prompt),
 			Programs:    []string{"go", "gofmt", "gopls"},
 			Temperature: 0.5,
 			Tools:       []string{

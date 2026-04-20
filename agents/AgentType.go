@@ -8,7 +8,7 @@ const (
 	AgentTypeManager    AgentType = "manager"
 	AgentTypeSummarizer AgentType = "summarizer"
 	AgentTypeTester     AgentType = "tester"
-	AgentTypeNone       AgentType = ""
+	AgentTypeDefault    AgentType = "default"
 )
 
 func (agent_type AgentType) String() string {

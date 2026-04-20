@@ -29,6 +29,7 @@ func showHelp() {
 	fmt.Println("")
 	fmt.Println("    --agent string         LLM agent type")
 	fmt.Println("                           Either of: architect, coder, manager, summarizer, tester")
+	fmt.Println("                           (default: \"\")")
 	fmt.Println("")
 	fmt.Println("    --model string         LLM agent model (ollama format)")
 	fmt.Println("                           Run \"ollama list\" to see available models")
