@@ -2,8 +2,10 @@ package tools
 
 import "exocomp/agents"
 import "exocomp/schemas"
+import utils_chat "exocomp/utils/chat"
 import utils_fmt "exocomp/utils/fmt"
 import "bufio"
+import "bytes"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -106,7 +108,7 @@ func (tool *Agents) List() (string, error) {
 		lines := make([]string, 0)
 
 		for _, agent := range tool.agents {
-			lines = append(lines, fmt.Sprintf("- \"%s\" (%s)", agent.Name, agent.Type.String()))
+			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: working", agent.Name, agent.Type.String()))
 		}
 
 		sort.Strings(lines)
@@ -128,89 +130,97 @@ func (tool *Agents) List() (string, error) {
 
 func (tool *Agents) Hire(name string, agent string, sandbox string, prompt string) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, sandbox)
+	_, ok := tool.agents[name]
 
-	if err0 == nil {
+	if ok == false {
 
-		cmd := exec.Command(
-			os.Args[0],
-			"jsonl",
-			"--name",       name,
-			"--agent",      agent,
-			"--playground", tool.Playground,
-			"--sandbox",    resolved,
-			"--prompt",     prompt,
-		)
-		cmd.Dir = resolved
+		resolved, err0 := resolveSandboxPath(tool.Sandbox, sandbox)
+
+		if err0 == nil {
+
+			cmd := exec.Command(
+				os.Args[0],
+				"jsonl",
+				"--name",       name,
+				"--agent",      agent,
+				"--playground", tool.Playground,
+				"--sandbox",    resolved,
+				"--prompt",     prompt,
+			)
+			cmd.Dir = resolved
 
 
-		stdout_pipe, err1 := cmd.StdoutPipe()
+			stdout_pipe, err1 := cmd.StdoutPipe()
 
-		if err1 == nil {
+			if err1 == nil {
 
-			err2 := cmd.Start()
+				err2 := cmd.Start()
 
-			if err2 == nil {
+				if err2 == nil {
 
-				tool.agents[name]    = agents.NewAgent(name, agent, "", 0.0)
-				tool.processes[name] = cmd.Process
+					tool.agents[name]    = agents.NewAgent(name, agent, "", 0.0)
+					tool.processes[name] = cmd.Process
 
-				// Background Reader
-				go func(name string) {
+					// Background Reader
+					go func(name string) {
 
-					scanner := bufio.NewScanner(stdout_pipe)
+						scanner := bufio.NewScanner(stdout_pipe)
 
-					for scanner.Scan() {
+						for scanner.Scan() {
 
-						line    := scanner.Bytes()
-						message := schemas.Message{}
+							line    := scanner.Bytes()
+							message := schemas.Message{}
 
-						err := json.Unmarshal(line, &message)
+							err3 := json.Unmarshal(line, &message)
 
-						if err == nil {
+							if err3 == nil {
 
-							tool.mutex.Lock()
+								tool.mutex.Lock()
 
-							_, ok := tool.chats[name]
+								_, ok := tool.chats[name]
 
-							if ok == false {
-								tool.chats[name] = make([]*schemas.Message, 0)
+								if ok == false {
+									tool.chats[name] = make([]*schemas.Message, 0)
+								}
+
+								tool.chats[name] = append(tool.chats[name], &message)
+
+								tool.mutex.Unlock()
+
 							}
-
-							tool.chats[name] = append(tool.chats[name], &message)
-
-							tool.mutex.Unlock()
 
 						}
 
-					}
+					}(name)
 
-				}(name)
+					// Background Reaper
+					go func(name string, cmd *exec.Cmd) {
 
-				// Background Reaper
-				go func(name string, cmd *exec.Cmd) {
+						cmd.Wait()
 
-					cmd.Wait()
+						tool.mutex.Lock()
+						delete(tool.agents, name)
+						delete(tool.processes, name)
+						tool.mutex.Unlock()
 
-					tool.mutex.Lock()
-					delete(tool.agents, name)
-					delete(tool.processes, name)
-					tool.mutex.Unlock()
+					}(name, cmd)
 
-				}(name, cmd)
+					return fmt.Sprintf("agents.Hire: Agent \"%s\" got hired.", name), nil
 
-				return fmt.Sprintf("agents.Hire: Agent \"%s\" got hired.", name), nil
+				} else {
+					return "", fmt.Errorf("agents.Hire: %s", err2.Error())
+				}
 
 			} else {
-				return "", fmt.Errorf("agents.Hire: %s", err2.Error())
+				return "", fmt.Errorf("agents.Hire: %s", err1.Error())
 			}
 
 		} else {
-			return "", fmt.Errorf("agents.Hire: %s", err1.Error())
+			return "", fmt.Errorf("agents.Hire: %s", err0.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("agents.Hire: %s", err0.Error())
+		return "", fmt.Errorf("agents.Hire: Agent \"%s\" was already hired in the past. Pick a different name.", name)
 	}
 
 }
@@ -238,6 +248,89 @@ func (tool *Agents) Fire(name string) (string, error) {
 
 	} else {
 		return "", fmt.Errorf("agents.Fire: Agent \"%s\" doesn't work for us anymore?", name)
+	}
+
+}
+
+func (tool *Agents) Inquire(name string) (string, error) {
+
+	tmp, err0 := os.MkdirTemp("/tmp", "exocomp-summarizer-*")
+	chat, ok2 := tool.chats[name]
+
+	if err0 == nil && ok2 == true {
+
+		messages := utils_chat.SummarizeMessages(chat, true, true, false)
+		prompt   := strings.Join([]string{
+			"Please summarize the following conversation, the latest messages are the newest ones.",
+			"",
+			messages,
+		}, "\n")
+
+		cmd := exec.Command(
+			os.Args[0],
+			"jsonl",
+			"--name",       "Summarizer",
+			"--agent",      "summarizer",
+			"--playground", tool.Playground,
+			"--sandbox",    tmp,
+			"--prompt",     prompt,
+		)
+		cmd.Dir = tmp
+
+		stdout_buffer := bytes.Buffer{}
+		cmd.Stdout = &stdout_buffer
+
+		err1 := cmd.Run()
+
+		if err1 == nil {
+
+			os.RemoveAll(tmp)
+
+			lines := strings.Split(strings.TrimSpace(stdout_buffer.String()), "\n")
+
+			if len(lines) > 0 {
+
+				summary := schemas.Message{}
+				err2    := json.Unmarshal([]byte(lines[len(lines) - 1]), &summary)
+
+				if err2 == nil {
+
+					_, ok1 := tool.processes[name]
+
+					if ok1 == true {
+
+						result := strings.Join([]string{
+							fmt.Sprintf("agents.Inquire: Summary of currently working agent \"%s\"'s work report:", name),
+							strings.TrimSpace(summary.Content),
+						}, "\n")
+
+						return result, nil
+
+					} else {
+
+						result := strings.Join([]string{
+							fmt.Sprintf("agents.Inquire: Summary of already finished agent \"%s\"'s work report:", name),
+							strings.TrimSpace(summary.Content),
+						}, "\n")
+
+						return result, nil
+
+					}
+
+				} else {
+					return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
+				}
+
+			} else {
+				return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
+			}
+
+		} else {
+			return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Inquire: Agent \"%s\" didn't work for us?", name)
 	}
 
 }
