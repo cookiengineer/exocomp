@@ -1,8 +1,13 @@
 package types
 
+import "exocomp/schemas"
 import utils_fmt "exocomp/utils/fmt"
+import "bytes"
 import _ "embed"
+import "encoding/json"
+import "io"
 import net_url "net/url"
+import "net/http"
 import "os"
 import "strings"
 
@@ -55,11 +60,53 @@ func NewConfig(name string, agent string, debug bool, model string, playground s
 
 }
 
+func (config *Config) GetContextLength() int {
+
+	// TODO: This is ollama specific and won't
+	// work with only OpenAI compatible APIs
+
+	client := &http.Client{}
+
+	request_body, _ := json.Marshal(schemas.ShowRequest{
+		Name: config.Model,
+	})
+
+	request, err1 := http.NewRequest(http.MethodPost, config.ResolveAPI("/api/show").String(), bytes.NewBuffer(request_body))
+
+	if err1 == nil {
+
+		request.Header.Set("Content-Type", "application/json")
+
+		response, err2 := client.Do(request)
+
+		if err2 == nil {
+
+			response_payload, err3 := io.ReadAll(response.Body)
+
+			if err3 == nil {
+
+				schema := schemas.ShowResponse{}
+				err4 := json.Unmarshal(response_payload, &schema)
+
+				if err4 == nil {
+					return schema.ContextLength()
+				}
+
+			}
+
+		}
+
+	}
+
+	return 0
+
+}
+
 func (config *Config) GetPrompt() string {
 	return strings.TrimSpace(config.Prompt)
 }
 
-func (config *Config) ResolvePath(path string) *net_url.URL {
+func (config *Config) ResolveAPI(path string) *net_url.URL {
 
 	endpoint := config.URL.ResolveReference(&net_url.URL{
 		Path: path,

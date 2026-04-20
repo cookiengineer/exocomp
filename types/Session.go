@@ -3,6 +3,7 @@ package types
 import "exocomp/agents"
 import "exocomp/schemas"
 import "exocomp/tools"
+import utils_chat "exocomp/utils/chat"
 import "bytes"
 import "encoding/json"
 import "fmt"
@@ -11,6 +12,11 @@ import "net/http"
 import "os"
 import "strings"
 import "sync"
+
+type session_context struct {
+	length int
+	tokens int
+}
 
 type Session struct {
 	Agent    *agents.Agent
@@ -21,6 +27,7 @@ type Session struct {
 	Models   []*schemas.Model
 	Tools    []*schemas.Tool
 	Waiting  bool
+	context  session_context
 	mutex    *sync.RWMutex
 	tools    map[string]tools.Tool
 }
@@ -37,6 +44,10 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 		Waiting:  false,
 		mutex:    &sync.RWMutex{},
 		tools:    make(map[string]tools.Tool),
+		context:  session_context{
+			length: 0,
+			tokens: 0,
+		},
 	}
 
 	if len(agent.Tools) > 0 {
@@ -70,6 +81,8 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 
 	}
 
+	session.context.length = session.Config.GetContextLength()
+
 	session.mutex.Unlock()
 
 	if auto_init == true {
@@ -96,6 +109,16 @@ func (session *Session) GetConsoleMessages(from int) []ConsoleMessage {
 		return session.Console.GetMessages(from)
 	} else {
 		return []ConsoleMessage{}
+	}
+
+}
+
+func (session *Session) GetContextUsage() float64 {
+
+	if session.context.length > 0 {
+		return float64(float64(session.context.tokens) / float64(session.context.length)) * 100.0
+	} else {
+		return 0.0
 	}
 
 }
@@ -307,10 +330,8 @@ func (session *Session) infer_chat_completions() error {
 
 	if err0 == nil {
 
-		endpoint := session.Config.ResolvePath("/v1/chat/completions")
-
 		response, err1 := session.Client.Post(
-			endpoint.String(),
+			session.Config.ResolveAPI("/v1/chat/completions").String(),
 			"application/json",
 			bytes.NewReader(request_payload),
 		)
@@ -326,6 +347,12 @@ func (session *Session) infer_chat_completions() error {
 				err3 := json.Unmarshal(response_payload, &response)
 
 				if err3 == nil {
+
+					if response.Usage != nil && response.Usage.PromptTokens != 0 {
+						session.context.tokens = response.Usage.PromptTokens
+					} else {
+						session.context.tokens = utils_chat.CalculateTokens(session.Messages)
+					}
 
 					if len(response.Choices) > 0 {
 						return session.ReceiveChatResponse(response.Choices[0].Message)

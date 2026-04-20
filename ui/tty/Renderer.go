@@ -20,7 +20,8 @@ func NewRenderer(session *types.Session) *Renderer {
 
 	resetline := ""
 
-	for r := 0; r < len(session.Config.Model) + 10; r++ {
+	// prepare reset line string
+	for r := 0; r < len(session.Config.Model) + 14; r++ {
 		resetline += " "
 	}
 
@@ -165,12 +166,16 @@ func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 func (renderer *Renderer) RenderPrompt() {
 
 	model := "unknown"
+	usage := float64(0.0)
 
 	if renderer.Session != nil && renderer.Session.Config != nil {
 		model = renderer.Session.Config.Model
+		usage = renderer.Session.GetContextUsage()
 	}
 
-	fmt.Fprintf(os.Stdout, "\r%s[to %s]%s > ", ColorGreen, model, ColorReset)
+	percentage := fmt.Sprintf("%3d%%", int(usage + 0.5))
+
+	fmt.Fprintf(os.Stdout, "\r%s[to %s %s]%s > ", ColorGreen, model, percentage, ColorReset)
 	os.Stdout.Sync()
 
 }
