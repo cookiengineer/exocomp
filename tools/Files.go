@@ -1,6 +1,7 @@
 package tools
 
 import utils_fmt "exocomp/utils/fmt"
+import utils_fs "exocomp/utils/fs"
 import "errors"
 import "fmt"
 import "io/fs"
@@ -22,12 +23,27 @@ func NewFiles(agent string, sandbox string) *Files {
 
 func (tool *Files) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "List" {
+	if method == "Copy" {
+
+		from_path, ok1 := arguments["from_path"].(string)
+		to_path,   ok2 := arguments["to_path"].(string)
+
+		if ok1 == true && ok2 == true {
+			return tool.Copy(utils_fmt.FormatFilePath(from_path), utils_fmt.FormatFilePath(to_path))
+		} else if ok1 == true && ok2 == false {
+			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"to_path\" is not a string.")
+		} else if ok1 == false && ok2 == true {
+			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"from_path\" is not a string.")
+		} else {
+			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameters.")
+		}
+
+	} else if method == "List" {
 
 		path, ok := arguments["path"].(string)
 
 		if ok == true {
-			return tool.List(path)
+			return tool.List(utils_fmt.FormatFilePath(path))
 		} else {
 			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		}
@@ -37,7 +53,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 		path, ok := arguments["path"].(string)
 
 		if ok == true {
-			return tool.Read(path)
+			return tool.Read(utils_fmt.FormatFilePath(path))
 		} else {
 			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		}
@@ -47,7 +63,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 		path, ok := arguments["path"].(string)
 
 		if ok == true {
-			return tool.Stat(path)
+			return tool.Stat(utils_fmt.FormatFilePath(path))
 		} else {
 			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
 		}
@@ -58,7 +74,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 		content, ok2 := arguments["content"].(string)
 
 		if ok1 == true && ok2 == true {
-			return tool.Write(path, content)
+			return tool.Write(utils_fmt.FormatFilePath(path), content)
 		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"content\" is not a string.")
 		} else if ok1 == false && ok2 == true {
@@ -69,6 +85,56 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 
 	} else {
 		return "", fmt.Errorf("files.%s: Invalid method.", method)
+	}
+
+}
+
+func (tool *Files) Copy(from_path string, to_path string) (string, error) {
+
+	from_resolved, err1 := resolveSandboxPath(tool.Sandbox, from_path)
+
+	if err1 == nil {
+
+		to_resolved, err2 := resolveSandboxPath(tool.Sandbox, to_path)
+
+		if err2 == nil {
+
+			stat, err3 := os.Stat(from_resolved)
+
+			if err3 == nil {
+
+				if stat.IsDir() {
+
+					err4 := utils_fs.CopyAll(from_resolved, to_resolved)
+
+					if err4 == nil {
+						return fmt.Sprintf("files.Copy: Folder \"%s\" copied to \"%s\".", from_path, to_path), nil
+					} else {
+						return "", fmt.Errorf("files.Copy: %s", err4.Error())
+					}
+
+				} else {
+
+					err4 := utils_fs.Copy(from_resolved, to_resolved)
+
+					if err4 == nil {
+						return fmt.Sprintf("files.Copy: File \"%s\" copied to \"%s\".", from_path, to_path), nil
+					} else {
+						return "", fmt.Errorf("files.Copy: %s", err4.Error())
+					}
+
+				}
+
+			} else {
+				return "", fmt.Errorf("files.Copy: %s", err3.Error())
+			}
+
+		} else {
+			return "", fmt.Errorf("files.Copy: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("files.Copy: %s", err1.Error())
 	}
 
 }

@@ -2,6 +2,27 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "files.Copy",
+			"description": "Copy files and folders. Hidden files are excluded.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"from_path": {
+						"type": "string",
+						"description": "Relative path to file or folder"
+					},
+					"to_path": {
+						"type": "string",
+						"description": "Relative path to file or folder"
+					}
+				},
+				"required": ["from_path", "to_path"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "files.List",
 			"description": "List files and folders in a directory. Hidden files are excluded.",
 			"parameters": {
