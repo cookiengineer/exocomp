@@ -1,9 +1,9 @@
 
-export const GetModels = () => {
+export const GetAgents = () => {
 
 	return new Promise((resolve, reject) => {
 
-		fetch("/api/models", {
+		fetch("/api/parameters/agents", {
 			method:  "GET",
 			headers: {
 				"Content-Type": "application/json"

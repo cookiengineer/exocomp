@@ -1,7 +1,7 @@
 
 import { RenderSelect } from "./utils/ui/RenderSelect.mjs";
-import { GetAgents    } from "./utils/api/GetAgents.mjs";
-import { GetModels    } from "./utils/api/GetModels.mjs";
+import { GetAgents    } from "./utils/api/parameters/GetAgents.mjs";
+import { GetModels    } from "./utils/api/parameters/GetModels.mjs";
 
 async function init() {
 

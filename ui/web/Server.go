@@ -55,6 +55,7 @@ func (server *Server) Init() bool {
 	})
 
 	http.HandleFunc("/api/agents", func(response http.ResponseWriter, request *http.Request) {
+		// TODO: List of currently running agents
 		// routes.Agents(server.Session, request, response)
 	})
 
