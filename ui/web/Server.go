@@ -3,6 +3,7 @@ package web
 import "exocomp/agents"
 import "exocomp/types"
 import "exocomp/ui/web/routes"
+import routes_messages "exocomp/ui/web/routes/messages"
 import routes_parameters "exocomp/ui/web/routes/parameters"
 import "embed"
 import "net/http"
@@ -69,7 +70,7 @@ func (server *Server) Init() bool {
 	})
 
 	http.HandleFunc("/api/messages/send", func(response http.ResponseWriter, request *http.Request) {
-		routes.SendMessage(server.Session, request, response)
+		routes_messages.Send(server.Session, request, response)
 	})
 
 	http.HandleFunc("/api/settings/agent", func(response http.ResponseWriter, request *http.Request) {

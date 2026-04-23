@@ -8,7 +8,7 @@ import "io"
 import "net/http"
 import "strconv"
 
-func SendMessage(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Send(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodPost {
 
@@ -23,7 +23,7 @@ func SendMessage(session *types.Session, request *http.Request, response http.Re
 
 			if err0 == nil {
 
-				err1 := json.Unmarshal(request_payload, message)
+				err1 := json.Unmarshal(request_payload, &message)
 
 				if err1 == nil {
 

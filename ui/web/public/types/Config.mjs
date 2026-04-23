@@ -25,7 +25,7 @@ Config.from = (data) => {
 	config.Prompt      = data["prompt"]      || "";
 	config.Sandbox     = data["sandbox"]     || "";
 	config.Temperature = data["temperature"] || 0.0;
-	config.URL         = new URL(data["url"] || "http://localhost:3000/");
+	config.URL         = new URL("/", window.location.origin);
 
 	return config;
 

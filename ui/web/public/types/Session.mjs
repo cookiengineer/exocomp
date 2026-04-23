@@ -53,6 +53,23 @@ Session.prototype = {
 
 	},
 
+	Init: function() {
+
+		fetch(this.Config.ResolveAPI("/api/messages").toString(), {
+		}).then((response) => {
+			return response.json();
+		}).then((messages) => {
+
+			if (Object.prototype.toString.call(messages) === "[object Array]" && messages.length > 0) {
+				this.Messages = messages;
+			}
+
+		}).catch((err) => {
+			console.error(err);
+		});
+
+	},
+
 	SendChatRequest: async function(message) {
 
 		if (this.Waiting === false) {
