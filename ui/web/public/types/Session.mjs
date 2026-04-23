@@ -88,7 +88,7 @@ Session.prototype = {
 
 				if (response.ok === true) {
 
-					let messages = response.json();
+					let messages = await response.json();
 
 					if (Object.prototype.toString.call(messages) === "[object Array]" && messages.length > 0) {
 
@@ -98,19 +98,29 @@ Session.prototype = {
 
 					}
 
+					this.Waiting = false;
+
+					return null;
+
 				} else {
+
 					this.Waiting = false;
 					return new Error("Session is busy, LLM is not responding ...");
+
 				}
 
 			} catch (err) {
+
 				this.Waiting = false;
 				return new Error("Session is busy, LLM is not responding ...");
+
 			}
 
 		} else {
+
 			this.Waiting = false;
 			return new Error("Session is busy, LLM is not responding ...");
+
 		}
 
 	},

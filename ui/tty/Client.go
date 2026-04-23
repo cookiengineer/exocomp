@@ -46,16 +46,18 @@ func (client *Client) Init() {
 		syscall.SIGTERM,
 	)
 
-	go func() {
-		client.Session.Init()
-	}()
+	if client.Session != nil {
+		go client.Session.Init()
+	}
 
 	go func() {
 		client.InputLoop()
 		signals<-syscall.SIGINT
 	}()
 
-	go client.Renderer.RenderLoop()
+	if client.Renderer != nil {
+		go client.Renderer.RenderLoop()
+	}
 
 	select {
 	case sig := <-signals:

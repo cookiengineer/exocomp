@@ -52,9 +52,7 @@ async function main() {
 		const config = await GetConfig();
 		const client = new Client(config);
 
-		console.log(config);
-
-		console.log(client);
+		window.CLIENT = client;
 
 		client.Init();
 
