@@ -28,6 +28,14 @@ func NewClient(agent *agents.Agent, config *types.Config) *Client {
 
 }
 
+func (client *Client) Destroy() {
+
+	if client.Renderer != nil {
+		client.Renderer.Destroy()
+	}
+
+}
+
 func (client *Client) Init() {
 
 	signals := make(chan os.Signal, 1)
@@ -126,10 +134,3 @@ func (client *Client) InputLoop() {
 
 }
 
-func (client *Client) Destroy() {
-
-	if client.Renderer != nil {
-		client.Renderer.Destroy()
-	}
-
-}

@@ -3,6 +3,7 @@ package web
 import "exocomp/agents"
 import "exocomp/types"
 import "exocomp/ui/web/routes"
+import routes_parameters "exocomp/ui/web/routes/parameters"
 import "embed"
 import "net/http"
 import "io/fs"
@@ -43,11 +44,15 @@ func (server *Server) Init() bool {
 	// })
 
 	http.HandleFunc("/api/parameters/agents", func(response http.ResponseWriter, request *http.Request) {
-		routes.AgentParameters(server.Session, request, response)
+		routes_parameters.Agents(server.Session, request, response)
 	})
 
 	http.HandleFunc("/api/parameters/models", func(response http.ResponseWriter, request *http.Request) {
-		routes.ModelParameters(server.Session, request, response)
+		routes_parameters.Models(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/config", func(response http.ResponseWriter, request *http.Request) {
+		routes.Config(server.Session, request, response)
 	})
 
 	http.HandleFunc("/api/console", func(response http.ResponseWriter, request *http.Request) {

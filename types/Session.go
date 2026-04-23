@@ -14,22 +14,21 @@ import "strings"
 import "sync"
 
 type session_context struct {
-	length int
-	tokens int
+	length int `json:"length"`
+	tokens int `json:"tokens"`
 }
 
 type Session struct {
-	Agent    *agents.Agent
-	Config   *Config
-	Console  *Console
-	Client   *http.Client
-	Messages []*schemas.Message
-	Models   []*schemas.Model
-	Tools    []*schemas.Tool
-	Waiting  bool
-	context  session_context
-	mutex    *sync.RWMutex
-	tools    map[string]tools.Tool
+	Agent    *agents.Agent         `json:"agent"`
+	Config   *Config               `json:"config"`
+	Console  *Console              `json:"console"`
+	Messages []*schemas.Message    `json:"messages"`
+	Tools    []*schemas.Tool       `json:"tools"`
+	Waiting  bool                  `json:"waiting"`
+	client   *http.Client          `json:"-"`
+	context  session_context       `json:"context"`
+	mutex    *sync.RWMutex         `json:"-"`
+	tools    map[string]tools.Tool `json:"-"`
 }
 
 func NewSession(agent *agents.Agent, config *Config) *Session {
@@ -38,10 +37,10 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 		Agent:    agent,
 		Config:   config,
 		Console:  NewConsole(os.Stdout, os.Stderr, 0),
-		Client:   &http.Client{},
 		Messages: make([]*schemas.Message, 0),
 		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
+		client:   &http.Client{},
 		mutex:    &sync.RWMutex{},
 		tools:    make(map[string]tools.Tool),
 		context:  session_context{
@@ -330,7 +329,7 @@ func (session *Session) infer_chat_completions() error {
 
 	if err0 == nil {
 
-		response, err1 := session.Client.Post(
+		response, err1 := session.client.Post(
 			session.Config.ResolveAPI("/v1/chat/completions").String(),
 			"application/json",
 			bytes.NewReader(request_payload),

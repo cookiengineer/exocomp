@@ -1,4 +1,4 @@
-package routes
+package parameters
 
 import "exocomp/schemas"
 import "exocomp/types"
@@ -10,13 +10,15 @@ import "sort"
 import "strconv"
 import "strings"
 
-func ModelParameters(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Models(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 
-		response1, err1 := session.Client.Get(session.Config.ResolveAPI("/v1/models").String())
+		response1, err1 := http.Get(session.Config.ResolveAPI("/v1/models").String())
 
 		if err1 == nil && response1.StatusCode == 200 {
+
+			defer response1.Body.Close()
 
 			response1_payload, err2 := io.ReadAll(response1.Body)
 

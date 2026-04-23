@@ -1,4 +1,4 @@
-package routes
+package parameters
 
 import "exocomp/agents"
 import "exocomp/types"
@@ -8,7 +8,7 @@ import "net/http"
 import "sort"
 import "strconv"
 
-func AgentParameters(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Agents(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 

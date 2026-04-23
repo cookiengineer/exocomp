@@ -12,15 +12,15 @@ import "os"
 import "strings"
 
 type Config struct {
-	Name        string
-	Agent       string
-	Debug       bool
-	Model       string
-	Playground  string
-	Prompt      string
-	Sandbox     string
-	Temperature float64
-	URL         *net_url.URL
+	Name        string       `json:"name"`
+	Agent       string       `json:"agent"`
+	Debug       bool         `json:"debug"`
+	Model       string       `json:"model"`
+	Playground  string       `json:"playground"`
+	Prompt      string       `json:"prompt"`
+	Sandbox     string       `json:"sandbox"`
+	Temperature float64      `json:"temperature"`
+	URL         *net_url.URL `json:"url"`
 }
 
 func NewConfig(name string, agent string, debug bool, model string, playground string, prompt string, sandbox string, temperature float64, url *net_url.URL) *Config {
@@ -115,3 +115,67 @@ func (config *Config) ResolveAPI(path string) *net_url.URL {
 	return endpoint
 
 }
+
+func (config *Config) MarshalJSON() ([]byte, error) {
+
+	type Alias Config
+
+	url_str := ""
+
+	if config.URL != nil {
+		url_str = config.URL.String()
+	}
+
+	return json.Marshal(&struct {
+		*Alias
+		URL *string `json:"url"`
+	}{
+		Alias: (*Alias)(config),
+		URL:   &url_str,
+	})
+
+}
+
+func (config *Config) UnmarshalJSON(data []byte) error {
+
+	type Alias Config
+
+	tmp := struct {
+		*Alias
+		URL *string `json:"url"`
+	}{
+		Alias: (*Alias)(config),
+	}
+
+	err0 := json.Unmarshal(data, &tmp)
+
+	if err0 == nil {
+
+		if tmp.URL != nil {
+
+			url, err1 := net_url.Parse(*tmp.URL)
+
+			if err1 == nil {
+
+				config.URL = url
+
+				return nil
+
+			} else {
+				return err1
+			}
+
+		} else {
+
+			config.URL = nil
+
+			return nil
+
+		}
+
+	} else {
+		return err0
+	}
+
+}
+
