@@ -42,15 +42,15 @@ func SendChatRequest(session *types.Session, request *http.Request, response htt
 							response.Write(response_payload)
 
 						} else {
-							handlers.InternalServerError(session, request, response)
+							handlers.InternalServerError(session, err3, request, response)
 						}
 
 					} else {
-						handlers.InternalServerError(session, request, response)
+						handlers.InternalServerError(session, err2, request, response)
 					}
 
 				} else {
-					handlers.BadRequest(session, request, response)
+					handlers.BadRequest(session, err1, request, response)
 				}
 
 			} else {

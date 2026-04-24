@@ -20,7 +20,7 @@ func Context(session *types.Session, request *http.Request, response http.Respon
 			response.Write(response_payload)
 
 		} else {
-			handlers.InternalServerError(session, request, response)
+			handlers.InternalServerError(session, err0, request, response)
 		}
 
 	} else {

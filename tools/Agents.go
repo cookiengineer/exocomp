@@ -15,22 +15,22 @@ import "strings"
 import "sync"
 
 type Agents struct {
-	Sandbox    string
+	Agents     map[string]*agents.Agent
+	Chats      map[string][]*schemas.Message
 	Playground string
+	Sandbox    string
 	mutex      *sync.Mutex
-	agents     map[string]*agents.Agent
-	chats      map[string][]*schemas.Message
 	processes  map[string]*os.Process
 }
 
 func NewAgents(agent string, sandbox string, playground string) *Agents {
 
 	agents := &Agents{
-		Sandbox:    sandbox,
+		Agents:     make(map[string]*agents.Agent),
+		Chats:      make(map[string][]*schemas.Message, 0),
 		Playground: playground,
+		Sandbox:    sandbox,
 		mutex:      &sync.Mutex{},
-		agents:     make(map[string]*agents.Agent),
-		chats:      make(map[string][]*schemas.Message, 0),
 		processes:  make(map[string]*os.Process),
 	}
 
@@ -103,11 +103,11 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 func (tool *Agents) List() (string, error) {
 
-	if len(tool.agents) > 0 {
+	if len(tool.Agents) > 0 {
 
 		lines := make([]string, 0)
 
-		for _, agent := range tool.agents {
+		for _, agent := range tool.Agents {
 			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: working", agent.Name, agent.Type.String()))
 		}
 
@@ -130,7 +130,7 @@ func (tool *Agents) List() (string, error) {
 
 func (tool *Agents) Hire(name string, agent string, sandbox string, prompt string) (string, error) {
 
-	_, ok := tool.agents[name]
+	_, ok := tool.Agents[name]
 
 	if ok == false {
 
@@ -166,7 +166,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 				if err3 == nil {
 
-					tool.agents[name]    = agents.NewAgent(name, agent, "", 0.0)
+					tool.Agents[name]    = agents.NewAgent(name, agent, "", 0.0)
 					tool.processes[name] = cmd.Process
 
 					// Background Reader
@@ -185,13 +185,13 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 								tool.mutex.Lock()
 
-								_, ok := tool.chats[name]
+								_, ok := tool.Chats[name]
 
 								if ok == false {
-									tool.chats[name] = make([]*schemas.Message, 0)
+									tool.Chats[name] = make([]*schemas.Message, 0)
 								}
 
-								tool.chats[name] = append(tool.chats[name], &message)
+								tool.Chats[name] = append(tool.Chats[name], &message)
 
 								tool.mutex.Unlock()
 
@@ -207,7 +207,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 						cmd.Wait()
 
 						tool.mutex.Lock()
-						delete(tool.agents, name)
+						delete(tool.Agents, name)
 						delete(tool.processes, name)
 						tool.mutex.Unlock()
 
@@ -244,7 +244,7 @@ func (tool *Agents) Fire(name string) (string, error) {
 		if err == nil {
 
 			tool.mutex.Lock()
-			delete(tool.agents, name)
+			delete(tool.Agents, name)
 			delete(tool.processes, name)
 			tool.mutex.Unlock()
 
@@ -263,7 +263,7 @@ func (tool *Agents) Fire(name string) (string, error) {
 func (tool *Agents) Inquire(name string) (string, error) {
 
 	tmp, err0 := os.MkdirTemp("/tmp", "exocomp-summarizer-*")
-	chat, ok2 := tool.chats[name]
+	chat, ok2 := tool.Chats[name]
 
 	if err0 == nil && ok2 == true {
 

@@ -20,7 +20,7 @@ main > article[data-role="assistant"]::before {
 	top: 50%;
 	right: auto;
 	bottom: auto;
-	left: -22px;
+	left: -23px;
 	vertical-align: middle;
 	transform: translateY(-50%);
 	writing-mode: sideways-rl;
@@ -35,7 +35,7 @@ main > article[data-role="user"]::after {
 	font-weight: normal;
 	line-height: 24px;
 	top: 50%;
-	right: -22px;
+	right: -23px;
 	bottom: auto;
 	left: auto;
 	vertical-align: middle;

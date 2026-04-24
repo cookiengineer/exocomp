@@ -30,7 +30,7 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 			response.Write(response_payload)
 
 		} else {
-			handlers.InternalServerError(session, request, response)
+			handlers.InternalServerError(session, err1, request, response)
 		}
 
 	} else {

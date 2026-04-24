@@ -72,11 +72,11 @@ func ServeFile(session *types.Session, request *http.Request, response http.Resp
 					response.Write(encoded)
 
 				} else {
-					InternalServerError(session, request, response)
+					InternalServerError(session, err2, request, response)
 				}
 
 			} else {
-				InternalServerError(session, request, response)
+				InternalServerError(session, err1, request, response)
 			}
 
 		} else {

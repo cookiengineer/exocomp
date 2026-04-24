@@ -3,6 +3,7 @@ package web
 import "exocomp/agents"
 import "exocomp/types"
 import "exocomp/ui/web/routes"
+import routes_agents "exocomp/ui/web/routes/agents"
 import routes_parameters "exocomp/ui/web/routes/parameters"
 import routes_session "exocomp/ui/web/routes/session"
 import "embed"
@@ -33,18 +34,28 @@ func NewServer(agent *agents.Agent, config *types.Config) *Server {
 
 func (server *Server) Init() bool {
 
-	// TODO: Remove this when finished
-	embed_fs := os.DirFS("ui/web")
+	if server.Session.Config.Debug == true {
 
-	fsys, _ := fs.Sub(embed_fs, "public")
-	fsrv    := http.FileServer(http.FS(fsys))
+		dir_fs    := os.DirFS("ui/web")
+		fsys, err := fs.Sub(dir_fs, "public")
 
-	http.Handle("/", fsrv)
-	// func(response http.ResponseWriter, request *http.Request) {
-	// 	fsrv.ServeHTTP(response, request)
-	// })
+		if err == nil {
+			fsrv := http.FileServer(http.FS(fsys))
+			http.Handle("/", fsrv)
+		}
 
-	// CLI Parameter APIs
+	} else {
+
+		fsys, err := fs.Sub(embed_fs, "public")
+
+		if err == nil {
+			fsrv := http.FileServer(http.FS(fsys))
+			http.Handle("/", fsrv)
+		}
+
+	}
+
+	// CLI Parameters
 	http.HandleFunc("/api/parameters/agents", func(response http.ResponseWriter, request *http.Request) {
 		routes_parameters.Agents(server.Session, request, response)
 	})
@@ -53,7 +64,7 @@ func (server *Server) Init() bool {
 		routes_parameters.Models(server.Session, request, response)
 	})
 
-	// Session APIs
+	// Session
 	http.HandleFunc("/api/session/config", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.Config(server.Session, request, response)
 	})
@@ -74,16 +85,18 @@ func (server *Server) Init() bool {
 		routes_session.SendChatRequest(server.Session, request, response)
 	})
 
-
-
-	// TODO: Might be better as /api/session/agents?
+	// Agents
 	http.HandleFunc("/api/agents", func(response http.ResponseWriter, request *http.Request) {
-		// TODO: List of currently running agents
-		// routes.Agents(server.Session, request, response)
+		routes_agents.Index(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/agents/{agent}", func(response http.ResponseWriter, request *http.Request) {
+		routes_agents.Agent(server.Session, request, response)
 	})
 
 
 
+	// TODO
 	http.HandleFunc("/api/settings/agent", func(response http.ResponseWriter, request *http.Request) {
 		routes.AgentSettings(server.Session, request, response)
 	})

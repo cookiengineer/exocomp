@@ -8,7 +8,7 @@ func Unauthorized(session *types.Session, request *http.Request, response http.R
 
 	session.Console.Error(fmt.Sprintf("> %s %s: %d", request.Method, request.URL.Path, http.StatusUnauthorized))
 
-	content_type, payload := format_error(request, "The Dark Side does not recognize you. You lack the power to authenticate.")
+	content_type, payload := format_error(request, "Unauthorized")
 
 	response.Header().Set("Content-Type", content_type)
 	response.WriteHeader(http.StatusUnauthorized)

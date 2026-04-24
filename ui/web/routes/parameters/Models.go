@@ -16,59 +16,67 @@ func Models(session *types.Session, request *http.Request, response http.Respons
 
 		response1, err1 := http.Get(session.Config.ResolveAPI("/v1/models").String())
 
-		if err1 == nil && response1.StatusCode == 200 {
+		if err1 == nil {
 
-			defer response1.Body.Close()
+			if response1.StatusCode == 200 {
 
-			response1_payload, err2 := io.ReadAll(response1.Body)
+				defer response1.Body.Close()
 
-			if err2 == nil {
+				response1_payload, err2 := io.ReadAll(response1.Body)
 
-				var schema schemas.ModelsResponse
+				if err2 == nil {
 
-				err3 := json.Unmarshal(response1_payload, &schema)
+					var schema schemas.ModelsResponse
 
-				if err3 == nil {
+					err3 := json.Unmarshal(response1_payload, &schema)
 
-					models := make([]string, 0)
+					if err3 == nil {
 
-					for _, model := range schema.Data {
+						models := make([]string, 0)
 
-						model_id := strings.TrimSpace(model.ID)
+						for _, model := range schema.Data {
 
-						if model_id != "" {
-							models = append(models, model_id)
+							model_id := strings.TrimSpace(model.ID)
+
+							if model_id != "" {
+								models = append(models, model_id)
+							}
+
 						}
 
-					}
+						sort.Strings(models)
 
-					sort.Strings(models)
+						response_payload, err4 := json.MarshalIndent(models, "", "\t")
 
-					response_payload, err4 := json.MarshalIndent(models, "", "\t")
+						if err4 == nil {
 
-					if err4 == nil {
+							response.Header().Set("Content-Type", "application/json")
+							response.Header().Set("Content-Length", strconv.Itoa(len(response_payload)))
+							response.WriteHeader(http.StatusOK)
+							response.Write(response_payload)
 
-						response.Header().Set("Content-Type", "application/json")
-						response.Header().Set("Content-Length", strconv.Itoa(len(response_payload)))
-						response.WriteHeader(http.StatusOK)
-						response.Write(response_payload)
+						} else {
+							handlers.InternalServerError(session, err4, request, response)
+						}
 
 					} else {
-						handlers.InternalServerError(session, request, response)
+						handlers.InternalServerError(session, err3, request, response)
 					}
 
 				} else {
-					handlers.InternalServerError(session, request, response)
+					handlers.InternalServerError(session, err2, request, response)
 				}
 
+			} else if response1.StatusCode == 404 {
+				handlers.NotFound(session, request, response)
+			} else if response1.StatusCode == 500 {
+				handlers.InternalServerError(session, nil, request, response)
 			} else {
-				handlers.InternalServerError(session, request, response)
+				handlers.InternalServerError(session, nil, request, response)
 			}
 
-		} else if err1 == nil && response1.StatusCode == 404 {
-			handlers.NotFound(session, request, response)
 		} else {
-			handlers.InternalServerError(session, request, response)
+			handlers.InternalServerError(session, err1, request, response)
 		}
 
 	} else {
