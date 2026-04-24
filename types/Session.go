@@ -13,20 +13,20 @@ import "os"
 import "strings"
 import "sync"
 
-type session_context struct {
-	length int `json:"length"`
-	tokens int `json:"tokens"`
+type SessionContext struct {
+	Length int `json:"length"`
+	Tokens int `json:"tokens"`
 }
 
 type Session struct {
 	Agent    *agents.Agent         `json:"agent"`
 	Config   *Config               `json:"config"`
 	Console  *Console              `json:"console"`
+	Context  SessionContext        `json:"context"`
 	Messages []*schemas.Message    `json:"messages"`
 	Tools    []*schemas.Tool       `json:"tools"`
 	Waiting  bool                  `json:"waiting"`
 	client   *http.Client          `json:"-"`
-	context  session_context       `json:"context"`
 	mutex    *sync.RWMutex         `json:"-"`
 	tools    map[string]tools.Tool `json:"-"`
 }
@@ -37,16 +37,16 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 		Agent:    agent,
 		Config:   config,
 		Console:  NewConsole(os.Stdout, os.Stderr, 0),
+		Context:  SessionContext{
+			Length: 0,
+			Tokens: 0,
+		},
 		Messages: make([]*schemas.Message, 0),
 		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
 		client:   &http.Client{},
 		mutex:    &sync.RWMutex{},
 		tools:    make(map[string]tools.Tool),
-		context:  session_context{
-			length: 0,
-			tokens: 0,
-		},
 	}
 
 	if len(agent.Tools) > 0 {
@@ -80,7 +80,7 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 
 	}
 
-	session.context.length = session.Config.GetContextLength()
+	session.Context.Length = session.Config.GetContextLength()
 
 	session.mutex.Unlock()
 
@@ -114,8 +114,8 @@ func (session *Session) GetConsoleMessages(from int) []ConsoleMessage {
 
 func (session *Session) GetContextUsage() float64 {
 
-	if session.context.length > 0 {
-		return float64(float64(session.context.tokens) / float64(session.context.length)) * 100.0
+	if session.Context.Length > 0 {
+		return float64(float64(session.Context.Tokens) / float64(session.Context.Length)) * 100.0
 	} else {
 		return 0.0
 	}
@@ -348,9 +348,9 @@ func (session *Session) infer_chat_completions() error {
 				if err3 == nil {
 
 					if response.Usage != nil && response.Usage.PromptTokens != 0 {
-						session.context.tokens = response.Usage.PromptTokens
+						session.Context.Tokens = response.Usage.PromptTokens
 					} else {
-						session.context.tokens = utils_chat.CalculateTokens(session.Messages)
+						session.Context.Tokens = utils_chat.CalculateTokens(session.Messages)
 					}
 
 					if len(response.Choices) > 0 {

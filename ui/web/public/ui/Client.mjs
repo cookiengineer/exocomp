@@ -8,8 +8,7 @@ export const Client = function(config) {
 	this.Renderer = new Renderer(this.Session);
 
 	this.elements = {
-		"label":  document.querySelector("body > footer label"),
-		"prompt": document.querySelector("body > footer textarea"),
+		"prompt": document.querySelector("body > footer textarea")
 	};
 
 };
@@ -32,7 +31,12 @@ Client.prototype = {
 		}
 
 		if (this.Renderer !== null) {
+
 			this.Renderer.Init();
+
+			let usage = (this.Session.GetContextUsage() | 0);
+			this.Renderer.RenderLabel("Write Message\n[" + this.Session.Config.Model + " " + usage + "%]");
+
 		}
 
 		this.elements["prompt"].addEventListener("keyup", (event) => {
@@ -44,15 +48,24 @@ Client.prototype = {
 
 					(async () => {
 
-						this.elements["prompt"].value = "";
-						this.elements["label"].innerHTML = "Waiting<br>...";
+						let usage_before = (this.Session.GetContextUsage() | 0);
+
+						this.UpdatePrompt("");
+
+						// Executed after this.Session.SendChatRequest()
+						setTimeout(() => {
+							this.UpdateLabel();
+						}, 16);
+
+						// TODO: Remove this if above works
+						// this.Renderer.RenderLabel("Processing ...\n[" + this.Session.Config.Model + " " + usage_before + "%]");
 
 						await this.Session.SendChatRequest({
 							role:    "user",
 							content: prompt
 						});
 
-						this.elements["label"].innerHTML = "Type<br>Message";
+						this.UpdateLabel();
 
 					})();
 
@@ -60,18 +73,46 @@ Client.prototype = {
 
 			} else {
 
-				let prompt = (this.elements["prompt"].value || "").trim();
-				if (prompt !== "") {
-
-					if (this.Session.Waiting === false) {
-						this.elements["label"].innerHTML = "Send with<br>[Ctrl]+[Enter]";
-					}
-
-				}
+				this.UpdateLabel();
 
 			}
 
 		});
+
+	},
+
+	UpdateLabel: function() {
+
+		let prompt = (this.elements["prompt"].value || "").trim();
+		let usage  = (this.Session.GetContextUsage() | 0);
+
+		if (prompt !== "") {
+
+			if (this.Session.Waiting === false) {
+				this.Renderer.RenderLabel("Send with [Ctrl]+[Enter]\n[" + this.Session.Config.Model + " " + usage + "%]");
+			} else {
+				this.Renderer.RenderLabel("Processing ...\n[" + this.Session.Config.Model + " " + usage + "%]");
+			}
+
+		} else {
+
+			if (this.Session.Waiting === false) {
+				this.Renderer.RenderLabel("Write Message\n[" + this.Session.Config.Model + " " + usage + "%]");
+			} else {
+				this.Renderer.RenderLabel("Processing ...\n[" + this.Session.Config.Model + " " + usage + "%]");
+			}
+
+		}
+
+	},
+
+	UpdatePrompt: function(message) {
+
+		let prompt = message.trim();
+
+		this.elements["prompt"].value = prompt;
+
+		this.UpdateLabel();
 
 	}
 

@@ -1,126 +1,21 @@
 
-import { marked } from "/libs/marked.mjs";
+import { RenderMessage } from "./RenderMessage.mjs";
+import { Session       } from "/types/Session.mjs";
 
-const RenderMessage = (message, with_empty_content) => {
 
-	with_empty_content = typeof with_empty_content === "boolean" ? with_empty_content : false;
-
-	if (message["role"] === "assistant") {
-
-		if (message["content"] !== "") {
-
-			let article = document.createElement("article");
-
-			article.setAttribute("data-role", "assistant");
-			article.innerHTML = marked.parse(message["content"]);
-
-			return article;
-
-		} else if (with_empty_content === true) {
-
-			let article = document.createElement("article");
-
-			article.setAttribute("data-role", "assistant");
-			article.innerHTML = "(no content)";
-
-			return article;
-
-		} else {
-			return null;
-		}
-
-	} else if (message["role"] === "system") {
-
-		if (message["content"] !== "") {
-
-			let article = document.createElement("article");
-
-			article.setAttribute("data-role", "system");
-			article.innerHTML = marked.parse(message["content"]);
-
-			return article;
-
-		} else if (with_empty_content === true) {
-
-			let article = document.createElement("article");
-
-			article.setAttribute("data-role", "system");
-			article.innerHTML = "(no content)";
-
-			return article;
-
-		} else {
-			return null;
-		}
-
-	} else if (message["role"] === "tool") {
-
-		let article = document.createElement("article");
-
-		article.setAttribute("data-role", "tool");
-
-		let tmp = (message["content"] || "").split("\n");
-		if (tmp.length == 1) {
-
-			article.innerHTML = [
-				"<pre>" + tmp[0] + "</pre>"
-			].join("");
-
-		} else if (tmp.length > 1) {
-
-			article.innerHTML = [
-				"<details>",
-				"<summary>",
-				"<pre>" + tmp[0].trim() + "</pre>",
-				"</summary>",
-				"<pre>" + tmp.slice(1).join("\n") + "<pre>",
-				"</details>",
-			].join("");
-
-		} else {
-			article.innerHTML = "<pre>(no content)</pre>";
-		}
-
-		return article;
-
-	} else if (message["role"] === "user") {
-
-		if (message["content"] !== "") {
-
-			let article = document.createElement("article");
-
-			article.setAttribute("data-role", "user");
-			article.innerHTML = marked.parse(message["content"]);
-
-			return article;
-
-		} else if (with_empty_content === true) {
-
-			let article = document.createElement("article");
-
-			article.setAttribute("data-role", "user");
-			article.innerHTML = "(no content)";
-
-			return article;
-
-		} else {
-			return null;
-		}
-
-	} else {
-		return null;
-	}
-
-};
 
 export const Renderer = function(session) {
+
+	session = session instanceof Session ? session : null;
+
 
 	this.Session  = session;
 	this.rendered = 0;
 	this.running  = false;
 
 	this.elements = {
-		"main": document.querySelector("body > main")
+		"main":   document.querySelector("body > main"),
+		"label":  document.querySelector("body > footer label")
 	};
 
 };
@@ -136,6 +31,19 @@ Renderer.prototype = {
 		if (this.running === false) {
 			this.running = true;
 			this.RenderLoop();
+		}
+
+	},
+
+	RenderLabel: function(message) {
+
+		message = typeof message === "string" ? message : "";
+
+
+		let lines = message.split("\n");
+
+		if (this.elements["label"] !== null) {
+			this.elements["label"].innerHTML = lines.join("<br>");
 		}
 
 	},
@@ -162,9 +70,18 @@ Renderer.prototype = {
 
 	RenderMessages: function(messages) {
 
+		messages = Object.prototype.toString.call(messages) === "[object Array]" ? messages : [];
+
+
+		let debug = false;
+
+		if (this.Session !== null) {
+			debug = this.Session.Config.Debug;
+		}
+
 		messages.forEach((message) => {
 
-			let article = RenderMessage(message, this.Session.Config.Debug === true);
+			let article = RenderMessage(message, debug);
 			if (article !== null) {
 				this.elements["main"].appendChild(article);
 			}

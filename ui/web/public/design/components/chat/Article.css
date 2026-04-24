@@ -75,6 +75,11 @@ main > article[data-role="tool"] > details > summary > pre {
 	max-width: 100%;
 	margin: 0px;
 	padding: 0px;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	text-align: left;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	vertical-align: middle;
@@ -91,12 +96,14 @@ main > article[data-role="tool"] > details[open] > summary > pre {
 main > article[data-role="tool"] > details > pre {
 	display: block;
 	width: 100%;
-	overflow: auto;
+	margin: 1em 0px 0px 0px;
+	padding: 0px;
 	font-family: "vera-mono";
 	font-size: 16px;
 	font-weight: normal;
 	line-height: 24px;
 	text-align: left;
+	overflow: auto;
 }
 
 main > article[data-role="tool"]::after {
@@ -137,4 +144,17 @@ main > article > ul:last-child {
 
 main > article > ul > li::before {
 	content: " - ";
+}
+
+main > article > pre {
+	display: block;
+	width: 100%;
+	margin: 1em 0px 0px 0px;
+	padding: 0px;
+	overflow: auto;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	text-align: left;
 }

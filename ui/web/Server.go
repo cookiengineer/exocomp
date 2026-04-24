@@ -3,8 +3,8 @@ package web
 import "exocomp/agents"
 import "exocomp/types"
 import "exocomp/ui/web/routes"
-import routes_messages "exocomp/ui/web/routes/messages"
 import routes_parameters "exocomp/ui/web/routes/parameters"
+import routes_session "exocomp/ui/web/routes/session"
 import "embed"
 import "net/http"
 import "io/fs"
@@ -44,6 +44,7 @@ func (server *Server) Init() bool {
 	// 	fsrv.ServeHTTP(response, request)
 	// })
 
+	// CLI Parameter APIs
 	http.HandleFunc("/api/parameters/agents", func(response http.ResponseWriter, request *http.Request) {
 		routes_parameters.Agents(server.Session, request, response)
 	})
@@ -52,26 +53,36 @@ func (server *Server) Init() bool {
 		routes_parameters.Models(server.Session, request, response)
 	})
 
-	http.HandleFunc("/api/config", func(response http.ResponseWriter, request *http.Request) {
-		routes.Config(server.Session, request, response)
+	// Session APIs
+	http.HandleFunc("/api/session/config", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Config(server.Session, request, response)
 	})
 
-	http.HandleFunc("/api/console", func(response http.ResponseWriter, request *http.Request) {
-		routes.Console(server.Session, request, response)
+	http.HandleFunc("/api/session/console", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Console(server.Session, request, response)
 	})
 
+	http.HandleFunc("/api/session/context", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Context(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/session/messages", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Messages(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/session/sendchatrequest", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.SendChatRequest(server.Session, request, response)
+	})
+
+
+
+	// TODO: Might be better as /api/session/agents?
 	http.HandleFunc("/api/agents", func(response http.ResponseWriter, request *http.Request) {
 		// TODO: List of currently running agents
 		// routes.Agents(server.Session, request, response)
 	})
 
-	http.HandleFunc("/api/messages", func(response http.ResponseWriter, request *http.Request) {
-		routes.Messages(server.Session, request, response)
-	})
 
-	http.HandleFunc("/api/messages/send", func(response http.ResponseWriter, request *http.Request) {
-		routes_messages.Send(server.Session, request, response)
-	})
 
 	http.HandleFunc("/api/settings/agent", func(response http.ResponseWriter, request *http.Request) {
 		routes.AgentSettings(server.Session, request, response)

@@ -1,0 +1,30 @@
+package session
+
+import "exocomp/ui/web/handlers"
+import "exocomp/types"
+import "encoding/json"
+import "net/http"
+import "strconv"
+
+func Context(session *types.Session, request *http.Request, response http.ResponseWriter) {
+
+	if request.Method == http.MethodGet {
+
+		response_payload, err0 := json.MarshalIndent(session.Context, "", "\t")
+
+		if err0 == nil {
+
+			response.Header().Set("Content-Type", "application/json")
+			response.Header().Set("Content-Length", strconv.Itoa(len(response_payload)))
+			response.WriteHeader(http.StatusOK)
+			response.Write(response_payload)
+
+		} else {
+			handlers.InternalServerError(session, request, response)
+		}
+
+	} else {
+		handlers.MethodNotAllowed(session, request, response)
+	}
+
+}

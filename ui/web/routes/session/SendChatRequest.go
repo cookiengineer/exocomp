@@ -1,4 +1,4 @@
-package routes
+package session
 
 import "exocomp/ui/web/handlers"
 import "exocomp/schemas"
@@ -8,7 +8,7 @@ import "io"
 import "net/http"
 import "strconv"
 
-func Send(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func SendChatRequest(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodPost {
 

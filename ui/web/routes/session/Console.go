@@ -1,4 +1,4 @@
-package routes
+package session
 
 import "exocomp/ui/web/handlers"
 import "exocomp/types"
@@ -6,13 +6,14 @@ import "encoding/json"
 import "net/http"
 import "strconv"
 
-func Config(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Console(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 
-		if session.Config != nil {
+		if session.Console != nil {
 
-			response_payload, err0 := json.MarshalIndent(session.Config, "", "\t")
+			messages               := session.Console.GetMessages(0)
+			response_payload, err0 := json.MarshalIndent(messages, "", "\t")
 
 			if err0 == nil {
 

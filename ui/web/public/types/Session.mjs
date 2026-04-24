@@ -5,13 +5,13 @@ export const Session = function(config) {
 
 	this.Config   = config;
 	this.Console  = new Console();
+	this.Context  = {
+		Length: 0,
+		Tokens: 0
+	};
 	this.Messages = [];
 	this.Tools    = [];
 	this.Waiting  = false;
-	this.context  = {
-		length: 0,
-		tokens: 0
-	};
 
 };
 
@@ -29,8 +29,23 @@ Session.prototype = {
 
 	GetContextUsage: function() {
 
-		if (this.context.length > 0) {
-			return (this.context.tokens / this.context.length) * 100.0;
+		fetch(this.Config.ResolveAPI("/api/session/context").toString(), {
+			method: "GET"
+		}).then((response) => {
+			return response.json();
+		}).then((context) => {
+
+			if (Object.prototype.toString.call(context) === "[object Object]") {
+
+				this.Context.Length = context["length"] || 0;
+				this.Context.Tokens = context["tokens"] || 0;
+
+			}
+
+		});
+
+		if (this.Context.Length > 0) {
+			return (this.Context.Tokens / this.Context.Length) * 100.0;
 		} else {
 			return 0.0;
 		}
@@ -55,7 +70,8 @@ Session.prototype = {
 
 	Init: function() {
 
-		fetch(this.Config.ResolveAPI("/api/messages").toString(), {
+		fetch(this.Config.ResolveAPI("/api/session/messages").toString(), {
+			method: "GET"
 		}).then((response) => {
 			return response.json();
 		}).then((messages) => {
@@ -68,6 +84,8 @@ Session.prototype = {
 			console.error(err);
 		});
 
+		this.GetContextUsage();
+
 	},
 
 	SendChatRequest: async function(message) {
@@ -78,7 +96,7 @@ Session.prototype = {
 
 			try {
 
-				let response = await fetch(this.Config.ResolveAPI("/api/messages/send").toString(), {
+				let response = await fetch(this.Config.ResolveAPI("/api/session/sendchatrequest").toString(), {
 					method:  "POST",
 					headers: {
 						"Content-Type": "application/json"

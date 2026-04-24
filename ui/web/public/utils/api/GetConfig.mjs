@@ -5,7 +5,7 @@ export const GetConfig = () => {
 
 	return new Promise((resolve, reject) => {
 
-		fetch("/api/config", {
+		fetch("/api/session/config", {
 			method:  "GET",
 			headers: {
 				"Content-Type": "application/json"

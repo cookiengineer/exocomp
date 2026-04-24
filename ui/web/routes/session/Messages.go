@@ -1,4 +1,4 @@
-package routes
+package session
 
 import "exocomp/ui/web/handlers"
 import "exocomp/types"

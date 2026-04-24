@@ -24,8 +24,8 @@ body > main {
 }
 
 body > main > article {
-	width: 80%;
-	margin: 32px auto;
+	width: auto;
+	margin: 32px 32px;
 }
 
 body > aside {
