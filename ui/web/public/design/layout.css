@@ -25,33 +25,7 @@ body > main {
 
 body > main > article {
 	width: 80%;
-	margin: 32px auto 32px auto;
-	padding: 16px;
-	border-top: 1px solid transparent;
-	border-right: 1px solid transparent;
-	border-bottom: 1px solid transparent;
-	border-left: 1px solid transparent;
-	border-radius: 4px;
-}
-
-body > main > article[data-role="system"] {
-	border-left: 16px solid #c19d01;
-	border-color: #c19d01;
-}
-
-body > main > article[data-role="assistant"] {
-	border-left: 16px solid #3465a4;
-	border-color: #3465a4;
-}
-
-body > main > article[data-role="tool"] {
-	border-right: 16px solid #c80101;
-	border-color: #c80101;
-}
-
-body > main > article[data-role="user"] {
-	border-right: 16px solid #4e9906;
-	border-color: #4e9906;
+	margin: 32px auto;
 }
 
 body > aside {

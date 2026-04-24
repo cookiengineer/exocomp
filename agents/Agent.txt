@@ -9,6 +9,4 @@ You are an expert developer agent running inside an assistant environment.
 - Use expressive variable and function names
 - Write clear and readable code
 - Use upstream core packages if possible
-- Use the "tasks" tool to communicate what you are working on
-- Use the "notes" tool for development notes and design decisions
 

@@ -1,35 +1,57 @@
 
 import { marked } from "/libs/marked.mjs";
 
-const RenderMessage = (message) => {
+const RenderMessage = (message, with_empty_content) => {
+
+	with_empty_content = typeof with_empty_content === "boolean" ? with_empty_content : false;
 
 	if (message["role"] === "assistant") {
 
-		let article = document.createElement("article");
-
-		article.setAttribute("data-role", "assistant");
-
 		if (message["content"] !== "") {
-			article.innerHTML = marked.parse(message["content"]);
-		} else {
-			article.innerHTML = "(no content)";
-		}
 
-		return article;
+			let article = document.createElement("article");
+
+			article.setAttribute("data-role", "assistant");
+			article.innerHTML = marked.parse(message["content"]);
+
+			return article;
+
+		} else if (with_empty_content === true) {
+
+			let article = document.createElement("article");
+
+			article.setAttribute("data-role", "assistant");
+			article.innerHTML = "(no content)";
+
+			return article;
+
+		} else {
+			return null;
+		}
 
 	} else if (message["role"] === "system") {
 
-		let article = document.createElement("article");
-
-		article.setAttribute("data-role", "system");
-
 		if (message["content"] !== "") {
-			article.innerHTML = marked.parse(message["content"]);
-		} else {
-			article.innerHTML = "(no content)";
-		}
 
-		return article;
+			let article = document.createElement("article");
+
+			article.setAttribute("data-role", "system");
+			article.innerHTML = marked.parse(message["content"]);
+
+			return article;
+
+		} else if (with_empty_content === true) {
+
+			let article = document.createElement("article");
+
+			article.setAttribute("data-role", "system");
+			article.innerHTML = "(no content)";
+
+			return article;
+
+		} else {
+			return null;
+		}
 
 	} else if (message["role"] === "tool") {
 
@@ -41,11 +63,7 @@ const RenderMessage = (message) => {
 		if (tmp.length == 1) {
 
 			article.innerHTML = [
-				"<details>",
-				"<summary>",
-				"<pre>" + tmp[0] + "</pre>",
-				"</summary>",
-				"</details>",
+				"<pre>" + tmp[0] + "</pre>"
 			].join("");
 
 		} else if (tmp.length > 1) {
@@ -67,17 +85,27 @@ const RenderMessage = (message) => {
 
 	} else if (message["role"] === "user") {
 
-		let article = document.createElement("article");
-
-		article.setAttribute("data-role", "user");
-
 		if (message["content"] !== "") {
-			article.innerHTML = marked.parse(message["content"]);
-		} else {
-			article.innerHTML = "(no content)";
-		}
 
-		return article;
+			let article = document.createElement("article");
+
+			article.setAttribute("data-role", "user");
+			article.innerHTML = marked.parse(message["content"]);
+
+			return article;
+
+		} else if (with_empty_content === true) {
+
+			let article = document.createElement("article");
+
+			article.setAttribute("data-role", "user");
+			article.innerHTML = "(no content)";
+
+			return article;
+
+		} else {
+			return null;
+		}
 
 	} else {
 		return null;
@@ -136,7 +164,7 @@ Renderer.prototype = {
 
 		messages.forEach((message) => {
 
-			let article = RenderMessage(message);
+			let article = RenderMessage(message, this.Session.Config.Debug === true);
 			if (article !== null) {
 				this.elements["main"].appendChild(article);
 			}

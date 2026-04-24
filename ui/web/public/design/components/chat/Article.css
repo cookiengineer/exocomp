@@ -1,0 +1,140 @@
+
+main > article {
+	position: relative;
+	margin: 0px;
+	padding: 16px;
+	border-top: 2px solid transparent;
+	border-right: 2px solid transparent;
+	border-bottom: 2px solid transparent;
+	border-left: 2px solid transparent;
+	border-radius: 6px;
+}
+
+main > article[data-role="system"]::before,
+main > article[data-role="assistant"]::before {
+	position: absolute;
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	top: 50%;
+	right: auto;
+	bottom: auto;
+	left: -22px;
+	vertical-align: middle;
+	transform: translateY(-50%);
+	writing-mode: sideways-rl;
+	text-orientation: mixed;
+}
+
+main > article[data-role="tool"]::after,
+main > article[data-role="user"]::after {
+	position: absolute;
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	top: 50%;
+	right: -22px;
+	bottom: auto;
+	left: auto;
+	vertical-align: middle;
+	transform: translateY(-50%);
+	writing-mode: sideways-lr;
+	text-orientation: mixed;
+}
+
+main > article[data-role="system"] {
+	border-left: 24px solid #c19d01;
+	border-color: #c19d01;
+}
+
+main > article[data-role="system"]::before {
+	content: "System";
+}
+
+main > article[data-role="assistant"] {
+	border-left: 24px solid #3465a4;
+	border-color: #3465a4;
+}
+
+main > article[data-role="assistant"]::before {
+	content: "AI";
+}
+
+main > article[data-role="tool"] {
+	background: #303030;
+	border-right: 24px solid #c80101;
+	border-color: #c80101;
+}
+
+main > article[data-role="tool"] > pre,
+main > article[data-role="tool"] > details > summary > pre {
+	display: inline-block;
+	width: auto;
+	max-width: 100%;
+	margin: 0px;
+	padding: 0px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+}
+
+main > article[data-role="tool"] > details > summary {
+	cursor: pointer;
+}
+
+main > article[data-role="tool"] > details[open] > summary > pre {
+	font-weight: bold;
+}
+
+main > article[data-role="tool"] > details > pre {
+	display: block;
+	width: 100%;
+	overflow: auto;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	text-align: left;
+}
+
+main > article[data-role="tool"]::after {
+	content: "Tool";
+}
+
+main > article[data-role="user"] {
+	border-right: 24px solid #4e9906;
+	border-color: #4e9906;
+}
+
+main > article[data-role="user"]::after {
+	content: "User";
+}
+
+main > article > p {
+	display: block;
+	margin: 0px 0px 1em 0px;
+	padding: 0px;
+	text-align: left;
+}
+
+main > article > p:last-child {
+	margin-bottom: 0px;
+}
+
+main > article > ul {
+	display: block;
+	margin: 0px 0px 1em 0px;
+	padding: 0px;
+	text-align: left;
+	list-style: none;
+}
+
+main > article > ul:last-child {
+	margin-bottom: 0px;
+}
+
+main > article > ul > li::before {
+	content: " - ";
+}
