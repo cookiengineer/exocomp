@@ -1,4 +1,5 @@
 
+import { Agent    } from "../types/Agent.mjs";
 import { Renderer } from "./Renderer.mjs";
 import { Session  } from "../types/Session.mjs";
 
@@ -116,10 +117,10 @@ Client.prototype = {
 				return response.json();
 			}).then((agents) => {
 
-				if (Object.prototype.toString.call(agents) === "[object Object]") {
+				if (Object.prototype.toString.call(agents) === "[object Array]") {
 
-					Object.keys(agents).sort().forEach((name) => {
-						this.Session.Agents[name] = agents[name];
+					agents.forEach((agent) => {
+						this.Session.SetAgent(Agent.from(agent));
 					});
 
 				}

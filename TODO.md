@@ -6,10 +6,12 @@
 - [ ] `redteamer` who writes malware and targets victim sandboxes
 - [ ] `blueteamer` who analyzes metrics and logs of victim sandboxes
 
-- [ ] `Requirements` need to use `tool.Playground`, like `Bugs` and `Changelog` already do
-- [ ] `tool.Sandbox` is now a nested folder, which means that `internal_path` is relative to `tool.Playground`
-- [ ] `List()` should show only requirements within current sandbox
-- [ ] `Search()` should show only requirements within current sandbox
+## Tools
+
+- [ ] `requirements.DefineStruct()` needs to be implemented
+- [ ] `requirements.DefineTest()` needs to be implemented
+- [ ] `requirements.List()` should show only requirements within current sandbox
+- [ ] `requirements.Search()` should show only requirements within current sandbox
 
 ## JSONL UI
 

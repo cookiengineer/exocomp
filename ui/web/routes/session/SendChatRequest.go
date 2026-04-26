@@ -17,7 +17,7 @@ func SendChatRequest(session *types.Session, request *http.Request, response htt
 		if content_type == "application/json" {
 
 			message := schemas.Message{}
-			from    := len(session.Messages)
+			from    := len(session.Agent.Messages)
 
 			request_payload, err0 := io.ReadAll(request.Body)
 

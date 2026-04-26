@@ -1,23 +1,16 @@
 package types
 
-import "strings"
+import "exocomp/schemas"
 
 type Agent struct {
 	Name        string
 	Type        string
 	Model       string
 	Prompt      string
-	Programs    []string
 	Temperature float64
+	Messages    []*schemas.Message
+	Programs    []string
 	Tools       []string
+	Sandbox     string
 }
 
-func (agent *Agent) GetPrompt() string {
-
-	prompt := agent.Prompt
-	prompt = strings.ReplaceAll(prompt, "{{NAME}}", agent.Name)
-	prompt = strings.TrimSpace(prompt)
-
-	return prompt
-
-}

@@ -1,5 +1,6 @@
 package agents
 
+import "exocomp/schemas"
 import "exocomp/types"
 import _ "embed"
 import "strings"
@@ -25,13 +26,21 @@ func NewArchitect(config *types.Config) *types.Agent {
 		temp = 0.5
 	}
 
+	prompt   := renderPrompt(name, string(architect_prompt))
+	messages := make([]*schemas.Message, 0)
+	messages = append(messages, &schemas.Message{
+		Role:    "system",
+		Content: prompt,
+	})
+
 	return &types.Agent{
 		Name:        name,
 		Type:        "architect",
 		Model:       model,
-		Prompt:      string(architect_prompt),
-		Programs:    []string{},
+		Prompt:      prompt,
 		Temperature: temp,
+		Messages:    messages,
+		Programs:    []string{},
 		Tools:       []string{
 			// No agents.List
 			// No agents.Hire
@@ -53,6 +62,7 @@ func NewArchitect(config *types.Config) *types.Agent {
 			"requirements.List",
 			"requirements.Search",
 		},
+		Sandbox:     config.Sandbox,
 	}
 
 }

@@ -1,10 +1,10 @@
 
+import { Agent   } from "./Agent.mjs";
 import { Console } from "./Console.mjs";
 
 export const Session = function(config) {
 
-	this.Agents = {}; // Managed by ui.Client
-
+	this.Agents   = {}; // Managed by ui.Client
 	this.Config   = config;
 	this.Console  = new Console();
 	this.Context  = {
@@ -19,10 +19,18 @@ export const Session = function(config) {
 
 Session.prototype = {
 
+	GetAgent: function(name) {
+
+		if (this.Agents[name] !== undefined) {
+			return this.Agents[name];
+		}
+
+		return null;
+
+	},
+
 	GetAgents: function() {
-
 		return this.Agents;
-
 	},
 
 	GetConsoleMessages: function(from) {
@@ -65,6 +73,10 @@ Session.prototype = {
 
 		this.Update();
 
+	},
+
+	ReceiveChatResponse: function(message) {
+		this.Messages.push(message);
 	},
 
 	SendChatRequest: async function(message) {
@@ -122,8 +134,14 @@ Session.prototype = {
 
 	},
 
-	ReceiveChatResponse: function(message) {
-		this.Messages.push(message);
+	SetAgent: function(agent) {
+
+		agent = agent instanceof Agent ? agent : null;
+
+		if (agent !== null) {
+			this.Agents[agent.Name] = agent;
+		}
+
 	},
 
 	Update: function() {

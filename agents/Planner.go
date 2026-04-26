@@ -1,5 +1,6 @@
 package agents
 
+import "exocomp/schemas"
 import "exocomp/types"
 import _ "embed"
 import "strings"
@@ -25,13 +26,21 @@ func NewPlanner(config *types.Config) *types.Agent {
 		temp = 0.7
 	}
 
+	prompt   := renderPrompt(name, string(planner_prompt))
+	messages := make([]*schemas.Message, 0)
+	messages = append(messages, &schemas.Message{
+		Role:    "system",
+		Content: prompt,
+	})
+
 	return &types.Agent{
 		Name:        name,
 		Type:        "planner",
 		Model:       model,
-		Prompt:      string(planner_prompt),
-		Programs:    []string{},
+		Prompt:      prompt,
 		Temperature: temp,
+		Messages:    messages,
+		Programs:    []string{},
 		Tools:       []string{
 			"agents.List",
 			"agents.Hire",
@@ -52,6 +61,7 @@ func NewPlanner(config *types.Config) *types.Agent {
 			// No requirements.List
 			// No requirements.Search
 		},
+		Sandbox:     config.Sandbox,
 	}
 
 }

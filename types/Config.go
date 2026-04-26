@@ -16,10 +16,10 @@ type Config struct {
 	Agent       string       `json:"agent"`
 	Debug       bool         `json:"debug"`
 	Model       string       `json:"model"`
-	Playground  string       `json:"playground"`
 	Prompt      string       `json:"prompt"`
-	Sandbox     string       `json:"sandbox"`
 	Temperature float64      `json:"temperature"`
+	Playground  string       `json:"playground"`
+	Sandbox     string       `json:"sandbox"`
 	URL         *net_url.URL `json:"url"`
 }
 

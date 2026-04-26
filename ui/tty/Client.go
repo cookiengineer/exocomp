@@ -128,7 +128,7 @@ func (client *Client) InputLoop() {
 						bytes2, _ := json.MarshalIndent(schemas.ChatRequest{
 							Model:       client.Session.Agent.Model,
 							Temperature: client.Session.Agent.Temperature,
-							Messages:    client.Session.Messages,
+							Messages:    client.Session.Agent.Messages,
 							Stream:      false,
 							Tools:       client.Session.Tools,
 							ToolChoice:  "auto",

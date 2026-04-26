@@ -10,11 +10,15 @@ export const Renderer = function(session) {
 
 
 	this.Session  = session;
-	this.rendered = 0;
+	this.rendered = {
+		agents:   0,
+		messages: 0
+	};
 	this.running  = false;
 
 	this.elements = {
 		"main":   document.querySelector("body > main"),
+		"nav":    document.querySelector("body > aside > nav[aria-label=\"agents\"]"),
 		"label":  document.querySelector("body > footer label")
 	};
 
@@ -52,17 +56,20 @@ Renderer.prototype = {
 
 		if (this.running === true) {
 
-			let messages = this.Session.GetMessages(this.rendered);
+			let messages = this.Session.GetMessages(this.rendered.messages);
 			if (messages.length > 0) {
 
 				this.RenderMessages(messages);
-				this.rendered += messages.length;
+				this.rendered.messages += messages.length;
 
 			}
 
 			let agents = this.Session.GetAgents();
-			if (agents.length > 0) {
-				this.RenderAgents(agents);
+			if (this.rendered.agents != Object.keys(agents).length) {
+
+				this.RenderAgents(this.Session.Config.Name, agents);
+				this.rendered.agents = Object.keys(agents).length;
+
 			}
 
 			requestAnimationFrame(() => {
@@ -73,18 +80,30 @@ Renderer.prototype = {
 
 	},
 
-	RenderAgents: function(agents) {
+	RenderAgents: function(active, agents) {
 
 		agents = Object.prototype.toString.call(agents) === "[object Object]" ? agents : {};
 
-		Object.keys(agents).forEach((name) => {
+
+		let html = "";
+
+		html += "<ul>";
+		html += Object.keys(agents).map((name) => {
 
 			let agent = agents[name];
 
-			// TODO: Render a <ul><li>...</li></ul>
-			// into the sidebar
+			if (name === active) {
+				return "<li class=\"active\" title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><label>" + agent.Name + "</label></li>";
+			} else {
+				return "<li title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><label>" + agent.Name + "</label></li>";
+			}
 
-		});
+		}).join("");
+		html += "</ul>";
+
+		if (this.elements["nav"] !== null) {
+			this.elements["nav"].innerHTML = html;
+		}
 
 	},
 

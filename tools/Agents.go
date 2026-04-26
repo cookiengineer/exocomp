@@ -18,7 +18,6 @@ import "sync"
 
 type Agents struct {
 	Agents     map[string]*types.Agent
-	Chats      map[string][]*schemas.Message
 	Playground string
 	Sandbox    string
 	URL        *net_url.URL
@@ -30,7 +29,6 @@ func NewAgents(playground string, sandbox string, url *net_url.URL) *Agents {
 
 	agents := &Agents{
 		Agents:     make(map[string]*types.Agent),
-		Chats:      make(map[string][]*schemas.Message, 0),
 		Playground: playground,
 		Sandbox:    sandbox,
 		URL:        url,
@@ -200,13 +198,11 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 								tool.mutex.Lock()
 
-								_, ok := tool.Chats[name]
+								_, ok1 := tool.Agents[name]
 
-								if ok == false {
-									tool.Chats[name] = make([]*schemas.Message, 0)
+								if ok1 == true {
+									tool.Agents[name].Messages = append(tool.Agents[name].Messages, &message)
 								}
-
-								tool.Chats[name] = append(tool.Chats[name], &message)
 
 								tool.mutex.Unlock()
 
@@ -278,11 +274,11 @@ func (tool *Agents) Fire(name string) (string, error) {
 func (tool *Agents) Inquire(name string) (string, error) {
 
 	tmp, err0 := os.MkdirTemp("/tmp", "exocomp-summarizer-*")
-	chat, ok2 := tool.Chats[name]
+	agent, ok2 := tool.Agents[name]
 
 	if err0 == nil && ok2 == true {
 
-		messages := utils_chat.SummarizeMessages(chat, true, true, false)
+		messages := utils_chat.SummarizeMessages(agent.Messages, true, true, false)
 		prompt   := strings.Join([]string{
 			"Please summarize the following conversation, the latest messages are the newest ones.",
 			"",

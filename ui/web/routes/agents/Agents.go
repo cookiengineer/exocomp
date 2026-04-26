@@ -29,24 +29,35 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 
 				sort.Strings(agent_names)
 
-				agents := make(map[string]schemas.Agent)
+				agents := make([]schemas.Agent, 0)
+
+				agents = append(agents, schemas.Agent{
+					Name:        session.Agent.Name,
+					Type:        session.Agent.Type,
+					Model:       session.Agent.Model,
+					Temperature: session.Agent.Temperature,
+					Messages:    session.Agent.Messages,
+					Programs:    session.Agent.Programs,
+					Tools:       session.Agent.Tools,
+					Sandbox:     session.Agent.Sandbox,
+				})
 
 				for _, name := range agent_names {
 
-					agent,    ok1 := agent_tool.Agents[name]
-					messages, ok2 := agent_tool.Chats[name]
+					agent, ok := agent_tool.Agents[name]
 
-					if ok1 == true && ok2 == true {
+					if ok == true {
 
-						agents[name] = schemas.Agent{
+						agents = append(agents, schemas.Agent{
 							Name:        agent.Name,
 							Type:        agent.Type,
 							Model:       agent.Model,
-							Programs:    agent.Programs,
 							Temperature: agent.Temperature,
+							Messages:    agent.Messages,
+							Programs:    agent.Programs,
 							Tools:       agent.Tools,
-							Messages:    messages,
-						}
+							Sandbox:     agent.Sandbox,
+						})
 
 					}
 

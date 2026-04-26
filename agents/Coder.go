@@ -1,5 +1,6 @@
 package agents
 
+import "exocomp/schemas"
 import "exocomp/types"
 import _ "embed"
 import "strings"
@@ -25,13 +26,21 @@ func NewCoder(config *types.Config) *types.Agent {
 		temp = 0.3
 	}
 
+	prompt   := renderPrompt(name, string(coder_prompt))
+	messages := make([]*schemas.Message, 0)
+	messages = append(messages, &schemas.Message{
+		Role:    "system",
+		Content: prompt,
+	})
+
 	return &types.Agent{
 		Name:        name,
 		Type:        "coder",
 		Model:       model,
-		Prompt:      string(coder_prompt),
-		Programs:    []string{"go", "gofmt", "gopls"},
+		Prompt:      prompt,
 		Temperature: temp,
+		Messages:    messages,
+		Programs:    []string{"go", "gofmt", "gopls"},
 		Tools:       []string{
 			// No agents.List
 			// No agents.Hire
@@ -59,6 +68,7 @@ func NewCoder(config *types.Config) *types.Agent {
 			"requirements.List",
 			"requirements.Search",
 		},
+		Sandbox:     config.Sandbox,
 	}
 
 }

@@ -21,7 +21,6 @@ type Session struct {
 	Config   *Config            `json:"config"`
 	Console  *Console           `json:"console"`
 	Context  SessionContext     `json:"context"`
-	Messages []*schemas.Message `json:"messages"`
 	Tools    []*schemas.Tool    `json:"tools"`
 	Waiting  bool               `json:"waiting"`
 	client   *http.Client       `json:"-"`
@@ -39,7 +38,6 @@ func NewSession(agent *Agent, config *Config) *Session {
 			Length: 0,
 			Tokens: 0,
 		},
-		Messages: make([]*schemas.Message, 0),
 		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
 		client:   &http.Client{},
@@ -51,25 +49,13 @@ func NewSession(agent *Agent, config *Config) *Session {
 
 	session.mutex.Lock()
 
-	if agent != nil {
-
-		system_message := &schemas.Message{
-			Role:    "system",
-			Content: agent.GetPrompt(),
-		}
-
-		session.Messages = append(session.Messages, system_message)
-
-	}
-
 	if config != nil && config.GetPrompt() != "" {
 
-		user_message := &schemas.Message{
+		session.Agent.Messages = append(session.Agent.Messages, &schemas.Message{
 			Role:    "user",
 			Content: config.GetPrompt(),
-		}
+		})
 
-		session.Messages = append(session.Messages, user_message)
 		auto_init = true
 
 	}
@@ -88,7 +74,7 @@ func NewSession(agent *Agent, config *Config) *Session {
 
 func (session *Session) Init() error {
 
-	if len(session.Messages) > 0 {
+	if len(session.Agent.Messages) > 0 {
 		return session.infer_chat_completions()
 	}
 
@@ -123,10 +109,10 @@ func (session *Session) GetMessages(from int) []*schemas.Message {
 
 	result := make([]*schemas.Message, 0)
 
-	if len(session.Messages) > 0 && from < len(session.Messages) {
+	if len(session.Agent.Messages) > 0 && from < len(session.Agent.Messages) {
 
-		for m := from; m < len(session.Messages); m++ {
-			result = append(result, session.Messages[m])
+		for m := from; m < len(session.Agent.Messages); m++ {
+			result = append(result, session.Agent.Messages[m])
 		}
 
 	}
@@ -165,7 +151,7 @@ func (session *Session) GetTool(identifier string) Tool {
 
 }
 
-func (session *Session) SendChatRequest(raw schemas.Message) error {
+func (session *Session) SendChatRequest(request schemas.Message) error {
 
 	is_waiting := false
 
@@ -176,9 +162,7 @@ func (session *Session) SendChatRequest(raw schemas.Message) error {
 	if is_waiting == false {
 
 		session.mutex.Lock()
-
-		message := &raw
-		session.Messages = append(session.Messages, message)
+		session.Agent.Messages = append(session.Agent.Messages, &request)
 		session.Waiting = true
 
 		session.mutex.Unlock()
@@ -206,8 +190,8 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 	if response.Role == "assistant" {
 
 		session.mutex.Lock()
-		msg := &response
-		session.Messages = append(session.Messages, msg)
+		tmp := &response
+		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
 
 		if len(response.ToolCalls) > 0 {
@@ -234,7 +218,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 								Content:  strings.TrimSpace(result),
 								ToolName: identifier,
 							}
-							session.Messages = append(session.Messages, message)
+							session.Agent.Messages = append(session.Agent.Messages, message)
 							session.mutex.Unlock()
 
 						} else {
@@ -245,7 +229,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 								Content:  fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
 								ToolName: identifier,
 							}
-							session.Messages = append(session.Messages, message)
+							session.Agent.Messages = append(session.Agent.Messages, message)
 							session.mutex.Unlock()
 
 						}
@@ -264,7 +248,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 							}, "\n"),
 							ToolName: identifier,
 						}
-						session.Messages = append(session.Messages, message)
+						session.Agent.Messages = append(session.Agent.Messages, message)
 						session.mutex.Unlock()
 
 					}
@@ -282,8 +266,8 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 	} else {
 
 		session.mutex.Lock()
-		msg := &response
-		session.Messages = append(session.Messages, msg)
+		tmp := &response
+		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
 
 		return nil
@@ -311,7 +295,7 @@ func (session *Session) infer_chat_completions() error {
 	request_payload, err0 := json.Marshal(schemas.ChatRequest{
 		Model:       session.Agent.Model,
 		Temperature: session.Agent.Temperature,
-		Messages:    session.Messages,
+		Messages:    session.Agent.Messages,
 		Stream:      false,
 		Tools:       session.Tools,
 		ToolChoice:  "auto",
@@ -340,7 +324,7 @@ func (session *Session) infer_chat_completions() error {
 					if response.Usage != nil && response.Usage.PromptTokens != 0 {
 						session.Context.Tokens = response.Usage.PromptTokens
 					} else {
-						session.Context.Tokens = utils_chat.CalculateTokens(session.Messages)
+						session.Context.Tokens = utils_chat.CalculateTokens(session.Agent.Messages)
 					}
 
 					if len(response.Choices) > 0 {
