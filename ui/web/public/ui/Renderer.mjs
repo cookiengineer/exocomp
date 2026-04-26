@@ -56,11 +56,12 @@ Renderer.prototype = {
 
 		if (this.running === true) {
 
-			let messages = this.Session.GetMessages(this.rendered.messages);
-			if (messages.length > 0) {
+			let messages = this.Session.GetMessages(0);
+
+			if (this.rendered.messages != messages.length) {
 
 				this.RenderMessages(messages);
-				this.rendered.messages += messages.length;
+				this.rendered.messages = messages.length;
 
 			}
 
@@ -116,6 +117,10 @@ Renderer.prototype = {
 
 		if (this.Session !== null) {
 			debug = this.Session.Config.Debug;
+		}
+
+		if (this.elements["main"] !== null) {
+			this.elements["main"].innerHTML = "";
 		}
 
 		messages.forEach((message) => {

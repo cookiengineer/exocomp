@@ -21,6 +21,8 @@
 ## Web UI
 
 - [ ] Implement `routes.Tools` to execute/simulate tool calls with UI elements
+- [ ] `public/ui/Renderer` should implement lazy-rendering and avoid setting `nav.innerHTML = ""`
+- [ ] `public/ui/Renderer` should implement lazy-rendering and avoid setting `main.innerHTML = ""`
 
 
 ## Planner Agent
