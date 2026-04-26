@@ -2,6 +2,7 @@ package main
 
 import "exocomp/agents"
 import "exocomp/types"
+import utils_agent "exocomp/utils/agent"
 import utils_fmt "exocomp/utils/fmt"
 import ui_jsonl "exocomp/ui/jsonl"
 import ui_tty "exocomp/ui/tty"
@@ -28,8 +29,8 @@ func showHelp() {
 	fmt.Println("                           (default: \"Peanut Hamper\")")
 	fmt.Println("")
 	fmt.Println("    --agent string         LLM agent type")
-	fmt.Println("                           Either of: architect, coder, manager, summarizer, tester")
-	fmt.Println("                           (default: \"\")")
+	fmt.Println("                           Either of: architect, coder, planner, summarizer, tester")
+	fmt.Println("                           (default: \"planner\")")
 	fmt.Println("")
 	fmt.Println("    --model string         LLM agent model (ollama format)")
 	fmt.Println("                           Run \"ollama list\" to see available models")
@@ -67,7 +68,7 @@ func main() {
 
 	tmp_ui            := ""
 	tmp_name          := ""
-	tmp_agent         := ""
+	tmp_agent         := "assistant"
 	tmp_debug         := false
 	tmp_model         := "qwen3-coder:30b"
 	tmp_playground, _ := os.Getwd()
@@ -104,13 +105,13 @@ func main() {
 					switch tmp[0] {
 					case "name":
 
-						if agents.IsAgentName(tmp[1]) {
+						if utils_agent.IsName(tmp[1]) {
 							tmp_name = utils_fmt.FormatAgentName(tmp[1])
 						}
 
 					case "agent":
 
-						if agents.IsAgentType(tmp[1]) {
+						if utils_agent.IsType(tmp[1]) {
 							tmp_agent = strings.TrimSpace(tmp[1])
 						}
 
@@ -194,8 +195,27 @@ func main() {
 
 	if tmp_playground == tmp_sandbox || strings.HasPrefix(tmp_sandbox, tmp_playground + string(os.PathSeparator)) {
 
-		config := types.NewConfig(tmp_name, tmp_agent, tmp_debug, tmp_model, tmp_playground, tmp_prompt, tmp_sandbox, tmp_temperature, tmp_url)
-		agent  := agents.NewAgent(config.Name, config.Agent, config.Model, config.Temperature)
+		config := types.NewConfig(
+			tmp_name,
+			tmp_agent,
+			tmp_model,
+			tmp_prompt,
+			tmp_temperature,
+			tmp_playground,
+			tmp_sandbox,
+			tmp_url,
+			tmp_debug,
+		)
+
+		agent := agents.NewAgent(config)
+
+		config.Update(
+			agent.Name,
+			agent.Type,
+			agent.Model,
+			tmp_prompt,
+			agent.Temperature,
+		)
 
 		err1 := os.MkdirAll(config.Sandbox, 0755)
 

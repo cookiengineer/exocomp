@@ -13,7 +13,7 @@ type Files struct {
 	Sandbox string
 }
 
-func NewFiles(agent string, sandbox string) *Files {
+func NewFiles(playground string, sandbox string) *Files {
 
 	return &Files{
 		Sandbox: sandbox,

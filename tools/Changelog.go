@@ -20,11 +20,11 @@ type Changelog struct {
 	contents   map[string]map[string][]changelog_entry // map[path][symbol]
 }
 
-func NewChangelog(agent string, sandbox string, playground string) *Changelog {
+func NewChangelog(playground string, sandbox string) *Changelog {
 
 	changelog := &Changelog{
-		Sandbox:    sandbox,
 		Playground: playground,
+		Sandbox:    sandbox,
 		contents:   make(map[string]map[string][]changelog_entry, 0),
 	}
 

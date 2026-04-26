@@ -19,6 +19,12 @@ export const Session = function(config) {
 
 Session.prototype = {
 
+	GetAgents: function() {
+
+		return this.Agents;
+
+	},
+
 	GetConsoleMessages: function(from) {
 
 		if (this.Console !== null) {

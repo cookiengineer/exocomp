@@ -32,16 +32,16 @@ Ethical subroutines sold separately.
 
 ## Agents
 
-Exocomp uses multiple Agent roles:
+Exocomp uses multiple Agent [Types](./agents/Types.go):
 
-| Role                                        | Default Model     | Description                                                   |
-|:--------------------------------------------|:-----------------:|:--------------------------------------------------------------|
-| [Manager](./agents/Agent.Manager.txt)       | `gemma4:31b`      | writes with humans, contracts agents and plans project phases |
-| [Architect](./agents/Agent.Architect.txt)   | `gemma4:31b`      | discusses with humans and writes specifications               |
-| [Coder](./agents/Agent.Coder.txt)           | `qwen3-coder:30b` | implements features, reads `specifications` and `bugs`        |
-| [Tester](./agents/Agent.Tester.txt)         | `qwen3-coder:30b` | implements unit tests, writes reports into `bugs`             |
-| [Summarizer](./agents/Agent.Summarizer.txt) | `qwen3-coder:30b` | reads long texts and summarizes them                          |
-| Researcher                                  | TBD               | reads websites, API documentation, and reports to `Architect` |
+| Role                                 | Default Model     | Description                                                   |
+|:-------------------------------------|:-----------------:|:--------------------------------------------------------------|
+| [Planner](./agents/Planner.go)       | `gemma4:31b`      | writes with humans, contracts agents and plans project phases |
+| [Architect](./agents/Architect.go)   | `gemma4:31b`      | discusses with humans and writes specifications               |
+| [Coder](./agents/Coder.go)           | `qwen3-coder:30b` | implements features, reads `specifications` and `bugs`        |
+| [Tester](./agents/Tester.go)         | `qwen3-coder:30b` | implements unit tests, writes reports into `bugs`             |
+| [Summarizer](./agents/Summarizer.go) | `qwen3-coder:30b` | reads long texts and summarizes them                          |
+| Researcher                           | TBD               | reads websites, API documentation, and reports to `Architect` |
 
 Exocomp uses Tools to interact with the sandbox, so they're available differently
 for each Agent role. The `manager` starts sub-agents that work on specified tasks,

@@ -40,7 +40,7 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 
 						agents[name] = schemas.Agent{
 							Name:        agent.Name,
-							Type:        agent.Type.String(),
+							Type:        agent.Type,
 							Model:       agent.Model,
 							Programs:    agent.Programs,
 							Temperature: agent.Temperature,

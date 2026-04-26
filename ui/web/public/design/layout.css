@@ -12,6 +12,11 @@ body {
 	height: 100%;
 }
 
+body > header > div:nth-of-type(1) {
+	width: calc(200px - 32px);
+	text-align: center;
+}
+
 body > main {
 	display: block;
 	position: fixed;
@@ -38,7 +43,7 @@ body > footer {
 }
 
 body > footer > div:nth-of-type(1) {
-	width: 200px;
+	width: 198px; /* somehow this is 2px less than it should be */
 	line-height: 20px;
 	text-align: center;
 }
@@ -53,5 +58,6 @@ body > footer > div:nth-of-type(2) textarea {
 	height: 100%;
 	min-height: 8em;
 	resize: horizontal;
+	box-sizing: border-box;
 }
 

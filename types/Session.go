@@ -1,8 +1,6 @@
 package types
 
-import "exocomp/agents"
 import "exocomp/schemas"
-import "exocomp/tools"
 import utils_chat "exocomp/utils/chat"
 import "bytes"
 import "encoding/json"
@@ -19,19 +17,19 @@ type SessionContext struct {
 }
 
 type Session struct {
-	Agent    *agents.Agent         `json:"agent"`
-	Config   *Config               `json:"config"`
-	Console  *Console              `json:"console"`
-	Context  SessionContext        `json:"context"`
-	Messages []*schemas.Message    `json:"messages"`
-	Tools    []*schemas.Tool       `json:"tools"`
-	Waiting  bool                  `json:"waiting"`
-	client   *http.Client          `json:"-"`
-	mutex    *sync.RWMutex         `json:"-"`
-	tools    map[string]tools.Tool `json:"-"`
+	Agent    *Agent             `json:"agent"`
+	Config   *Config            `json:"config"`
+	Console  *Console           `json:"console"`
+	Context  SessionContext     `json:"context"`
+	Messages []*schemas.Message `json:"messages"`
+	Tools    []*schemas.Tool    `json:"tools"`
+	Waiting  bool               `json:"waiting"`
+	client   *http.Client       `json:"-"`
+	mutex    *sync.RWMutex      `json:"-"`
+	tools    map[string]Tool    `json:"-"`
 }
 
-func NewSession(agent *agents.Agent, config *Config) *Session {
+func NewSession(agent *Agent, config *Config) *Session {
 
 	session := &Session{
 		Agent:    agent,
@@ -46,11 +44,7 @@ func NewSession(agent *agents.Agent, config *Config) *Session {
 		Waiting:  false,
 		client:   &http.Client{},
 		mutex:    &sync.RWMutex{},
-		tools:    make(map[string]tools.Tool),
-	}
-
-	if len(agent.Tools) > 0 {
-		session.Tools = tools.EncodeSchema(agent.Tools)
+		tools:    make(map[string]Tool),
 	}
 
 	auto_init := false
@@ -141,7 +135,7 @@ func (session *Session) GetMessages(from int) []*schemas.Message {
 
 }
 
-func (session *Session) GetTool(identifier string) tools.Tool {
+func (session *Session) GetTool(identifier string) Tool {
 
 	allowed := false
 
@@ -156,32 +150,14 @@ func (session *Session) GetTool(identifier string) tools.Tool {
 
 	if allowed == true {
 
-		name  := strings.TrimSpace(identifier[0:strings.Index(identifier, ".")])
-		_, ok := session.tools[name]
+		name     := strings.TrimSpace(identifier[0:strings.Index(identifier, ".")])
+		tool, ok := session.tools[name]
 
-		if ok == false {
-
-
-			switch name {
-			case "agents":
-				session.tools[name] = tools.Tool(tools.NewAgents(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
-			case "bugs":
-				session.tools[name] = tools.Tool(tools.NewBugs(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
-			case "changelog":
-				session.tools[name] = tools.Tool(tools.NewChangelog(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
-			case "files":
-				session.tools[name] = tools.Tool(tools.NewFiles(session.Config.Agent, session.Config.Sandbox))
-			case "programs":
-				session.tools[name] = tools.Tool(tools.NewPrograms(session.Config.Agent, session.Config.Sandbox, session.Agent.Programs))
-			case "requirements":
-				session.tools[name] = tools.Tool(tools.NewRequirements(session.Config.Agent, session.Config.Sandbox, session.Config.Playground))
-			default:
-				session.tools[name] = nil
-			}
-
+		if ok == true {
+			return tool
+		} else {
+			return nil
 		}
-
-		return session.tools[name]
 
 	} else {
 		return nil
@@ -311,6 +287,20 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 		session.mutex.Unlock()
 
 		return nil
+
+	}
+
+}
+
+func (session *Session) SetTool(identifier string, tool Tool, schemas []schemas.Tool) {
+
+	if identifier != "" && len(schemas) > 0 && tool != nil {
+
+		session.tools[identifier] = tool
+
+		for _, schema := range schemas {
+			session.Tools = append(session.Tools, &schema)
+		}
 
 	}
 

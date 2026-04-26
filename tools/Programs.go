@@ -14,10 +14,10 @@ type Programs struct {
 	Sandbox  string
 }
 
-func NewPrograms(agent string, sandbox string, programs []string) *Programs {
+func NewPrograms(playground string, sandbox string, allowed_programs []string) *Programs {
 
 	return &Programs{
-		Programs: programs,
+		Programs: allowed_programs,
 		Sandbox:  sandbox,
 	}
 

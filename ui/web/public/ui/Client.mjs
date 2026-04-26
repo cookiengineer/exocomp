@@ -53,7 +53,7 @@ Client.prototype = {
 		this.interval_id = setInterval(() => {
 
 			let now   = Date.now()
-			let delta = last_interval_date;
+			let delta = now - last_interval_date;
 
 			this.UpdateLoop(delta);
 

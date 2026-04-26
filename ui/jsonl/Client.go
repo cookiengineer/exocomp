@@ -1,7 +1,7 @@
 package jsonl
 
-import "exocomp/agents"
 import "exocomp/schemas"
+import "exocomp/tools"
 import "exocomp/types"
 import "bufio"
 import "encoding/json"
@@ -12,18 +12,34 @@ import "strings"
 import "syscall"
 
 type Client struct {
-	Session  *types.Session
 	Renderer *Renderer
+	Session  *types.Session
 }
 
-func NewClient(agent *agents.Agent, config *types.Config) *Client {
+func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	session  := types.NewSession(agent, config)
 	renderer := NewRenderer(session)
 
+	if len(agent.Tools) > 0 {
+
+		tool_schemas, tools := tools.Toolset(
+			config.Playground,
+			config.Sandbox,
+			config.URL,
+			agent.Programs,
+			agent.Tools,
+		)
+
+		for name, tool := range tools {
+			session.SetTool(name, tool, tool_schemas[name])
+		}
+
+	}
+
 	return &Client{
-		Session:  session,
 		Renderer: renderer,
+		Session:  session,
 	}
 
 }

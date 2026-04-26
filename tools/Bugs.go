@@ -18,11 +18,11 @@ type Bugs struct {
 	contents   map[string]map[string]bug_specification // map[path][symbol]
 }
 
-func NewBugs(agent string, sandbox string, playground string) *Bugs {
+func NewBugs(playground string, sandbox string) *Bugs {
 
 	bugs := &Bugs{
-		Sandbox:    sandbox,
 		Playground: playground,
+		Sandbox:    sandbox,
 		contents:   make(map[string]map[string]bug_specification),
 	}
 

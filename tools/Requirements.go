@@ -18,20 +18,20 @@ type requirement_specification struct {
 }
 
 type Requirements struct {
-	Sandbox    string
 	Playground string
+	Sandbox    string
 	contents   map[string]map[string]requirement_specification // map[resolved][symbol]
 }
 
-func NewRequirements(agent string, sandbox string, playground string) *Requirements {
-
-	// TODO: Requirements need to be specified in different folder
+func NewRequirements(playground string, sandbox string) *Requirements {
 
 	requirements := &Requirements{
-		Sandbox:    sandbox,
 		Playground: playground,
+		Sandbox:    sandbox,
 		contents:   make(map[string]map[string]requirement_specification),
 	}
+
+	readRequirements(requirements)
 
 	return requirements
 
@@ -201,12 +201,7 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 				err2 := writeRequirements(tool)
 
 				if err2 == nil {
-
-					result := make([]string, 0)
-					result = append(result, fmt.Sprintf("requirements.DefineFunc: %s defined as %s", declaration_symbol, declaration_code))
-
-					return strings.Join(result, "\n"), nil
-
+					return fmt.Sprintf("requirements.DefineFunc: %s defined as %s", declaration_symbol, declaration_code), nil
 				} else {
 					return "", fmt.Errorf("requirements.DefineFunc: %s", err2.Error())
 				}
@@ -226,15 +221,16 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 }
 
 func (tool *Requirements) DefineStruct(path string, symbol string, declaration string, behavior string) (string, error) {
-
-
-	return "", nil
+	// TODO
+	return "", fmt.Errorf("requirements.DefineStruct: Not implemented yet")
 }
 
 func (tool *Requirements) DefineTest(path string, symbol string, inputs []string, outputs []string, description string) (string, error) {
-	return "", nil
+	// TODO
+	return "", fmt.Errorf("requirements.DefineTest: Not implemented yet")
 }
 
 func (tool *Requirements) Search(path string, symbol string) (string, error) {
-	return "", nil
+	// TODO
+	return "", fmt.Errorf("requirements.Search: Not implemented yet")
 }

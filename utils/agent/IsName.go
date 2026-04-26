@@ -1,8 +1,8 @@
-package agents
+package agent
 
 import utils_fmt "exocomp/utils/fmt"
 
-func IsAgentName(raw string) bool {
+func IsName(raw string) bool {
 
 	return raw == utils_fmt.FormatAgentName(raw)
 

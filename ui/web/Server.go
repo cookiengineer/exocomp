@@ -1,6 +1,6 @@
 package web
 
-import "exocomp/agents"
+import "exocomp/tools"
 import "exocomp/types"
 import "exocomp/ui/web/routes"
 import routes_agents "exocomp/ui/web/routes/agents"
@@ -20,10 +20,26 @@ type Server struct {
 	URL      *net_url.URL
 }
 
-func NewServer(agent *agents.Agent, config *types.Config) *Server {
+func NewServer(agent *types.Agent, config *types.Config) *Server {
 
 	session := types.NewSession(agent, config)
 	url, _ := net_url.Parse("http://localhost:3000/")
+
+	if len(agent.Tools) > 0 {
+
+		tool_schemas, tools := tools.Toolset(
+			config.Playground,
+			config.Sandbox,
+			config.URL,
+			agent.Programs,
+			agent.Tools,
+		)
+
+		for name, tool := range tools {
+			session.SetTool(name, tool, tool_schemas[name])
+		}
+
+	}
 
 	return &Server{
 		Session: session,

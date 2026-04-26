@@ -2,12 +2,14 @@ package tools
 
 import "exocomp/agents"
 import "exocomp/schemas"
+import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
 import utils_fmt "exocomp/utils/fmt"
 import "bufio"
 import "bytes"
 import "encoding/json"
 import "fmt"
+import net_url "net/url"
 import "os"
 import "os/exec"
 import "sort"
@@ -15,21 +17,23 @@ import "strings"
 import "sync"
 
 type Agents struct {
-	Agents     map[string]*agents.Agent
+	Agents     map[string]*types.Agent
 	Chats      map[string][]*schemas.Message
 	Playground string
 	Sandbox    string
+	URL        *net_url.URL
 	mutex      *sync.Mutex
 	processes  map[string]*os.Process
 }
 
-func NewAgents(agent string, sandbox string, playground string) *Agents {
+func NewAgents(playground string, sandbox string, url *net_url.URL) *Agents {
 
 	agents := &Agents{
-		Agents:     make(map[string]*agents.Agent),
+		Agents:     make(map[string]*types.Agent),
 		Chats:      make(map[string][]*schemas.Message, 0),
 		Playground: playground,
 		Sandbox:    sandbox,
+		URL:        url,
 		mutex:      &sync.Mutex{},
 		processes:  make(map[string]*os.Process),
 	}
@@ -108,7 +112,7 @@ func (tool *Agents) List() (string, error) {
 		lines := make([]string, 0)
 
 		for _, agent := range tool.Agents {
-			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: working", agent.Name, agent.Type.String()))
+			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: working", agent.Name, agent.Type))
 		}
 
 		sort.Strings(lines)
@@ -166,7 +170,18 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 				if err3 == nil {
 
-					tool.Agents[name]    = agents.NewAgent(name, agent, "", 0.0)
+					tool.Agents[name] = agents.NewAgent(types.NewConfig(
+						name,
+						agent,
+						"",
+						prompt,
+						0.0,
+						tool.Playground,
+						resolved,
+						tool.URL,
+						false,
+					))
+
 					tool.processes[name] = cmd.Process
 
 					// Background Reader

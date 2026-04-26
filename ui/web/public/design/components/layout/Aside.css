@@ -12,7 +12,8 @@ aside {
 	width: 200px;
 	height: auto;
 	margin: 0px;
-	padding: 9px 16px;
+	padding: 0px;
+	/* padding: 8px 16px; */
 	color: var(--aside-color);
 	background: var(--aside-background);
 	text-align: left;
@@ -33,4 +34,52 @@ aside nav ul {
 }
 
 aside nav ul li {
+	display: block;
+	margin: 0px;
+	padding: 0px;
+}
+
+aside nav ul li > label {
+	display: block;
+	margin: 0px;
+	padding: 8px 16px;
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	vertical-align: middle;
+	cursor: pointer;
+}
+
+aside nav ul li.active {
+	margin: 0px 0px 0px 8px;
+	padding: 0px 0px;
+}
+
+aside nav ul li.active > label {
+	padding: 8px 8px;
+	color: var(--main-color);
+	background: var(--main-background);
+	border-radius: 8px 0px 0px 8px;
+}
+
+aside nav ul li:has(+ li.active) {
+	color: var(--main-color);
+	background: var(--main-background);
+}
+
+aside nav ul li:has(+ li.active) > label {
+	color: var(--aside-color);
+	background: var(--aside-background);
+	border-radius: 0px 0px 8px 0px;
+}
+
+aside nav ul li.active + li {
+	background: var(--main-background);
+}
+
+aside nav ul li.active + li > label {
+	color: var(--aside-color);
+	background: var(--aside-background);
+	border-radius: 0px 8px 0px 0px;
 }

@@ -14,8 +14,8 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 
 		types := make([]string, 0)
 
-		for _, agent_type := range agents.AgentTypes {
-			types = append(types, agent_type.String())
+		for _, typ := range agents.Types {
+			types = append(types, typ)
 		}
 
 		sort.Strings(types)

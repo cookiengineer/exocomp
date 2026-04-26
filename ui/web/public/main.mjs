@@ -13,10 +13,6 @@ async function main() {
 		"models": document.querySelector("dialog select[data-name=\"model\"]")
 	};
 
-
-	console.log(elements);
-
-
 	if (dialog !== null) {
 
 		let close_dialog = dialog.querySelector("button[data-action=\"close\"]");

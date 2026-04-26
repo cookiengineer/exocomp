@@ -23,12 +23,12 @@ type Config struct {
 	URL         *net_url.URL `json:"url"`
 }
 
-func NewConfig(name string, agent string, debug bool, model string, playground string, prompt string, sandbox string, temperature float64, url *net_url.URL) *Config {
+func NewConfig(name string, agent string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, debug bool) *Config {
 
 	prompt = utils_fmt.FormatSingleLine(prompt)
 
-	if temperature < 0.1 {
-		temperature = 0.1
+	if temperature < 0.0 {
+		temperature = 0.0
 	} else if temperature > 1.0 {
 		temperature = 1.0
 	}
@@ -179,3 +179,20 @@ func (config *Config) UnmarshalJSON(data []byte) error {
 
 }
 
+func (config *Config) Update(name string, agent string, model string, prompt string, temperature float64) {
+
+	prompt = utils_fmt.FormatSingleLine(prompt)
+
+	if temperature < 0.1 {
+		temperature = 0.1
+	} else if temperature > 1.0 {
+		temperature = 1.0
+	}
+
+	config.Name        = name
+	config.Agent       = agent
+	config.Model       = model
+	config.Prompt      = prompt
+	config.Temperature = temperature
+
+}
