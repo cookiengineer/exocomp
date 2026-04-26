@@ -20,9 +20,7 @@
 
 ## Web UI
 
-- [ ] Implement `routes.Agents` that shows overview of contractor agents
 - [ ] Implement `routes.Tools` to execute/simulate tool calls with UI elements
-- [ ] Implement Sidebar showing active agents
 
 
 ## Planner Agent
