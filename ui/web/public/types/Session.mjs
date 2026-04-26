@@ -3,6 +3,8 @@ import { Console } from "./Console.mjs";
 
 export const Session = function(config) {
 
+	this.Agents = {}; // Managed by ui.Client
+
 	this.Config   = config;
 	this.Console  = new Console();
 	this.Context  = {
@@ -28,21 +30,6 @@ Session.prototype = {
 	},
 
 	GetContextUsage: function() {
-
-		fetch(this.Config.ResolveAPI("/api/session/context").toString(), {
-			method: "GET"
-		}).then((response) => {
-			return response.json();
-		}).then((context) => {
-
-			if (Object.prototype.toString.call(context) === "[object Object]") {
-
-				this.Context.Length = context["length"] || 0;
-				this.Context.Tokens = context["tokens"] || 0;
-
-			}
-
-		});
 
 		if (this.Context.Length > 0) {
 			return (this.Context.Tokens / this.Context.Length) * 100.0;
@@ -70,21 +57,7 @@ Session.prototype = {
 
 	Init: function() {
 
-		fetch(this.Config.ResolveAPI("/api/session/messages").toString(), {
-			method: "GET"
-		}).then((response) => {
-			return response.json();
-		}).then((messages) => {
-
-			if (Object.prototype.toString.call(messages) === "[object Array]" && messages.length > 0) {
-				this.Messages = messages;
-			}
-
-		}).catch((err) => {
-			console.error(err);
-		});
-
-		this.GetContextUsage();
+		this.Update();
 
 	},
 
@@ -145,6 +118,50 @@ Session.prototype = {
 
 	ReceiveChatResponse: function(message) {
 		this.Messages.push(message);
-	}
+	},
+
+	Update: function() {
+
+		this.UpdateContextUsage();
+		this.UpdateMessages();
+
+	},
+
+	UpdateContextUsage: function() {
+
+		fetch(this.Config.ResolveAPI("/api/session/context").toString(), {
+			method: "GET"
+		}).then((response) => {
+			return response.json();
+		}).then((context) => {
+
+			if (Object.prototype.toString.call(context) === "[object Object]") {
+
+				this.Context.Length = context["length"] || 0;
+				this.Context.Tokens = context["tokens"] || 0;
+
+			}
+
+		});
+
+	},
+
+	UpdateMessages: function() {
+
+		fetch(this.Config.ResolveAPI("/api/session/messages").toString(), {
+			method: "GET"
+		}).then((response) => {
+			return response.json();
+		}).then((messages) => {
+
+			if (Object.prototype.toString.call(messages) === "[object Array]" && messages.length > 0) {
+				this.Messages = messages;
+			}
+
+		}).catch((err) => {
+			console.error(err);
+		});
+
+	},
 
 };

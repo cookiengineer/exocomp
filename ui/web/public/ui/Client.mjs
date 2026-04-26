@@ -2,6 +2,8 @@
 import { Renderer } from "./Renderer.mjs";
 import { Session  } from "../types/Session.mjs";
 
+const time_Second = 1 * 1000;
+
 export const Client = function(config) {
 
 	this.Session  = new Session(config);
@@ -10,6 +12,14 @@ export const Client = function(config) {
 	this.elements = {
 		"prompt": document.querySelector("body > footer textarea")
 	};
+
+	this.timers = {
+		agents:  0, // every 10 seconds
+		label:   0, // every  1 second
+		session: 0, // every  5 seconds
+	};
+
+	this.interval_id = null;
 
 };
 
@@ -22,6 +32,14 @@ Client.prototype = {
 			this.Renderer = null;
 		}
 
+		if (this.interval_id !== null) {
+			clearInterval(this.interval_id);
+		}
+
+		if (this.elements["prompt"] !== null) {
+			this.elements["prompt"].removeEventListener("keyup");
+		}
+
 	},
 
 	Init: function() {
@@ -29,6 +47,19 @@ Client.prototype = {
 		if (this.Session !== null) {
 			this.Session.Init();
 		}
+
+		let last_interval_date = Date.now();
+
+		this.interval_id = setInterval(() => {
+
+			let now   = Date.now()
+			let delta = last_interval_date;
+
+			this.UpdateLoop(delta);
+
+			last_interval_date = now;
+
+		}, 1000 / 4);
 
 		if (this.Renderer !== null) {
 
@@ -39,45 +70,63 @@ Client.prototype = {
 
 		}
 
-		this.elements["prompt"].addEventListener("keyup", (event) => {
+		if (this.elements["prompt"] !== null) {
 
-			if (event.ctrlKey === true && event.key === "Enter") {
+			this.elements["prompt"].addEventListener("keyup", (event) => {
 
-				let prompt = (this.elements["prompt"].value || "").trim();
-				if (prompt !== "") {
+				if (event.ctrlKey === true && event.key === "Enter") {
 
-					(async () => {
+					let prompt = (this.elements["prompt"].value || "").trim();
+					if (prompt !== "") {
 
-						let usage_before = (this.Session.GetContextUsage() | 0);
+						(async () => {
 
-						this.UpdatePrompt("");
+							let usage_before = (this.Session.GetContextUsage() | 0);
 
-						// Executed after this.Session.SendChatRequest()
-						setTimeout(() => {
-							this.UpdateLabel();
-						}, 16);
+							this.UpdatePrompt("");
 
-						// TODO: Remove this if above works
-						// this.Renderer.RenderLabel("Processing ...\n[" + this.Session.Config.Model + " " + usage_before + "%]");
+							await this.Session.SendChatRequest({
+								role:    "user",
+								content: prompt
+							});
 
-						await this.Session.SendChatRequest({
-							role:    "user",
-							content: prompt
-						});
+						})();
 
-						this.UpdateLabel();
+					}
 
-					})();
+				} else {
+
+					// Do Nothing
 
 				}
 
-			} else {
+			});
 
-				this.UpdateLabel();
+		}
 
-			}
+	},
 
-		});
+	UpdateAgents: function() {
+
+		if (this.Session !== null) {
+
+			fetch(this.Session.Config.ResolveAPI("/api/agents").toString(), {
+				method: "GET"
+			}).then((response) => {
+				return response.json();
+			}).then((agents) => {
+
+				if (Object.prototype.toString.call(agents) === "[object Object]") {
+
+					Object.keys(agents).sort().forEach((name) => {
+						this.Session.Agents[name] = agents[name];
+					});
+
+				}
+
+			});
+
+		}
 
 	},
 
@@ -102,6 +151,34 @@ Client.prototype = {
 				this.Renderer.RenderLabel("Processing ...\n[" + this.Session.Config.Model + " " + usage + "%]");
 			}
 
+		}
+
+	},
+
+	UpdateLoop: function(delta) {
+
+		this.timers.agents  += delta;
+		this.timers.session += delta;
+		this.timers.label   += delta;
+
+		if (this.timers.label >= 1 * time_Second) {
+			this.UpdateLabel();
+			this.timers.label = 0;
+		}
+
+		if (this.timers.session >= 5 * time_Second) {
+
+			if (this.Session !== null) {
+				this.Session.Update();
+			}
+
+			this.timers.session = 0;
+
+		}
+
+		if (this.timers.agents >= 5 * time_Second) {
+			this.UpdateAgents();
+			this.timers.agents = 0;
 		}
 
 	},

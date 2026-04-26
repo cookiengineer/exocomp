@@ -87,11 +87,7 @@ func (server *Server) Init() bool {
 
 	// Agents
 	http.HandleFunc("/api/agents", func(response http.ResponseWriter, request *http.Request) {
-		routes_agents.Index(server.Session, request, response)
-	})
-
-	http.HandleFunc("/api/agents/{agent}", func(response http.ResponseWriter, request *http.Request) {
-		routes_agents.Agent(server.Session, request, response)
+		routes_agents.Agents(server.Session, request, response)
 	})
 
 

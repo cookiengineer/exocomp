@@ -60,11 +60,31 @@ Renderer.prototype = {
 
 			}
 
+			let agents = this.Session.GetAgents();
+			if (agents.length > 0) {
+				this.RenderAgents(agents);
+			}
+
 			requestAnimationFrame(() => {
 				this.RenderLoop();
 			});
 
 		}
+
+	},
+
+	RenderAgents: function(agents) {
+
+		agents = Object.prototype.toString.call(agents) === "[object Object]" ? agents : {};
+
+		Object.keys(agents).forEach((name) => {
+
+			let agent = agents[name];
+
+			// TODO: Render a <ul><li>...</li></ul>
+			// into the sidebar
+
+		});
 
 	},
 
