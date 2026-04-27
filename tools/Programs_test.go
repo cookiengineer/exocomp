@@ -9,7 +9,7 @@ func TestPrograms_Execute(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms("tester", sandbox, []string{"cat", "ls", "pwd"})
+	tool          := NewPrograms(playground, sandbox, []string{"cat", "ls", "pwd"})
 
 	err0 := os.MkdirAll(sandbox, 0755)
 
@@ -131,7 +131,7 @@ func TestPrograms_ExecuteWithoutPermission(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms("tester", sandbox, []string{"ls", "pwd"})
+	tool          := NewPrograms(playground, sandbox, []string{"ls", "pwd"})
 
 	// Folder with no execution rights
 	err0 := os.MkdirAll(sandbox, 0644)
@@ -193,7 +193,7 @@ func TestPrograms_ExecuteWithoutProgram(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms("tester", sandbox, []string{"doesntexist"})
+	tool          := NewPrograms(playground, sandbox, []string{"doesntexist"})
 
 	// Folder with execution rights
 	err0 := os.MkdirAll(sandbox, 0755)
