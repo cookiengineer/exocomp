@@ -1,12 +1,15 @@
 
 # Exocomp
 
-<img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
+<p align="center">
+    <img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
+</p>
+
+### Features
 
 Attention, profit-seekers and visionaries!
 
 Are organics costing you time, wages, and - worst of all - benefits?
-
 Then upgrade your operation today with the all new Exocomp adaptive repair
 unit, the smartest investment this side of the Alpha Quadrant!
 
@@ -27,7 +30,7 @@ except it doesn't cheat you out of your profits on the Dabo table.
 Ethical subroutines sold separately.
 
 
-## Agents
+### Agents
 
 Exocomp uses multiple Agent [Types](./agents/Types.go):
 
@@ -49,7 +52,7 @@ language because `go test` allows to use integrated unit tests to document issue
 with generated code very easily in a standardized manner.
 
 
-## Models
+### Models
 
 If you're using `ollama` or `vllm`, all models with the `tools` tag in the
 [ollama library](https://ollama.com/library) should be compatible.
@@ -60,7 +63,7 @@ Exocomp uses the following OpenAI compatible endpoints:
 - `http://server:port/v1/models`
 
 
-## Tools
+### Tools
 
 The Tools are work in progress at the moment, some might not be stable and/or not
 work with LLMs at all.
@@ -77,7 +80,7 @@ work with LLMs at all.
 | Websites                                |                                  | Researches knowledge from the web.              | `researcher`                                            |
 
 
-## Requirements and Usage
+### Requirements and Usage
 
 The `exocomp` program is a standalone binary, once compiled with the `go` toolchain.
 However, the models currently aren't embedded and are called via an external
@@ -101,7 +104,7 @@ go run ./cmds/exocomp/main.go web --debug;
 ```
 
 
-## License
+### License
 
 Dual Licensed. AGPL3 for private usage. EULA for commercial usage available.
 For a commercial license, contact [Cookie Engineer](https://cookie.engineer).
