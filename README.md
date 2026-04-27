@@ -1,6 +1,8 @@
 
 # Exocomp
 
+<img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
+
 Attention, profit-seekers and visionaries!
 
 Are organics costing you time, wages, and - worst of all - benefits?
@@ -8,17 +10,12 @@ Are organics costing you time, wages, and - worst of all - benefits?
 Then upgrade your operation today with the all new Exocomp adaptive repair
 unit, the smartest investment this side of the Alpha Quadrant!
 
-<img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
-
-
-## Why hire when you can own?
-
-The Exocomp isn't just a tool... it's so much more!
+Why hire when you can own? The Exocomp isn't just a tool... it's so much more!
 
 - Supervised task queue functionality
-- Multiple agent roles as `architect`, `coder`, `tester`, `manager`
+- Multiple agent roles as `architect`, `coder`, `planner`, `summarizer`, `tester`
 - Precision repairs of broken code with unit tests
-- Cross-agent communication via `NOTES.md` and `TODO.md`
+- Cross-agent communication via `changelog` and `requirements`
 - Self-replicating in malicious environments
 - Rapid autonomous diagnostics
 - Tireless performance with no sleep cycles, no unions, no complaints!
@@ -55,8 +52,9 @@ with generated code very easily in a standardized manner.
 ## Models
 
 If you're using `ollama` or `vllm`, all models with the `tools` tag in the
-[ollama library](https://ollama.com/library) should be compatible. Exocomp
-uses the following OpenAI compatible endpoints:
+[ollama library](https://ollama.com/library) should be compatible.
+
+Exocomp uses the following OpenAI compatible endpoints:
 
 - `http://server:port/v1/chat/completions`
 - `http://server:port/v1/models`
@@ -74,8 +72,8 @@ work with LLMs at all.
 | [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go) | Manages documentation of development changelog. | `coder`                                                 |
 | Containers                              |                                  | Manages virtual containers.                     | `redteamer`, `blueteamer`                               |
 | [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)     | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
-| [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)  | Interacts with installed programs.              | `coder`, `summarizer`, `tester`                         |
-| [Requirements](./tools/Requirements.go) |                                  | Manages specifications of implementations.      | `architect`, `coder`, `summarizer`, `tester`            |
+| [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)  | Interacts with installed programs.              | `coder`, `tester`                                       |
+| [Requirements](./tools/Requirements.go) |                                  | Manages specifications of implementations.      | `architect`, `coder`, `tester`                          |
 | Websites                                |                                  | Researches knowledge from the web.              | `researcher`                                            |
 
 
@@ -96,7 +94,7 @@ ollama pull qwen3-coder:30b
 
 # Run exocomp with ollama
 cd /path/to/exocomp;
-go run ./cmds/exocomp/main.go tty architect;
+go run ./cmds/exocomp/main.go web --debug;
 
 # custom CLI flags usage
 # go run ./cmds/exocomp/main.go tty architect --url="http://localhost:11434/api" --model="qwen3-coder:30b";
