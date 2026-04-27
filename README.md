@@ -1,6 +1,8 @@
 
 # Exocomp
 
+Self-hosted short-living multi-agent agentic development environment tailored to Golang.
+
 <p align="center">
     <img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
 </p>
