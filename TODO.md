@@ -9,7 +9,7 @@
 ## Tools
 
 - [ ] Implement unit tests for `tools/Agent`
-- [ ] Implement unit tests for `tools/Requirements`
+- [ ] Implement unit tests for `tools/Requirements` `List()` and `Search(path, symbol)` methods
 - [ ] Implement `tools/Containers` to be able to use `podman`
 - [ ] Implement `tools/Websites` to be able to use `zimdex`
 

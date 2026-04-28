@@ -70,16 +70,16 @@ Exocomp uses the following OpenAI compatible endpoints:
 The Tools are work in progress at the moment, some might not be stable and/or not
 work with LLMs at all.
 
-| Tool                                    | Unit Tests?                      | Description                                     | Agent User Roles                                        |
-|:----------------------------------------|:--------------------------------:|:------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./tools/Agents.go)             |                                  | Manages the lifecycle of contractor sub-agents. | `manager`                                               |
-| [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)      | Manages documentation of discovered bugs.       | `tester`                                                |
-| [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go) | Manages documentation of development changelog. | `coder`                                                 |
-| Containers                              |                                  | Manages virtual containers.                     | `redteamer`, `blueteamer`                               |
-| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)     | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
-| [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)  | Interacts with installed programs.              | `coder`, `tester`                                       |
-| [Requirements](./tools/Requirements.go) |                                  | Manages specifications of implementations.      | `architect`, `coder`, `tester`                          |
-| Websites                                |                                  | Researches knowledge from the web.              | `researcher`                                            |
+| Tool                                    | Unit Tests?                         | Description                                     | Agent User Roles                                        |
+|:----------------------------------------|:-----------------------------------:|:------------------------------------------------|:-------------------------------------------------------:|
+| [Agents](./tools/Agents.go)             |                                     | Manages the lifecycle of contractor sub-agents. | `manager`                                               |
+| [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)         | Manages documentation of discovered bugs.       | `tester`                                                |
+| [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go)    | Manages documentation of development changelog. | `coder`                                                 |
+| Containers                              |                                     | Manages virtual containers.                     | `redteamer`, `blueteamer`                               |
+| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)        | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
+| [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)     | Interacts with installed programs.              | `coder`, `tester`                                       |
+| [Requirements](./tools/Requirements.go) | [Yes](./tools/Requirements_test.go) | Manages specifications of implementations.      | `architect`, `coder`, `tester`                          |
+| Websites                                |                                     | Researches knowledge from the web.              | `researcher`                                            |
 
 
 ### Requirements and Usage
