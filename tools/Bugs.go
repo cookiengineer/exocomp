@@ -252,10 +252,9 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 		if err2 == nil {
 
-			lines := make([]string, 0)
-
 			if symbol != "" {
 
+				lines  := make([]string, 0)
 				_, ok1 := tool.contents[internal_path]
 
 				if ok1 == true {
@@ -291,6 +290,7 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 			} else {
 
+				lines            := make([]string, 0)
 				bug_reports, ok1 := tool.contents[internal_path]
 
 				if ok1 == true {

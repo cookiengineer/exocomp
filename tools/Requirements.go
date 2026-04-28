@@ -352,6 +352,85 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 }
 
 func (tool *Requirements) Search(path string, symbol string) (string, error) {
-	// TODO
-	return "", fmt.Errorf("requirements.Search: Not implemented yet")
+
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			if symbol != "" {
+
+				lines  := make([]string, 0)
+				_, ok1 := tool.contents[internal_path]
+
+				if ok1 == true {
+
+					specification, ok2 := tool.contents[internal_path][symbol]
+
+					if ok2 == true {
+
+						sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, specification.File)
+
+						if err3 == nil {
+							lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
+						}
+
+					}
+
+				}
+
+				sort.Strings(lines)
+
+				result := make([]string, 0)
+				result = append(result, fmt.Sprintf("requirements.Search: %s#%s contains %d specifications.", path, symbol, len(lines)))
+
+				for l := 0; l < len(lines); l++ {
+					result = append(result, lines[l])
+				}
+
+				return strings.Join(result, "\n"), nil
+
+			} else {
+
+				lines               := make([]string, 0)
+				specifications, ok1 := tool.contents[internal_path]
+
+				if ok1 == true {
+
+					for _, specification := range specifications {
+
+						sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, specification.File)
+
+						if err3 == nil {
+							lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
+						}
+
+					}
+
+				}
+
+				sort.Strings(lines)
+
+				result := make([]string, 0)
+				result = append(result, fmt.Sprintf("requirements.Search: %s contains %d specifications.", path, len(lines)))
+
+				for l := 0; l < len(lines); l++ {
+					result = append(result, lines[l])
+				}
+
+				return strings.Join(result, "\n"), nil
+
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.Search: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.Search: %s", err1.Error())
+	}
+
 }

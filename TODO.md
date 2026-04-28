@@ -8,10 +8,10 @@
 
 ## Tools
 
-- [ ] `requirements.DefineStruct()` needs to be implemented
-- [ ] `requirements.DefineTest()` needs to be implemented
-- [ ] `requirements.List()` should show only requirements within current sandbox
-- [ ] `requirements.Search()` should show only requirements within current sandbox
+- [ ] Implement unit tests for `tools/Agent`
+- [ ] Implement unit tests for `tools/Requirements`
+- [ ] Implement `tools/Containers` to be able to use `podman`
+- [ ] Implement `tools/Websites` to be able to use `zimdex`
 
 ## JSONL UI
 
