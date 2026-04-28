@@ -1,2 +1,93 @@
 [
+	{
+		"type": "function",
+		"function": {
+			"name": "requirements.DefineFunc",
+			"description": "Specify a path and symbol with a Go function declaration.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"symbol": {
+						"type": "string",
+						"description": "Linkable symbol, method, function, or variable name"
+					},
+					"declaration": {
+						"type": "string",
+						"description": "Single-line function signature declaration using Go syntax"
+					},
+					"behavior": {
+						"type": "string",
+						"description": "Behavior implementation notes"
+					}
+				},
+				"required": ["path", "symbol", "declaration", "behavior"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "requirements.DefineStruct",
+			"description": "Specify a path and symbol with a Go struct declaration.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"symbol": {
+						"type": "string",
+						"description": "Linkable symbol, method, function, or variable name"
+					},
+					"declaration": {
+						"type": "string",
+						"description": "Multi-line struct declaration using Go syntax"
+					},
+					"behavior": {
+						"type": "string",
+						"description": "Behavior implementation notes"
+					}
+				},
+				"required": ["path", "symbol", "declaration", "behavior"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "requirements.List",
+			"description": "List all specification requirements.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "requirements.Search",
+			"description": "Search for specification requirements of a specific file and an optional symbol.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"symbol": {
+						"type": "string",
+						"description": "Linkable symbol, method, function, or variable name"
+					}
+				},
+				"required": ["path"]
+			}
+		}
+	}
 ]
