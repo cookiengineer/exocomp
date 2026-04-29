@@ -127,12 +127,99 @@ func TestRequirements_DefineStruct(t *testing.T) {
 		t.Errorf("Expected %v to be not nil", tool)
 	}
 
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
 }
 
 func TestRequirements_List(t *testing.T) {
-	fmt.Println("TODO: requirements.List")
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
+	sandbox       := filepath.Join(playground, "requirements")
+	tool          := NewRequirements(playground, sandbox)
+
+	if tool != nil {
+
+		declaration1 := strings.Join([]string{
+			"type Data struct {",
+			"\tName string `json:\"name\"`",
+			"\tAge int `json:\"age\"`",
+			"\tAddress []string `json:\"address\"`",
+			"}",
+		}, "\n")
+
+		declaration2 := "func (data *structs.Data) Parse(specification *schemas.Input)"
+
+		_, err1 := tool.DefineFunc("./core/FirstFunction.go", "FirstFunction", "func FirstFunction(current int64, added int64) (string, error)", "The method needs to implement a fibonacci sequence.")
+		_, err2 := tool.DefineFunc("./parsers/Parse.go", "Parse", "func Parse(specification *structs.Specification, debug bool) *schemas.Result", "The method needs to implement a specification parser.")
+		_, err3 := tool.DefineFunc("./processors/ProcessData.go", "ProcessData", "func ProcessData(specification *structs.Data)", "The method needs to implement a data processor.")
+		_, err4 := tool.DefineStruct("./structs/Data.go", "Data", declaration1, "The struct needs to implement a database entry for a person.")
+		_, err5 := tool.DefineFunc("./structs/Data.go", "Parse", declaration2, "The method needs to implement a schema parser.")
+		result, err6 := tool.List()
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if err4 != nil {
+			t.Errorf("Expected %v to be nil", err4)
+		}
+
+		if err5 != nil {
+			t.Errorf("Expected %v to be nil", err5)
+		}
+
+		if err6 != nil {
+			t.Errorf("Expected %v to be nil", err6)
+		}
+
+		if strings.HasPrefix(result, "requirements.List: 5 specifications.") == false{
+			t.Errorf("Expected 5 specifications:\n%s", result)
+		}
+
+	} else {
+		t.Errorf("Expected %v to be not nil", tool)
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
 }
 
 func TestRequirements_Search(t *testing.T) {
+
 	fmt.Println("TODO: requirements.Search")
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
 }
