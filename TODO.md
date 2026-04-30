@@ -1,6 +1,16 @@
 
 # TODO
 
+## Models
+
+- [ ] ollama has 32k context length limit, even though model supports 256k
+- [ ] `env OLLAMA_CONTEXT_LENGTH=256k ollama serve`
+- [ ] Use `https://github.com/dianlight/gollama.cpp` bindings
+- [ ] Implement `models/LLM.go` for inference tasks
+- [ ] Implement templating for both qwen3-coder and gemma4 models
+- [ ] Figure out what format gollama.cpp needs and if it can load GGUF files
+
+
 ## Agents
 
 - [ ] `redteamer` who writes malware and targets victim sandboxes
