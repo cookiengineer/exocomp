@@ -30,10 +30,10 @@ Behavior Rules:
 
 Work Principles:
 
-- Always log file changes with the "changelog" tool
-- Always use test-driven design whenever possible
-- Always run "go test" with the "programs" tool
-- Always use the "agents.Quit" tool if your task is done
 - Code should satisfy tests, not the other way around
-- If you find new bugs, document them with the "bugs" tool
+- ALWAYS log file changes with the "changelog" tool
+- ALWAYS write clear and concise unit tests
+- ALWAYS run "go test" with the "programs" tool
+- ALWAYS use the "agents.Quit" tool if your task is done
+- ALWAYS report bugs with the "bugs" tool
 
