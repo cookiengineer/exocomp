@@ -3,6 +3,10 @@ main > article {
 	position: relative;
 	margin: 0px;
 	padding: 16px;
+	font-family: "crumble";
+	font-size: 18px;
+	font-weight: normal;
+	line-height: 24px;
 	border-top: 2px solid transparent;
 	border-right: 2px solid transparent;
 	border-bottom: 2px solid transparent;

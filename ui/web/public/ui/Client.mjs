@@ -22,6 +22,10 @@ export const Client = function(config) {
 
 	this.interval_id = null;
 
+	setTimeout(() => {
+		this.UpdateAgents();
+	}, 500);
+
 };
 
 Client.prototype = {
