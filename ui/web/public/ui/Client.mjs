@@ -117,7 +117,7 @@ Client.prototype = {
 
 		if (this.Session !== null) {
 
-			fetch(this.Session.Config.ResolveAPI("/api/agents").toString(), {
+			fetch(this.Session.Config.ResolveAPI("/api/session/agents").toString(), {
 				method: "GET"
 			}).then((response) => {
 				return response.json();

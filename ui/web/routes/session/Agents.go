@@ -1,4 +1,4 @@
-package agents
+package session
 
 import "exocomp/ui/web/handlers"
 import "exocomp/schemas"

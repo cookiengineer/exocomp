@@ -3,7 +3,6 @@ package web
 import "exocomp/tools"
 import "exocomp/types"
 import "exocomp/ui/web/routes"
-import routes_agents "exocomp/ui/web/routes/agents"
 import routes_parameters "exocomp/ui/web/routes/parameters"
 import routes_session "exocomp/ui/web/routes/session"
 import "embed"
@@ -93,17 +92,12 @@ func (server *Server) Init() bool {
 		routes_session.Context(server.Session, request, response)
 	})
 
-	http.HandleFunc("/api/session/messages", func(response http.ResponseWriter, request *http.Request) {
-		routes_session.Messages(server.Session, request, response)
-	})
-
 	http.HandleFunc("/api/session/sendchatrequest", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.SendChatRequest(server.Session, request, response)
 	})
 
-	// Agents
-	http.HandleFunc("/api/agents", func(response http.ResponseWriter, request *http.Request) {
-		routes_agents.Agents(server.Session, request, response)
+	http.HandleFunc("/api/session/agents", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Agents(server.Session, request, response)
 	})
 
 
