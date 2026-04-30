@@ -357,11 +357,17 @@ func (tool *Agents) Inquire(name string) (string, error) {
 func (tool *Agents) Quit(message string) (string, error) {
 
 	if strings.Contains(strings.ToLower(message), "my work is done") {
-		os.Exit(0)
-		return "Quitting...", nil
+
+		defer os.Exit(0)
+
+		return fmt.Sprintf("agents.Quit: Agent quit with work report:\n%s", strings.TrimSpace(message)), nil
+
 	} else {
-		os.Exit(1)
-		return "Quitting...", nil
+
+		defer os.Exit(1)
+
+		return fmt.Sprintf("agents.Quit: Agent quit with work report:\n%s", strings.TrimSpace(message)), nil
+
 	}
 
 }

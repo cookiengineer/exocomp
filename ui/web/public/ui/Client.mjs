@@ -86,14 +86,16 @@ Client.prototype = {
 
 						(async () => {
 
-							let usage_before = (this.Session.GetContextUsage() | 0);
-
 							this.UpdatePrompt("");
 
-							await this.Session.SendChatRequest({
+							let result = await this.Session.SendChatRequest({
 								role:    "user",
 								content: prompt
 							});
+
+							if (result === true) {
+								this.UpdateAgents();
+							}
 
 						})();
 

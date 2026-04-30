@@ -4,16 +4,18 @@ import { Console } from "./Console.mjs";
 
 export const Session = function(config) {
 
-	this.Agents   = {}; // Managed by ui.Client
-	this.Config   = config;
-	this.Console  = new Console();
-	this.Context  = {
+	// Managed by ui.Client
+	this.Agent  = null;
+	this.Agents = {};
+
+	this.Config  = config;
+	this.Console = new Console();
+	this.Context = {
 		Length: 0,
 		Tokens: 0
 	};
-	this.Messages = [];
-	this.Tools    = [];
-	this.Waiting  = false;
+	this.Tools   = [];
+	this.Waiting = false;
 
 };
 
@@ -55,12 +57,19 @@ Session.prototype = {
 
 	GetMessages: function(from) {
 
+		from = typeof from === "number" ? from : 0;
+
+
 		let result = [];
 
-		if (this.Messages.length > 0 && from < this.Messages.length) {
+		if (this.Agent !== null) {
 
-			for (let m = from; m < this.Messages.length; m++) {
-				result.push(this.Messages[m]);
+			if (this.Agent.Messages.length > 0 && from < this.Agent.Messages.length) {
+
+				for (let m = from; m < this.Agent.Messages.length; m++) {
+					result.push(this.Agent.Messages[m]);
+				}
+
 			}
 
 		}
@@ -73,10 +82,6 @@ Session.prototype = {
 
 		this.Update();
 
-	},
-
-	ReceiveChatResponse: function(message) {
-		this.Messages.push(message);
 	},
 
 	SendChatRequest: async function(message) {
@@ -97,38 +102,31 @@ Session.prototype = {
 
 				if (response.ok === true) {
 
-					let messages = await response.json();
-
-					if (Object.prototype.toString.call(messages) === "[object Array]" && messages.length > 0) {
-
-						messages.forEach((message) => {
-							this.ReceiveChatResponse(message);
-						});
-
-					}
-
 					this.Waiting = false;
 
-					return null;
+					return true;
 
 				} else {
 
 					this.Waiting = false;
-					return new Error("Session is busy, LLM is not responding ...");
+
+					return false;
 
 				}
 
 			} catch (err) {
 
 				this.Waiting = false;
-				return new Error("Session is busy, LLM is not responding ...");
+
+				return false;
 
 			}
 
 		} else {
 
 			this.Waiting = false;
-			return new Error("Session is busy, LLM is not responding ...");
+
+			return false;
 
 		}
 
@@ -139,7 +137,13 @@ Session.prototype = {
 		agent = agent instanceof Agent ? agent : null;
 
 		if (agent !== null) {
+
 			this.Agents[agent.Name] = agent;
+
+			if (agent.Name === this.Config.Name) {
+				this.Agent = this.Agents[agent.Name];
+			}
+
 		}
 
 	},
@@ -147,7 +151,6 @@ Session.prototype = {
 	Update: function() {
 
 		this.UpdateContextUsage();
-		this.UpdateMessages();
 
 	},
 
@@ -168,24 +171,6 @@ Session.prototype = {
 
 		});
 
-	},
-
-	UpdateMessages: function() {
-
-		fetch(this.Config.ResolveAPI("/api/session/messages").toString(), {
-			method: "GET"
-		}).then((response) => {
-			return response.json();
-		}).then((messages) => {
-
-			if (Object.prototype.toString.call(messages) === "[object Array]" && messages.length > 0) {
-				this.Messages = messages;
-			}
-
-		}).catch((err) => {
-			console.error(err);
-		});
-
-	},
+	}
 
 };
