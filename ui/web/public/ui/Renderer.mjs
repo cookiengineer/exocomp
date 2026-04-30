@@ -26,6 +26,46 @@ export const Renderer = function(session) {
 
 Renderer.prototype = {
 
+	Clear: function() {
+
+		this.ClearAgents();
+		this.ClearLabel();
+		this.ClearMessages();
+
+	},
+
+	ClearAgents: function() {
+
+		this.rendered.agents = 0;
+
+		if (this.elements["nav"] !== null) {
+			this.elements["nav"].innerHTML = "";
+		}
+
+	},
+
+	ClearLabel: function() {
+
+		if (this.elements["label"] !== null) {
+			this.elements["label"].innerHTML = "";
+		}
+
+	},
+
+	ClearMessages: function() {
+
+		this.rendered.messages = 0;
+
+		if (this.elements["main"] !== null) {
+
+			Array.from(this.elements["main"].querySelectorAll("article")).forEach((article) => {
+				article.parentNode.removeChild(article);
+			});
+
+		}
+
+	},
+
 	Destroy: function() {
 		this.running = false;
 	},
@@ -68,7 +108,7 @@ Renderer.prototype = {
 			let agents = this.Session.GetAgents();
 			if (this.rendered.agents != Object.keys(agents).length) {
 
-				this.RenderAgents(this.Session.Config.Name, agents);
+				this.RenderAgents(this.Session.Agent, agents);
 				this.rendered.agents = Object.keys(agents).length;
 
 			}
@@ -83,6 +123,7 @@ Renderer.prototype = {
 
 	RenderAgents: function(active, agents) {
 
+		active = Object.prototype.toString.call(active) === "[object Object]" ? active : null;
 		agents = Object.prototype.toString.call(agents) === "[object Object]" ? agents : {};
 
 
@@ -93,7 +134,7 @@ Renderer.prototype = {
 
 			let agent = agents[name];
 
-			if (name === active) {
+			if (active !== null && active.Name === agent.Name) {
 				return "<li class=\"active\" title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><label>" + agent.Name + "</label></li>";
 			} else {
 				return "<li title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><label>" + agent.Name + "</label></li>";

@@ -23,7 +23,11 @@ Session.prototype = {
 
 	GetAgent: function(name) {
 
-		if (this.Agents[name] !== undefined) {
+		name = typeof name === "string" ? name : null;
+
+		if (name === null) {
+			return this.Agent;
+		} else if (this.Agents[name] !== undefined) {
 			return this.Agents[name];
 		}
 
@@ -132,7 +136,7 @@ Session.prototype = {
 
 	},
 
-	SetAgent: function(agent) {
+	ReceiveAgent: function(agent) {
 
 		agent = agent instanceof Agent ? agent : null;
 
@@ -144,7 +148,27 @@ Session.prototype = {
 				this.Agent = this.Agents[agent.Name];
 			}
 
+			return true;
+
 		}
+
+		return false;
+
+	},
+
+	SetAgent: function(agent) {
+
+		agent = Object.prototype.toString.call(agent) === "[object Object]" ? agent : null;
+
+		if (agent !== null) {
+
+			this.Agent = agent;
+
+			return true;
+
+		}
+
+		return false;
 
 	},
 

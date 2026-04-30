@@ -11,6 +11,7 @@ export const Client = function(config) {
 	this.Renderer = new Renderer(this.Session);
 
 	this.elements = {
+		"nav":    document.querySelector("body > aside > nav[aria-label=\"agents\"]"),
 		"prompt": document.querySelector("body > footer textarea")
 	};
 
@@ -75,6 +76,24 @@ Client.prototype = {
 
 		}
 
+		if (this.elements["nav"] !== null) {
+
+			this.elements["nav"].addEventListener("click", (event) => {
+
+				let element = event.target || null;
+				if (element !== null && element.tagName === "LABEL") {
+
+					let name = (element.innerText || "").trim();
+					if (name !== "") {
+						this.ViewAgent(name);
+					}
+
+				}
+
+			});
+
+		}
+
 		if (this.elements["prompt"] !== null) {
 
 			this.elements["prompt"].addEventListener("keyup", (event) => {
@@ -126,7 +145,7 @@ Client.prototype = {
 				if (Object.prototype.toString.call(agents) === "[object Array]") {
 
 					agents.forEach((agent) => {
-						this.Session.SetAgent(Agent.from(agent));
+						this.Session.ReceiveAgent(Agent.from(agent));
 					});
 
 				}
@@ -197,6 +216,42 @@ Client.prototype = {
 		this.elements["prompt"].value = prompt;
 
 		this.UpdateLabel();
+
+	},
+
+	ViewAgent: function(name) {
+
+		name = typeof name === "string" ? name : null;
+
+		if (name !== null) {
+
+			let active = this.Session.GetAgent(null);
+			let agent  = this.Session.GetAgent(name);
+
+			if (agent !== null && agent !== active) {
+
+				console.info("ViewAgent: Viewing Agent \"" + name + "\" ...");
+				console.info(agent);
+
+				this.Session.SetAgent(agent);
+
+				this.Renderer.ClearAgents();
+				this.Renderer.RenderAgents(this.Session.Agent, this.Session.GetAgents());
+
+				this.Renderer.ClearMessages();
+				this.Renderer.RenderMessages(this.Session.GetMessages(0));
+
+			} else {
+
+				if (agent === active) {
+					console.warn("ViewAgent: Agent \"" + name + "\" already viewed!");
+				} else {
+					console.warn("ViewAgent: Agent \"" + name + "\" doesn't exist?", agent);
+				}
+
+			}
+
+		}
 
 	}
 

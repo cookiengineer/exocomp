@@ -68,6 +68,7 @@ header div button {
 	width: auto;
 	line-height: 16px;
 	height: 32px;
+	user-select: none;
 }
 
 header div:last-of-type {
