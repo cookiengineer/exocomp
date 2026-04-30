@@ -21,7 +21,7 @@ type Agents struct {
 	Playground string
 	Sandbox    string
 	URL        *net_url.URL
-	mutex      *sync.Mutex
+	Mutex      *sync.Mutex
 	processes  map[string]*os.Process
 }
 
@@ -32,7 +32,7 @@ func NewAgents(playground string, sandbox string, url *net_url.URL) *Agents {
 		Playground: playground,
 		Sandbox:    sandbox,
 		URL:        url,
-		mutex:      &sync.Mutex{},
+		Mutex:      &sync.Mutex{},
 		processes:  make(map[string]*os.Process),
 	}
 
@@ -168,6 +168,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 				if err3 == nil {
 
+					tool.Mutex.Lock()
 					tool.Agents[name] = agents.NewAgent(types.NewConfig(
 						name,
 						agent,
@@ -179,8 +180,9 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 						tool.URL,
 						false,
 					))
-
 					tool.processes[name] = cmd.Process
+					tool.Mutex.Unlock()
+
 
 					// Background Reader
 					go func(name string) {
@@ -196,15 +198,13 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 							if err3 == nil {
 
-								tool.mutex.Lock()
-
+								tool.Mutex.Lock()
 								_, ok1 := tool.Agents[name]
 
 								if ok1 == true {
 									tool.Agents[name].Messages = append(tool.Agents[name].Messages, &message)
 								}
-
-								tool.mutex.Unlock()
+								tool.Mutex.Unlock()
 
 							}
 
@@ -217,10 +217,10 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 						cmd.Wait()
 
-						tool.mutex.Lock()
+						tool.Mutex.Lock()
 						delete(tool.Agents, name)
 						delete(tool.processes, name)
-						tool.mutex.Unlock()
+						tool.Mutex.Unlock()
 
 					}(name, cmd)
 
@@ -254,10 +254,10 @@ func (tool *Agents) Fire(name string) (string, error) {
 
 		if err == nil {
 
-			tool.mutex.Lock()
+			tool.Mutex.Lock()
 			delete(tool.Agents, name)
 			delete(tool.processes, name)
-			tool.mutex.Unlock()
+			tool.Mutex.Unlock()
 
 			return fmt.Sprintf("agents.Fire: Agent \"%s\" got fired.", name), nil
 
@@ -274,11 +274,17 @@ func (tool *Agents) Fire(name string) (string, error) {
 func (tool *Agents) Inquire(name string) (string, error) {
 
 	tmp, err0 := os.MkdirTemp("/tmp", "exocomp-summarizer-*")
+
+	tool.Mutex.Lock()
 	agent, ok2 := tool.Agents[name]
+	tool.Mutex.Unlock()
 
 	if err0 == nil && ok2 == true {
 
+		tool.Mutex.Lock()
 		messages := utils_chat.SummarizeMessages(agent.Messages, true, true, false)
+		tool.Mutex.Unlock()
+
 		prompt   := strings.Join([]string{
 			"Please summarize the following conversation, the latest messages are the newest ones.",
 			"",

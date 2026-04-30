@@ -31,12 +31,12 @@ func TestFiles_List(t *testing.T) {
 
 		if len(lines3) == 2 {
 
-			if lines3[0] !=  "files.List: . contains 1 entries." {
+			if lines3[0] !=  "files.List: \".\" contains 1 entries." {
 				t.Errorf("Expected %d folder entries", 1)
 			}
 
-			if strings.Contains(lines3[1], "Name: First.txt") == false {
-				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines3[1], "Name: First.txt")
+			if strings.Contains(lines3[1], "Path: \"./First.txt\"") == false {
+				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines3[1], "Path: \"./First.txt\"")
 			}
 
 			if strings.Contains(lines3[1], "Type: file") == false {
@@ -59,20 +59,20 @@ func TestFiles_List(t *testing.T) {
 
 		if len(lines5) == 3 {
 
-			if lines5[0] !=  "files.List: . contains 2 entries." {
+			if lines5[0] !=  "files.List: \".\" contains 2 entries." {
 				t.Errorf("Expected %d folder entries", 2)
 			}
 
-			if strings.Contains(lines5[1], "Name: 2nd.txt") == false {
-				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines5[1], "Name: 2nd.txt")
+			if strings.Contains(lines5[1], "Path: \"./2nd.txt\"") == false {
+				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines5[1], "Path: \"./2nd.txt\"")
 			}
 
 			if strings.Contains(lines5[1], "Type: file") == false {
 				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines5[1], "Type: file")
 			}
 
-			if strings.Contains(lines5[2], "Name: First.txt") == false {
-				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines5[2], "Name: First.txt")
+			if strings.Contains(lines5[2], "Path: \"./First.txt\"") == false {
+				t.Errorf("Expected entry \"%s\" to contain \"%s\"", lines5[2], "Path: \"./First.txt\"")
 			}
 
 			if strings.Contains(lines5[2], "Type: file") == false {
@@ -242,7 +242,7 @@ func TestFiles_Stat(t *testing.T) {
 
 		if len(lines2) == 6 {
 
-			if lines2[0] != "files.Stat: ./file.txt is a file." {
+			if lines2[0] != "files.Stat: \"./file.txt\" is a file." {
 				t.Errorf("Expected \"%s\" to be a file", lines2[0])
 			}
 

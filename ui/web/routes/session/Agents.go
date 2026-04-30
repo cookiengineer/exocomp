@@ -21,6 +21,8 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 
 			if ok == true {
 
+				agent_tool.Mutex.Lock()
+
 				agent_names := make([]string, 0)
 
 				for name, _ := range agent_tool.Agents {
@@ -30,7 +32,6 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 				sort.Strings(agent_names)
 
 				agents := make([]schemas.Agent, 0)
-
 				agents = append(agents, schemas.Agent{
 					Name:        session.Agent.Name,
 					Type:        session.Agent.Type,
@@ -62,6 +63,8 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 					}
 
 				}
+
+				agent_tool.Mutex.Unlock()
 
 				response_payload, err0 := json.MarshalIndent(agents, "", "\t")
 

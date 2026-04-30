@@ -9,11 +9,11 @@
 				"properties": {
 					"from_path": {
 						"type": "string",
-						"description": "Relative path to file or folder"
+						"description": "Relative path to file or folder, e.g. \"./path/to/File.go\""
 					},
 					"to_path": {
 						"type": "string",
-						"description": "Relative path to file or folder"
+						"description": "Relative path to file or folder, e.g. \"./path/to/File.go\""
 					}
 				},
 				"required": ["from_path", "to_path"]
@@ -30,7 +30,7 @@
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the folder"
+						"description": "Relative path to folder, e.g. \"./path/to/folder\""
 					}
 				},
 				"required": ["path"]
@@ -47,7 +47,7 @@
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to file, e.g. \"./path/to/File.go\""
 					}
 				},
 				"required": ["path"]
@@ -64,7 +64,7 @@
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file or folder"
+						"description": "Relative path to file or folder, e.g. \"./path/to/File.go\""
 					}
 				},
 				"required": ["path"]
@@ -81,7 +81,7 @@
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to file, e.g. \"./path/to/File.go\""
 					},
 					"content": {
 						"type": "string",

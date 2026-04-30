@@ -141,6 +141,12 @@ func (tool *Files) Copy(from_path string, to_path string) (string, error) {
 
 func (tool *Files) List(path string) (string, error) {
 
+	if path == "/" {
+		path = "."
+	} else if path == "" {
+		path = "."
+	}
+
 	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err0 == nil {
@@ -159,9 +165,10 @@ func (tool *Files) List(path string) (string, error) {
 
 					for _, entry := range entries {
 
-						name := entry.Name()
+						name      := entry.Name()
+						path, err := sanitizeSandboxPath(tool.Sandbox, resolved + "/" + name)
 
-						if strings.HasPrefix(name, ".") == false {
+						if err == nil && strings.HasPrefix(name, ".") == false {
 
 							typ := "file"
 
@@ -169,7 +176,7 @@ func (tool *Files) List(path string) (string, error) {
 								typ = "folder"
 							}
 
-							lines = append(lines, fmt.Sprintf("- Name: %s, Type: %s", name, typ))
+							lines = append(lines, fmt.Sprintf("- Path: \"%s\", Type: %s", path, typ))
 
 						}
 
@@ -178,7 +185,7 @@ func (tool *Files) List(path string) (string, error) {
 					sort.Strings(lines)
 
 					result := make([]string, 0)
-					result = append(result, fmt.Sprintf("files.List: %s contains %d entries.", path, len(lines)))
+					result = append(result, fmt.Sprintf("files.List: \"%s\" contains %d entries.", path, len(lines)))
 
 					for l := 0; l < len(lines); l++ {
 						result = append(result, lines[l])
@@ -248,7 +255,7 @@ func (tool *Files) Stat(path string) (string, error) {
 			}
 
 			result := strings.Join([]string{
-				fmt.Sprintf("files.Stat: %s is a %s.", path, typ),
+				fmt.Sprintf("files.Stat: \"%s\" is a %s.", path, typ),
 				"Name: " + stat.Name(),
 				"Type: " + typ,
 				"Size: " + utils_fmt.FormatFileSize(stat.Size()),
