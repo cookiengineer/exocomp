@@ -299,6 +299,10 @@ func (session *Session) infer_chat_completions() error {
 		Stream:      false,
 		Tools:       session.Tools,
 		ToolChoice:  "auto",
+		Options:     schemas.Options{
+			NumContext: 262144,
+			NumPredict: 8192,
+		},
 	})
 
 	if err0 == nil {
@@ -309,9 +313,17 @@ func (session *Session) infer_chat_completions() error {
 			bytes.NewReader(request_payload),
 		)
 
+		if session.Config.Debug == true {
+			os.WriteFile(session.Config.Sandbox + "/.exocomp-request.json", request_payload, 0666)
+		}
+
 		if err1 == nil && response.StatusCode == 200 {
 
 			response_payload, err2 := io.ReadAll(response.Body)
+
+			if session.Config.Debug == true {
+				os.WriteFile(session.Config.Sandbox + "/.exocomp-response.json", response_payload, 0666)
+			}
 
 			if err2 == nil {
 

@@ -75,7 +75,7 @@ func main() {
 	tmp_prompt        := ""
 	tmp_sandbox, _    := os.Getwd()
 	tmp_temperature   := float64(0.3)
-	tmp_url, _        := net_url.Parse("http://localhost:11434/api/chat")
+	tmp_url, _        := net_url.Parse("http://localhost:11434/")
 
 	if len(os.Args) >= 2 {
 

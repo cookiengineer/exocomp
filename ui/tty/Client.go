@@ -4,7 +4,6 @@ import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
 import "bufio"
-import "encoding/json"
 import "fmt"
 import "os"
 import "os/signal"
@@ -122,25 +121,8 @@ func (client *Client) InputLoop() {
 
 				if err != nil {
 
-					if client.Session.Config.Debug == true {
-
-						bytes1, _ := json.MarshalIndent(client.Session.Config, "", "\t")
-						bytes2, _ := json.MarshalIndent(schemas.ChatRequest{
-							Model:       client.Session.Agent.Model,
-							Temperature: client.Session.Agent.Temperature,
-							Messages:    client.Session.Agent.Messages,
-							Stream:      false,
-							Tools:       client.Session.Tools,
-							ToolChoice:  "auto",
-						}, "", "\t")
-
-						os.WriteFile(client.Session.Config.Sandbox + "/.exocomp-debug-config.json", bytes1, 0666)
-						os.WriteFile(client.Session.Config.Sandbox + "/.exocomp-debug-chatrequest.json", bytes2, 0666)
-
-						fmt.Fprintf(os.Stderr, "\nFatal Error: %s\n", err.Error())
-						os.Exit(1)
-
-					}
+					fmt.Fprintf(os.Stderr, "\nFatal Error: %s\n", err.Error())
+					os.Exit(1)
 
 				}
 
