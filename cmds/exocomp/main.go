@@ -163,7 +163,7 @@ func main() {
 
 							if url.Scheme == "http" || url.Scheme == "https" {
 
-								if url.Path == "/api/chat" {
+								if url.Path == "/" || url.Path == "/v1" {
 									tmp_url = url
 								}
 
