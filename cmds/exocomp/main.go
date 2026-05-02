@@ -67,7 +67,7 @@ func main() {
 
 	tmp_ui            := ""
 	tmp_name          := ""
-	tmp_agent         := "assistant"
+	tmp_agent         := "planner"
 	tmp_debug         := false
 	tmp_model         := "qwen3-coder:30b"
 	tmp_playground, _ := os.Getwd()
