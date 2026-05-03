@@ -1,4 +1,4 @@
-//go:build with_agents
+//go:build agents
 
 package tools
 
@@ -28,6 +28,7 @@ func getToolsPath() string {
 	}
 
 }
+
 func watchServerOutput(pipe Pipe, ready chan bool, errors chan error) {
 
 	scanner := bufio.NewScanner(pipe)
@@ -36,9 +37,14 @@ func watchServerOutput(pipe Pipe, ready chan bool, errors chan error) {
 
 		line := scanner.Text()
 
-		if strings.Contains(line, "terminate called") || strings.Contains(line, "vk::DeviceLostError") {
+		if strings.Contains(line, "vk::DeviceLostError") {
 
-			errors <- fmt.Errorf(line)
+			errors <- fmt.Errorf("%s", "vk::DeviceLostError")
+			return
+
+		} else if strings.Contains(line, "terminate called") {
+
+			errors <- fmt.Errorf("%s", line)
 			return
 
 		} else if strings.Contains(line, "main: server is listening") {
@@ -85,8 +91,9 @@ func TestMain(main *testing.M) {
 	)
 	cmd.Dir = "/tmp"
 
-	stdout, err1 := cmd.StdoutPipe()
-	// stderr, err_stderr := cmd.StderrPipe()
+	stderr, err1 := cmd.StderrPipe()
+
+	fmt.Println("==> Start llama-server")
 
 	err2 := cmd.Start()
 
@@ -95,12 +102,13 @@ func TestMain(main *testing.M) {
 		ready  := make(chan bool, 1)
 		errors := make(chan error, 1)
 
-		go watchServerOutput(stdout, ready, errors)
+		fmt.Println("--- Wait for llama-server ...")
+		go watchServerOutput(stderr, ready, errors)
 
 		select {
 		case <-ready:
 
-			fmt.Println("Llama server is ready...")
+			fmt.Println("--- llama-server is ready!")
 
 			code := main.Run()
 
@@ -112,12 +120,16 @@ func TestMain(main *testing.M) {
 			os.Exit(code)
 
 		case err := <- errors:
+
 			panic(fmt.Sprintf("Llama server error: %v", err))
+
 		case <-ctx.Done():
 			panic("Llama server timeout")
 		}
 
 	} else {
+
+		fmt.Println("--- llama-server exited with error")
 
 		if err1 != nil {
 			panic(err1)

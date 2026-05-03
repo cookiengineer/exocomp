@@ -210,7 +210,17 @@ func TestRequirements_List(t *testing.T) {
 
 func TestRequirements_Search(t *testing.T) {
 
-	fmt.Println("TODO: requirements.Search")
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
+	sandbox       := filepath.Join(playground, "requirements")
+	tool          := NewRequirements(playground, sandbox)
+
+	if tool != nil {
+
+		fmt.Println("TODO: requirements.Search")
+
+	} else {
+		t.Errorf("Expected %v to be not nil", tool)
+	}
 
 	t.Cleanup(func() {
 

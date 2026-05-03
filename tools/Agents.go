@@ -109,14 +109,25 @@ func (tool *Agents) List() (string, error) {
 
 		lines := make([]string, 0)
 
-		for _, agent := range tool.Agents {
-			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: working", agent.Name, agent.Type))
+		for name, agent := range tool.Agents {
+
+			_, ok  := tool.processes[name]
+			status := "unknown"
+
+			if ok == true {
+				status = "working"
+			} else {
+				status = "finished"
+			}
+
+			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: %s", agent.Name, agent.Type, status))
+
 		}
 
 		sort.Strings(lines)
 
 		result := make([]string, 0)
-		result = append(result, fmt.Sprintf("agents.List: %d agents working for us.", len(lines)))
+		result = append(result, fmt.Sprintf("agents.List: %d agents were working for us.", len(lines)))
 
 		for l := 0; l < len(lines); l++ {
 			result = append(result, lines[l])
@@ -158,7 +169,6 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				"--prompt",     prompt,
 			)
 			cmd.Dir = resolved
-
 
 			stdout_pipe, err2 := cmd.StdoutPipe()
 
@@ -218,7 +228,6 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 						cmd.Wait()
 
 						tool.Mutex.Lock()
-						delete(tool.Agents, name)
 						delete(tool.processes, name)
 						tool.Mutex.Unlock()
 
@@ -255,7 +264,6 @@ func (tool *Agents) Fire(name string) (string, error) {
 		if err == nil {
 
 			tool.Mutex.Lock()
-			delete(tool.Agents, name)
 			delete(tool.processes, name)
 			tool.Mutex.Unlock()
 
