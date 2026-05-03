@@ -2,9 +2,11 @@
 
 # Ignore models due to size
 /third_party/models/*.gguf
+/third_party/models/*.crdownload
 !/third_party/models/.gitkeep
 
 # Ignore unnecessary llama.cpp files
+/third_party/llama/*.crdownload
 /third_party/llama/libggml*
 /third_party/llama/libllama*
 /third_party/llama/libmtmd*
