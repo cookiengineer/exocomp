@@ -62,11 +62,11 @@ Check the unit tests on whether the Tools can be relied on or not.
 
 | Tool                                    | Unit Tests?                                              | Description                                     | Agent User Roles                                        |
 |:----------------------------------------|:--------------------------------------------------------:|:------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./tools/Agents.go)             | [Yes](./tools/Agents_test.go) (requires `llama.cpp` [1]) | Manages the lifecycle of contractor sub-agents. | `manager`                                               |
+| [Agents](./tools/Agents.go)             | [Yes](./tools/Agents_test.go) (requires `llama.cpp` [1]) | Manages the lifecycle of contractor sub-agents. | `planner`                                               |
 | [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)                              | Manages documentation of discovered bugs.       | `tester`                                                |
 | [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go)                         | Manages documentation of development changelog. | `coder`                                                 |
 | Containers                              |                                                          | Manages virtual containers.                     | `redteamer`, `blueteamer`                               |
-| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)                             | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
+| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)                             | Interacts with files and folders.               | `planner`, `architect`, `coder`, `summarizer`, `tester` |
 | [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)                          | Interacts with installed programs.              | `coder`, `tester`                                       |
 | [Requirements](./tools/Requirements.go) | [Yes](./tools/Requirements_test.go)                      | Manages specifications of implementations.      | `architect`, `coder`, `tester`                          |
 | Forgejo                                 |                                                          | Researches knowledge from offline git servers.  | `researcher`                                            |
@@ -112,6 +112,75 @@ Exocomp uses the following OpenAI compatible API endpoints:
 
 Take a look at the [INFERENCE_SERVERS.md](./docs/INFERENCE_SERVERS.md) for more
 details on how to use external inference servers.
+
+
+### Usage
+
+Exocomp's sandboxes are based on the `current working directory`, meaning
+that the folder the program is executed in is the sandbox that the running
+agent can't escape from.
+
+The recommended default usage is to use the `Web UI` so that you can observe
+other agents working for the agent you're talking with.
+
+```bash
+cd /path/to/project-root;
+
+# Agent type planner is defaulted
+exocomp webview planner;
+```
+
+Additionally, there are several UI frontends implemented in Exocomp:
+
+- `exocomp jsonl <agent-type>` uses line-separated JSON messages to communicate via `stdin` and `stdout`. Used for cross-contractor-agent communication.
+- `exocomp tty <agent-type>` uses the [ui/tty/Client](./ui/tty/Client.go)
+- `exocomp web <agent-type>` uses the [ui/tty/Server](./ui/web/Server.go) that spawns a [Web UI Client](./ui/web/public/) on port `3000`
+- `exocomp webview <agent-type>` spawns a `web` server on port `3000` and opens a [WebView UI Client](./ui/webview/Client.go) window
+
+### Multi Agent Usage
+
+The defaulted `planner` agent is allowed to hire contracting sub-agents with the
+[Agents](./tools/Agents.go) tool.
+
+Multi agent communication works with a sub process hierarchy, where each process
+works in their own sandbox with the `jsonl` frontend and their own agent type.
+
+Cross-agent communication works with a strict process hierarchy, meaning that the
+`playground` represents the parent processes' sandbox or execution folder.
+
+**Example Hierarchy**
+
+```
+# Hierarchy   # Sandbox                         | Playground       | Task                          |
+# ----------- # ------------------------------- | ---------------- | ----------------------------- |
+| planner     # /path/to/project                | /path/to/project |                               |
+|-> architect # /path/to/project                | /path/to/project | specifies utils package       |
+|-> coder     # /path/to/project/utils          | /path/to/project | implements CalculateFibonacci |
+|-> tester    # /path/to/project/utils          | /path/to/project | tests CalculateFibonacci      |
+|-> coder     # /path/to/project/cmds/fibonacci | /path/to/project | implements main.go            |
+```
+
+```bash
+# Humans interact with planner agents
+cd /path/to/project;
+exocomp web planner;
+
+#
+# What the planner "spawns" behind the scenes as sub processes:
+#
+
+# cd /path/to/project;
+# exocomp tty architect --prompt="Implement a utils package and specify the CalculateFibonacci method signature.";
+
+# cd /path/to/project/utils;
+# exocomp tty coder --prompt="Implement a public method called CalculateFibonacci(step int) int that calculates the fibonacci numbers.";
+
+# cd /path/to/project/utils;
+# exocomp tty tester --prompt="Implement the unit tests for the CalculateFibonacci method.";
+
+# cd /path/to/project/cmds/fibonacci;
+# exocomp tty coder --prompt="Implement a main.go that calculates fibonacci numbers. Use the first CLI parameter as the step or sequence argument.";
+```
 
 
 ### License
