@@ -1,13 +1,14 @@
 
 # API
 
-## Status and Messages
+## Session
 
-| Verb   | Route                     | Request Schema          | Response Schema          |
-|:------:|:--------------------------|:------------------------|:-------------------------|
-| `GET`  | `/api/console`            |                         | `[]types.ConsoleMessage` |
-| `GET`  | `/api/messages`           |                         | `[]schemas.Message`      |
-| `POST` | `/api/messages/send`      | `schemas.Message`       | `[]schemas.Message`      |
+| Verb   | Route                          | Request Schema          | Response Schema          |
+|:------:|:-------------------------------|:------------------------|:-------------------------|
+| `GET`  | `/api/session/agents`          |                         | [[]schemas.Agent](../schemas/Agent.go)               |
+| `GET`  | `/api/session/console`         |                         | [[]types.ConsoleMessage](../types/ConsoleMessage.go) |
+| `GET`  | `/api/session/context`         |                         | [types.SessionContext](../types/SessionContext.go)   |
+| `POST` | `/api/session/sendchatrequest` | `schemas.Message`       | [[]schemas.Message](../schemas/Message.go)           |
 
 ## Parameters and Settings
 

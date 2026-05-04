@@ -60,90 +60,58 @@ to beat the context length and agent memory limitations of locally run models.
 
 Check the unit tests on whether the Tools can be relied on or not.
 
-| Tool                                    | Unit Tests?                         | Description                                     | Agent User Roles                                        |
-|:----------------------------------------|:-----------------------------------:|:------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./tools/Agents.go)             |                                     | Manages the lifecycle of contractor sub-agents. | `manager`                                               |
-| [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)         | Manages documentation of discovered bugs.       | `tester`                                                |
-| [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go)    | Manages documentation of development changelog. | `coder`                                                 |
-| Containers                              |                                     | Manages virtual containers.                     | `redteamer`, `blueteamer`                               |
-| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)        | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
-| [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)     | Interacts with installed programs.              | `coder`, `tester`                                       |
-| [Requirements](./tools/Requirements.go) | [Yes](./tools/Requirements_test.go) | Manages specifications of implementations.      | `architect`, `coder`, `tester`                          |
-| Forgejo                                 |                                     | Researches knowledge from offline git servers.  | `researcher`                                            |
-| Kiwix                                   |                                     | Researches knowledge from offline web archives. | `researcher`                                            |
-| Websites                                |                                     | Researches knowledge from the web.              | `researcher`                                            |
+| Tool                                    | Unit Tests?                                              | Description                                     | Agent User Roles                                        |
+|:----------------------------------------|:--------------------------------------------------------:|:------------------------------------------------|:-------------------------------------------------------:|
+| [Agents](./tools/Agents.go)             | [Yes](./tools/Agents_test.go) (requires `llama.cpp` [1]) | Manages the lifecycle of contractor sub-agents. | `manager`                                               |
+| [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)                              | Manages documentation of discovered bugs.       | `tester`                                                |
+| [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go)                         | Manages documentation of development changelog. | `coder`                                                 |
+| Containers                              |                                                          | Manages virtual containers.                     | `redteamer`, `blueteamer`                               |
+| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)                             | Interacts with files and folders.               | `manager`, `architect`, `coder`, `summarizer`, `tester` |
+| [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)                          | Interacts with installed programs.              | `coder`, `tester`                                       |
+| [Requirements](./tools/Requirements.go) | [Yes](./tools/Requirements_test.go)                      | Manages specifications of implementations.      | `architect`, `coder`, `tester`                          |
+| Forgejo                                 |                                                          | Researches knowledge from offline git servers.  | `researcher`                                            |
+| Kiwix                                   |                                                          | Researches knowledge from offline web archives. | `researcher`                                            |
+| Websites                                |                                                          | Researches knowledge from the web.              | `researcher`                                            |
+
+[1] Install dependencies with the [install-deps.sh](./install-deps.sh) shell script. Requires at least 80GB of HDD space, 48GB of VRAM, and an iGPU or dGPU with `vulkan` support.
+
+### Dependencies
+
+The `exocomp` program is a standalone binary, once compiled with the `go`
+toolchain and it comes with `llama.cpp` as a bundled inference server.
+
+The third-party `llama.ccp` inference server and LLM models are installed
+inside the [third_party](./third_party) folder, and are installed with the
+[install-deps.sh](./install-deps.sh) shell script.
+
+```bash
+cd /path/to/exocomp;
+
+# Look ma, no sudo!
+bash install-deps.sh;
+```
+
+It is heavily recommended to use that workflow for the best development
+experience using exocomp as an agentic development environment.
+
+The unit tests tagged with the `agents` build tag also rely on this workflow
+to be setup and working.
 
 
-### Models
+### External Inference Servers
 
-If you're using `ollama`, all models with the `tools` tag in the
+However, it's also possible to use exocomp with an external inference
+server that supports the OpenAI compatible endpoints. If you're using
+`ollama` as a beginner, all models with the `tools` tag in the
 [ollama library](https://ollama.com/library) should be compatible.
 
-Exocomp uses the following OpenAI compatible endpoints:
+Exocomp uses the following OpenAI compatible API endpoints:
 
 - `http://server:port/v1/chat/completions`
 - `http://server:port/v1/models`
 
-
-### Requirements and Usage
-
-The `exocomp` program is a standalone binary, once compiled with the `go`
-toolchain. However, the models currently aren't embedded and are called via
-an external (locally hostable) `ollama`, `vllm`, or `llama.cpp` server.
-
-**Ollama Usage**:
-
-```bash
-# Start ollama server
-ollama serve;
-
-# Install qwen3 coder model
-ollama pull qwen3-coder:30b
-
-# Run exocomp with ollama
-cd /path/to/exocomp;
-go run ./cmds/exocomp/main.go web --debug;
-
-# Custom CLI flags usage
-# go run ./cmds/exocomp/main.go tty assistant --url="http://localhost:11434/v1" --model="qwen3-coder:30b";
-```
-
-**llama.cpp Usage**:
-
-- Download [Qwen3 Coder 30B A3B Q8](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF) gguf model file.
-- Download [llama.cpp](https://github.com/ggml-org/llama.cpp/releases) build.
-
-If you're unsure about hardware support, use the `vulkan` build on Linux.
-
-```bash
-# Start llama.cpp server
-
-# If you have a 48GB VRAM GPU:
-# --ctx-size 262144
-# --batch-size 2048
-# --ubatch-size 512
-
-./llama-server -m ./models/qwen3-coder-30b-a3b-instruct-q8_0.gguf \
-	--gpu-layers all \
-	--ctx-size 32768 \
-	--batch-size 512 \
-	--ubatch-size 128 \
-	--cache-type-k q8_0 \
-	--cache-type-v q8_0 \
-	--flash-attn auto \
-	--no-slots \
-	--no-webui \
-	--no-webui-mcp-proxy \
-	--jinja \
-    --port=11434;
-
-# Run exocomp with llama.cpp
-cd /path/to/exocomp;
-go run ./cmds/exocomp/main.go web --debug;
-
-# Custom CLI flags usage
-# go run ./cmds/exocomp/main.go tty assistant --url="http://localhost:11434/v1" --model="qwen3-coder:30b";
-```
+Take a look at the [INFERENCE_SERVERS.md](./docs/INFERENCE_SERVERS.md) for more
+details on how to use external inference servers.
 
 
 ### License
