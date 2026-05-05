@@ -31,6 +31,35 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "requirements.DefineInterface",
+			"description": "Specify a path and symbol with a Go interface declaration.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file"
+					},
+					"symbol": {
+						"type": "string",
+						"description": "Linkable symbol, method, function, or variable name"
+					},
+					"declaration": {
+						"type": "string",
+						"description": "Multi-line interface declaration using Go syntax"
+					},
+					"behavior": {
+						"type": "string",
+						"description": "Behavior implementation notes"
+					}
+				},
+				"required": ["path", "symbol", "declaration", "behavior"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "requirements.DefineStruct",
 			"description": "Specify a path and symbol with a Go struct declaration.",
 			"parameters": {

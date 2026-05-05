@@ -65,6 +65,27 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameters.")
 		}
 
+	} else if method == "DefineInterface" {
+
+		path,        ok1 := arguments["path"].(string)
+		symbol,      ok2 := arguments["symbol"].(string)
+		declaration, ok3 := arguments["declaration"].(string)
+		behavior,    ok4 := arguments["behavior"].(string)
+
+		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
+			return tool.DefineInterface(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatMultiLine(declaration), utils_fmt.FormatSingleLine(behavior))
+		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"behavior\" is not a string.")
+		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"declaration\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+		} else {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameters.")
+		}
+
 	} else if method == "DefineStruct" {
 
 		path,        ok1 := arguments["path"].(string)
@@ -73,7 +94,7 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 		behavior,    ok4 := arguments["behavior"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
-			return tool.DefineFunc(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(declaration), utils_fmt.FormatSingleLine(behavior))
+			return tool.DefineFunc(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatMultiLine(declaration), utils_fmt.FormatSingleLine(behavior))
 		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
 			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"behavior\" is not a string.")
 		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
@@ -245,6 +266,108 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 	} else {
 		return "", fmt.Errorf("requirements.DefineFunc: %s", err0.Error())
+	}
+
+}
+
+func (tool *Requirements) DefineInterface(path string, symbol string, declaration string, behavior string) (string, error) {
+
+	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err0 == nil {
+
+		fileset    := token.NewFileSet()
+		file, err1 := parser.ParseFile(fileset, "", strings.Join([]string{
+			"package dummy",
+			declaration,
+		}, "\n"), 0)
+
+		if err1 == nil {
+
+			declaration_symbol := ""
+			declaration_code   := ""
+
+			for _, decl := range file.Decls {
+
+				gen_decl, ok0 := decl.(*ast.GenDecl)
+
+				if ok0 == true {
+
+					if gen_decl.Tok == token.TYPE {
+
+						for _, spec := range gen_decl.Specs {
+
+							type_spec, ok1 := spec.(*ast.TypeSpec)
+
+							if ok1 == true {
+
+								interface_type, ok2 := type_spec.Type.(*ast.InterfaceType)
+
+								if ok2 == true {
+
+									if type_spec.Name != nil {
+										declaration_symbol = type_spec.Name.Name
+									}
+
+									buffer := bytes.Buffer{}
+									printer.Fprint(&buffer, token.NewFileSet(), gen_decl)
+									declaration_code = strings.TrimSpace(buffer.String())
+
+									// explicitly referencing interface_type to keep symmetry with func parsing
+									_ = interface_type
+
+									break
+
+								}
+
+							}
+
+						}
+
+					}
+
+				}
+
+				if declaration_symbol != "" {
+					break
+				}
+
+			}
+
+			if declaration_symbol == symbol {
+
+				_, ok3 := tool.contents[resolved]
+
+				if ok3 == false {
+					tool.contents[resolved] = make(map[string]requirement_specification)
+				}
+
+				tool.contents[resolved][symbol] = requirement_specification{
+					File:        resolved,
+					Type:        "interface",
+					Declaration: declaration_code,
+					Symbol:      declaration_symbol,
+					Behavior:    behavior,
+				}
+
+				err2 := writeRequirements(tool)
+
+				if err2 == nil {
+					return fmt.Sprintf("requirements.DefineInterface: %s defined as %s", declaration_symbol, declaration_code), nil
+				} else {
+					return "", fmt.Errorf("requirements.DefineInterface: %s", err2.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("requirements.DefineInterface: Invalid syntax, interface symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.DefineInterface: %s", err1.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.DefineInterface: %s", err0.Error())
 	}
 
 }

@@ -77,6 +77,66 @@ func TestRequirements_DefineFunc(t *testing.T) {
 
 }
 
+func TestRequirements_DefineInterface(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
+	sandbox := filepath.Join(playground, "requirements")
+	tool := NewRequirements(playground, sandbox)
+
+	if tool != nil {
+
+		declaration1 := strings.Join([]string{
+			"type Data interface {",
+			"\tParse(specification *schemas.Input)",
+			"}",
+		}, "\n")
+
+		declaration2 := "func (data *structs.Data) Parse(specification *schemas.Input)"
+
+		result1, err1 := tool.DefineInterface("./structs/Data.go", "Data", declaration1, "The interface needs to define a parser.")
+		result2, err2 := tool.DefineFunc("./structs/Data.go", "Parse", declaration2, "The method needs to implement a schema parser.")
+		result3, err3 := tool.DefineFunc("./structs/Data.go", "DifferentSymbol", declaration1, "The method needs to implement a schema parser.")
+
+		if strings.HasPrefix(result1, "requirements.DefineInterface: Data defined as type Data interface {") == false {
+			t.Errorf("Expected \"%s\" to be defined as \"%s\"", "Data", declaration1)
+		}
+
+		if result2 != "requirements.DefineFunc: Parse defined as func (data *structs.Data) Parse(specification *schemas.Input)" {
+			t.Errorf("Expected \"%s\" to be defined as \"%s\"", "Parse", declaration2)
+		}
+
+		if result3 != "" {
+			t.Errorf("Expected interface to be invalid")
+		}
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if err3 == nil {
+			t.Errorf("Expected %v to be not nil", err3)
+		}
+
+	} else {
+		t.Errorf("Expected %v to be not nil", tool)
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
 func TestRequirements_DefineStruct(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
