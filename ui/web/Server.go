@@ -29,6 +29,7 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 		tool_schemas, tools := tools.Toolset(
 			config.Playground,
 			config.Sandbox,
+			config.Model,
 			config.URL,
 			agent.Programs,
 			agent.Tools,

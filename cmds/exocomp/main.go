@@ -34,15 +34,15 @@ func showHelp() {
 	fmt.Println("")
 	fmt.Println("    --model string         LLM agent model")
 	fmt.Println("                           Examples: qwen3-coder:30b, codestral:22b")
-	fmt.Println("                           (default: \"qwen3-coder:30b\" or \"gemma4:31b\")")
+	fmt.Println("                           (default: \"qwen3-coder:30b\")")
 	fmt.Println("")
 	fmt.Println("    --temperature float    LLM agent sampling temperature (0.1-1.0)")
 	fmt.Println("                           Lower = more deterministic, fewer hallucinations")
 	fmt.Println("                           Higher = more creative, more hallucinations")
-	fmt.Println("                           (default: 0.3)")
+	fmt.Println("                           (default: unset)")
 	fmt.Println("")
 	fmt.Println("    --prompt string        Initial LLM instructions prompt")
-	fmt.Println("                           (default: \"\")")
+	fmt.Println("                           (default: unset)")
 	fmt.Println("")
 	fmt.Println("    --sandbox string       Path to sandbox directory")
 	fmt.Println("                           (default: current working directory)")
@@ -57,8 +57,8 @@ func showHelp() {
 	fmt.Println("    exocomp web --agent=architect --model=\"qwen3-coder:30b\" --temperature=\"0.7\";")
 	fmt.Println("")
 	fmt.Println("    # multi-agent mode")
-	fmt.Println("    exocomp tty --agent=manager")
-	fmt.Println("    exocomp web --agent=manager --model=\"codestral:22b\" --temperature=\"0.2\";")
+	fmt.Println("    exocomp tty --agent=planner")
+	fmt.Println("    exocomp web --agent=planner --model=\"codestral:22b\" --temperature=\"0.5\";")
 	fmt.Println("")
 
 }
@@ -73,8 +73,8 @@ func main() {
 	tmp_playground, _ := os.Getwd()
 	tmp_prompt        := ""
 	tmp_sandbox, _    := os.Getwd()
-	tmp_temperature   := float64(0.3)
-	tmp_url, _        := net_url.Parse("http://localhost:11434/")
+	tmp_temperature   := float64(0.0)
+	tmp_url, _        := net_url.Parse("http://localhost:11434/v1")
 
 	if len(os.Args) >= 2 {
 

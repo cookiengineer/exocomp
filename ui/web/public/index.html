@@ -16,20 +16,12 @@
 	</head>
 	<body>
 		<header>
-			<div><button data-action="create-agent">Create Agent</button></div>
+			<div><button data-action="create-agent" disabled>Create Agent</button></div>
 			<div></div>
 			<div></div>
 		</header>
 		<aside>
 			<nav aria-label="agents"></nav>
-			<!--
-				<ul>
-					<li title="Agent #0 (manager) working on ./path/to/playground"><label>Peanut Hamper</label></li>
-					<li class="active" title="Agent #1 (coder) working on ./path/to/sandbox"><label>Peanut Coder #1</label></li>
-					<li title="Agent #2 (tester) working on ./path/to/sandbox"><label>Peanut Tester #2</label></li>
-					<li title="Agent #3 (architect) working on ./path/to/sandbox"><label>Peanut Architect #3</label></li>
-				</ul>
-			-->
 		</aside>
 		<main></main>
 		<footer>
@@ -45,7 +37,7 @@
 					<div>
 						<label data-type="user" for="dialog-select-agent">Agent</label>
 						<select id="dialog-select-agent" title="Agent Type" data-name="agent">
-							<option value="manager">Manager</option>
+							<option value="planner">Planner</option>
 							<option value="architect">Architect</option>
 							<option value="coder">Coder</option>
 							<option value="tester">Tester</option>

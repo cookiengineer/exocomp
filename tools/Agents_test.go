@@ -2,6 +2,7 @@
 
 package tools
 
+import net_url "net/url"
 import "os"
 import "path/filepath"
 import "strings"
@@ -12,8 +13,9 @@ import "fmt"
 func TestAgents_Hire(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-agents-*")
+	url,        _ := net_url.Parse("http://localhost:11434/v1")
 	sandbox       := filepath.Join(playground, "agents")
-	tool          := NewRequirements(playground, sandbox)
+	tool          := NewAgents(playground, sandbox, url)
 
 	if tool != nil {
 

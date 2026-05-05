@@ -25,6 +25,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 		tool_schemas, tools := tools.Toolset(
 			config.Playground,
 			config.Sandbox,
+			config.Model,
 			config.URL,
 			agent.Programs,
 			agent.Tools,

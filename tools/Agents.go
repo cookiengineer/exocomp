@@ -20,17 +20,19 @@ type Agents struct {
 	Agents     map[string]*types.Agent
 	Playground string
 	Sandbox    string
+	Model      string
 	URL        *net_url.URL
 	Mutex      *sync.Mutex
 	processes  map[string]*os.Process
 }
 
-func NewAgents(playground string, sandbox string, url *net_url.URL) *Agents {
+func NewAgents(playground string, sandbox string, model string, url *net_url.URL) *Agents {
 
 	agents := &Agents{
 		Agents:     make(map[string]*types.Agent),
 		Playground: playground,
 		Sandbox:    sandbox,
+		Model:      model,
 		URL:        url,
 		Mutex:      &sync.Mutex{},
 		processes:  make(map[string]*os.Process),
@@ -182,9 +184,9 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 					tool.Agents[name] = agents.NewAgent(types.NewConfig(
 						name,
 						agent,
-						"",
+						tool.Model,
 						prompt,
-						0.0,
+						0.0, // Don't change temperature
 						tool.Playground,
 						resolved,
 						tool.URL,

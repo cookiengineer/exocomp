@@ -6,7 +6,7 @@ import _ "embed"
 import net_url "net/url"
 import "slices"
 
-func Toolset(playground string, sandbox string, url *net_url.URL, allowed_programs []string, allowed_tools []string) (map[string][]schemas.Tool, map[string]types.Tool) {
+func Toolset(playground string, sandbox string, model string, url *net_url.URL, allowed_programs []string, allowed_tools []string) (map[string][]schemas.Tool, map[string]types.Tool) {
 
 	result_schemas := make(map[string][]schemas.Tool, 0)
 	result_tools   := make(map[string]types.Tool, 0)
@@ -26,7 +26,7 @@ func Toolset(playground string, sandbox string, url *net_url.URL, allowed_progra
 			_, ok2 := result_tools["agents"]
 
 			if ok2 == false {
-				result_tools["agents"] = NewAgents(playground, sandbox, url)
+				result_tools["agents"] = NewAgents(playground, sandbox, model, url)
 			}
 
 		}

@@ -14,17 +14,20 @@ import "strings"
 type Config struct {
 	Name        string       `json:"name"`
 	Agent       string       `json:"agent"`
-	Debug       bool         `json:"debug"`
 	Model       string       `json:"model"`
 	Prompt      string       `json:"prompt"`
 	Temperature float64      `json:"temperature"`
 	Playground  string       `json:"playground"`
 	Sandbox     string       `json:"sandbox"`
 	URL         *net_url.URL `json:"url"`
+	Debug       bool         `json:"debug"`
 }
 
 func NewConfig(name string, agent string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, debug bool) *Config {
 
+	name   = strings.TrimSpace(name)
+	agent  = strings.TrimSpace(agent)
+	model  = strings.TrimSpace(model)
 	prompt = utils_fmt.FormatSingleLine(prompt)
 
 	if temperature < 0.0 {
@@ -46,16 +49,38 @@ func NewConfig(name string, agent string, model string, prompt string, temperatu
 
 	}
 
+	if sandbox == "" {
+
+		cwd, err := os.Getwd()
+
+		if err == nil {
+			sandbox = cwd
+		} else {
+			sandbox = "/tmp/exocomp/sandbox"
+		}
+
+	}
+
+	if url == nil {
+
+		tmp, err := net_url.Parse("http://localhost:11434/v1")
+
+		if err == nil {
+			url = tmp
+		}
+
+	}
+
 	return &Config{
 		Name:        name,
 		Agent:       agent,
-		Debug:       debug,
 		Model:       model,
-		Playground:  playground,
 		Prompt:      prompt,
-		Sandbox:     sandbox,
 		Temperature: temperature,
+		Playground:  playground,
+		Sandbox:     sandbox,
 		URL:         url,
+		Debug:       debug,
 	}
 
 }

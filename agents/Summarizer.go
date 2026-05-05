@@ -19,7 +19,7 @@ func NewSummarizer(config *types.Config) *types.Agent {
 	}
 
 	if model == "" {
-		model = "gemma4:31b"
+		model = "qwen3-coder:30b"
 	}
 
 	if temp == 0.0 {
