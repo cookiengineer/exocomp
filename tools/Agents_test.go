@@ -13,16 +13,17 @@ import "fmt"
 func TestAgents_Hire(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-agents-*")
-	url,        _ := net_url.Parse("http://localhost:11434/v1")
 	sandbox       := filepath.Join(playground, "agents")
-	tool          := NewAgents(playground, sandbox, url)
+	model         := "qwen3-coder:30b"
+	url,        _ := net_url.Parse("http://localhost:11434/v1")
+	tool          := NewAgents(playground, sandbox, model, url)
 
 	if tool != nil {
 
 		result1, err1 := tool.Hire(
 			"Fibonacci Worker",
 			"coder",
-			sandbox,
+			"./fibonacci",
 			strings.Join([]string{
 				"Can you write a main.go for me that implements the fibonacci sequence?",
 				"The first parameter should be the sequence/step parameter.",

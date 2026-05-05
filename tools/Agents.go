@@ -161,6 +161,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				os.MkdirAll(resolved, 0755)
 			}
 
+			// IMPORTANT: child process's playground is parent process's sandbox
 			cmd := exec.Command(
 				os.Args[0],
 				"jsonl",
@@ -169,7 +170,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				fmt.Sprintf("--model=\"%s\"", tool.Model),
 				fmt.Sprintf("--prompt=\"%s\"", prompt),
 				// --temperature set by agent type
-				fmt.Sprintf("--playground=\"%s\"", tool.Playground),
+				fmt.Sprintf("--playground=\"%s\"", tool.Sandbox),
 				fmt.Sprintf("--sandbox=\"%s\"", resolved),
 				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
 			)
@@ -190,7 +191,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 						tool.Model,
 						prompt,
 						0.0, // Don't change temperature
-						tool.Playground,
+						tool.Sandbox,
 						resolved,
 						tool.URL,
 						false,
@@ -314,8 +315,8 @@ func (tool *Agents) Inquire(name string) (string, error) {
 				fmt.Sprintf("--model=\"%s\"", tool.Model),
 				fmt.Sprintf("--prompt=\"%s\"", prompt),
 				// --temperature set by agent type
-				fmt.Sprintf("--playground=\"%s\"", tool.Playground),
-				fmt.Sprintf("--sandbox=\"%s\"", tmp),
+				// --playground set by cmd.Dir
+				// --sandbox set by cmd.Dir
 				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
 			)
 			cmd.Dir = tmp
