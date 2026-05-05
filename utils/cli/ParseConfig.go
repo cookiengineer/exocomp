@@ -29,11 +29,11 @@ func ParseConfig(arguments []string) *types.Config {
 			if len(tmp) == 2 {
 
 				if strings.HasPrefix(tmp[1], "\"") && strings.HasSuffix(tmp[1], "\"") {
-					tmp[1] = tmp[1][1:len(tmp[1]) - 2]
+					tmp[1] = tmp[1][1:len(tmp[1]) - 1]
 				}
 
 				if strings.HasPrefix(tmp[1], "'") && strings.HasSuffix(tmp[1], "'") {
-					tmp[1] = tmp[1][1:len(tmp[1]) - 2]
+					tmp[1] = tmp[1][1:len(tmp[1]) - 1]
 				}
 
 				switch tmp[0] {

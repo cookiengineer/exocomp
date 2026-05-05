@@ -2,7 +2,6 @@
 
 package tools
 
-import "encoding/json"
 import net_url "net/url"
 import "os"
 import "path/filepath"
@@ -36,6 +35,8 @@ func TestAgents_Hire(t *testing.T) {
 				"\"program 5\" should return 3",
 				"",
 				"... and so on",
+				"",
+				"You MUST write the final result to the filesystem before you're finished.",
 			}, "\n"),
 		)
 

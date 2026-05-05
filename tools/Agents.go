@@ -169,9 +169,14 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				debug_flag = "--debug"
 			}
 
-			// IMPORTANT: child process's playground is parent process's sandbox
 			exe, _ := os.Executable()
-			cmd    := exec.Command(
+
+			if os.Getenv("EXOCOMP_FOR_AGENTS") != "" {
+				exe = os.Getenv("EXOCOMP_FOR_AGENTS")
+			}
+
+			// NOTE: child process's playground is parent process's sandbox
+			cmd := exec.Command(
 				exe,
 				"jsonl",
 				fmt.Sprintf("--name=\"%s\"", name),
@@ -324,7 +329,12 @@ func (tool *Agents) Inquire(name string) (string, error) {
 			}
 
 			exe, _ := os.Executable()
-			cmd    := exec.Command(
+
+			if os.Getenv("EXOCOMP_FOR_AGENTS") != "" {
+				exe = os.Getenv("EXOCOMP_FOR_AGENTS")
+			}
+
+			cmd := exec.Command(
 				exe,
 				"jsonl",
 				fmt.Sprintf("--name=\"%s\"", "Summarizer"),
