@@ -39,7 +39,7 @@ func (renderer *Renderer) ClearLine() {
 
 	fmt.Fprintf(os.Stdout, "\033[A")
 	fmt.Fprintf(os.Stdout, "\033[K")
-	fmt.Fprintf(os.Stdout, renderer.resetline)
+	fmt.Fprintf(os.Stdout, "%s", renderer.resetline)
 	fmt.Fprintf(os.Stdout, "\033[B")
 
 }

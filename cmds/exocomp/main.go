@@ -2,217 +2,33 @@ package main
 
 import "exocomp/agents"
 import "exocomp/types"
-import utils_agent "exocomp/utils/agent"
-import utils_fmt "exocomp/utils/fmt"
 import ui_jsonl "exocomp/ui/jsonl"
 import ui_tty "exocomp/ui/tty"
 import ui_web "exocomp/ui/web"
 import ui_webview "exocomp/ui/webview"
+import utils_cli "exocomp/utils/cli"
 import "fmt"
-import net_url "net/url"
 import "os"
-import "strconv"
 import "strings"
-
-func showHelp() {
-
-	fmt.Println("Usage:")
-	fmt.Println("    exocomp <ui> [flags]")
-	fmt.Println("")
-	fmt.Println("Arguments:")
-	fmt.Println("    <ui> string            UI type")
-	fmt.Println("                           Either of: jsonl, tty, web, webview")
-	fmt.Println("")
-	fmt.Println("Flags:")
-	fmt.Println("")
-	fmt.Println("    --name string          LLM agent name")
-	fmt.Println("                           (default: \"Peanut Hamper\")")
-	fmt.Println("")
-	fmt.Println("    --agent string         LLM agent type")
-	fmt.Println("                           Either of: architect, coder, planner, summarizer, tester")
-	fmt.Println("                           (default: \"planner\")")
-	fmt.Println("")
-	fmt.Println("    --model string         LLM agent model")
-	fmt.Println("                           Examples: qwen3-coder:30b, codestral:22b")
-	fmt.Println("                           (default: \"qwen3-coder:30b\")")
-	fmt.Println("")
-	fmt.Println("    --temperature float    LLM agent sampling temperature (0.1-1.0)")
-	fmt.Println("                           Lower = more deterministic, fewer hallucinations")
-	fmt.Println("                           Higher = more creative, more hallucinations")
-	fmt.Println("                           (default: unset)")
-	fmt.Println("")
-	fmt.Println("    --prompt string        Initial LLM instructions prompt")
-	fmt.Println("                           (default: unset)")
-	fmt.Println("")
-	fmt.Println("    --sandbox string       Path to sandbox directory")
-	fmt.Println("                           (default: current working directory)")
-	fmt.Println("")
-	fmt.Println("    --url string           OpenAI API endpoint for LLM backend")
-	fmt.Println("                           (default: \"http://localhost:11434/v1\")")
-	fmt.Println("")
-	fmt.Println("Examples:")
-	fmt.Println("")
-	fmt.Println("    # single-agent mode")
-	fmt.Println("    exocomp tty --agent=architect")
-	fmt.Println("    exocomp web --agent=architect --model=\"qwen3-coder:30b\" --temperature=\"0.7\";")
-	fmt.Println("")
-	fmt.Println("    # multi-agent mode")
-	fmt.Println("    exocomp tty --agent=planner")
-	fmt.Println("    exocomp web --agent=planner --model=\"codestral:22b\" --temperature=\"0.5\";")
-	fmt.Println("")
-
-}
 
 func main() {
 
-	tmp_ui            := ""
-	tmp_name          := ""
-	tmp_agent         := "planner"
-	tmp_debug         := false
-	tmp_model         := "qwen3-coder:30b"
-	tmp_playground, _ := os.Getwd()
-	tmp_prompt        := ""
-	tmp_sandbox, _    := os.Getwd()
-	tmp_temperature   := float64(0.0)
-	tmp_url, _        := net_url.Parse("http://localhost:11434/v1")
+	var config *types.Config = nil
+	var mode   string        = ""
 
-	if len(os.Args) >= 2 {
+	if len(os.Args) > 1 {
 
 		tmp1 := strings.TrimSpace(os.Args[1])
 
 		if (tmp1 == "jsonl" || tmp1 == "tty" || tmp1 == "web" || tmp1 == "webview") {
-
-			tmp_ui = tmp1
-
-		} else {
-
-			showHelp()
-			os.Exit(1)
-
+			mode = tmp1
 		}
 
-		flags := os.Args[1:]
+		config = utils_cli.ParseConfig(os.Args[1:])
 
-		for _, flag := range flags {
-
-			if strings.HasPrefix(flag, "--") && strings.Contains(flag, "=") {
-
-				tmp := strings.Split(flag[2:], "=")
-
-				if len(tmp) == 2 {
-
-					if strings.HasPrefix(tmp[1], "\"") && strings.HasSuffix(tmp[1], "\"") {
-						tmp[1] = tmp[1][1:len(tmp[1]) - 2]
-					}
-
-					if strings.HasPrefix(tmp[1], "'") && strings.HasSuffix(tmp[1], "'") {
-						tmp[1] = tmp[1][1:len(tmp[1]) - 2]
-					}
-
-					switch tmp[0] {
-					case "name":
-
-						if utils_agent.IsName(tmp[1]) {
-							tmp_name = utils_fmt.FormatAgentName(tmp[1])
-						}
-
-					case "agent":
-
-						if utils_agent.IsType(tmp[1]) {
-							tmp_agent = strings.TrimSpace(tmp[1])
-						}
-
-					case "model":
-
-						tmp_model = strings.TrimSpace(tmp[1])
-
-					case "playground":
-
-						stat, err := os.Stat(strings.TrimSpace(tmp[1]))
-
-						if err == nil && stat.IsDir() {
-							tmp_playground = strings.TrimSpace(tmp[1])
-						} else if err != nil && os.IsNotExist(err) {
-							tmp_playground = strings.TrimSpace(tmp[1])
-						}
-
-					case "prompt":
-
-						tmp_prompt = utils_fmt.FormatSingleLine(tmp[1])
-
-					case "sandbox":
-
-						stat, err := os.Stat(strings.TrimSpace(tmp[1]))
-
-						if err == nil && stat.IsDir() {
-							tmp_sandbox = strings.TrimSpace(tmp[1])
-						} else if err != nil && os.IsNotExist(err) {
-							tmp_sandbox = strings.TrimSpace(tmp[1])
-						}
-
-					case "temperature":
-
-						num, err := strconv.ParseFloat(strings.TrimSpace(tmp[1]), 10)
-
-						if err == nil {
-
-							if num >= 0.1 && num <= 1.0 {
-								tmp_temperature = num
-							}
-
-						}
-
-					case "url":
-
-						url, err := net_url.Parse(strings.TrimSpace(tmp[1]))
-
-						if err == nil {
-
-							if url.Scheme == "http" || url.Scheme == "https" {
-
-								if url.Path == "/" || url.Path == "/v1" {
-									tmp_url = url
-								}
-
-							}
-
-						}
-
-					}
-
-				}
-
-			} else if strings.HasPrefix(flag, "--") {
-
-				tmp := strings.TrimSpace(flag[2:])
-
-				switch tmp {
-				case "debug":
-					tmp_debug = true
-				}
-
-			}
-
-		}
-
-	} else {
-		showHelp()
-		os.Exit(1)
 	}
 
-	if tmp_playground == tmp_sandbox || strings.HasPrefix(tmp_sandbox, tmp_playground + string(os.PathSeparator)) {
-
-		config := types.NewConfig(
-			tmp_name,
-			tmp_agent,
-			tmp_model,
-			tmp_prompt,
-			tmp_temperature,
-			tmp_playground,
-			tmp_sandbox,
-			tmp_url,
-			tmp_debug,
-		)
+	if mode != "" && config != nil {
 
 		agent := agents.NewAgent(config)
 
@@ -220,22 +36,23 @@ func main() {
 			agent.Name,
 			agent.Type,
 			agent.Model,
-			tmp_prompt,
+			config.Prompt,
 			agent.Temperature,
 		)
 
-		err1 := os.MkdirAll(config.Sandbox, 0755)
+		err0 := os.MkdirAll(config.Sandbox, 0755)
 
-		if err1 == nil {
+		if err0 == nil {
 
-			if tmp_ui == "jsonl" {
+			switch mode {
+			case "jsonl":
 
 				os.Stdout.Sync()
 
 				client := ui_jsonl.NewClient(agent, config)
 				client.Init()
 
-			} else if tmp_ui == "tty" {
+			case "tty":
 
 				fmt.Fprintf(os.Stdout, "[config]:\n")
 				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
@@ -247,7 +64,7 @@ func main() {
 				client := ui_tty.NewClient(agent, config)
 				client.Init()
 
-			} else if tmp_ui == "web" {
+			case "web":
 
 				server := ui_web.NewServer(agent, config)
 
@@ -261,7 +78,7 @@ func main() {
 
 				server.Init()
 
-			} else if tmp_ui == "webview" {
+			case "webview":
 
 				fmt.Fprintf(os.Stdout, "[config]:\n")
 				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
@@ -276,21 +93,23 @@ func main() {
 				go client.Init()
 				server.Init()
 
-			} else {
+			default:
 
-				showHelp()
+				utils_cli.PrintUsage()
 				os.Exit(1)
 
 			}
 
 		} else {
-			fmt.Println(err1)
+
+			fmt.Fprintf(os.Stderr, "Error: %s", err0.Error())
 			os.Exit(1)
+
 		}
 
 	} else {
 
-		fmt.Println("Invalid sandbox path, must be inside playground.")
+		utils_cli.PrintUsage()
 		os.Exit(1)
 
 	}

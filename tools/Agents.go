@@ -35,6 +35,7 @@ func NewAgents(playground string, sandbox string, model string, url *net_url.URL
 		Sandbox:    sandbox,
 		Model:      model,
 		URL:        url,
+		Debug:      debug,
 		Mutex:      &sync.Mutex{},
 		processes:  make(map[string]*os.Process),
 	}
@@ -169,8 +170,9 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 			}
 
 			// IMPORTANT: child process's playground is parent process's sandbox
-			cmd := exec.Command(
-				os.Args[0],
+			exe, _ := os.Executable()
+			cmd    := exec.Command(
+				exe,
 				"jsonl",
 				fmt.Sprintf("--name=\"%s\"", name),
 				fmt.Sprintf("--agent=\"%s\"", agent),
@@ -321,8 +323,9 @@ func (tool *Agents) Inquire(name string) (string, error) {
 				debug_flag = "--debug"
 			}
 
-			cmd := exec.Command(
-				os.Args[0],
+			exe, _ := os.Executable()
+			cmd    := exec.Command(
+				exe,
 				"jsonl",
 				fmt.Sprintf("--name=\"%s\"", "Summarizer"),
 				fmt.Sprintf("--agent=\"%s\"", "summarizer"),
