@@ -164,11 +164,14 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 			cmd := exec.Command(
 				os.Args[0],
 				"jsonl",
-				"--name",       name,
-				"--agent",      agent,
-				"--playground", tool.Playground,
-				"--sandbox",    resolved,
-				"--prompt",     prompt,
+				fmt.Sprintf("--name=\"%s\"", name),
+				fmt.Sprintf("--agent=\"%s\"", agent),
+				fmt.Sprintf("--model=\"%s\"", tool.Model),
+				fmt.Sprintf("--prompt=\"%s\"", prompt),
+				// --temperature set by agent type
+				fmt.Sprintf("--playground=\"%s\"", tool.Playground),
+				fmt.Sprintf("--sandbox=\"%s\"", resolved),
+				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
 			)
 			cmd.Dir = resolved
 
@@ -285,71 +288,80 @@ func (tool *Agents) Inquire(name string) (string, error) {
 
 	tmp, err0 := os.MkdirTemp("/tmp", "exocomp-summarizer-*")
 
-	tool.Mutex.Lock()
-	agent, ok2 := tool.Agents[name]
-	tool.Mutex.Unlock()
-
-	if err0 == nil && ok2 == true {
+	if err0 == nil {
 
 		tool.Mutex.Lock()
-		messages := utils_chat.SummarizeMessages(agent.Messages, true, true, false)
+		agent, ok0 := tool.Agents[name]
 		tool.Mutex.Unlock()
 
-		prompt   := strings.Join([]string{
-			"Please summarize the following conversation, the latest messages are the newest ones.",
-			"",
-			messages,
-		}, "\n")
+		if ok0 == true {
 
-		cmd := exec.Command(
-			os.Args[0],
-			"jsonl",
-			"--name",       "Summarizer",
-			"--agent",      "summarizer",
-			"--playground", tool.Playground,
-			"--sandbox",    tmp,
-			"--prompt",     prompt,
-		)
-		cmd.Dir = tmp
+			tool.Mutex.Lock()
+			messages := utils_chat.SummarizeMessages(agent.Messages, true, true, false)
+			tool.Mutex.Unlock()
 
-		stdout_buffer := bytes.Buffer{}
-		cmd.Stdout = &stdout_buffer
+			prompt := strings.Join([]string{
+				"Please summarize the following conversation, the latest messages are the newest ones.",
+				"",
+				messages,
+			}, "\n")
 
-		err1 := cmd.Run()
+			cmd := exec.Command(
+				os.Args[0],
+				"jsonl",
+				fmt.Sprintf("--name=\"%s\"", "Summarizer"),
+				fmt.Sprintf("--agent=\"%s\"", "summarizer"),
+				fmt.Sprintf("--model=\"%s\"", tool.Model),
+				fmt.Sprintf("--prompt=\"%s\"", prompt),
+				// --temperature set by agent type
+				fmt.Sprintf("--playground=\"%s\"", tool.Playground),
+				fmt.Sprintf("--sandbox=\"%s\"", tmp),
+				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
+			)
+			cmd.Dir = tmp
 
-		if err1 == nil {
+			stdout_buffer := bytes.Buffer{}
+			cmd.Stdout = &stdout_buffer
 
-			os.RemoveAll(tmp)
+			err1 := cmd.Run()
 
-			lines := strings.Split(strings.TrimSpace(stdout_buffer.String()), "\n")
+			if err1 == nil {
 
-			if len(lines) > 0 {
+				os.RemoveAll(tmp)
 
-				summary := schemas.Message{}
-				err2    := json.Unmarshal([]byte(lines[len(lines) - 1]), &summary)
+				lines := strings.Split(strings.TrimSpace(stdout_buffer.String()), "\n")
 
-				if err2 == nil {
+				if len(lines) > 0 {
 
-					_, ok1 := tool.processes[name]
+					summary := schemas.Message{}
+					err2    := json.Unmarshal([]byte(lines[len(lines) - 1]), &summary)
 
-					if ok1 == true {
+					if err2 == nil {
 
-						result := strings.Join([]string{
-							fmt.Sprintf("agents.Inquire: Summary of currently working agent \"%s\"'s work report:", name),
-							strings.TrimSpace(summary.Content),
-						}, "\n")
+						_, ok1 := tool.processes[name]
 
-						return result, nil
+						if ok1 == true {
+
+							result := strings.Join([]string{
+								fmt.Sprintf("agents.Inquire: Summary of currently working agent \"%s\"'s work report:", name),
+								strings.TrimSpace(summary.Content),
+							}, "\n")
+
+							return result, nil
+
+						} else {
+
+							result := strings.Join([]string{
+								fmt.Sprintf("agents.Inquire: Summary of already finished agent \"%s\"'s work report:", name),
+								strings.TrimSpace(summary.Content),
+							}, "\n")
+
+							return result, nil
+
+						}
 
 					} else {
-
-						result := strings.Join([]string{
-							fmt.Sprintf("agents.Inquire: Summary of already finished agent \"%s\"'s work report:", name),
-							strings.TrimSpace(summary.Content),
-						}, "\n")
-
-						return result, nil
-
+						return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
 					}
 
 				} else {
@@ -361,11 +373,11 @@ func (tool *Agents) Inquire(name string) (string, error) {
 			}
 
 		} else {
-			return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
+			return "", fmt.Errorf("agents.Inquire: Agent \"%s\" didn't work for us?", name)
 		}
 
 	} else {
-		return "", fmt.Errorf("agents.Inquire: Agent \"%s\" didn't work for us?", name)
+		return "", fmt.Errorf("agents.Inquire: System is out of memory ... %s", err0.Error())
 	}
 
 }
