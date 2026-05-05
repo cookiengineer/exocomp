@@ -27,6 +27,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 			config.Sandbox,
 			config.Model,
 			config.URL,
+			config.Debug,
 			agent.Programs,
 			agent.Tools,
 		)

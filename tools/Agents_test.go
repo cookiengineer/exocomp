@@ -7,6 +7,7 @@ import "os"
 import "path/filepath"
 import "strings"
 import "testing"
+import "time"
 
 import "fmt"
 
@@ -16,7 +17,7 @@ func TestAgents_Hire(t *testing.T) {
 	sandbox       := filepath.Join(playground, "agents")
 	model         := "qwen3-coder:30b"
 	url,        _ := net_url.Parse("http://localhost:11434/v1")
-	tool          := NewAgents(playground, sandbox, model, url)
+	tool          := NewAgents(playground, sandbox, model, url, true)
 
 	if tool != nil {
 
@@ -37,6 +38,51 @@ func TestAgents_Hire(t *testing.T) {
 			}, "\n"),
 		)
 
+		done := make(chan bool, 1)
+
+		go func() {
+
+			ticker  := time.NewTicker(10 * time.Second)
+			timeout := time.After(5 * time.Minute)
+
+			for {
+				select {
+				case <-ticker.C:
+
+					tool.Mutex.Lock()
+					_, ok := tool.processes["Fibonacci Worker"]
+					tool.Mutex.Unlock()
+
+					if ok == false {
+						done<-true
+						return
+					}
+
+				case <-timeout:
+					done<-false
+					return
+				}
+			}
+
+			ticker.Stop()
+
+		}()
+
+		finished := <-done
+
+		if finished == true {
+
+			fmt.Println("Agent finished!")
+
+		} else {
+			t.Errorf("Expected agent %s to finish", "Fibonacci Worker")
+		}
+
+		fmt.Println(finished)
+
+		// TODO: goroutine that waits for tool.processes[agent_name]*os.Process to be nil
+		// (which means the process is finished)
+
 		// TODO: use tool.List() to show overview of working agents
 
 		fmt.Println(result1)
@@ -46,14 +92,15 @@ func TestAgents_Hire(t *testing.T) {
 		t.Errorf("Expected %v to be not nil", tool)
 	}
 
-	t.Cleanup(func() {
+	// TODO
+	// t.Cleanup(func() {
 
-		if t.Failed() == true {
-			t.Logf("Preserving folder %s for debugging.", playground)
-		} else {
-			os.RemoveAll(playground)
-		}
+	// 	if t.Failed() == true {
+	// 		t.Logf("Preserving folder %s for debugging.", playground)
+	// 	} else {
+	// 		os.RemoveAll(playground)
+	// 	}
 
-	})
+	// })
 
 }

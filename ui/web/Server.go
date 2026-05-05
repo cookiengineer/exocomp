@@ -31,6 +31,7 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 			config.Sandbox,
 			config.Model,
 			config.URL,
+			config.Debug,
 			agent.Programs,
 			agent.Tools,
 		)

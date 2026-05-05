@@ -22,11 +22,12 @@ type Agents struct {
 	Sandbox    string
 	Model      string
 	URL        *net_url.URL
+	Debug      bool
 	Mutex      *sync.Mutex
 	processes  map[string]*os.Process
 }
 
-func NewAgents(playground string, sandbox string, model string, url *net_url.URL) *Agents {
+func NewAgents(playground string, sandbox string, model string, url *net_url.URL, debug bool) *Agents {
 
 	agents := &Agents{
 		Agents:     make(map[string]*types.Agent),
@@ -161,6 +162,12 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				os.MkdirAll(resolved, 0755)
 			}
 
+			debug_flag := ""
+
+			if tool.Debug == true {
+				debug_flag = "--debug"
+			}
+
 			// IMPORTANT: child process's playground is parent process's sandbox
 			cmd := exec.Command(
 				os.Args[0],
@@ -173,6 +180,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				fmt.Sprintf("--playground=\"%s\"", tool.Sandbox),
 				fmt.Sprintf("--sandbox=\"%s\"", resolved),
 				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
+				debug_flag,
 			)
 			cmd.Dir = resolved
 
@@ -307,6 +315,12 @@ func (tool *Agents) Inquire(name string) (string, error) {
 				messages,
 			}, "\n")
 
+			debug_flag := ""
+
+			if tool.Debug == true {
+				debug_flag = "--debug"
+			}
+
 			cmd := exec.Command(
 				os.Args[0],
 				"jsonl",
@@ -318,6 +332,7 @@ func (tool *Agents) Inquire(name string) (string, error) {
 				// --playground set by cmd.Dir
 				// --sandbox set by cmd.Dir
 				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
+				debug_flag,
 			)
 			cmd.Dir = tmp
 

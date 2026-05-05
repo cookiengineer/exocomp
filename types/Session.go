@@ -292,7 +292,7 @@ func (session *Session) SetTool(identifier string, tool Tool, schemas []schemas.
 
 func (session *Session) infer_chat_completions() error {
 
-	request_payload, err0 := json.Marshal(schemas.ChatRequest{
+	request_payload, err0 := json.MarshalIndent(schemas.ChatRequest{
 		Model:       session.Agent.Model,
 		Temperature: session.Agent.Temperature,
 		Messages:    session.Agent.Messages,
@@ -303,7 +303,7 @@ func (session *Session) infer_chat_completions() error {
 			NumContext: 262144,
 			NumPredict: 8192,
 		},
-	})
+	}, "", "\t")
 
 	if err0 == nil {
 
@@ -314,7 +314,13 @@ func (session *Session) infer_chat_completions() error {
 		)
 
 		if session.Config.Debug == true {
-			os.WriteFile(session.Config.Sandbox + "/.exocomp-request.json", request_payload, 0666)
+
+			var tmp1 interface{}
+			json.Unmarshal(request_payload, &tmp1)
+			tmp2, _ := json.MarshalIndent(tmp1, "", "\t")
+
+			os.WriteFile(session.Config.Sandbox + "/.exocomp-request.json", tmp2, 0666)
+
 		}
 
 		if err1 == nil && response.StatusCode == 200 {
@@ -322,7 +328,13 @@ func (session *Session) infer_chat_completions() error {
 			response_payload, err2 := io.ReadAll(response.Body)
 
 			if session.Config.Debug == true {
-				os.WriteFile(session.Config.Sandbox + "/.exocomp-response.json", response_payload, 0666)
+
+				var tmp1 interface{}
+				json.Unmarshal(response_payload, &tmp1)
+				tmp2, _ := json.MarshalIndent(tmp1, "", "\t")
+
+				os.WriteFile(session.Config.Sandbox + "/.exocomp-response.json", tmp2, 0666)
+
 			}
 
 			if err2 == nil {
