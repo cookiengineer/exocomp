@@ -1,6 +1,20 @@
 
 # TODO
 
+## Agents Testing
+
+- [ ] tools/TestMain can't work because of cyclic dependency to tools being required
+- [ ] TestMain cannot implement `jsonl` behavior because os.Args isn't accessible from TestMain
+- [ ] TestMain is executed _once_ in the main binary, not in the executed test compilation binary of the package
+
+- [ ] Therefore need to build a separate test binary of the cmds/exocomp/main.go?
+      os.Executable() would work
+      jsonl parameter would work
+
+- [ ] But how do we get the agents tool methods tested this way?
+      Fuck me I really do hate Go sometimes.
+
+
 ## Models
 
 - [ ] ollama has 32k context length limit, even though model supports 256k

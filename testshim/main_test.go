@@ -7,6 +7,7 @@ import ui_jsonl "exocomp/ui/jsonl"
 import utils_cli "exocomp/utils/cli"
 import "bufio"
 import "context"
+import "encoding/json"
 import "fmt"
 import "os"
 import "os/exec"
@@ -20,6 +21,27 @@ type Pipe interface {
 	Read([]byte) (int, error)
 }
 
+func appendDebugLog(path string, bytes []byte) error {
+
+	fd, err0 := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err0 == nil {
+
+		defer fd.Close()
+
+		fd.Write([]byte("TestMain:\n"))
+		fd.Write(bytes)
+		fd.Write([]byte("\n\n\n"))
+
+		return nil
+
+	} else {
+		return err0
+	}
+
+}
+
+
 func getToolsPath() string {
 
 	_, filename, _, ok := runtime.Caller(0)
@@ -29,6 +51,31 @@ func getToolsPath() string {
 	} else {
 		panic("Cannot get current test file path")
 	}
+
+}
+
+func parseArgumentsFromProc() ([]string) {
+
+	result := make([]string, 0)
+
+	pid        := os.Getpid()
+	bytes, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
+
+	if err == nil {
+
+		arguments := strings.Split(string(bytes), "\x00")
+
+		if len(arguments) > 0 && arguments[len(arguments)-1] == "" {
+			arguments = arguments[0:len(arguments)-1]
+		}
+
+		for _, argument := range arguments {
+			result = append(result, argument)
+		}
+
+	}
+
+	return result
 
 }
 
@@ -69,10 +116,14 @@ func watchServerOutput(pipe Pipe, ready chan bool, errors chan error) {
 
 func TestMain(main *testing.M) {
 
-	if len(os.Args) > 1 && os.Args[1] == "jsonl" {
+	actual_os_args := parseArgumentsFromProc()
+	tmp, _ := json.MarshalIndent(actual_os_args, "", "\t")
+	appendDebugLog("/tmp/whatthefuck", tmp)
+
+	if len(actual_os_args) > 1 && actual_os_args[1] == "jsonl" {
 
 		// NOTE: TestMain needs to reimplement main() to be able to spawn subprocesses
-		config := utils_cli.ParseConfig(os.Args[1:])
+		config := utils_cli.ParseConfig(actual_os_args[1:])
 		agent  := agents.NewAgent(config)
 
 		config.Update(
