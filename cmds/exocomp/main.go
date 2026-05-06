@@ -53,7 +53,15 @@ func main() {
 			switch mode {
 			case "jsonl":
 
+				fmt.Fprintf(os.Stderr, "[config]:\n")
+				fmt.Fprintf(os.Stderr, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
+				fmt.Fprintf(os.Stderr, "| Sandbox: %s\n", config.Sandbox)
+				fmt.Fprintf(os.Stderr, "| Tools:   %s\n", strings.Join(agent.Tools, ", "))
+				fmt.Fprintf(os.Stderr, "| URL:     %s\n", config.URL.String())
+				fmt.Fprintf(os.Stderr, "\n")
+
 				os.Stdout.Sync()
+				os.Stderr.Sync()
 
 				client := ui_jsonl.NewClient(agent, config)
 				client.Init()
@@ -63,6 +71,7 @@ func main() {
 				fmt.Fprintf(os.Stdout, "[config]:\n")
 				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
 				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
+				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.Tools, ", "))
 				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
 				fmt.Fprintf(os.Stdout, "\n")
 				os.Stdout.Sync()
@@ -77,6 +86,7 @@ func main() {
 				fmt.Fprintf(os.Stdout, "[config]:\n")
 				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
 				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
+				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.Tools, ", "))
 				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
 				fmt.Fprintf(os.Stdout, "| Web:     %s\n", server.URL.String())
 				fmt.Fprintf(os.Stdout, "\n")

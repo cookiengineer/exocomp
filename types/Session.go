@@ -45,8 +45,6 @@ func NewSession(agent *Agent, config *Config) *Session {
 		tools:    make(map[string]Tool),
 	}
 
-	auto_init := false
-
 	session.mutex.Lock()
 
 	if config != nil && config.GetPrompt() != "" {
@@ -56,17 +54,11 @@ func NewSession(agent *Agent, config *Config) *Session {
 			Content: config.GetPrompt(),
 		})
 
-		auto_init = true
-
 	}
 
 	session.Context.Length = session.Config.GetContextLength()
 
 	session.mutex.Unlock()
-
-	if auto_init == true {
-		session.Init()
-	}
 
 	return session
 
@@ -74,6 +66,7 @@ func NewSession(agent *Agent, config *Config) *Session {
 
 func (session *Session) Init() error {
 
+	// NOTE: First Message is System Prompt
 	if len(session.Agent.Messages) > 0 {
 		return session.infer_chat_completions()
 	}

@@ -9,6 +9,7 @@ import "bufio"
 import "bytes"
 import "encoding/json"
 import "fmt"
+// import "io"
 import net_url "net/url"
 import "os"
 import "os/exec"
@@ -190,6 +191,12 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				debug_flag,
 			)
 			cmd.Dir = resolved
+
+			// XXX: USE THIS FOR DEBUGGING
+			// stdout_pipe, stdout_write := io.Pipe()
+			// cmd.Stdout = io.MultiWriter(os.Stdout, stdout_write)
+			// cmd.Stderr = os.Stderr
+			// err2 := error(nil)
 
 			stdout_pipe, err2 := cmd.StdoutPipe()
 

@@ -24,81 +24,81 @@ func ParseConfig(arguments []string) *types.Config {
 
 		if strings.HasPrefix(argument, "--") && strings.Contains(argument, "=") {
 
-			tmp := strings.Split(argument[2:], "=")
+			flag := strings.Split(argument[2:], "=")
 
-			if len(tmp) == 2 {
+			if len(flag) == 2 {
 
-				if strings.HasPrefix(tmp[1], "\"") && strings.HasSuffix(tmp[1], "\"") {
-					tmp[1] = tmp[1][1:len(tmp[1]) - 1]
+				if strings.HasPrefix(flag[1], "\"") && strings.HasSuffix(flag[1], "\"") {
+					flag[1] = flag[1][1:len(flag[1]) - 1]
 				}
 
-				if strings.HasPrefix(tmp[1], "'") && strings.HasSuffix(tmp[1], "'") {
-					tmp[1] = tmp[1][1:len(tmp[1]) - 1]
+				if strings.HasPrefix(flag[1], "'") && strings.HasSuffix(flag[1], "'") {
+					flag[1] = flag[1][1:len(flag[1]) - 1]
 				}
 
-				switch tmp[0] {
+				switch flag[0] {
 				case "name":
 
-					if utils_agent.IsName(tmp[1]) {
-						name = utils_fmt.FormatAgentName(tmp[1])
+					if utils_agent.IsName(flag[1]) {
+						name = utils_fmt.FormatAgentName(flag[1])
 					}
 
 				case "agent":
 
-					if utils_agent.IsType(tmp[1]) {
-						agent = strings.TrimSpace(tmp[1])
+					if utils_agent.IsType(flag[1]) {
+						agent = strings.TrimSpace(flag[1])
 					}
 
 				case "model":
 
-					model = strings.TrimSpace(tmp[1])
+					model = strings.TrimSpace(flag[1])
 
 				case "playground":
 
-					stat, err := os.Stat(strings.TrimSpace(tmp[1]))
+					stat, err := os.Stat(strings.TrimSpace(flag[1]))
 
 					if err == nil && stat.IsDir() {
-						playground = strings.TrimSpace(tmp[1])
+						playground = strings.TrimSpace(flag[1])
 					} else if err != nil && os.IsNotExist(err) {
-						playground = strings.TrimSpace(tmp[1])
+						playground = strings.TrimSpace(flag[1])
 					}
 
 				case "prompt":
 
-					prompt = utils_fmt.FormatSingleLine(tmp[1])
+					prompt = utils_fmt.FormatSingleLine(flag[1])
 
 				case "sandbox":
 
-					stat, err := os.Stat(strings.TrimSpace(tmp[1]))
+					stat, err := os.Stat(strings.TrimSpace(flag[1]))
 
 					if err == nil && stat.IsDir() {
-						sandbox = strings.TrimSpace(tmp[1])
+						sandbox = strings.TrimSpace(flag[1])
 					} else if err != nil && os.IsNotExist(err) {
-						sandbox = strings.TrimSpace(tmp[1])
+						sandbox = strings.TrimSpace(flag[1])
 					}
 
 				case "temperature":
 
-					num, err := strconv.ParseFloat(strings.TrimSpace(tmp[1]), 10)
+					tmp, err := strconv.ParseFloat(strings.TrimSpace(flag[1]), 10)
 
 					if err == nil {
 
-						if num >= 0.1 && num <= 1.0 {
-							temperature = num
+						if tmp >= 0.1 && tmp <= 1.0 {
+							temperature = tmp
 						}
 
 					}
 
 				case "url":
 
-					url, err := net_url.Parse(strings.TrimSpace(tmp[1]))
+					tmp, err := net_url.Parse(strings.TrimSpace(flag[1]))
 
 					if err == nil {
 
-						if url.Scheme == "http" || url.Scheme == "https" {
+						if tmp.Scheme == "http" || tmp.Scheme == "https" {
 
-							if url.Path == "/" || url.Path == "/v1" {
-								url = url
+							if tmp.Path == "/" || tmp.Path == "/v1" {
+								url = tmp
 							}
 
 						}
@@ -111,9 +111,9 @@ func ParseConfig(arguments []string) *types.Config {
 
 		} else if strings.HasPrefix(argument, "--") {
 
-			tmp := strings.TrimSpace(argument[2:])
+			flag := strings.TrimSpace(argument[2:])
 
-			switch tmp {
+			switch flag {
 			case "debug":
 				debug = true
 			}

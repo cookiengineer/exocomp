@@ -4,8 +4,6 @@ import "exocomp/schemas"
 import "exocomp/types"
 import "fmt"
 import "os"
-import "sort"
-import "strings"
 import "sync"
 
 type Renderer struct {
@@ -50,21 +48,6 @@ func (renderer *Renderer) Destroy() {
 
 func (renderer *Renderer) RenderLoop() {
 
-	tools := make([]string, 0)
-
-	for _, tool := range renderer.Session.Agent.Tools {
-		tools = append(tools, tool)
-	}
-
-	sort.Strings(tools)
-
-	info_agent := fmt.Sprintf("Agent: %s | %s | %s | %.2f", renderer.Session.Agent.Name, renderer.Session.Agent.Type, renderer.Session.Agent.Model, renderer.Session.Agent.Temperature)
-	info_tools := fmt.Sprintf("Tools: %s", strings.Join(tools, ", "))
-
-	fmt.Fprintf(os.Stdout, "\r%s[exocomp]%s:\n", ColorYellow, ColorReset)
-	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_agent)
-	fmt.Fprintf(os.Stdout, "\r%s|%s %s\n", ColorYellow, ColorReset, info_tools)
-	fmt.Fprintf(os.Stdout, "\n")
 	os.Stdout.Sync()
 
 	for {

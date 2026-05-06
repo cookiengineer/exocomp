@@ -38,6 +38,10 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	}
 
+	if config.GetPrompt() != "" {
+		session.Init()
+	}
+
 	return &Client{
 		Renderer: renderer,
 		Session:  session,
