@@ -57,8 +57,8 @@ Planning Responsibilities:
 
 Specification Requirements:
 
-- File structures (exact file paths and package names)
-- Data structures (struct definitions and package names)
+- File structures (exact file names)
+- Data structures (struct, function or interface names)
 - Acceptance criteria (clear and testable conditions)
 - Function parameters (types and meaning)
 - Function outputs (types and meaning)

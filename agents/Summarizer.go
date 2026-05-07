@@ -55,8 +55,8 @@ func NewSummarizer(config *types.Config) *types.Agent {
 			"files.Read",
 			"files.Stat",
 			// No files.Write
-			"programs.List",
-			"programs.Execute",
+			// no programs.List
+			// no programs.Execute
 			// No requirements.DefineFunc
 			// No requirements.DefineStruct
 			// No requirements.DefineTest

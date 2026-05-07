@@ -1,6 +1,17 @@
 
 # TODO
 
+## Agents
+
+- [ ] Check the repos in described order to find better prompts
+- [ ] Web Pentester
+- [ ] Binary Reverse Engineer
+- [ ] Web Recon Analyst
+- [ ] Web Business Analyst
+- [ ] Web Subdomain Analyst
+- [ ] Researcher
+
+
 ## Models
 
 - [ ] ollama has 32k context length limit, even though model supports 256k
@@ -13,7 +24,6 @@
 
 ## Agents
 
-- [ ] `coder` doesn't write files into the filesystem
 - [ ] `redteamer` who writes malware and targets victim sandboxes
 - [ ] `blueteamer` who analyzes metrics and logs of victim sandboxes
 
