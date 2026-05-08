@@ -39,7 +39,7 @@ Exocomp uses multiple Agent [Types](./agents/Types.go):
 | Role                                 | Lifecycle | Default Model     | Description                                                   |
 |:-------------------------------------|:---------:|:-----------------:|:--------------------------------------------------------------|
 | [Planner](./agents/Planner.go)       | long      | `gemma4:31b`      | writes with humans, contracts agents and plans project phases |
-| [Architect](./agents/Architect.go)   | short     | `qwen3-coder:30b` | writes specifications                                         |
+| [Architect](./agents/Architect.go)   | short     | `qwen3-coder:30b` | defines `specifications`                                      |
 | [Coder](./agents/Coder.go)           | short     | `qwen3-coder:30b` | implements features, reads `specifications` and `bugs`        |
 | [Tester](./agents/Tester.go)         | short     | `qwen3-coder:30b` | implements unit tests, writes reports into `bugs`             |
 | [Summarizer](./agents/Summarizer.go) | short     | `qwen3-coder:30b` | reads long texts and summarizes them                          |
@@ -74,8 +74,8 @@ Check the unit tests on whether the Tools can be relied on or not.
 | Kiwix                                   |                                                          | Researches knowledge from offline web archives. | `researcher`                                            |
 | Websites                                |                                                          | Researches knowledge from the web.              | `researcher`                                            |
 
-[1] Install dependencies with [install-deps.sh](./install-deps.sh). Requires 80GB of HDD space, 48GB of VRAM, and an iGPU or dGPU with `vulkan` support.
-[2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).
+- [1] Install dependencies with [install-deps.sh](./install-deps.sh). Requires 80GB of HDD space, 48GB of VRAM, and an iGPU or dGPU with `vulkan` support.
+- [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).
 
 ### Dependencies
 
