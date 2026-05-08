@@ -23,7 +23,7 @@ func NewSkills(playground string, sandbox string) *Skills {
 		processes:     make(map[string]*os.Process),
 	}
 
-	// TODO: Read folder at bootup time or at runtime?
+	readSkills(skills)
 
 	return skills
 

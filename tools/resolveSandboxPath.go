@@ -18,10 +18,12 @@ func resolveSandboxPath(sandbox string, file_path string) (string, error) {
 	}
 
 	if strings.Contains(file_path, "/") && string(os.PathSeparator) == "\\" {
+		// TODO: Might be better to replace all / with \ here
 		return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", file_path)
 	}
 
 	if strings.Contains(file_path, "\\") && string(os.PathSeparator) == "/" {
+		// TODO: Might be better to replace all \ with / here
 		return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", file_path)
 	}
 

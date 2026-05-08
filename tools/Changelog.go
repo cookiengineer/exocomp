@@ -22,15 +22,13 @@ type Changelog struct {
 
 func NewChangelog(playground string, sandbox string) *Changelog {
 
-	changelog := &Changelog{
+	tool := &Changelog{
 		Playground: playground,
 		Sandbox:    sandbox,
 		contents:   make(map[string]map[string][]changelog_entry, 0),
 	}
 
-	readChangelog(changelog)
-
-	return changelog
+	return tool
 
 }
 
@@ -169,6 +167,8 @@ func (tool *Changelog) Fix(path string, symbol string, description string) (stri
 
 func (tool *Changelog) List() (string, error) {
 
+	readChangelog(tool)
+
 	found := make(map[time.Time][]string, 0)
 
 	for _, symbols := range tool.contents {
@@ -238,6 +238,8 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
 		if err2 == nil {
+
+			readChangelog(tool)
 
 			found := make(map[time.Time][]string, 0)
 
@@ -374,6 +376,8 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
 		if err2 == nil {
+
+			readChangelog(tool)
 
 			_, ok1 := tool.contents[internal_path]
 

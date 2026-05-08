@@ -20,15 +20,13 @@ type Bugs struct {
 
 func NewBugs(playground string, sandbox string) *Bugs {
 
-	bugs := &Bugs{
+	tool := &Bugs{
 		Playground: playground,
 		Sandbox:    sandbox,
 		contents:   make(map[string]map[string]bug_specification),
 	}
 
-	readBugs(bugs)
-
-	return bugs
+	return tool
 
 }
 
@@ -102,6 +100,8 @@ func (tool *Bugs) Add(path string, symbol string, description string) (string, e
 
 		if err2 == nil {
 
+			readBugs(tool)
+
 			_, ok1 := tool.contents[internal_path]
 
 			if ok1 == false {
@@ -164,6 +164,8 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 
 		if err2 == nil {
 
+			readBugs(tool)
+
 			_, ok1 := tool.contents[internal_path]
 
 			if ok1 == true {
@@ -202,6 +204,8 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 }
 
 func (tool *Bugs) List() (string, error) {
+
+	readBugs(tool)
 
 	lines := make([]string, 0)
 
@@ -251,6 +255,8 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
 		if err2 == nil {
+
+			readBugs(tool)
 
 			if symbol != "" {
 

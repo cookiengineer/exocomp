@@ -26,15 +26,13 @@ type Requirements struct {
 
 func NewRequirements(playground string, sandbox string) *Requirements {
 
-	requirements := &Requirements{
+	tool := &Requirements{
 		Playground: playground,
 		Sandbox:    sandbox,
 		contents:   make(map[string]map[string]requirement_specification),
 	}
 
-	readRequirements(requirements)
-
-	return requirements
+	return tool
 
 }
 
@@ -129,6 +127,8 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 }
 
 func (tool *Requirements) List() (string, error) {
+
+	readRequirements(tool)
 
 	lines := make([]string, 0)
 
@@ -234,6 +234,8 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 			if declaration_symbol == symbol {
 
+				readRequirements(tool)
+
 				_, ok1 := tool.contents[resolved]
 
 				if ok1 == false {
@@ -335,6 +337,8 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 			}
 
 			if declaration_symbol == symbol {
+
+				readRequirements(tool)
 
 				_, ok3 := tool.contents[resolved]
 
@@ -438,6 +442,8 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 
 			if declaration_symbol == symbol {
 
+				readRequirements(tool)
+
 				_, ok3 := tool.contents[resolved]
 
 				if ok3 == false {
@@ -483,6 +489,8 @@ func (tool *Requirements) Search(path string, symbol string) (string, error) {
 		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
 		if err2 == nil {
+
+			readRequirements(tool)
 
 			if symbol != "" {
 
