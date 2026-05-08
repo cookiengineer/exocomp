@@ -6,7 +6,6 @@ import "exocomp/tools"
 import "exocomp/types"
 import "encoding/json"
 import "net/http"
-import "sort"
 import "strconv"
 
 func Agents(session *types.Session, request *http.Request, response http.ResponseWriter) {
@@ -21,15 +20,7 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 
 			if ok == true {
 
-				agent_tool.Mutex.Lock()
-
-				agent_names := make([]string, 0)
-
-				for name, _ := range agent_tool.Agents {
-					agent_names = append(agent_names, name)
-				}
-
-				sort.Strings(agent_names)
+				agent_names := agent_tool.GetNames()
 
 				agents := make([]schemas.Agent, 0)
 				agents = append(agents, schemas.Agent{
@@ -45,9 +36,9 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 
 				for _, name := range agent_names {
 
-					agent, ok := agent_tool.Agents[name]
+					agent := agent_tool.GetAgent(name)
 
-					if ok == true {
+					if agent != nil {
 
 						agents = append(agents, schemas.Agent{
 							Name:        agent.Name,
@@ -63,8 +54,6 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 					}
 
 				}
-
-				agent_tool.Mutex.Unlock()
 
 				response_payload, err0 := json.MarshalIndent(agents, "", "\t")
 

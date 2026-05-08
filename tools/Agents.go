@@ -110,8 +110,11 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 func (tool *Agents) Get(id string) (any, error) {
 
-	name        := utils_fmt.FormatAgentName(id)
+	name := utils_fmt.FormatAgentName(id)
+
+	tool.Mutex.Lock()
 	content, ok := tool.contents[name]
+	tool.Mutex.Unlock()
 
 	if ok == true {
 		return content, nil
@@ -121,12 +124,52 @@ func (tool *Agents) Get(id string) (any, error) {
 
 }
 
+func (tool *Agents) GetAgent(id string) *types.Agent {
+
+	name := utils_fmt.FormatAgentName(id)
+
+	tool.Mutex.Lock()
+	agent, ok := tool.contents[name]
+	tool.Mutex.Unlock()
+
+	if ok == true {
+		return agent
+	} else {
+		return nil
+	}
+
+}
+
+func (tool *Agents) GetNames() []string {
+
+	result := make([]string, 0)
+
+	tool.Mutex.Lock()
+	for name, _ := range tool.contents {
+		result = append(result, name)
+	}
+	tool.Mutex.Unlock()
+
+	sort.Strings(result)
+
+	return result
+
+}
+
 func (tool *Agents) List() (string, error) {
 
-	if len(tool.contents) > 0 {
+	len_content := 0
+
+	tool.Mutex.Lock()
+	len_content = len(tool.contents)
+	tool.Mutex.Unlock()
+
+
+	if len_content > 0 {
 
 		lines := make([]string, 0)
 
+		tool.Mutex.Lock()
 		for name, agent := range tool.contents {
 
 			_, ok  := tool.processes[name]
@@ -141,6 +184,7 @@ func (tool *Agents) List() (string, error) {
 			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: %s", agent.Name, agent.Type, status))
 
 		}
+		tool.Mutex.Unlock()
 
 		sort.Strings(lines)
 
@@ -161,7 +205,9 @@ func (tool *Agents) List() (string, error) {
 
 func (tool *Agents) Hire(name string, agent string, sandbox string, prompt string) (string, error) {
 
+	tool.Mutex.Lock()
 	_, ok := tool.contents[name]
+	tool.Mutex.Unlock()
 
 	if ok == false {
 
@@ -296,7 +342,9 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 func (tool *Agents) Fire(name string) (string, error) {
 
+	tool.Mutex.Lock()
 	process, ok := tool.processes[name]
+	tool.Mutex.Unlock()
 
 	if ok == true {
 
@@ -387,7 +435,9 @@ func (tool *Agents) Inquire(name string) (string, error) {
 
 					if err2 == nil {
 
+						tool.Mutex.Lock()
 						_, ok1 := tool.processes[name]
+						tool.Mutex.Unlock()
 
 						if ok1 == true {
 
