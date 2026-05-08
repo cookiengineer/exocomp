@@ -90,6 +90,35 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 
 }
 
+func (tool *Bugs) Get(id string) (any, error) {
+
+	path       := utils_fmt.FormatFilePath(id)
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			content, ok := tool.contents[internal_path]
+
+			if ok == true {
+				return content, nil
+			} else {
+				return nil, fmt.Errorf("bugs.Get: No bug report available for path \"%s\".", path)
+			}
+
+		} else {
+			return "", fmt.Errorf("bugs.Get: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("bugs.Get: %s", err1.Error())
+	}
+
+}
+
 func (tool *Bugs) Add(path string, symbol string, description string) (string, error) {
 
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)

@@ -165,6 +165,35 @@ func (tool *Changelog) Fix(path string, symbol string, description string) (stri
 	return tool.createEntry("Fix", path, symbol, description)
 }
 
+func (tool *Changelog) Get(id string) (any, error) {
+
+	path       := utils_fmt.FormatFilePath(id)
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			content, ok := tool.contents[internal_path]
+
+			if ok == true {
+				return content, nil
+			} else {
+				return nil, fmt.Errorf("changelog.Get: No changelog entry available for path \"%s\".", path)
+			}
+
+		} else {
+			return "", fmt.Errorf("changelog.Get: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("changelog.Get: %s", err1.Error())
+	}
+
+}
+
 func (tool *Changelog) List() (string, error) {
 
 	readChangelog(tool)

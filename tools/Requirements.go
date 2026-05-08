@@ -126,6 +126,35 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 }
 
+func (tool *Requirements) Get(id string) (any, error) {
+
+	path       := utils_fmt.FormatFilePath(id)
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			content, ok := tool.contents[internal_path]
+
+			if ok == true {
+				return content, nil
+			} else {
+				return nil, fmt.Errorf("requirements.Get: No specification defined for path \"%s\".", path)
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.Get: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.Get: %s", err1.Error())
+	}
+
+}
+
 func (tool *Requirements) List() (string, error) {
 
 	readRequirements(tool)
@@ -167,158 +196,172 @@ func (tool *Requirements) List() (string, error) {
 
 func (tool *Requirements) DefineFunc(path string, symbol string, declaration string, behavior string) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
-	if err0 == nil {
+	if err1 == nil {
 
-		fileset    := token.NewFileSet()
-		file, err1 := parser.ParseFile(fileset, "", strings.Join([]string{
-			"package dummy",
-			declaration,
-		}, "\n"), 0)
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
-		if err1 == nil {
+		if err2 == nil {
 
-			declaration_symbol := ""
-			declaration_code   := ""
+			fileset    := token.NewFileSet()
+			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
+				"package dummy",
+				declaration,
+			}, "\n"), 0)
 
-			for _, decl := range file.Decls {
+			if err3 == nil {
 
-				declaration, ok0 := decl.(*ast.FuncDecl)
+				declaration_symbol := ""
+				declaration_code   := ""
 
-				if ok0 == true {
+				for _, decl := range file.Decls {
 
-					if declaration.Name != nil {
+					declaration, ok0 := decl.(*ast.FuncDecl)
 
-						if declaration.Recv != nil && len(declaration.Recv.List) > 0 {
+					if ok0 == true {
 
-							recv_type := declaration.Recv.List[0].Type
-							type_name := ""
+						if declaration.Name != nil {
 
-							switch typ := recv_type.(type) {
+							if declaration.Recv != nil && len(declaration.Recv.List) > 0 {
 
-							case *ast.Ident:
-								type_name = typ.Name
+								recv_type := declaration.Recv.List[0].Type
+								type_name := ""
 
-							case *ast.StarExpr:
+								switch typ := recv_type.(type) {
 
-								ident, ok := typ.X.(*ast.Ident)
+								case *ast.Ident:
+									type_name = typ.Name
 
-								if ok == true {
-									type_name = ident.Name
+								case *ast.StarExpr:
+
+									ident, ok := typ.X.(*ast.Ident)
+
+									if ok == true {
+										type_name = ident.Name
+									}
+
 								}
 
-							}
+								if type_name != "" {
+									declaration_symbol = type_name + "." + declaration.Name.Name
+								} else {
+									declaration_symbol = declaration.Name.Name
+								}
 
-							if type_name != "" {
-								declaration_symbol = type_name + "." + declaration.Name.Name
 							} else {
 								declaration_symbol = declaration.Name.Name
 							}
 
-						} else {
-							declaration_symbol = declaration.Name.Name
 						}
+
+						buffer := bytes.Buffer{}
+						printer.Fprint(&buffer, token.NewFileSet(), declaration)
+						declaration_code = strings.TrimSpace(buffer.String())
+
+						break
 
 					}
 
-					buffer := bytes.Buffer{}
-					printer.Fprint(&buffer, token.NewFileSet(), declaration)
-					declaration_code = strings.TrimSpace(buffer.String())
-
-					break
-
 				}
 
-			}
+				if declaration_symbol == symbol {
 
-			if declaration_symbol == symbol {
+					readRequirements(tool)
 
-				readRequirements(tool)
+					_, ok1 := tool.contents[internal_path]
 
-				_, ok1 := tool.contents[resolved]
+					if ok1 == false {
+						tool.contents[internal_path] = make(map[string]requirement_specification)
+					}
 
-				if ok1 == false {
-					tool.contents[resolved] = make(map[string]requirement_specification)
-				}
+					tool.contents[internal_path][symbol] = requirement_specification{
+						File:        internal_path,
+						Type:        "func",
+						Declaration: declaration_code,
+						Symbol:      declaration_symbol,
+						Behavior:    behavior,
+					}
 
-				tool.contents[resolved][symbol] = requirement_specification{
-					File:        resolved,
-					Type:        "func",
-					Declaration: declaration_code,
-					Symbol:      declaration_symbol,
-					Behavior:    behavior,
-				}
+					err4 := writeRequirements(tool)
 
-				err2 := writeRequirements(tool)
+					if err4 == nil {
+						return fmt.Sprintf("requirements.DefineFunc: %s defined as %s", declaration_symbol, declaration_code), nil
+					} else {
+						return "", fmt.Errorf("requirements.DefineFunc: %s", err4.Error())
+					}
 
-				if err2 == nil {
-					return fmt.Sprintf("requirements.DefineFunc: %s defined as %s", declaration_symbol, declaration_code), nil
 				} else {
-					return "", fmt.Errorf("requirements.DefineFunc: %s", err2.Error())
+					return "", fmt.Errorf("requirements.DefineFunc: Invalid syntax, function symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
 				}
 
 			} else {
-				return "", fmt.Errorf("requirements.DefineFunc: Invalid syntax, function symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
+				return "", fmt.Errorf("requirements.DefineFunc: %s", err3.Error())
 			}
 
 		} else {
-			return "", fmt.Errorf("requirements.DefineFunc: %s", err1.Error())
+			return "", fmt.Errorf("requirements.DefineFunc: %s", err2.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("requirements.DefineFunc: %s", err0.Error())
+		return "", fmt.Errorf("requirements.DefineFunc: %s", err1.Error())
 	}
 
 }
 
 func (tool *Requirements) DefineInterface(path string, symbol string, declaration string, behavior string) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
-	if err0 == nil {
+	if err1 == nil {
 
-		fileset    := token.NewFileSet()
-		file, err1 := parser.ParseFile(fileset, "", strings.Join([]string{
-			"package dummy",
-			declaration,
-		}, "\n"), 0)
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
-		if err1 == nil {
+		if err2 == nil {
 
-			declaration_symbol := ""
-			declaration_code   := ""
+			fileset    := token.NewFileSet()
+			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
+				"package dummy",
+				declaration,
+			}, "\n"), 0)
 
-			for _, decl := range file.Decls {
+			if err3 == nil {
 
-				gen_decl, ok0 := decl.(*ast.GenDecl)
+				declaration_symbol := ""
+				declaration_code   := ""
 
-				if ok0 == true {
+				for _, decl := range file.Decls {
 
-					if gen_decl.Tok == token.TYPE {
+					gen_decl, ok0 := decl.(*ast.GenDecl)
 
-						for _, spec := range gen_decl.Specs {
+					if ok0 == true {
 
-							type_spec, ok1 := spec.(*ast.TypeSpec)
+						if gen_decl.Tok == token.TYPE {
 
-							if ok1 == true {
+							for _, spec := range gen_decl.Specs {
 
-								interface_type, ok2 := type_spec.Type.(*ast.InterfaceType)
+								type_spec, ok1 := spec.(*ast.TypeSpec)
 
-								if ok2 == true {
+								if ok1 == true {
 
-									if type_spec.Name != nil {
-										declaration_symbol = type_spec.Name.Name
+									interface_type, ok2 := type_spec.Type.(*ast.InterfaceType)
+
+									if ok2 == true {
+
+										if type_spec.Name != nil {
+											declaration_symbol = type_spec.Name.Name
+										}
+
+										buffer := bytes.Buffer{}
+										printer.Fprint(&buffer, token.NewFileSet(), gen_decl)
+										declaration_code = strings.TrimSpace(buffer.String())
+
+										// explicitly referencing interface_type to keep symmetry with func parsing
+										_ = interface_type
+
+										break
+
 									}
-
-									buffer := bytes.Buffer{}
-									printer.Fprint(&buffer, token.NewFileSet(), gen_decl)
-									declaration_code = strings.TrimSpace(buffer.String())
-
-									// explicitly referencing interface_type to keep symmetry with func parsing
-									_ = interface_type
-
-									break
 
 								}
 
@@ -328,101 +371,109 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 
 					}
 
+					if declaration_symbol != "" {
+						break
+					}
+
 				}
 
-				if declaration_symbol != "" {
-					break
-				}
+				if declaration_symbol == symbol {
 
-			}
+					readRequirements(tool)
 
-			if declaration_symbol == symbol {
+					_, ok3 := tool.contents[internal_path]
 
-				readRequirements(tool)
+					if ok3 == false {
+						tool.contents[internal_path] = make(map[string]requirement_specification)
+					}
 
-				_, ok3 := tool.contents[resolved]
+					tool.contents[internal_path][symbol] = requirement_specification{
+						File:        internal_path,
+						Type:        "interface",
+						Declaration: declaration_code,
+						Symbol:      declaration_symbol,
+						Behavior:    behavior,
+					}
 
-				if ok3 == false {
-					tool.contents[resolved] = make(map[string]requirement_specification)
-				}
+					err4 := writeRequirements(tool)
 
-				tool.contents[resolved][symbol] = requirement_specification{
-					File:        resolved,
-					Type:        "interface",
-					Declaration: declaration_code,
-					Symbol:      declaration_symbol,
-					Behavior:    behavior,
-				}
+					if err4 == nil {
+						return fmt.Sprintf("requirements.DefineInterface: %s defined as %s", declaration_symbol, declaration_code), nil
+					} else {
+						return "", fmt.Errorf("requirements.DefineInterface: %s", err4.Error())
+					}
 
-				err2 := writeRequirements(tool)
-
-				if err2 == nil {
-					return fmt.Sprintf("requirements.DefineInterface: %s defined as %s", declaration_symbol, declaration_code), nil
 				} else {
-					return "", fmt.Errorf("requirements.DefineInterface: %s", err2.Error())
+					return "", fmt.Errorf("requirements.DefineInterface: Invalid syntax, interface symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
 				}
 
 			} else {
-				return "", fmt.Errorf("requirements.DefineInterface: Invalid syntax, interface symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
+				return "", fmt.Errorf("requirements.DefineInterface: %s", err3.Error())
 			}
 
 		} else {
-			return "", fmt.Errorf("requirements.DefineInterface: %s", err1.Error())
+			return "", fmt.Errorf("requirements.DefineInterface: %s", err2.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("requirements.DefineInterface: %s", err0.Error())
+		return "", fmt.Errorf("requirements.DefineInterface: %s", err1.Error())
 	}
 
 }
 
 func (tool *Requirements) DefineStruct(path string, symbol string, declaration string, behavior string) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
-	if err0 == nil {
+	if err1 == nil {
 
-		fileset    := token.NewFileSet()
-		file, err1 := parser.ParseFile(fileset, "", strings.Join([]string{
-			"package dummy",
-			declaration,
-		}, "\n"), 0)
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
-		if err1 == nil {
+		if err2 == nil {
 
-			declaration_symbol := ""
-			declaration_code   := ""
+			fileset    := token.NewFileSet()
+			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
+				"package dummy",
+				declaration,
+			}, "\n"), 0)
 
-			for _, decl := range file.Decls {
+			if err3 == nil {
 
-				gen_decl, ok0 := decl.(*ast.GenDecl)
+				declaration_symbol := ""
+				declaration_code   := ""
 
-				if ok0 == true {
+				for _, decl := range file.Decls {
 
-					if gen_decl.Tok == token.TYPE {
+					gen_decl, ok0 := decl.(*ast.GenDecl)
 
-						for _, spec := range gen_decl.Specs {
+					if ok0 == true {
 
-							type_spec, ok1 := spec.(*ast.TypeSpec)
+						if gen_decl.Tok == token.TYPE {
 
-							if ok1 == true {
+							for _, spec := range gen_decl.Specs {
 
-								struct_type, ok2 := type_spec.Type.(*ast.StructType)
+								type_spec, ok1 := spec.(*ast.TypeSpec)
 
-								if ok2 == true {
+								if ok1 == true {
 
-									if type_spec.Name != nil {
-										declaration_symbol = type_spec.Name.Name
+									struct_type, ok2 := type_spec.Type.(*ast.StructType)
+
+									if ok2 == true {
+
+										if type_spec.Name != nil {
+											declaration_symbol = type_spec.Name.Name
+										}
+
+										buffer := bytes.Buffer{}
+										printer.Fprint(&buffer, token.NewFileSet(), gen_decl)
+										declaration_code = strings.TrimSpace(buffer.String())
+
+										// explicitly referencing struct_type to keep symmetry with func parsing
+										_ = struct_type
+
+										break
+
 									}
-
-									buffer := bytes.Buffer{}
-									printer.Fprint(&buffer, token.NewFileSet(), gen_decl)
-									declaration_code = strings.TrimSpace(buffer.String())
-
-									// explicitly referencing struct_type to keep symmetry with func parsing
-									_ = struct_type
-
-									break
 
 								}
 
@@ -432,50 +483,52 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 
 					}
 
+					if declaration_symbol != "" {
+						break
+					}
+
 				}
 
-				if declaration_symbol != "" {
-					break
-				}
+				if declaration_symbol == symbol {
 
-			}
+					readRequirements(tool)
 
-			if declaration_symbol == symbol {
+					_, ok3 := tool.contents[internal_path]
 
-				readRequirements(tool)
+					if ok3 == false {
+						tool.contents[internal_path] = make(map[string]requirement_specification)
+					}
 
-				_, ok3 := tool.contents[resolved]
+					tool.contents[internal_path][symbol] = requirement_specification{
+						File:        internal_path,
+						Type:        "struct",
+						Declaration: declaration_code,
+						Symbol:      declaration_symbol,
+						Behavior:    behavior,
+					}
 
-				if ok3 == false {
-					tool.contents[resolved] = make(map[string]requirement_specification)
-				}
+					err4 := writeRequirements(tool)
 
-				tool.contents[resolved][symbol] = requirement_specification{
-					File:        resolved,
-					Type:        "struct",
-					Declaration: declaration_code,
-					Symbol:      declaration_symbol,
-					Behavior:    behavior,
-				}
+					if err4 == nil {
+						return fmt.Sprintf("requirements.DefineStruct: %s defined as %s", declaration_symbol, declaration_code), nil
+					} else {
+						return "", fmt.Errorf("requirements.DefineStruct: %s", err4.Error())
+					}
 
-				err2 := writeRequirements(tool)
-
-				if err2 == nil {
-					return fmt.Sprintf("requirements.DefineStruct: %s defined as %s", declaration_symbol, declaration_code), nil
 				} else {
-					return "", fmt.Errorf("requirements.DefineStruct: %s", err2.Error())
+					return "", fmt.Errorf("requirements.DefineStruct: Invalid syntax, struct symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
 				}
 
 			} else {
-				return "", fmt.Errorf("requirements.DefineStruct: Invalid syntax, struct symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
+				return "", fmt.Errorf("requirements.DefineStruct: %s", err3.Error())
 			}
 
 		} else {
-			return "", fmt.Errorf("requirements.DefineStruct: %s", err1.Error())
+			return "", fmt.Errorf("requirements.DefineStruct: %s", err2.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("requirements.DefineStruct: %s", err0.Error())
+		return "", fmt.Errorf("requirements.DefineStruct: %s", err1.Error())
 	}
 
 }

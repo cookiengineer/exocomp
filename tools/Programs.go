@@ -6,6 +6,7 @@ import "fmt"
 import "io/fs"
 import "os"
 import "os/exec"
+import "path/filepath"
 import "slices"
 import "strings"
 
@@ -139,6 +140,43 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 	} else {
 		return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Attempt to execute unallowed program", program)
+	}
+
+}
+
+func (tool *Programs) Get(id string) (any, error) {
+
+	found := false
+
+	for _, name := range tool.Programs {
+
+		if name == id {
+			found = true
+			break
+		}
+
+	}
+
+	if found == true {
+
+		path, err1 := exec.LookPath(id)
+
+		if err1 == nil {
+
+			real_path, err2 := filepath.EvalSymlinks(path)
+
+			if err2 == nil {
+				return real_path, nil
+			} else {
+				return nil, fmt.Errorf("programs.Get: %s", err2.Error())
+			}
+
+		} else {
+			return nil, fmt.Errorf("programs.Get: %s", err1.Error())
+		}
+
+	} else {
+		return nil, fmt.Errorf("programs.Execute: Invalid program \"%s\": Attempt to execute unallowed program", id)
 	}
 
 }

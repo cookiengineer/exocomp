@@ -18,26 +18,26 @@ import "strings"
 import "sync"
 
 type Agents struct {
-	Agents     map[string]*types.Agent
 	Playground string
 	Sandbox    string
 	Model      string
 	URL        *net_url.URL
 	Debug      bool
 	Mutex      *sync.Mutex
+	contents   map[string]*types.Agent
 	processes  map[string]*os.Process
 }
 
 func NewAgents(playground string, sandbox string, model string, url *net_url.URL, debug bool) *Agents {
 
 	agents := &Agents{
-		Agents:     make(map[string]*types.Agent),
 		Playground: playground,
 		Sandbox:    sandbox,
 		Model:      model,
 		URL:        url,
 		Debug:      debug,
 		Mutex:      &sync.Mutex{},
+		contents:   make(map[string]*types.Agent),
 		processes:  make(map[string]*os.Process),
 	}
 
@@ -108,13 +108,26 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 }
 
+func (tool *Agents) Get(id string) (any, error) {
+
+	name        := utils_fmt.FormatAgentName(id)
+	content, ok := tool.contents[name]
+
+	if ok == true {
+		return content, nil
+	}
+
+	return nil, fmt.Errorf("agents.Get: %s does not exist?", name)
+
+}
+
 func (tool *Agents) List() (string, error) {
 
-	if len(tool.Agents) > 0 {
+	if len(tool.contents) > 0 {
 
 		lines := make([]string, 0)
 
-		for name, agent := range tool.Agents {
+		for name, agent := range tool.contents {
 
 			_, ok  := tool.processes[name]
 			status := "unknown"
@@ -148,7 +161,7 @@ func (tool *Agents) List() (string, error) {
 
 func (tool *Agents) Hire(name string, agent string, sandbox string, prompt string) (string, error) {
 
-	_, ok := tool.Agents[name]
+	_, ok := tool.contents[name]
 
 	if ok == false {
 
@@ -207,7 +220,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				if err3 == nil {
 
 					tool.Mutex.Lock()
-					tool.Agents[name] = agents.NewAgent(types.NewConfig(
+					tool.contents[name] = agents.NewAgent(types.NewConfig(
 						name,
 						agent,
 						tool.Model,
@@ -237,10 +250,10 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 							if err3 == nil {
 
 								tool.Mutex.Lock()
-								_, ok1 := tool.Agents[name]
+								_, ok1 := tool.contents[name]
 
 								if ok1 == true {
-									tool.Agents[name].Messages = append(tool.Agents[name].Messages, &message)
+									tool.contents[name].Messages = append(tool.contents[name].Messages, &message)
 								}
 								tool.Mutex.Unlock()
 
@@ -314,7 +327,7 @@ func (tool *Agents) Inquire(name string) (string, error) {
 	if err0 == nil {
 
 		tool.Mutex.Lock()
-		agent, ok0 := tool.Agents[name]
+		agent, ok0 := tool.contents[name]
 		tool.Mutex.Unlock()
 
 		if ok0 == true {

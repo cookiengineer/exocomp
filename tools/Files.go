@@ -139,6 +139,27 @@ func (tool *Files) Copy(from_path string, to_path string) (string, error) {
 
 }
 
+func (tool *Files) Get(id string) (any, error) {
+
+	path           := utils_fmt.FormatFilePath(id)
+	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err0 == nil {
+
+		bytes, err1 := os.ReadFile(resolved)
+
+		if err1 == nil {
+			return bytes, nil
+		} else {
+			return nil, fmt.Errorf("files.Get: %s", err1.Error())
+		}
+
+	} else {
+		return nil, fmt.Errorf("files.Get: %s", err0.Error())
+	}
+
+}
+
 func (tool *Files) List(path string) (string, error) {
 
 	if path == "/" {
