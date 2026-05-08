@@ -146,7 +146,8 @@ func (session *Session) GetTool(identifier string) Tool {
 
 func (session *Session) LoadSkill(name string, skill *Skill) error {
 
-	index := int(-1)
+	index         := int(-1)
+	missing_tools := make([]string, 0)
 
 	session.mutex.Lock()
 
@@ -161,36 +162,64 @@ func (session *Session) LoadSkill(name string, skill *Skill) error {
 
 	session.mutex.Unlock()
 
-	if index == -1 {
+	if len(skill.AllowedTools) > 0 {
 
-		system_messages := make([]*schemas.Message, 0)
-		other_messages  := make([]*schemas.Message, 0)
+		for _, tool_name := range skill.AllowedTools {
 
-		session.mutex.Lock()
+			found := false
 
-		for _, message := range session.Agent.Messages {
+			for _, tool := range session.Tools {
 
-			if message.Role == "system" {
-				system_messages = append(system_messages, message)
-			} else {
-				other_messages = append(other_messages, message)
+				if tool.Function.Name == tool_name {
+					found = true
+					break
+				}
+
+			}
+
+			if found == false {
+				missing_tools = append(missing_tools, tool_name)
 			}
 
 		}
 
-		system_messages = append(system_messages, &schemas.Message{
-			Role:    "system",
-			Content: skill.Body,
-		})
-		session.Agent.Messages = append(system_messages, other_messages...)
-		session.mutex.Unlock()
+	}
 
-		return nil
+	if index == -1 {
+
+		if len(missing_tools) == 0 {
+
+			system_messages := make([]*schemas.Message, 0)
+			other_messages  := make([]*schemas.Message, 0)
+
+			session.mutex.Lock()
+
+			for _, message := range session.Agent.Messages {
+
+				if message.Role == "system" {
+					system_messages = append(system_messages, message)
+				} else {
+					other_messages = append(other_messages, message)
+				}
+
+			}
+
+			system_messages = append(system_messages, &schemas.Message{
+				Role:    "system",
+				Content: skill.Body,
+			})
+			session.Agent.Messages = append(system_messages, other_messages...)
+
+			session.mutex.Unlock()
+
+			return nil
+
+		} else {
+			return fmt.Errorf("Session.LoadSkill: Cannot load Skill because of missing Tools %s", strings.Join(missing_tools, " and "))
+		}
 
 	} else {
-
 		return fmt.Errorf("Session.LoadSkill: %s", "Skill is already loaded.")
-
 	}
 
 }
@@ -459,14 +488,13 @@ func (session *Session) UnloadSkill(name string, skill *Skill) error {
 		}
 
 		session.Agent.Messages = append(system_messages, other_messages...)
+
 		session.mutex.Unlock()
 
 		return nil
 
 	} else {
-
 		return fmt.Errorf("Session.UnloadSkill: %s", "Skill is already unloaded.")
-
 	}
 
 }
