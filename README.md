@@ -39,7 +39,7 @@ Exocomp uses multiple Agent [Types](./agents/Types.go):
 | Role                                 | Lifecycle | Default Model     | Description                                                   |
 |:-------------------------------------|:---------:|:-----------------:|:--------------------------------------------------------------|
 | [Planner](./agents/Planner.go)       | long      | `gemma4:31b`      | writes with humans, contracts agents and plans project phases |
-| [Architect](./agents/Architect.go)   | short     | `gemma4:31b`      | discusses with humans and writes specifications               |
+| [Architect](./agents/Architect.go)   | short     | `qwen3-coder:30b` | writes specifications                                         |
 | [Coder](./agents/Coder.go)           | short     | `qwen3-coder:30b` | implements features, reads `specifications` and `bugs`        |
 | [Tester](./agents/Tester.go)         | short     | `qwen3-coder:30b` | implements unit tests, writes reports into `bugs`             |
 | [Summarizer](./agents/Summarizer.go) | short     | `qwen3-coder:30b` | reads long texts and summarizes them                          |
