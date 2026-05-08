@@ -14,8 +14,8 @@ func readSkills(tool *Skills) error {
 
 		if err0 == nil {
 
-			for name, _ := range tool.Skills {
-				delete(tool.Skills, name)
+			for name, _ := range tool.contents {
+				delete(tool.contents, name)
 			}
 
 			skills_entries, err1 := os.ReadDir(resolved)
@@ -72,7 +72,7 @@ func readSkills(tool *Skills) error {
 									}
 
 									if skill.Name == skill_name {
-										tool.Skills[skill.Name] = skill
+										tool.contents[skill.Name] = skill
 									}
 
 								} else {

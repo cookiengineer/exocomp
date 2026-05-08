@@ -144,36 +144,53 @@ func (session *Session) GetTool(identifier string) Tool {
 
 }
 
-func (session *Session) SendChatRequest(request schemas.Message) error {
+func (session *Session) LoadSkill(name string, skill *Skill) error {
 
-	is_waiting := false
+	index := int(-1)
 
-	session.mutex.RLock()
-	is_waiting = session.Waiting
-	session.mutex.RUnlock()
+	session.mutex.Lock()
 
-	if is_waiting == false {
+	for m, message := range session.Agent.Messages {
 
-		session.mutex.Lock()
-		session.Agent.Messages = append(session.Agent.Messages, &request)
-		session.Waiting = true
-
-		session.mutex.Unlock()
-
-		err := session.infer_chat_completions()
-
-		session.mutex.Lock()
-		session.Waiting = false
-		session.mutex.Unlock()
-
-		if err == nil {
-			return nil
-		} else {
-			return err
+		if message.Role == "system" && message.Content == skill.Body {
+			index = m
+			break
 		}
 
+	}
+
+	session.mutex.Unlock()
+
+	if index == -1 {
+
+		system_messages := make([]*schemas.Message, 0)
+		other_messages  := make([]*schemas.Message, 0)
+
+		session.mutex.Lock()
+
+		for _, message := range session.Agent.Messages {
+
+			if message.Role == "system" {
+				system_messages = append(system_messages, message)
+			} else {
+				other_messages = append(other_messages, message)
+			}
+
+		}
+
+		system_messages = append(system_messages, &schemas.Message{
+			Role:    "system",
+			Content: skill.Body,
+		})
+		session.Agent.Messages = append(system_messages, other_messages...)
+		session.mutex.Unlock()
+
+		return nil
+
 	} else {
-		return fmt.Errorf("Session is busy, waiting for LLM response ...")
+
+		return fmt.Errorf("Session.LoadSkill: %s", "Skill is already loaded.")
+
 	}
 
 }
@@ -201,105 +218,89 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 					if tool != nil {
 
-						result, err0 := tool.Call(method, arguments)
+						result, err4 := tool.Call(method, arguments)
 
 						if identifier == "skills" && method == "Load" {
 
-							session.mutex.Lock()
+							tool_message := ""
 
-							loaded_skill := int(-1)
+							if err4 == nil {
 
-							for m, message := range session.Agent.Messages {
+								skill_name,    ok1  := arguments["name"].(string)
+								skill_content, err5 := tool.Get(skill_name)
+								skill,         ok2  := skill_content.(*Skill)
 
-								if message.Role == "system" && message.Content == result {
-									loaded_skill = m
-									break
-								}
+								if ok1 == true && err5 == nil && ok2 == true {
 
-							}
+									err6 := session.LoadSkill(skill_name, skill)
 
-							if loaded_skill == -1 {
-
-								system_messages := make([]*schemas.Message, 0)
-								other_messages  := make([]*schemas.Message, 0)
-
-								for _, message := range session.Agent.Messages {
-
-									if message.Role == "system" {
-										system_messages = append(system_messages, message)
+									if err6 == nil {
+										tool_message = strings.TrimSpace(result)
 									} else {
-										other_messages = append(other_messages, message)
+										tool_message = fmt.Sprintf("Error: skills.Load: %s", err6.Error())
 									}
 
+								} else {
+									tool_message = fmt.Sprintf("Error: skills.Load: %s", "Attempt to escape policies")
 								}
 
-								system_messages = append(system_messages, &schemas.Message{
-									Role:    "system",
-									Content: result,
-								})
-								session.Agent.Messages = append(system_messages, other_messages...)
-
 							} else {
+								tool_message = fmt.Sprintf("Error: skills.Load: %s", strings.TrimSpace(err0.Error()))
+							}
 
+							if tool_message != "" {
+
+								session.mutex.Lock()
 								message := &schemas.Message{
 									Role:     "tool",
-									Content:  fmt.Sprintf("Error: %s", "Another Skill is already loaded!"),
+									Content:  tool_message,
 									ToolName: identifier,
 								}
 								session.Agent.Messages = append(session.Agent.Messages, message)
+								session.mutex.Unlock()
 
 							}
-
-							session.mutex.Unlock()
 
 						} else if identifier == "skills" && method == "Unload" {
 
-							session.mutex.Lock()
+							tool_message := ""
 
-							loaded_skill := int(-1)
+							if err4 == nil {
 
-							for m, message := range session.Agent.Messages {
+								skill_name,    ok1  := arguments["name"].(string)
+								skill_content, err5 := tool.Get(skill_name)
+								skill,         ok2  := skill_content.(*Skill)
 
-								if message.Role == "system" && message.Content == result {
-									loaded_skill = m
-									break
-								}
+								if ok1 == true && err5 == nil && ok2 == true {
 
-							}
+									err6 := session.UnloadSkill(skill_name, skill)
 
-							if loaded_skill != -1 {
-
-								system_messages := make([]*schemas.Message, 0)
-								other_messages  := make([]*schemas.Message, 0)
-
-								for _, message := range session.Agent.Messages {
-
-									if message.Role == "system" {
-
-										if message.Content != result {
-											system_messages = append(system_messages, message)
-										}
-
+									if err6 == nil {
+										tool_message = strings.TrimSpace(result)
 									} else {
-										other_messages = append(other_messages, message)
+										tool_message = fmt.Sprintf("Error: skills.Unload: %s", err6.Error())
 									}
 
+								} else {
+									tool_message = fmt.Sprintf("Error: skills.Unload: %s", "Attempt to escape policies")
 								}
 
-								session.Agent.Messages = append(system_messages, other_messages...)
-
 							} else {
+								tool_message = fmt.Sprintf("Error: skills.Unload: %s", strings.TrimSpace(err0.Error()))
+							}
 
+							if tool_message != "" {
+
+								session.mutex.Lock()
 								message := &schemas.Message{
 									Role:     "tool",
-									Content:  fmt.Sprintf("Error: %s", "Skill is not loaded!"),
+									Content:  tool_message,
 									ToolName: identifier,
 								}
 								session.Agent.Messages = append(session.Agent.Messages, message)
+								session.mutex.Unlock()
 
 							}
-
-							session.mutex.Unlock()
 
 						} else {
 
@@ -371,6 +372,40 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 }
 
+func (session *Session) SendChatRequest(request schemas.Message) error {
+
+	is_waiting := false
+
+	session.mutex.RLock()
+	is_waiting = session.Waiting
+	session.mutex.RUnlock()
+
+	if is_waiting == false {
+
+		session.mutex.Lock()
+		session.Agent.Messages = append(session.Agent.Messages, &request)
+		session.Waiting = true
+
+		session.mutex.Unlock()
+
+		err := session.infer_chat_completions()
+
+		session.mutex.Lock()
+		session.Waiting = false
+		session.mutex.Unlock()
+
+		if err == nil {
+			return nil
+		} else {
+			return err
+		}
+
+	} else {
+		return fmt.Errorf("Session is busy, waiting for LLM response ...")
+	}
+
+}
+
 func (session *Session) SetTool(identifier string, tool Tool, schemas []schemas.Tool) {
 
 	if identifier != "" && len(schemas) > 0 && tool != nil {
@@ -380,6 +415,57 @@ func (session *Session) SetTool(identifier string, tool Tool, schemas []schemas.
 		for _, schema := range schemas {
 			session.Tools = append(session.Tools, &schema)
 		}
+
+	}
+
+}
+
+func (session *Session) UnloadSkill(name string, skill *Skill) error {
+
+	index := int(-1)
+
+	session.mutex.Lock()
+
+	for m, message := range session.Agent.Messages {
+
+		if message.Role == "system" && message.Content == skill.Body {
+			index = m
+			break
+		}
+
+	}
+
+	session.mutex.Unlock()
+
+	if index != -1 {
+
+		system_messages := make([]*schemas.Message, 0)
+		other_messages  := make([]*schemas.Message, 0)
+
+		session.mutex.Lock()
+
+		for _, message := range session.Agent.Messages {
+
+			if message.Role == "system" {
+
+				if message.Content != skill.Body {
+					system_messages = append(system_messages, message)
+				}
+
+			} else {
+				other_messages = append(other_messages, message)
+			}
+
+		}
+
+		session.Agent.Messages = append(system_messages, other_messages...)
+		session.mutex.Unlock()
+
+		return nil
+
+	} else {
+
+		return fmt.Errorf("Session.UnloadSkill: %s", "Skill is already unloaded.")
 
 	}
 

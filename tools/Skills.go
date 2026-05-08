@@ -4,11 +4,13 @@ import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
 import "fmt"
 import "os"
+import "sort"
+import "strings"
 
 type Skills struct {
 	Playground    string
 	Sandbox       string
-	Skills        map[string]*types.Skill
+	contents      map[string]*types.Skill
 	loaded_skills map[string]*types.Skill
 	processes     map[string]*os.Process
 }
@@ -18,7 +20,7 @@ func NewSkills(playground string, sandbox string) *Skills {
 	skills := &Skills{
 		Playground:    playground,
 		Sandbox:       sandbox,
-		Skills:        make(map[string]*types.Skill),
+		contents:      make(map[string]*types.Skill),
 		loaded_skills: make(map[string]*types.Skill),
 		processes:     make(map[string]*os.Process),
 	}
@@ -80,18 +82,82 @@ func (tool *Skills) Call(method string, arguments map[string]interface{}) (strin
 
 }
 
+func (tool *Skills) Get(id string) (any, error) {
+
+	name        := utils_fmt.FormatSkillName(id)
+	content, ok := tool.contents[name]
+
+	if ok == true {
+		return content, nil
+	} else {
+		return nil, fmt.Errorf("skills.Get: No skill found with the name \"%s\".", name)
+	}
+
+}
+
 func (tool *Skills) List() (string, error) {
 
-	// TODO: Read playground/skills folder
-	// TODO: Parse each SKILL.md's header --- for yaml metadata
-	// TODO: List skills in an overview, Name, Description, Compatibility, Allowed-Tools
-	// TODO: List also Scripts as whatever.py, foo.js etc
+	readSkills(tool)
 
-	return "", fmt.Errorf("skills.Load: %s", "Not implemented")
+	if len(tool.contents) > 0 {
+
+		lines := make([]string, 0)
+
+		for name, skill := range tool.contents {
+
+			status  := "unloaded"
+			scripts := make([]string, 0)
+			tools   := make([]string, 0)
+			tmp, ok := tool.loaded_skills[name]
+
+			if ok == true && tmp != nil {
+				status = "loaded"
+			}
+
+			if len(skill.AllowedTools) > 0 {
+
+				for _, tool := range skill.AllowedTools {
+					tools = append(tools, tool)
+				}
+
+				sort.Strings(tools)
+
+			}
+
+			if len(skill.Scripts) > 0 {
+
+				for script, _ := range skill.Scripts {
+					scripts = append(scripts, script)
+				}
+
+				sort.Strings(scripts)
+
+			}
+
+			lines = append(lines, fmt.Sprintf("- Skill: %s, Status: %s, Description: %s, Tools: %s, Scripts: %s", skill.Name, status, skill.Description, strings.Join(tools, " "), strings.Join(scripts, " ")))
+
+		}
+
+		sort.Strings(lines)
+
+		result := make([]string, 0)
+		result = append(result, fmt.Sprintf("skills.List: %d skills available.", len(lines)))
+
+		for l := 0; l < len(lines); l++ {
+			result = append(result, lines[l])
+		}
+
+		return strings.Join(result, "\n"), nil
+
+	} else {
+		return "", fmt.Errorf("skills.List: No skills available!")
+	}
 
 }
 
 func (tool *Skills) Load(name string) (string, error) {
+
+	// TODO: Add tool.AllowedTools to verify that all required tools are allowed
 
 	// TODO: Read the SKILL.md body
 	// and return body markdown as result, nil
