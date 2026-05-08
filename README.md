@@ -62,18 +62,20 @@ Check the unit tests on whether the Tools can be relied on or not.
 
 | Tool                                    | Unit Tests?                                              | Description                                     | Agent User Roles                                        |
 |:----------------------------------------|:--------------------------------------------------------:|:------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./tools/Agents.go)             | [Yes](./tools/Agents_test.go) (requires `llama.cpp` [1]) | Manages the lifecycle of contractor sub-agents. | `planner`                                               |
+| [Agents](./tools/Agents.go)             | [Yes](./tools/Agents_test.go) [1]                        | Manages the lifecycle of contractor sub-agents. | `planner`                                               |
 | [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)                              | Manages documentation of discovered bugs.       | `tester`                                                |
 | [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go)                         | Manages documentation of development changelog. | `coder`                                                 |
 | Containers                              |                                                          | Manages virtual containers.                     | `redteamer`, `blueteamer`                               |
 | [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)                             | Interacts with files and folders.               | `planner`, `architect`, `coder`, `summarizer`, `tester` |
 | [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)                          | Interacts with installed programs.              | `coder`, `tester`                                       |
 | [Requirements](./tools/Requirements.go) | [Yes](./tools/Requirements_test.go)                      | Manages specifications of implementations.      | `architect`, `coder`, `tester`                          |
+| [Skills](./tools/Skills.go)             |                                                          | Loads and Unloads Agent Skills. [2]             | `planner`, `architect`, `coder`, `tester`               |
 | Forgejo                                 |                                                          | Researches knowledge from offline git servers.  | `researcher`                                            |
 | Kiwix                                   |                                                          | Researches knowledge from offline web archives. | `researcher`                                            |
 | Websites                                |                                                          | Researches knowledge from the web.              | `researcher`                                            |
 
-[1] Install dependencies with the [install-deps.sh](./install-deps.sh) shell script. Requires at least 80GB of HDD space, 48GB of VRAM, and an iGPU or dGPU with `vulkan` support.
+[1] Install dependencies with [install-deps.sh](./install-deps.sh). Requires 80GB of HDD space, 48GB of VRAM, and an iGPU or dGPU with `vulkan` support.
+[2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).
 
 ### Dependencies
 
