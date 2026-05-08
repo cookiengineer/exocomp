@@ -8,7 +8,7 @@ func readRequirements(tool *Requirements) error {
 
 	if tool.Playground != "" {
 
-		resolved, err0 := resolveSandboxPath(tool.Playground, "./exocomp-requirements.json")
+		resolved, err0 := resolveSandboxPath(tool.Playground, "exocomp-requirements.json")
 
 		if err0 == nil {
 

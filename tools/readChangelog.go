@@ -8,7 +8,7 @@ func readChangelog(tool *Changelog) error {
 
 	if tool.Playground != "" {
 
-		resolved, err0 := resolveSandboxPath(tool.Playground, "./exocomp-changelog.json")
+		resolved, err0 := resolveSandboxPath(tool.Playground, "exocomp-changelog.json")
 
 		if err0 == nil {
 
