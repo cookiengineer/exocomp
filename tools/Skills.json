@@ -1,0 +1,73 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "skills.List",
+			"description": "List all available Agent Skills for this sandbox.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "skills.Load",
+			"description": "Load a temporary Agent Skill with a unique name.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Unique Agent Skill name"
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "skills.Unload",
+			"description": "Unload a temporary Agent Skill with a unique name.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Unique Agent Skill name"
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "skills.ExecuteScript",
+			"description": "Execute a script with given arguments.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"script": {
+						"type": "string",
+						"description": "The script file name, e.g. \"my-script.py\""
+					},
+					"arguments": {
+						"type": "array",
+						"description": "The script arguments, e.g. [\"test\", \"./...\"]",
+						"items": {
+							"type": "string"
+						},
+						"default": []
+					}
+				},
+				"required": ["script", "arguments"]
+			}
+		}
+	}
+]

@@ -34,14 +34,14 @@ func NewArchitect(config *types.Config) *types.Agent {
 	})
 
 	return &types.Agent{
-		Name:        name,
-		Type:        "architect",
-		Model:       model,
-		Prompt:      prompt,
-		Temperature: temp,
-		Messages:    messages,
-		Programs:    []string{},
-		Tools:       []string{
+		Name:            name,
+		Type:            "architect",
+		Model:           model,
+		Prompt:          prompt,
+		Temperature:     temp,
+		Messages:        messages,
+		AllowedPrograms: []string{},
+		AllowedTools:    []string{
 			// No agents.List
 			// No agents.Hire
 			// No agents.Fire
@@ -62,7 +62,7 @@ func NewArchitect(config *types.Config) *types.Agent {
 			"requirements.List",
 			"requirements.Search",
 		},
-		Sandbox:     config.Sandbox,
+		Sandbox: config.Sandbox,
 	}
 
 }

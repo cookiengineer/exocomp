@@ -8,6 +8,7 @@ import "sort"
 import "strings"
 
 type Skills struct {
+	AllowedTools  []string
 	Playground    string
 	Sandbox       string
 	contents      map[string]*types.Skill
@@ -15,9 +16,10 @@ type Skills struct {
 	processes     map[string]*os.Process
 }
 
-func NewSkills(playground string, sandbox string) *Skills {
+func NewSkills(playground string, sandbox string, allowed_tools []string) *Skills {
 
 	skills := &Skills{
+		AllowedTools:  allowed_tools,
 		Playground:    playground,
 		Sandbox:       sandbox,
 		contents:      make(map[string]*types.Skill),
@@ -25,6 +27,7 @@ func NewSkills(playground string, sandbox string) *Skills {
 		processes:     make(map[string]*os.Process),
 	}
 
+	// NOTE: readSkills() only at bootup time in case Agent rewrites SKILL.md at runtime
 	readSkills(skills)
 
 	return skills
@@ -43,6 +46,16 @@ func (tool *Skills) Call(method string, arguments map[string]interface{}) (strin
 
 		if ok1 == true {
 			return tool.Load(utils_fmt.FormatSkillName(name))
+		} else {
+			return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"name\" is not a string.")
+		}
+
+	} else if method == "Unload" {
+
+		name, ok1 := arguments["name"].(string)
+
+		if ok1 == true {
+			return tool.Unload(utils_fmt.FormatSkillName(name))
 		} else {
 			return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		}
@@ -157,12 +170,66 @@ func (tool *Skills) List() (string, error) {
 
 func (tool *Skills) Load(name string) (string, error) {
 
-	// TODO: Add tool.AllowedTools to verify that all required tools are allowed
+	skill, ok := tool.contents[name]
 
-	// TODO: Read the SKILL.md body
-	// and return body markdown as result, nil
+	if ok == true {
 
-	return "", fmt.Errorf("skills.Load: %s", "Not implemented")
+		missing_tools := make([]string, 0)
+
+		if len(skill.AllowedTools) > 0 {
+
+			for _, tool_name := range skill.AllowedTools {
+
+				found := false
+
+				for _, tool := range tool.AllowedTools {
+
+					if tool == tool_name {
+						found = true
+						break
+					}
+
+				}
+
+				if found == false {
+					missing_tools = append(missing_tools, tool_name)
+				}
+
+			}
+
+		}
+
+		if len(missing_tools) == 0 {
+
+			tool.loaded_skills[skill.Name] = skill
+
+			// NOTE: Session.LoadSkill() does actual loading
+			return fmt.Sprintf("skills.Load: Skill \"%s\" got loaded.", name), nil
+
+		} else {
+			return "", fmt.Errorf("skills.Load: Can't load Skill because of missing Tools %s", strings.Join(missing_tools, " and "))
+		}
+
+	} else {
+		return "", fmt.Errorf("skills.Load: Skill \"%s\" doesn't exist!", name)
+	}
+
+}
+
+func (tool *Skills) Unload(name string) (string, error) {
+
+	skill, ok := tool.loaded_skills[name]
+
+	if ok == true {
+
+		delete(tool.loaded_skills, skill.Name)
+
+		// NOTE: Session.UnloadSkill() does actual unloading
+		return fmt.Sprintf("skills.Load: Skill \"%s\" got unloaded.", name), nil
+
+	} else {
+		return "", fmt.Errorf("skills.Load: Skill \"%s\" isn't loaded!", name)
+	}
 
 }
 

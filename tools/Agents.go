@@ -363,7 +363,7 @@ func (tool *Agents) Fire(name string) (string, error) {
 		}
 
 	} else {
-		return "", fmt.Errorf("agents.Fire: Agent \"%s\" doesn't work for us anymore?", name)
+		return "", fmt.Errorf("agents.Fire: Agent \"%s\" already quit!", name)
 	}
 
 }
@@ -472,7 +472,7 @@ func (tool *Agents) Inquire(name string) (string, error) {
 			}
 
 		} else {
-			return "", fmt.Errorf("agents.Inquire: Agent \"%s\" didn't work for us?", name)
+			return "", fmt.Errorf("agents.Inquire: Agent \"%s\" didn't work for us!", name)
 		}
 
 	} else {

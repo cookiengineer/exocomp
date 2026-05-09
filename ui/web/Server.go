@@ -24,7 +24,7 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 	session := types.NewSession(agent, config)
 	url, _ := net_url.Parse("http://localhost:3000/")
 
-	if len(agent.Tools) > 0 {
+	if len(agent.AllowedTools) > 0 {
 
 		tool_schemas, tools := tools.Toolset(
 			config.Playground,
@@ -32,8 +32,8 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 			config.Model,
 			config.URL,
 			config.Debug,
-			agent.Programs,
-			agent.Tools,
+			agent.AllowedPrograms,
+			agent.AllowedTools,
 		)
 
 		for name, tool := range tools {

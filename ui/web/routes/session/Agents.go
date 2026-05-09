@@ -24,14 +24,14 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 
 				agents := make([]schemas.Agent, 0)
 				agents = append(agents, schemas.Agent{
-					Name:        session.Agent.Name,
-					Type:        session.Agent.Type,
-					Model:       session.Agent.Model,
-					Temperature: session.Agent.Temperature,
-					Messages:    session.Agent.Messages,
-					Programs:    session.Agent.Programs,
-					Tools:       session.Agent.Tools,
-					Sandbox:     session.Agent.Sandbox,
+					Name:            session.Agent.Name,
+					Type:            session.Agent.Type,
+					Model:           session.Agent.Model,
+					Temperature:     session.Agent.Temperature,
+					Messages:        session.Agent.Messages,
+					AllowedPrograms: session.Agent.AllowedPrograms,
+					AllowedTools:    session.Agent.AllowedTools,
+					Sandbox:         session.Agent.Sandbox,
 				})
 
 				for _, name := range agent_names {
@@ -41,14 +41,14 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 					if agent != nil {
 
 						agents = append(agents, schemas.Agent{
-							Name:        agent.Name,
-							Type:        agent.Type,
-							Model:       agent.Model,
-							Temperature: agent.Temperature,
-							Messages:    agent.Messages,
-							Programs:    agent.Programs,
-							Tools:       agent.Tools,
-							Sandbox:     agent.Sandbox,
+							Name:            agent.Name,
+							Type:            agent.Type,
+							Model:           agent.Model,
+							Temperature:     agent.Temperature,
+							Messages:        agent.Messages,
+							AllowedPrograms: agent.AllowedPrograms,
+							AllowedTools:    agent.AllowedTools,
+							Sandbox:         agent.Sandbox,
 						})
 
 					}

@@ -11,15 +11,15 @@ import "slices"
 import "strings"
 
 type Programs struct {
-	Programs []string
-	Sandbox  string
+	Sandbox         string
+	AllowedPrograms []string
 }
 
 func NewPrograms(playground string, sandbox string, allowed_programs []string) *Programs {
 
 	return &Programs{
-		Programs: allowed_programs,
-		Sandbox:  sandbox,
+		Sandbox:         sandbox,
+		AllowedPrograms: allowed_programs,
 	}
 
 }
@@ -67,7 +67,7 @@ func (tool *Programs) Call(method string, arguments map[string]interface{}) (str
 
 func (tool *Programs) Execute(program string, arguments []string) (string, error) {
 
-	if slices.Contains(tool.Programs, program) {
+	if slices.Contains(tool.AllowedPrograms, program) {
 
 		program_arguments := make([]string, 0)
 
@@ -148,7 +148,7 @@ func (tool *Programs) Get(id string) (any, error) {
 
 	found := false
 
-	for _, name := range tool.Programs {
+	for _, name := range tool.AllowedPrograms {
 
 		if name == id {
 			found = true
@@ -185,7 +185,7 @@ func (tool *Programs) List() (string, error) {
 
 	names := make([]string, 0)
 
-	for _, name := range tool.Programs {
+	for _, name := range tool.AllowedPrograms {
 		names = append(names, name)
 	}
 

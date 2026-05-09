@@ -54,16 +54,17 @@ func main() {
 			case "jsonl":
 
 				fmt.Fprintf(os.Stderr, "[config]:\n")
-				fmt.Fprintf(os.Stderr, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
-				fmt.Fprintf(os.Stderr, "| Sandbox: %s\n", config.Sandbox)
-				fmt.Fprintf(os.Stderr, "| Tools:   %s\n", strings.Join(agent.Tools, ", "))
-				fmt.Fprintf(os.Stderr, "| URL:     %s\n", config.URL.String())
+				fmt.Fprintf(os.Stderr, "| Agent:    %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
+				fmt.Fprintf(os.Stderr, "| Sandbox:  %s\n", config.Sandbox)
+				fmt.Fprintf(os.Stderr, "| Tools:    %s\n", strings.Join(agent.AllowedTools, ", "))
+				fmt.Fprintf(os.Stderr, "| URL:      %s\n", config.URL.String())
 				fmt.Fprintf(os.Stderr, "\n")
 
 				os.Stdout.Sync()
 				os.Stderr.Sync()
 
 				client := ui_jsonl.NewClient(agent, config)
+				client.SetRole("user")
 				client.Init()
 
 			case "tty":
@@ -71,12 +72,13 @@ func main() {
 				fmt.Fprintf(os.Stdout, "[config]:\n")
 				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
 				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
-				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.Tools, ", "))
+				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.AllowedTools, ", "))
 				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
 				fmt.Fprintf(os.Stdout, "\n")
 				os.Stdout.Sync()
 
 				client := ui_tty.NewClient(agent, config)
+				client.SetRole("user")
 				client.Init()
 
 			case "web":
@@ -86,7 +88,7 @@ func main() {
 				fmt.Fprintf(os.Stdout, "[config]:\n")
 				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
 				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
-				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.Tools, ", "))
+				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.AllowedTools, ", "))
 				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
 				fmt.Fprintf(os.Stdout, "| Web:     %s\n", server.URL.String())
 				fmt.Fprintf(os.Stdout, "\n")
@@ -99,6 +101,7 @@ func main() {
 				fmt.Fprintf(os.Stdout, "[config]:\n")
 				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
 				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
+				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.AllowedTools, ", "))
 				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
 				fmt.Fprintf(os.Stdout, "\n")
 				os.Stdout.Sync()

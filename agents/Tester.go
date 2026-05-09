@@ -34,14 +34,14 @@ func NewTester(config *types.Config) *types.Agent {
 	})
 
 	return &types.Agent{
-		Name:        name,
-		Type:        "tester",
-		Model:       model,
-		Prompt:      prompt,
-		Temperature: temp,
-		Messages:    messages,
-		Programs:    []string{"go", "gofmt", "gopls"},
-		Tools:       []string{
+		Name:            name,
+		Type:            "tester",
+		Model:           model,
+		Prompt:          prompt,
+		Temperature:     temp,
+		Messages:        messages,
+		AllowedPrograms: []string{"go", "gofmt", "gopls"},
+		AllowedTools:    []string{
 			// No agents.List
 			// No agents.Hire
 			// No agents.Fire
@@ -63,7 +63,7 @@ func NewTester(config *types.Config) *types.Agent {
 			"requirements.List",
 			"requirements.Search",
 		},
-		Sandbox:     config.Sandbox,
+		Sandbox: config.Sandbox,
 	}
 
 }

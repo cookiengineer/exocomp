@@ -3,7 +3,7 @@
 		"type": "function",
 		"function": {
 			"name": "programs.List",
-			"description": "List all available programs",
+			"description": "List all allowed programs.",
 			"parameters": {
 				"type": "object",
 				"properties": {},
@@ -15,7 +15,7 @@
 		"type": "function",
 		"function": {
 			"name": "programs.Execute",
-			"description": "Execute a program with given arguments",
+			"description": "Execute a program with given arguments.",
 			"parameters": {
 				"type": "object",
 				"properties": {
@@ -32,7 +32,7 @@
 						"default": []
 					}
 				},
-				"required": ["program"]
+				"required": ["program", "arguments"]
 			}
 		}
 	}

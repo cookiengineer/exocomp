@@ -75,6 +75,139 @@ func (session *Session) Init() error {
 
 }
 
+func (session *Session) CallTool(identifier string, method string, arguments map[string]interface{}) {
+
+	tool := session.GetTool(identifier)
+
+	if tool != nil {
+
+		result, err0 := tool.Call(method, arguments)
+
+		if identifier == "skills" && method == "Load" {
+
+			tool_message := ""
+
+			if err0 == nil {
+
+				skill_name,    ok1  := arguments["name"].(string)
+				skill_content, err1 := tool.Get(skill_name)
+				skill,         ok2  := skill_content.(*Skill)
+
+				if ok1 == true && err1 == nil && ok2 == true {
+
+					err2 := session.LoadSkill(skill_name, skill)
+
+					if err2 == nil {
+						tool_message = strings.TrimSpace(result)
+					} else {
+						tool_message = fmt.Sprintf("Error: skills.Load: %s", err2.Error())
+					}
+
+				} else {
+					tool_message = fmt.Sprintf("Error: skills.Load: %s", "Attempt to escape policies")
+				}
+
+			} else {
+				tool_message = fmt.Sprintf("Error: skills.Load: %s", strings.TrimSpace(err0.Error()))
+			}
+
+			session.mutex.Lock()
+			message := &schemas.Message{
+				Role:     "tool",
+				Content:  tool_message,
+				ToolName: identifier,
+			}
+			session.Agent.Messages = append(session.Agent.Messages, message)
+			session.mutex.Unlock()
+
+		} else if identifier == "skills" && method == "Unload" {
+
+			tool_message := ""
+
+			if err0 == nil {
+
+				skill_name,    ok1  := arguments["name"].(string)
+				skill_content, err1 := tool.Get(skill_name)
+				skill,         ok2  := skill_content.(*Skill)
+
+				if ok1 == true && err1 == nil && ok2 == true {
+
+					err2 := session.UnloadSkill(skill_name, skill)
+
+					if err2 == nil {
+						tool_message = strings.TrimSpace(result)
+					} else {
+						tool_message = fmt.Sprintf("Error: skills.Unload: %s", err2.Error())
+					}
+
+				} else {
+					tool_message = fmt.Sprintf("Error: skills.Unload: %s", "Attempt to escape policies")
+				}
+
+			} else {
+				tool_message = fmt.Sprintf("Error: skills.Unload: %s", strings.TrimSpace(err0.Error()))
+			}
+
+			session.mutex.Lock()
+			message := &schemas.Message{
+				Role:     "tool",
+				Content:  tool_message,
+				ToolName: identifier,
+			}
+			session.Agent.Messages = append(session.Agent.Messages, message)
+			session.mutex.Unlock()
+
+		} else {
+
+			session.mutex.Lock()
+
+			if err0 == nil {
+
+				message := &schemas.Message{
+					Role:     "tool",
+					Content:  strings.TrimSpace(result),
+					ToolName: identifier,
+				}
+				session.Agent.Messages = append(session.Agent.Messages, message)
+
+			} else {
+
+				message := &schemas.Message{
+					Role:     "tool",
+					Content:  fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
+					ToolName: identifier,
+				}
+				session.Agent.Messages = append(session.Agent.Messages, message)
+
+			}
+
+			session.mutex.Unlock()
+
+		}
+
+	} else {
+
+		json_blob, _ := json.Marshal(arguments)
+
+		session.mutex.Lock()
+		message := &schemas.Message{
+			Role:     "tool",
+			Content:  strings.Join([]string{
+				fmt.Sprintf("Error: Tool \"%s\" doesn't exist.", identifier),
+				"",
+				fmt.Sprintf("identifier: \"%s\"", identifier),
+				fmt.Sprintf("method:     \"%s\"", method),
+				fmt.Sprintf("arguments:  \"%s\"", string(json_blob)),
+			}, "\n"),
+			ToolName: identifier,
+		}
+		session.Agent.Messages = append(session.Agent.Messages, message)
+		session.mutex.Unlock()
+
+	}
+
+}
+
 func (session *Session) GetConsoleMessages(from int) []ConsoleMessage {
 
 	if session.Console != nil {
@@ -215,7 +348,7 @@ func (session *Session) LoadSkill(name string, skill *Skill) error {
 			return nil
 
 		} else {
-			return fmt.Errorf("Session.LoadSkill: Cannot load Skill because of missing Tools %s", strings.Join(missing_tools, " and "))
+			return fmt.Errorf("Session.LoadSkill: Can't load Skill because of missing Tools %s", strings.Join(missing_tools, " and "))
 		}
 
 	} else {
@@ -242,142 +375,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 				arguments,  err2 := tool_call.Function.Arguments()
 
 				if err0 == nil && err1 == nil && err2 == nil {
-
-					tool := session.GetTool(identifier)
-
-					if tool != nil {
-
-						result, err4 := tool.Call(method, arguments)
-
-						if identifier == "skills" && method == "Load" {
-
-							tool_message := ""
-
-							if err4 == nil {
-
-								skill_name,    ok1  := arguments["name"].(string)
-								skill_content, err5 := tool.Get(skill_name)
-								skill,         ok2  := skill_content.(*Skill)
-
-								if ok1 == true && err5 == nil && ok2 == true {
-
-									err6 := session.LoadSkill(skill_name, skill)
-
-									if err6 == nil {
-										tool_message = strings.TrimSpace(result)
-									} else {
-										tool_message = fmt.Sprintf("Error: skills.Load: %s", err6.Error())
-									}
-
-								} else {
-									tool_message = fmt.Sprintf("Error: skills.Load: %s", "Attempt to escape policies")
-								}
-
-							} else {
-								tool_message = fmt.Sprintf("Error: skills.Load: %s", strings.TrimSpace(err0.Error()))
-							}
-
-							if tool_message != "" {
-
-								session.mutex.Lock()
-								message := &schemas.Message{
-									Role:     "tool",
-									Content:  tool_message,
-									ToolName: identifier,
-								}
-								session.Agent.Messages = append(session.Agent.Messages, message)
-								session.mutex.Unlock()
-
-							}
-
-						} else if identifier == "skills" && method == "Unload" {
-
-							tool_message := ""
-
-							if err4 == nil {
-
-								skill_name,    ok1  := arguments["name"].(string)
-								skill_content, err5 := tool.Get(skill_name)
-								skill,         ok2  := skill_content.(*Skill)
-
-								if ok1 == true && err5 == nil && ok2 == true {
-
-									err6 := session.UnloadSkill(skill_name, skill)
-
-									if err6 == nil {
-										tool_message = strings.TrimSpace(result)
-									} else {
-										tool_message = fmt.Sprintf("Error: skills.Unload: %s", err6.Error())
-									}
-
-								} else {
-									tool_message = fmt.Sprintf("Error: skills.Unload: %s", "Attempt to escape policies")
-								}
-
-							} else {
-								tool_message = fmt.Sprintf("Error: skills.Unload: %s", strings.TrimSpace(err0.Error()))
-							}
-
-							if tool_message != "" {
-
-								session.mutex.Lock()
-								message := &schemas.Message{
-									Role:     "tool",
-									Content:  tool_message,
-									ToolName: identifier,
-								}
-								session.Agent.Messages = append(session.Agent.Messages, message)
-								session.mutex.Unlock()
-
-							}
-
-						} else {
-
-							session.mutex.Lock()
-
-							if err0 == nil {
-
-								message := &schemas.Message{
-									Role:     "tool",
-									Content:  strings.TrimSpace(result),
-									ToolName: identifier,
-								}
-								session.Agent.Messages = append(session.Agent.Messages, message)
-
-							} else {
-
-								message := &schemas.Message{
-									Role:     "tool",
-									Content:  fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
-									ToolName: identifier,
-								}
-								session.Agent.Messages = append(session.Agent.Messages, message)
-
-							}
-
-							session.mutex.Unlock()
-
-						}
-
-					} else {
-
-						json_blob, _ := json.MarshalIndent(tool_call, "", "\t")
-
-						session.mutex.Lock()
-						message := &schemas.Message{
-							Role:     "tool",
-							Content:  strings.Join([]string{
-								fmt.Sprintf("Error: %s", "Invalid Tool Call"),
-								"",
-								string(json_blob),
-							}, "\n"),
-							ToolName: identifier,
-						}
-						session.Agent.Messages = append(session.Agent.Messages, message)
-						session.mutex.Unlock()
-
-					}
-
+					session.CallTool(identifier, method, arguments)
 				}
 
 			}

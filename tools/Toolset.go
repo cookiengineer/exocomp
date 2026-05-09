@@ -143,6 +143,28 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 
 	}
 
+	for _, schema := range SkillsSchema {
+
+		if slices.Contains(allowed_tools, schema.Function.Name) {
+
+			_, ok1 := result_schemas["skills"]
+
+			if ok1 == false {
+				result_schemas["skills"] = make([]schemas.Tool, 0)
+			}
+
+			result_schemas["skills"] = append(result_schemas["skills"], schema)
+
+			_, ok2 := result_tools["skills"]
+
+			if ok2 == false {
+				result_tools["skills"] = NewSkills(playground, sandbox, allowed_tools)
+			}
+
+		}
+
+	}
+
 	return result_schemas, result_tools
 
 }

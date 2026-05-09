@@ -20,7 +20,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 	session  := types.NewSession(agent, config)
 	renderer := NewRenderer(session)
 
-	if len(agent.Tools) > 0 {
+	if len(agent.AllowedTools) > 0 {
 
 		tool_schemas, tools := tools.Toolset(
 			config.Playground,
@@ -28,8 +28,8 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 			config.Model,
 			config.URL,
 			config.Debug,
-			agent.Programs,
-			agent.Tools,
+			agent.AllowedPrograms,
+			agent.AllowedTools,
 		)
 
 		for name, tool := range tools {

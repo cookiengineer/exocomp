@@ -34,14 +34,14 @@ func NewPlanner(config *types.Config) *types.Agent {
 	})
 
 	return &types.Agent{
-		Name:        name,
-		Type:        "planner",
-		Model:       model,
-		Prompt:      prompt,
-		Temperature: temp,
-		Messages:    messages,
-		Programs:    []string{},
-		Tools:       []string{
+		Name:            name,
+		Type:            "planner",
+		Model:           model,
+		Prompt:          prompt,
+		Temperature:     temp,
+		Messages:        messages,
+		AllowedPrograms: []string{},
+		AllowedTools:    []string{
 			"agents.List",
 			"agents.Hire",
 			"agents.Fire",
@@ -61,7 +61,7 @@ func NewPlanner(config *types.Config) *types.Agent {
 			// No requirements.List
 			// No requirements.Search
 		},
-		Sandbox:     config.Sandbox,
+		Sandbox: config.Sandbox,
 	}
 
 }
