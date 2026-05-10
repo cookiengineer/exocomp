@@ -41,7 +41,10 @@
 
 ## Web UI
 
-- [ ] Implement `routes.Tools` to execute/simulate tool calls with UI elements
+- [ ] Implement Tool Call Dialog element
+- [ ] Implement "auto-complete" with "[Tab]" leading to autocomplete of next parameter name
+      Set cursor on auto complete to `parameter-name="<here>"`
+- [ ] Implement "read-only" chat tabs for Agent conversations, with indicator of whether they're alive or not
 - [ ] `public/ui/Renderer` should implement lazy-rendering and avoid setting `nav.innerHTML = ""`
 - [ ] `public/ui/Renderer` should implement lazy-rendering and avoid setting `main.innerHTML = ""`
 

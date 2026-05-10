@@ -86,6 +86,10 @@ func (server *Server) Init() bool {
 		routes_session.Config(server.Session, request, response)
 	})
 
+	http.HandleFunc("/api/session/agents", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Agents(server.Session, request, response)
+	})
+
 	http.HandleFunc("/api/session/console", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.Console(server.Session, request, response)
 	})
@@ -94,17 +98,23 @@ func (server *Server) Init() bool {
 		routes_session.Context(server.Session, request, response)
 	})
 
+	http.HandleFunc("/api/session/tools", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Tools(server.Session, request, response)
+	})
+
+
+	// Session Interaction
+	http.HandleFunc("/api/session/calltool", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.CallTool(server.Session, request, response)
+	})
+
 	http.HandleFunc("/api/session/sendchatrequest", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.SendChatRequest(server.Session, request, response)
 	})
 
-	http.HandleFunc("/api/session/agents", func(response http.ResponseWriter, request *http.Request) {
-		routes_session.Agents(server.Session, request, response)
-	})
 
-
-
-	// TODO
+	// TODO: Modify Agent Settings, move to /api/config/agent instad
+	// TODO: move implementation to routes_config.Agents
 	http.HandleFunc("/api/settings/agent", func(response http.ResponseWriter, request *http.Request) {
 		routes.AgentSettings(server.Session, request, response)
 	})

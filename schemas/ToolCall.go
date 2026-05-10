@@ -16,7 +16,7 @@ type ToolCallFunction struct {
 	// Arguments map[string]interface{} `json:"arguments"`
 }
 
-func (function *ToolCallFunction) Tool() (string, error) {
+func (function *ToolCallFunction) ToName() (string, error) {
 
 	if strings.Contains(function.Name, ".") {
 
@@ -30,20 +30,20 @@ func (function *ToolCallFunction) Tool() (string, error) {
 			if tool != "" && method != "" {
 				return tool + "." + method, nil
 			} else {
-				return "", fmt.Errorf("Invalid Tool Call")
+				return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", function.Name)
 			}
 
 		} else {
-			return "", fmt.Errorf("Invalid Tool Call")
+			return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", function.Name)
 		}
 
 	} else {
-		return "", fmt.Errorf("Invalid Tool Call")
+		return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", function.Name)
 	}
 
 }
 
-func (function *ToolCallFunction) Method() (string, error) {
+func (function *ToolCallFunction) ToMethod() (string, error) {
 
 	if strings.Contains(function.Name, ".") {
 
@@ -56,22 +56,22 @@ func (function *ToolCallFunction) Method() (string, error) {
 			if method != "" {
 				return method, nil
 			} else {
-				return "", fmt.Errorf("Invalid Tool Call")
+				return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", function.Name)
 			}
 
 		} else {
-			return "", fmt.Errorf("Invalid Tool Call")
+			return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", function.Name)
 		}
 
 	} else {
-		return "", fmt.Errorf("Invalid Tool Call")
+		return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", function.Name)
 	}
 
 }
 
-func (function *ToolCallFunction) Arguments() (map[string]interface{}, error) {
+func (function *ToolCallFunction) ToArguments() (map[string]any, error) {
 
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 	err0   := json.Unmarshal(function.ArgumentsRaw, &result)
 
 	if err0 == nil {

@@ -3,6 +3,7 @@ package tty
 import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
+import utils_cli "exocomp/utils/cli"
 import "bufio"
 import "fmt"
 import "os"
@@ -13,6 +14,7 @@ import "syscall"
 type Client struct {
 	Renderer *Renderer
 	Session  *types.Session
+	role     string
 }
 
 func NewClient(agent *types.Agent, config *types.Config) *Client {
@@ -45,6 +47,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 	return &Client{
 		Renderer: renderer,
 		Session:  session,
+		role:     "user",
 	}
 
 }
@@ -114,25 +117,47 @@ func (client *Client) InputLoop() {
 
 	for scanner.Scan() {
 
+		role   := client.role
 		prompt := strings.TrimSpace(scanner.Text())
 
 		if prompt != "" && client.Session != nil {
 
-			go func() {
+			if role == "user" || role == "assistant" {
 
-				err := client.Session.SendChatRequest(schemas.Message{
-					Role:    "user",
-					Content: prompt,
-				})
+				if strings.HasPrefix(prompt, "/") && strings.Contains(prompt, " ") && !strings.Contains(prompt, "\n") {
 
-				if err != nil {
+					identifier := prompt[1:strings.Index(prompt, " ")]
 
-					fmt.Fprintf(os.Stderr, "\nFatal Error: %s\n", err.Error())
-					os.Exit(1)
+					if strings.Contains(identifier, ".") {
+
+						method    := identifier[strings.LastIndex(identifier, ".")+1:]
+						arguments := utils_cli.ParseParameters(strings.TrimSpace(prompt[1+len(identifier)+1:]))
+
+						client.Session.CallTool(identifier, method, arguments)
+
+					}
+
+				} else {
+
+					go func() {
+
+						err := client.Session.SendChatRequest(schemas.Message{
+							Role:    role,
+							Content: prompt,
+						})
+
+						if err != nil {
+
+							fmt.Fprintf(os.Stderr, "\nFatal Error: %s\n", err.Error())
+							os.Exit(1)
+
+						}
+
+					}()
 
 				}
 
-			}()
+			}
 
 		}
 
@@ -140,3 +165,10 @@ func (client *Client) InputLoop() {
 
 }
 
+func (client *Client) SetRole(role string) {
+
+	if role == "user" || role == "assistant" {
+		client.role = role
+	}
+
+}

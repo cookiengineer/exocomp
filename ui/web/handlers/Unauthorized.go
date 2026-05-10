@@ -4,11 +4,18 @@ import "exocomp/types"
 import "fmt"
 import "net/http"
 
-func Unauthorized(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Unauthorized(session *types.Session, err error, request *http.Request, response http.ResponseWriter) {
 
 	session.Console.Error(fmt.Sprintf("> %s %s: %d", request.Method, request.URL.Path, http.StatusUnauthorized))
 
-	content_type, payload := format_error(request, "Unauthorized")
+	content_type := ""
+	payload      := []byte{}
+
+	if err != nil {
+		content_type, payload = format_error(request, fmt.Sprintf("Unauthorized : %s", err.Error()))
+	} else {
+		content_type, payload = format_error(request, "Unauthorized")
+	}
 
 	response.Header().Set("Content-Type", content_type)
 	response.WriteHeader(http.StatusUnauthorized)

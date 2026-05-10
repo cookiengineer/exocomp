@@ -3,7 +3,9 @@ package jsonl
 import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
+import utils_cli "exocomp/utils/cli"
 import "bufio"
+import "encoding/json"
 import "fmt"
 import "os"
 import "os/signal"
@@ -13,6 +15,7 @@ import "syscall"
 type Client struct {
 	Renderer *Renderer
 	Session  *types.Session
+	role     string
 }
 
 func NewClient(agent *types.Agent, config *types.Config) *Client {
@@ -45,6 +48,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 	return &Client{
 		Renderer: renderer,
 		Session:  session,
+		role:     "user",
 	}
 
 }
@@ -104,22 +108,53 @@ func (client *Client) InputLoop() {
 
 	for scanner.Scan() {
 
+		role   := client.role
 		prompt := strings.TrimSpace(scanner.Text())
 
-		if strings.HasPrefix(prompt, "{") && strings.HasSuffix(prompt, "}") && client.Session != nil {
+		if prompt != "" && client.Session != nil {
 
-			go func() {
+			if role == "user" || role == "assistant" {
 
-				err := client.Session.SendChatRequest(schemas.Message{
-					Role:    "user",
-					Content: prompt,
-				})
+				if strings.HasPrefix(prompt, "/") && strings.Contains(prompt, " ") && !strings.Contains(prompt, "\n") {
 
-				if err != nil {
-					os.Exit(1)
+					identifier := prompt[1:strings.Index(prompt, " ")]
+
+					if strings.Contains(identifier, ".") {
+
+						method    := identifier[strings.LastIndex(identifier, ".")+1:]
+						arguments := utils_cli.ParseParameters(strings.TrimSpace(prompt[1+len(identifier)+1:]))
+
+						client.Session.CallTool(identifier, method, arguments)
+
+					}
+
+				} else if strings.HasPrefix(prompt, "{") && strings.HasSuffix(prompt, "}") {
+
+					tmp  := schemas.Message{}
+					err1 := json.Unmarshal([]byte(prompt), &tmp)
+
+					if err1 == nil && role == tmp.Role {
+
+						go func() {
+
+							err2 := client.Session.SendChatRequest(schemas.Message{
+								Role:    tmp.Role,
+								Content: tmp.Content,
+							})
+
+							if err2 != nil {
+								os.Exit(1)
+							}
+
+						}()
+
+					} else {
+						fmt.Fprintf(os.Stderr, "Error: jsonl.Client: %s", "Invalid schemas.Message")
+					}
+
 				}
 
-			}()
+			}
 
 		}
 
@@ -131,6 +166,14 @@ func (client *Client) Destroy() {
 
 	if client.Renderer != nil {
 		client.Renderer.Destroy()
+	}
+
+}
+
+func (client *Client) SetRole(role string) {
+
+	if role == "user" || role == "assistant" {
+		client.role = role
 	}
 
 }

@@ -16,14 +16,13 @@ func SendChatRequest(session *types.Session, request *http.Request, response htt
 
 		if content_type == "application/json" {
 
-			message := schemas.Message{}
-			from    := len(session.Agent.Messages)
-
 			request_payload, err0 := io.ReadAll(request.Body)
 
 			if err0 == nil {
 
-				err1 := json.Unmarshal(request_payload, &message)
+				from    := len(session.Agent.Messages)
+				message := schemas.Message{}
+				err1    := json.Unmarshal(request_payload, &message)
 
 				if err1 == nil {
 

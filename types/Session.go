@@ -8,6 +8,7 @@ import "fmt"
 import "io"
 import "net/http"
 import "os"
+import "sort"
 import "strings"
 import "sync"
 
@@ -75,15 +76,15 @@ func (session *Session) Init() error {
 
 }
 
-func (session *Session) CallTool(identifier string, method string, arguments map[string]interface{}) {
+func (session *Session) CallTool(name string, method string, arguments map[string]any) error {
 
-	tool := session.GetTool(identifier)
+	tool := session.GetTool(name)
 
 	if tool != nil {
 
 		result, err0 := tool.Call(method, arguments)
 
-		if identifier == "skills" && method == "Load" {
+		if name == "skills" && method == "Load" {
 
 			tool_message := ""
 
@@ -115,12 +116,18 @@ func (session *Session) CallTool(identifier string, method string, arguments map
 			message := &schemas.Message{
 				Role:     "tool",
 				Content:  tool_message,
-				ToolName: identifier,
+				ToolName: name,
 			}
 			session.Agent.Messages = append(session.Agent.Messages, message)
 			session.mutex.Unlock()
 
-		} else if identifier == "skills" && method == "Unload" {
+			if strings.HasPrefix(tool_message, "Error:") {
+				return fmt.Errorf(tool_message)
+			} else {
+				return nil
+			}
+
+		} else if name == "skills" && method == "Unload" {
 
 			tool_message := ""
 
@@ -152,57 +159,69 @@ func (session *Session) CallTool(identifier string, method string, arguments map
 			message := &schemas.Message{
 				Role:     "tool",
 				Content:  tool_message,
-				ToolName: identifier,
+				ToolName: name,
 			}
 			session.Agent.Messages = append(session.Agent.Messages, message)
 			session.mutex.Unlock()
 
-		} else {
-
-			session.mutex.Lock()
-
-			if err0 == nil {
-
-				message := &schemas.Message{
-					Role:     "tool",
-					Content:  strings.TrimSpace(result),
-					ToolName: identifier,
-				}
-				session.Agent.Messages = append(session.Agent.Messages, message)
-
+			if strings.HasPrefix(tool_message, "Error:") {
+				return fmt.Errorf(tool_message)
 			} else {
-
-				message := &schemas.Message{
-					Role:     "tool",
-					Content:  fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error())),
-					ToolName: identifier,
-				}
-				session.Agent.Messages = append(session.Agent.Messages, message)
-
+				return nil
 			}
 
+		} else {
+
+			tool_message := ""
+
+			if err0 == nil {
+				tool_message = strings.TrimSpace(result)
+			} else {
+				tool_message = fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error()))
+			}
+
+			session.mutex.Lock()
+			message := &schemas.Message{
+				Role:     "tool",
+				Content:  tool_message,
+				ToolName: name,
+			}
+			session.Agent.Messages = append(session.Agent.Messages, message)
 			session.mutex.Unlock()
+
+			if strings.HasPrefix(tool_message, "Error:") {
+				return fmt.Errorf(tool_message)
+			} else {
+				return nil
+			}
 
 		}
 
 	} else {
 
-		json_blob, _ := json.Marshal(arguments)
+		args_blob, _ := json.Marshal(arguments)
+		json_blob, _ := json.Marshal(schemas.ToolCall{
+			Type:     "function",
+			Function: schemas.ToolCallFunction{
+				Name:         name,
+				ArgumentsRaw: args_blob,
+			},
+		})
 
 		session.mutex.Lock()
 		message := &schemas.Message{
 			Role:     "tool",
 			Content:  strings.Join([]string{
-				fmt.Sprintf("Error: Tool \"%s\" doesn't exist.", identifier),
+				fmt.Sprintf("Error: Tool \"%s\" doesn't exist.", name),
 				"",
-				fmt.Sprintf("identifier: \"%s\"", identifier),
-				fmt.Sprintf("method:     \"%s\"", method),
-				fmt.Sprintf("arguments:  \"%s\"", string(json_blob)),
+				string(json_blob),
 			}, "\n"),
-			ToolName: identifier,
+			ToolName: name,
 		}
 		session.Agent.Messages = append(session.Agent.Messages, message)
 		session.mutex.Unlock()
+
+		return fmt.Errorf("Error: Tool \"%s\" doesn't exist.", name)
 
 	}
 
@@ -274,6 +293,37 @@ func (session *Session) GetTool(identifier string) Tool {
 	} else {
 		return nil
 	}
+
+}
+
+func (session *Session) GetToolNames() []string {
+
+	result := make([]string, 0)
+
+	for _, tool := range session.Tools {
+		result = append(result, tool.Function.Name)
+	}
+
+	sort.Strings(result)
+
+	return result
+
+}
+
+func (session *Session) GetToolSchema(identifier string) *schemas.Tool {
+
+	var found *schemas.Tool = nil
+
+	for _, tool := range session.Tools {
+
+		if tool.Function.Name == identifier {
+			found = tool
+			break
+		}
+
+	}
+
+	return found
 
 }
 
@@ -370,12 +420,12 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 			for _, tool_call := range response.ToolCalls {
 
-				identifier, err0 := tool_call.Function.Tool()
-				method,     err1 := tool_call.Function.Method()
-				arguments,  err2 := tool_call.Function.Arguments()
+				name,      err0 := tool_call.Function.ToName()
+				method,    err1 := tool_call.Function.ToMethod()
+				arguments, err2 := tool_call.Function.ToArguments()
 
 				if err0 == nil && err1 == nil && err2 == nil {
-					session.CallTool(identifier, method, arguments)
+					session.CallTool(name, method, arguments)
 				}
 
 			}
