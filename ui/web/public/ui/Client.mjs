@@ -9,6 +9,7 @@ export const Client = function(config) {
 
 	this.Session  = new Session(config);
 	this.Renderer = new Renderer(this.Session);
+	this.role     = "user";
 
 	this.elements = {
 		"nav":    document.querySelector("body > aside > nav[aria-label=\"agents\"]"),
@@ -101,14 +102,16 @@ Client.prototype = {
 				if (event.ctrlKey === true && event.key === "Enter") {
 
 					let prompt = (this.elements["prompt"].value || "").trim();
-					if (prompt !== "") {
+					let role   = this.role;
+
+					if (prompt !== "" && role !== "") {
 
 						(async () => {
 
 							this.UpdatePrompt("");
 
 							let result = await this.Session.SendChatRequest({
-								role:    "user",
+								role:    role,
 								content: prompt
 							});
 
@@ -128,6 +131,14 @@ Client.prototype = {
 
 			});
 
+		}
+
+	},
+
+	SetRole: function(role) {
+
+		if (role === "assistant" || role === "user") {
+			this.role = role;
 		}
 
 	},

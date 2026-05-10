@@ -266,13 +266,13 @@ func (session *Session) GetMessages(from int) []*schemas.Message {
 
 }
 
-func (session *Session) GetTool(identifier string) Tool {
+func (session *Session) GetTool(name string) Tool {
 
 	allowed := false
 
 	for _, tool := range session.Tools {
 
-		if tool.Function.Name == identifier {
+		if tool.Function.Name == name {
 			allowed = true
 			break
 		}
@@ -281,8 +281,8 @@ func (session *Session) GetTool(identifier string) Tool {
 
 	if allowed == true {
 
-		name     := strings.TrimSpace(identifier[0:strings.Index(identifier, ".")])
-		tool, ok := session.tools[name]
+		namespace := strings.TrimSpace(name[0:strings.Index(name, ".")])
+		tool, ok  := session.tools[namespace]
 
 		if ok == true {
 			return tool
@@ -310,13 +310,13 @@ func (session *Session) GetToolNames() []string {
 
 }
 
-func (session *Session) GetToolSchema(identifier string) *schemas.Tool {
+func (session *Session) GetToolSchema(name string) *schemas.Tool {
 
 	var found *schemas.Tool = nil
 
 	for _, tool := range session.Tools {
 
-		if tool.Function.Name == identifier {
+		if tool.Function.Name == name {
 			found = tool
 			break
 		}

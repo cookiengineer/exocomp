@@ -86,6 +86,10 @@ func (server *Server) Init() bool {
 		routes_session.Config(server.Session, request, response)
 	})
 
+	http.HandleFunc("/api/session/agent", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Agent(server.Session, request, response)
+	})
+
 	http.HandleFunc("/api/session/agents", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.Agents(server.Session, request, response)
 	})

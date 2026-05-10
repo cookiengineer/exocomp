@@ -21,6 +21,58 @@ export const Session = function(config) {
 
 Session.prototype = {
 
+	CallTool: async function(name, method, args) {
+
+		if (this.Waiting === false) {
+
+			this.Waiting = true;
+
+			try {
+
+				let response = await fetch(this.Config.ResolveAPI("/api/session/calltool").toString(), {
+					method:  "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({
+						"type":     "function",
+						"function": {
+							"name":      name,
+							"arguments": args
+						}
+					})
+				});
+
+				if (response.ok === true) {
+
+					this.Waiting = false;
+
+					return true;
+
+				} else {
+
+					this.Waiting = false;
+
+					return false;
+
+				}
+
+			} catch (err) {
+
+				this.Waiting = false;
+
+				return false;
+
+			}
+
+		} else {
+
+			return false;
+
+		}
+
+	},
+
 	GetAgent: function(name) {
 
 		name = typeof name === "string" ? name : null;
@@ -82,9 +134,60 @@ Session.prototype = {
 
 	},
 
+	GetToolNames: function() {
+
+		let result = [];
+
+		this.Tools.forEach((tool) => {
+			result.push(tool["function"]["name"]);
+		});
+
+		return result;
+
+	},
+
+	GetToolSchema: function(name) {
+
+		let found = null;
+
+		for (let t = 0; t < this.Tools.length; t++) {
+
+			let tool = this.Tools[t];
+
+			if (tool["function"]["name"] === name) {
+				found = tool;
+				break;
+			}
+
+		}
+
+		return found;
+
+	},
+
 	Init: function() {
 
 		this.Update();
+
+	},
+
+	ReceiveAgent: function(agent) {
+
+		agent = agent instanceof Agent ? agent : null;
+
+		if (agent !== null) {
+
+			this.Agents[agent.Name] = agent;
+
+			if (agent.Name === this.Config.Name) {
+				this.Agent = this.Agents[agent.Name];
+			}
+
+			return true;
+
+		}
+
+		return false;
 
 	},
 
@@ -128,31 +231,9 @@ Session.prototype = {
 
 		} else {
 
-			this.Waiting = false;
-
 			return false;
 
 		}
-
-	},
-
-	ReceiveAgent: function(agent) {
-
-		agent = agent instanceof Agent ? agent : null;
-
-		if (agent !== null) {
-
-			this.Agents[agent.Name] = agent;
-
-			if (agent.Name === this.Config.Name) {
-				this.Agent = this.Agents[agent.Name];
-			}
-
-			return true;
-
-		}
-
-		return false;
 
 	},
 
@@ -175,6 +256,7 @@ Session.prototype = {
 	Update: function() {
 
 		this.UpdateContextUsage();
+		this.UpdateTools();
 
 	},
 
@@ -192,6 +274,24 @@ Session.prototype = {
 				this.Context.Tokens = context["tokens"] || 0;
 
 			}
+
+		});
+
+	},
+
+	UpdateTools: function() {
+
+		this.Tools = [];
+
+		fetch(this.Config.ResolveAPI("/api/session/tools").toString(), {
+			method: "GET"
+		}).then((response) => {
+			return response.json();
+		}).then((tools) => {
+
+			tools.forEach((tool) => {
+				this.Tools.push(tool);
+			});
 
 		});
 
