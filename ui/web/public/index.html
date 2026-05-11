@@ -29,7 +29,7 @@
 			<div><textarea id="prompt"></textarea></div>
 			<div></div>
 		</footer>
-		<dialog id="execute-tool" open>
+		<dialog id="call-tool">
 			<article>
 				<h3>Execute Tool</h3>
 				<button data-action="close"></button>
@@ -68,11 +68,11 @@
 					</div>
 					<div>
 						<label data-type="folder" for="dialog-input-sandbox">Sandbox</label>
-						<input id="dialog-input-sandbox" type="text" data-name="sandbox" value="" placeholder="./sandbox">
+						<input id="dialog-input-sandbox" type="text" data-name="sandbox" value="" placeholder="./path/to/sandbox">
 					</div>
 					<div>
 						<label data-type="text" for="dialog-input-prompt">Prompt</label>
-						<textarea id="dialog-input-prompt" data-name="prompt"></textarea>
+						<textarea id="dialog-input-prompt" data-name="prompt" placeholder="What is your name?"></textarea>
 					</div>
 				</fieldset>
 				<footer>

@@ -1,52 +1,28 @@
 
-import { Client       } from "./ui/Client.mjs";
-import { RenderSelect } from "./utils/ui/RenderSelect.mjs";
-import { GetAgents    } from "./utils/api/parameters/GetAgents.mjs";
-import { GetModels    } from "./utils/api/parameters/GetModels.mjs";
-import { GetConfig    } from "./utils/api/GetConfig.mjs";
+import { Client                           } from "./ui/Client.mjs";
+import { CallTool    as CallToolDialog    } from "./ui/dialogs/CallTool.mjs";
+import { CreateAgent as CreateAgentDialog } from "./ui/dialogs/CreateAgent.mjs";
+import { RenderSelect                     } from "./utils/ui/RenderSelect.mjs";
+import { BootstrapConfig                  } from "./types/Config.mjs";
 
 async function main() {
 
-	const dialog   = document.querySelector("dialog");
-	const elements = {
-		"agents": document.querySelector("dialog select[data-name=\"agent\"]"),
-		"models": document.querySelector("dialog select[data-name=\"model\"]")
-	};
-
-	if (dialog !== null) {
-
-		let close_dialog = dialog.querySelector("button[data-action=\"close\"]");
-		if (close_dialog !== null) {
-			close_dialog.onclick = () => {
-				dialog.close();
-			};
-		}
-
-		let create_agent = document.querySelector("header button[data-action=\"create-agent\"]");
-		if (create_agent !== null) {
-			create_agent.onclick = () => {
-				dialog.show();
-			};
-		}
-
-	}
-
 	try {
 
-		const agents = await GetAgents();
-		const models = await GetModels();
-
-		RenderSelect(elements["agents"], agents);
-		RenderSelect(elements["models"], models);
-
-	} catch (err) {
-		console.error(err);
-	}
-
-	try {
-
-		const config = await GetConfig();
+		const config = await BootstrapConfig();
 		const client = new Client(config);
+
+		const dialog1 = new CreateAgentDialog(document.querySelector("dialog#create-agent"), config);
+
+		dialog1.OnConfirm = (data) => {
+			client.CreateAgent(data);
+		};
+
+		const dialog2 = new CallToolDialog(document.querySelector("dialog#call-tool"), client.Session.Tools);
+
+		dialog2.OnConfirm = (data) => {
+			client.CallTool(data["name"], data["method"], data["arguments"]);
+		};
 
 		window.CLIENT = client;
 

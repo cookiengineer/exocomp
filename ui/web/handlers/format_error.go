@@ -1,6 +1,7 @@
 package handlers
 
 import "fmt"
+import "encoding/json"
 import "net/http"
 import "strings"
 
@@ -45,11 +46,19 @@ func format_error(request *http.Request, message string) (string, []byte) {
 `, message))
 
 	if strings.Contains(request.URL.Path, "/api/") {
+
 		content_type = "application/json; charset=utf-8"
-		payload = []byte(fmt.Sprintf("{\"error\": \"%s\"}", message))
+		payload, _ = json.MarshalIndent(map[string]string{
+			"error": message,
+		}, "", "\t")
+
 	} else if strings.HasSuffix(request.URL.Path, ".json") {
+
 		content_type = "application/json; charset=utf-8"
-		payload = []byte(fmt.Sprintf("{\"error\": \"%s\"}", message))
+		payload, _ = json.MarshalIndent(map[string]string{
+			"error": message,
+		}, "", "\t")
+
 	}
 
 	return content_type, payload

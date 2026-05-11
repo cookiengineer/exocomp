@@ -32,6 +32,12 @@ export const Client = function(config) {
 
 Client.prototype = {
 
+	CallTool: function(name, method, args) {
+
+		this.Session.CallTool(name, method, args);
+
+	},
+
 	Destroy: function() {
 
 		if (this.Renderer !== null) {
@@ -99,7 +105,11 @@ Client.prototype = {
 
 			this.elements["prompt"].addEventListener("keyup", (event) => {
 
-				if (event.ctrlKey === true && event.key === "Enter") {
+				if (event.ctrlKey === true && event.key === "Space") {
+
+					// TODO: Tool Mode support
+
+				} else if (event.ctrlKey === true && event.key === "Enter") {
 
 					let prompt = (this.elements["prompt"].value || "").trim();
 					let role   = this.role;

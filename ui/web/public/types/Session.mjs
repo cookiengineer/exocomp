@@ -281,7 +281,8 @@ Session.prototype = {
 
 	UpdateTools: function() {
 
-		this.Tools = [];
+		// Empty Tools without losing references
+		this.Tools.splice(0, this.Tools.length);
 
 		fetch(this.Config.ResolveAPI("/api/session/tools").toString(), {
 			method: "GET"
