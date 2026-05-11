@@ -1,7 +1,8 @@
 
-import { Agent    } from "../types/Agent.mjs";
-import { Renderer } from "./Renderer.mjs";
-import { Session  } from "../types/Session.mjs";
+import { Agent           } from "../types/Agent.mjs";
+import { Renderer        } from "./Renderer.mjs";
+import { Session         } from "../types/Session.mjs";
+import { ParseParameters } from "../utils/cli/ParseParameters.mjs";
 
 const time_Second = 1 * 1000;
 
@@ -21,6 +22,8 @@ export const Client = function(config) {
 		label:   0, // every  1 second
 		session: 0, // every  5 seconds
 	};
+
+	this.OnChange = (prompt) => {};
 
 	this.interval_id = null;
 
@@ -105,37 +108,80 @@ Client.prototype = {
 
 			this.elements["prompt"].addEventListener("keyup", (event) => {
 
-				if (event.ctrlKey === true && event.key === "Space") {
-
-					// TODO: Tool Mode support
-
-				} else if (event.ctrlKey === true && event.key === "Enter") {
+				if (event.ctrlKey === true && event.key === "Enter") {
 
 					let prompt = (this.elements["prompt"].value || "").trim();
 					let role   = this.role;
 
 					if (prompt !== "" && role !== "") {
 
-						(async () => {
+						if (prompt.startsWith("/") && prompt.includes(" ") && !prompt.includes("\n")) {
 
-							this.UpdatePrompt("");
+							let name = (prompt.substr(1).split(" ")[0] || "/").trim();
+							if (name.includes(".") === true) {
 
-							let result = await this.Session.SendChatRequest({
-								role:    role,
-								content: prompt
-							});
+								let method = name.split(".").pop();
+								let args   = ParseParameters(prompt.substr(name.length + 1));
 
-							if (result === true) {
-								this.UpdateAgents();
+								(async (name, method, args) => {
+									this.CallTool(name, method, args);
+								})(name, method, args);
+
+								event.preventDefault();
+								this.UpdatePrompt("");
+								this.OnChange("");
+
 							}
 
-						})();
+						} else {
+
+							(async () => {
+
+								this.UpdatePrompt("");
+
+								let result = await this.Session.SendChatRequest({
+									role:    role,
+									content: prompt
+								});
+
+								if (result === true) {
+									this.UpdateAgents();
+								}
+
+							})();
+
+						}
+
+					}
+
+				} else if (event.key === "Enter") {
+
+					let prompt = (this.elements["prompt"].value || "").trim();
+					if (prompt.startsWith("/") && prompt.includes(" ") && !prompt.includes("\n")) {
+
+						let name = (prompt.substr(1).split(" ")[0] || "/").trim();
+						if (name.includes(".") === true) {
+
+							let method = name.split(".").pop();
+							let args   = ParseParameters(prompt.substr(name.length + 1));
+
+							(async (name, method, args) => {
+								this.CallTool(name, method, args);
+							})(name, method, args);
+
+							event.preventDefault();
+							this.UpdatePrompt("");
+							this.OnChange("");
+
+						}
 
 					}
 
 				} else {
 
-					// Do Nothing
+					let prompt = (this.elements["prompt"].value || "").trim();
+
+					this.OnChange(prompt);
 
 				}
 

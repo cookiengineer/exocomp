@@ -136,6 +136,16 @@ CreateAgent.prototype = {
 
 	},
 
+	IsVisible: function() {
+
+		if (this.Element !== null) {
+			return this.Element.hasAttribute("open");
+		}
+
+		return false;
+
+	},
+
 	Show: function() {
 
 		if (this.Element !== null) {

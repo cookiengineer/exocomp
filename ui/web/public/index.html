@@ -12,6 +12,7 @@
 
 		<!-- design -->
 		<link rel="stylesheet" href="/design/index.css">
+		<link rel="stylesheet" href="/ui/index.css">
 		<script type="module" src="/main.mjs" defer></script>
 	</head>
 	<body>
@@ -24,28 +25,11 @@
 			<nav aria-label="agents"></nav>
 		</aside>
 		<main></main>
-		<footer>
+		<div id="call-tool" popover><ul data-name="suggestions"></ul></div>
+		<footer class="disabled">
 			<div><label>Type Message<br>[model 0%]</div>
 			<div><textarea id="prompt"></textarea></div>
-			<div></div>
 		</footer>
-		<dialog id="call-tool">
-			<article>
-				<h3>Execute Tool</h3>
-				<button data-action="close"></button>
-				<fieldset>
-					<input type="text" data-name="tool" placeholder='/tool.Method param="value"'/>
-					<ul data-name="tool-suggestions">
-						<li><label>/skills.Load</label> <span>Load an Agent Skill</span></li>
-					</ul>
-				</fieldset>
-				<footer>
-					<div><button data-action="cancel">Cancel</button></div>
-					<div></div>
-					<div><button data-action="confirm">Confirm</button></div>
-				</footer>
-			</article>
-		</dialog>
 		<dialog id="create-agent">
 			<article>
 				<h3>Create Agent</h3>

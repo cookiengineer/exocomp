@@ -28,6 +28,10 @@ body > main {
 	overflow-y: scroll;
 }
 
+body:has(footer.disabled) > main {
+	bottom: 50px;
+}
+
 body > main > article {
 	width: auto;
 	margin: 32px 32px;
@@ -37,15 +41,28 @@ body > aside {
 	width: 200px;
 }
 
+body:has(footer.disabled) > aside {
+	bottom: 50px;
+}
+
 body > footer {
 	padding: 16px 16px 16px 0px;
 	height: unset;
+}
+
+body > footer.disabled {
+	padding: 8px 8px 8px 0px;
+	height: 50px;
 }
 
 body > footer > div:nth-of-type(1) {
 	width: 198px; /* somehow this is 2px less than it should be */
 	line-height: 20px;
 	text-align: center;
+}
+
+body > footer.disabled > div:nth-of-type(1) label {
+	opacity: 0;
 }
 
 body > footer > div:nth-of-type(2) {
@@ -59,5 +76,10 @@ body > footer > div:nth-of-type(2) textarea {
 	min-height: 8em;
 	resize: horizontal;
 	box-sizing: border-box;
+}
+
+body > footer.disabled > div:nth-of-type(2) textarea {
+	height: calc(1em + 16px);
+	min-height: unset;
 }
 

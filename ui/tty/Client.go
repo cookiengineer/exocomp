@@ -126,14 +126,14 @@ func (client *Client) InputLoop() {
 
 				if strings.HasPrefix(prompt, "/") && strings.Contains(prompt, " ") && !strings.Contains(prompt, "\n") {
 
-					identifier := prompt[1:strings.Index(prompt, " ")]
+					name := prompt[1:strings.Index(prompt, " ")]
 
-					if strings.Contains(identifier, ".") {
+					if strings.Contains(name, ".") {
 
-						method    := identifier[strings.LastIndex(identifier, ".")+1:]
-						arguments := utils_cli.ParseParameters(strings.TrimSpace(prompt[1+len(identifier)+1:]))
+						method    := name[strings.LastIndex(name, ".")+1:]
+						arguments := utils_cli.ParseParameters(strings.TrimSpace(prompt[1+len(name)+1:]))
 
-						client.Session.CallTool(identifier, method, arguments)
+						client.Session.CallTool(name, method, arguments)
 
 					}
 
