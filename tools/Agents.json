@@ -26,7 +26,7 @@
 					"agent": {
 						"type": "string",
 						"description": "Contractor agent's type",
-						"enum": ["architect", "coder", "researcher", "tester"]
+						"enum": ["architect", "coder", "pentester", "researcher", "tester"]
 					},
 					"sandbox": {
 						"type": "string",

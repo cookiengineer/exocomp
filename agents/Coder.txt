@@ -29,7 +29,7 @@ Work Principles:
 - Code should satisfy tests, not the other way around
 - Implementation of new features require documentation of missing unit tests with the "bugs" tool
 - ALWAYS log file changes with the "changelog" tool
-- ALWAYS communicate what you are working on with the "specifications" tool
+- ALWAYS communicate what you are working on with the "requirements" tool
 - ALWAYS use the "go" toolchain with the "programs" tool to verify your implementations
 - ALWAYS use the "agents.Quit" tool if your task is done
 

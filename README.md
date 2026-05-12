@@ -41,9 +41,12 @@ Exocomp uses multiple Agent [Types](./agents/Types.go):
 | [Planner](./agents/Planner.go)       | long      | `gemma4:31b`      | writes with humans, contracts agents and plans project phases |
 | [Architect](./agents/Architect.go)   | short     | `qwen3-coder:30b` | defines `specifications`                                      |
 | [Coder](./agents/Coder.go)           | short     | `qwen3-coder:30b` | implements features, reads `specifications` and `bugs`        |
-| [Tester](./agents/Tester.go)         | short     | `qwen3-coder:30b` | implements unit tests, writes reports into `bugs`             |
 | [Summarizer](./agents/Summarizer.go) | short     | `qwen3-coder:30b` | reads long texts and summarizes them                          |
+| [Pentester](./agents/Pentester.go)   | short     | `qwen3-coder:30b` | reports `findings` and discovers `vulnerabilities`            |
 | Researcher                           | short     | `qwen3-coder:30b` | reads websites, API documentation, and reports to `Architect` |
+| Reverser                             | short     | `qwen3-coder:30b` | translates binaries or code into Go/CGo code                  |
+| [Tester](./agents/Tester.go)         | short     | `qwen3-coder:30b` | implements unit tests, writes reports into `bugs`             |
+| ThreatHunter                         | short     | `qwen3-coder:30b` | researches `weaknesses` and `vulnerabilities`                 |
 
 Exocomp uses Tools to interact with the sandbox. Check the implementations to
 see which tools are allowed for which Agent role.
@@ -60,19 +63,21 @@ to beat the context length and agent memory limitations of locally run models.
 
 Check the unit tests on whether the Tools can be relied on or not.
 
-| Tool                                    | Unit Tests?                         | Description                                     | Agent Roles                                             |
-|:----------------------------------------|:-----------------------------------:|:------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./tools/Agents.go)             | [Yes](./tools/Agents_test.go) [1]   | Manages the lifecycle of contractor sub-agents. | `planner`                                               |
-| [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)         | Manages documentation of discovered bugs.       | `tester`                                                |
-| [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go)    | Manages documentation of development changelog. | `coder`                                                 |
-| Containers                              |                                     | Manages virtual containers.                     | `redteamer`, `blueteamer`                               |
-| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)        | Interacts with files and folders.               | `planner`, `architect`, `coder`, `summarizer`, `tester` |
-| [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)     | Interacts with installed programs.              | `coder`, `tester`                                       |
-| [Requirements](./tools/Requirements.go) | [Yes](./tools/Requirements_test.go) | Manages specifications of implementations.      | `architect`, `coder`, `tester`                          |
-| [Skills](./tools/Skills.go)             |                                     | Loads and Unloads Agent Skills. [2]             | `planner`, `architect`, `coder`, `tester`               |
-| Forgejo                                 |                                     | Researches knowledge from offline git servers.  | `researcher`                                            |
-| Kiwix                                   |                                     | Researches knowledge from offline web archives. | `researcher`                                            |
-| Websites                                |                                     | Researches knowledge from the web.              | `researcher`                                            |
+| Tool                                    | Unit Tests?                         | Description                                         | Agent Roles                                             |
+|:----------------------------------------|:-----------------------------------:|:----------------------------------------------------|:-------------------------------------------------------:|
+| [Agents](./tools/Agents.go)             | [Yes](./tools/Agents_test.go) [1]   | Manages the lifecycle of contractor sub-agents.     | `planner`                                               |
+| [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)         | Manages documentation of discovered bugs.           | `tester`                                                |
+| [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go)    | Manages documentation of development changelog.     | `coder`                                                 |
+| Containers                              |                                     | Manages virtual containers.                         | `redteamer`, `blueteamer`                               |
+| Exploits                                |                                     | Manages PoCs for CVEs from local dataset.           | `pentester`, `reverser`                                 |
+| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)        | Interacts with files and folders.                   | `planner`, `architect`, `coder`, `summarizer`, `tester` |
+| Findings                                |                                     | Reports findings of vulnerabilities and weaknesses. | `pentester`                                             |
+| [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)     | Interacts with installed programs.                  | `coder`, `tester`                                       |
+| [Requirements](./tools/Requirements.go) | [Yes](./tools/Requirements_test.go) | Manages specifications of implementations.          | `architect`, `coder`, `tester`                          |
+| [Skills](./tools/Skills.go)             |                                     | Loads and Unloads Agent Skills. [2]                 | `planner`, `architect`, `coder`, `tester`               |
+| Kiwix                                   |                                     | Researches knowledge from offline web archives.     | `researcher`                                            |
+| Vulnerabilities                         |                                     | Manages vulnerabilities from local dataset.         | `pentester`, `threathunter`                             |
+| Websites                                |                                     | Researches knowledge from the web.                  | `pentester`, `researcher`                               |
 
 - [1] Install dependencies with [install-deps.sh](./install-deps.sh). Requires 80GB of HDD space, 48GB of VRAM, and an iGPU or dGPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).

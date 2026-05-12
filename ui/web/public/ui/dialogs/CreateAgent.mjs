@@ -16,7 +16,7 @@ export const CreateAgent = function(element, config) {
 	this.OnCancel  = (data) => {};
 
 	this.options = {
-		"agent": [ "planner", "architect", "coder", "tester" ],
+		"agent": [ "planner", "architect", "coder", "pentester", "tester" ],
 		"model": [ "qwen3-coder:30b", "gemma4:31b" ],
 	};
 
