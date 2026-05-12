@@ -233,7 +233,25 @@ func (tool *Skills) Unload(name string) (string, error) {
 
 }
 
-func (tool *Skills) ExecuteScript(script string, arguments []string) (string, error) {
+func (tool *Skills) Execute(name string, script string, arguments []string) (string, error) {
+
+	skill, ok1 := tool.loaded_skills[name]
+
+	if ok1 == true {
+
+		runtime, ok2 := skill.Scripts[script]
+
+		if ok2 == true {
+
+			// TODO: CONTINUE HERE
+
+		} else {
+			return "", fmt.Errorf("skills.Load: Script \"%s\" has no runtime!", script)
+		}
+
+	} else {
+		return "", fmt.Errorf("skills.Load: Skill \"%s\" isn't loaded!", name)
+	}
 
 	// TODO: Execute script of the skill
 

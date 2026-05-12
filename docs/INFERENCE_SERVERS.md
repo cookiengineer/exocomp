@@ -50,7 +50,8 @@ Full llama.cpp server parameters:
 cd /path/to/exocomp/third_party;
 
 # On systems with less than 48GB of VRAM
-./llama/llama-server -m ./models/qwen3-coder-30b-a3b-instruct-q8_0.gguf \
+./llama/llama-server \
+	--models-dir ./models \
 	--gpu-layers all \
 	--ctx-size 32768 \
 	--batch-size 512 \
@@ -65,7 +66,8 @@ cd /path/to/exocomp/third_party;
     --port=11434;
 
 # On systems with at least 48GB of VRAM
-./llama/llama-server -m ./models/qwen3-coder-30b-a3b-instruct-q8_0.gguf \
+./llama/llama-server \
+	--models-dir ./models \
 	--gpu-layers all \
 	--ctx-size 262144 \
 	--batch-size 2048 \

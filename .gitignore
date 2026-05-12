@@ -5,6 +5,10 @@
 /third_party/models/*.crdownload
 !/third_party/models/.gitkeep
 
+# Ignore programs due to size
+/third_party/programs/*
+!/third_party/programs/.gitkeep
+
 # Ignore unnecessary llama.cpp files
 /third_party/llama/*.crdownload
 /third_party/llama/libggml*

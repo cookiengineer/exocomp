@@ -21,7 +21,7 @@
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Unique Agent Skill name"
+						"description": "Agent Skill name"
 					}
 				},
 				"required": ["name"]
@@ -38,7 +38,7 @@
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Unique Agent Skill name"
+						"description": "Agent Skill name"
 					}
 				},
 				"required": ["name"]
@@ -48,11 +48,15 @@
 	{
 		"type": "function",
 		"function": {
-			"name": "skills.ExecuteScript",
+			"name": "skills.Execute",
 			"description": "Execute a script with given arguments.",
 			"parameters": {
 				"type": "object",
 				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Agent Skill name"
+					},
 					"script": {
 						"type": "string",
 						"description": "The script file name, e.g. \"my-script.py\""
@@ -66,7 +70,7 @@
 						"default": []
 					}
 				},
-				"required": ["script", "arguments"]
+				"required": ["name", "script", "arguments"]
 			}
 		}
 	}

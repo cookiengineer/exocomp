@@ -84,12 +84,15 @@ func TestMain(main *testing.M) {
 		defer cancel()
 
 		tools_path  := getToolsPath()
-		server_path := filepath.Join(tools_path, "..", "third_party/llama/llama-server")
-		model_path  := filepath.Join(tools_path, "..", "third_party/models/qwen3-coder-30b-a3b-instruct-q8_0.gguf")
+		server_path := filepath.Join(tools_path, "..", "third_party/llama", "llama-server")
+		model_name  := "qwen3-coder:30b"
+		model_file  := "qwen3-coder-30b-a3b-instruct-q8_0.gguf"
+		model_path  := filepath.Join(tools_path, "..", "third_party/models", model_file)
 
 		cmd := exec.Command(
 			server_path,
 			"-m", model_path,
+			"--alias", model_name + "=" + model_file,
 			"--gpu-layers", "all",
 			"--ctx-size", "32768",
 			"--batch-size", "512",

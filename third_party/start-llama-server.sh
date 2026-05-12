@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ./llama/llama-server \
-	-m ./models/qwen3-coder-30b-a3b-instruct-q8_0.gguf \
+	--models-dir ./models \
 	--gpu-layers all \
 	--ctx-size 32768 \
 	--batch-size 512 \
@@ -15,7 +15,3 @@
 	--jinja \
 	--port 11434;
 
-# Needs 48GB VRAM GPU
-# --threads 16;
-# --batch-size 2048
-# --ubatch-size 512
