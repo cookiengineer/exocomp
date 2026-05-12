@@ -158,7 +158,7 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 			_, ok2 := result_tools["skills"]
 
 			if ok2 == false {
-				result_tools["skills"] = NewSkills(playground, sandbox, allowed_tools)
+				result_tools["skills"] = NewSkills(playground, sandbox, allowed_programs, allowed_tools)
 			}
 
 		}

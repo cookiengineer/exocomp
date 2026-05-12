@@ -2,29 +2,36 @@ package tools
 
 import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
+import "bytes"
+import "errors"
 import "fmt"
+import "io/fs"
 import "os"
+import "os/exec"
+import "path/filepath"
 import "sort"
 import "strings"
 
 type Skills struct {
-	AllowedTools  []string
-	Playground    string
-	Sandbox       string
-	contents      map[string]*types.Skill
-	loaded_skills map[string]*types.Skill
-	processes     map[string]*os.Process
+	AllowedPrograms []string
+	AllowedTools    []string
+	Playground      string
+	Sandbox         string
+	contents        map[string]*types.Skill
+	loaded_skills   map[string]*types.Skill
+	processes       map[string]*os.Process
 }
 
-func NewSkills(playground string, sandbox string, allowed_tools []string) *Skills {
+func NewSkills(playground string, sandbox string, allowed_programs []string, allowed_tools []string) *Skills {
 
 	skills := &Skills{
-		AllowedTools:  allowed_tools,
-		Playground:    playground,
-		Sandbox:       sandbox,
-		contents:      make(map[string]*types.Skill),
-		loaded_skills: make(map[string]*types.Skill),
-		processes:     make(map[string]*os.Process),
+		AllowedPrograms: allowed_programs,
+		AllowedTools:    allowed_tools,
+		Playground:      playground,
+		Sandbox:         sandbox,
+		contents:        make(map[string]*types.Skill),
+		loaded_skills:   make(map[string]*types.Skill),
+		processes:       make(map[string]*os.Process),
 	}
 
 	// NOTE: readSkills() only at bootup time in case Agent rewrites SKILL.md at runtime
@@ -60,12 +67,13 @@ func (tool *Skills) Call(method string, arguments map[string]interface{}) (strin
 			return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		}
 
-	} else if method == "ExecuteScript" {
+	} else if method == "Execute" {
 
-		script,   ok1 := arguments["script"].(string)
-		raw_args, ok2 := arguments["arguments"].([]interface{})
+		name,     ok1 := arguments["name"].(string)
+		script,   ok2 := arguments["script"].(string)
+		raw_args, ok3 := arguments["arguments"].([]interface{})
 
-		if ok1 == true && ok2 == true {
+		if ok1 == true && ok2 == true && ok3 == true {
 
 			args := make([]string, len(raw_args))
 
@@ -79,12 +87,14 @@ func (tool *Skills) Call(method string, arguments map[string]interface{}) (strin
 
 			}
 
-			return tool.ExecuteScript(script, args)
+			return tool.Execute(utils_fmt.FormatSkillName(name), script, args)
 
-		} else if ok1 == true && ok2 == false {
+		} else if ok1 == true && ok2 == true && ok3 == false {
 			return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"arguments\" is not an array of strings.")
-		} else if ok1 == false && ok2 == true {
+		} else if ok1 == true && ok2 == false && ok3 == true {
 			return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"script\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true {
+			return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		} else {
 			return "", fmt.Errorf("skills.%s: Invalid parameters.", method)
 		}
@@ -174,7 +184,31 @@ func (tool *Skills) Load(name string) (string, error) {
 
 	if ok == true {
 
-		missing_tools := make([]string, 0)
+		missing_programs := make([]string, 0)
+		missing_tools    := make([]string, 0)
+
+		if len(skill.AllowedPrograms) > 0 {
+
+			for _, program_name := range skill.AllowedPrograms {
+
+				found := false
+
+				for _, program := range tool.AllowedPrograms {
+
+					if program == program_name {
+						found = true
+						break
+					}
+
+				}
+
+				if found == false {
+					missing_programs = append(missing_programs, program_name)
+				}
+
+			}
+
+		}
 
 		if len(skill.AllowedTools) > 0 {
 
@@ -199,15 +233,19 @@ func (tool *Skills) Load(name string) (string, error) {
 
 		}
 
-		if len(missing_tools) == 0 {
+		if len(missing_tools) == 0 && len(missing_programs) == 0 {
 
 			tool.loaded_skills[skill.Name] = skill
 
 			// NOTE: Session.LoadSkill() does actual loading
 			return fmt.Sprintf("skills.Load: Skill \"%s\" got loaded.", name), nil
 
-		} else {
+		} else if len(missing_programs) != 0 {
+			return "", fmt.Errorf("skills.Load: Can't load Skill because of missing Programs %s", strings.Join(missing_programs, " and "))
+		} else if len(missing_tools) != 0 {
 			return "", fmt.Errorf("skills.Load: Can't load Skill because of missing Tools %s", strings.Join(missing_tools, " and "))
+		} else {
+			return "", fmt.Errorf("skills.Load: Can't load Skill \"%s\"", name)
 		}
 
 	} else {
@@ -243,18 +281,109 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 		if ok2 == true {
 
-			// TODO: CONTINUE HERE
+			found := false
+
+			for _, program := range tool.AllowedPrograms {
+
+				if program == runtime {
+					found = true
+					break
+				}
+
+			}
+
+			if found == true {
+
+				script_path, err1 := sanitizeSandboxPath(tool.Playground, filepath.Join(tool.Playground, "skills", skill.Name, "scripts", script))
+
+				if err1 == nil {
+
+					runtime_arguments := make([]string, 0)
+
+					if runtime == "go" {
+						runtime_arguments = append(runtime_arguments, "run")
+						runtime_arguments = append(runtime_arguments, script_path)
+					} else {
+						runtime_arguments = append(runtime_arguments, script_path)
+					}
+
+					for a := 0; a < len(arguments); a++ {
+
+						if strings.Contains(arguments[a], string(os.PathSeparator)) {
+
+							resolved, err := sanitizeSandboxPath(tool.Sandbox, arguments[a])
+
+							if err == nil {
+								runtime_arguments = append(runtime_arguments, resolved)
+							} else {
+								return "", fmt.Errorf("skills.Execute: %s", err.Error())
+							}
+
+						} else {
+							runtime_arguments = append(runtime_arguments, arguments[a])
+						}
+
+					}
+
+					buffer    := bytes.Buffer{}
+					cmd       := exec.Command(runtime, runtime_arguments...)
+					cmd.Dir    = tool.Sandbox
+					cmd.Stdout = &buffer
+					cmd.Stderr = &buffer
+
+					err2 := cmd.Run()
+
+					first_line := ""
+
+					if len(runtime_arguments) > 0 {
+						first_line = fmt.Sprintf("skills.Execute: %s %s %s", runtime, script_path, strings.Join(runtime_arguments, " "))
+					} else {
+						first_line = fmt.Sprintf("skills.Execute: %s %s", runtime, script_path)
+					}
+
+					if err2 == nil {
+
+						result := strings.Join([]string{
+							first_line,
+							buffer.String(),
+						}, "\n")
+
+						return result, nil
+
+					} else {
+
+						if errors.Is(err2, fs.ErrPermission) {
+							return "", fmt.Errorf("skills.Execute: Invalid script \"%s\": Permission denied.", script)
+						} else if errors.Is(err2, fs.ErrNotExist) || strings.Contains(err2.Error(), "executable file not found") {
+							return "", fmt.Errorf("skills.Execute: Invalid script \"%s\": Script doesn't exist.", script)
+						} else {
+
+							result := strings.Join([]string{
+								first_line,
+								buffer.String(),
+							}, "\n")
+
+							return result, fmt.Errorf("skills.Execute: Script \"%s\" execution error \"%s\".", script, err2.Error())
+
+						}
+
+					}
+
+				} else {
+					return "", fmt.Errorf("skills.Execute: %s", err1.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("skills.Execute: Invalid runtime \"%s\": Attempt to execute unallowed program", runtime)
+			}
+
 
 		} else {
-			return "", fmt.Errorf("skills.Load: Script \"%s\" has no runtime!", script)
+			return "", fmt.Errorf("skills.Execute: Script \"%s\" has no runtime!", script)
 		}
 
 	} else {
-		return "", fmt.Errorf("skills.Load: Skill \"%s\" isn't loaded!", name)
+		return "", fmt.Errorf("skills.Execute: Skill \"%s\" isn't loaded!", name)
 	}
-
-	// TODO: Execute script of the skill
-
-	return "", fmt.Errorf("skills.Load: %s", "Not implemented")
 
 }

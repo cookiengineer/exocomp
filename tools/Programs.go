@@ -95,7 +95,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 		cmd.Stdout = &buffer
 		cmd.Stderr = &buffer
 
-		err := cmd.Run()
+		err2 := cmd.Run()
 
 		// TODO: Better errors for permission denied
 		// fmt.Println("RUN ERROR", err)
@@ -110,7 +110,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 			first_line = fmt.Sprintf("programs.Execute: %s", program)
 		}
 
-		if err == nil {
+		if err2 == nil {
 
 			result := strings.Join([]string{
 				first_line,
@@ -121,9 +121,9 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		} else {
 
-			if errors.Is(err, fs.ErrPermission) {
+			if errors.Is(err2, fs.ErrPermission) {
 				return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Permission denied.", program)
-			} else if errors.Is(err, fs.ErrNotExist) || strings.Contains(err.Error(), "executable file not found") {
+			} else if errors.Is(err2, fs.ErrNotExist) || strings.Contains(err2.Error(), "executable file not found") {
 				return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Program doesn't exist.", program)
 			} else {
 
@@ -132,7 +132,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 					buffer.String(),
 				}, "\n")
 
-				return result, fmt.Errorf("programs.Execute: Program \"%s\" execution error \"%s\".", program, err.Error())
+				return result, fmt.Errorf("programs.Execute: Program \"%s\" execution error \"%s\".", program, err2.Error())
 
 			}
 
@@ -176,7 +176,7 @@ func (tool *Programs) Get(id string) (any, error) {
 		}
 
 	} else {
-		return nil, fmt.Errorf("programs.Execute: Invalid program \"%s\": Attempt to execute unallowed program", id)
+		return nil, fmt.Errorf("programs.Get: Invalid program \"%s\": Attempt to execute unallowed program", id)
 	}
 
 }

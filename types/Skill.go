@@ -9,11 +9,12 @@ type Skill struct {
 	Compatibility string            `json:"compatibility"`
 	Metadata      map[string]string `json:"metadata"`
 	AllowedTools  []string          `json:"allowed-tools"`
-
-	// agentskills.io Specification
 	Body          string            `json:"body"`
 
+	// exocomp Specification
+	AllowedPrograms []string `json:"allowed-programs"`
+
 	// Internal Properties
-	Scripts       map[string]string `json:"scripts"`
+	Scripts map[string]string `json:"scripts"` // map[script]runtime
 
 }

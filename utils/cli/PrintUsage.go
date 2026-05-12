@@ -42,11 +42,11 @@ func PrintUsage() {
 	fmt.Println("")
 	fmt.Println("    # single-agent mode")
 	fmt.Println("    exocomp tty --agent=architect")
-	fmt.Println("    exocomp web --agent=architect --model=\"qwen3-coder:30b\" --temperature=\"0.7\";")
+	fmt.Println("    exocomp web --agent=architect --model=\"qwen3-coder:30b\" --temperature=\"0.5\";")
 	fmt.Println("")
 	fmt.Println("    # multi-agent mode")
 	fmt.Println("    exocomp tty --agent=planner")
-	fmt.Println("    exocomp web --agent=planner --model=\"codestral:22b\" --temperature=\"0.5\";")
+	fmt.Println("    exocomp web --agent=planner --model=\"codestral:22b\" --temperature=\"0.7\";")
 	fmt.Println("")
 
 }

@@ -49,12 +49,13 @@ func ParseSkill(buffer []byte) *types.Skill {
 
 			}
 
-			name          := ""
-			description   := ""
-			license       := ""
-			compatibility := ""
-			metadata      := make(map[string]string)
-			allowed_tools := make([]string, 0)
+			name             := ""
+			description      := ""
+			license          := ""
+			compatibility    := ""
+			metadata         := make(map[string]string)
+			allowed_programs := make([]string, 0)
+			allowed_tools    := make([]string, 0)
 
 			is_metadata := false
 
@@ -101,6 +102,22 @@ func ParseSkill(buffer []byte) *types.Skill {
 
 					is_metadata = true
 
+				} else if strings.HasPrefix(line, "allowed-programs: ") {
+
+					tmp := strings.Split(line[18:], " ")
+
+					for _, raw := range tmp {
+
+						program := strings.TrimSpace(raw)
+
+						if strings.Contains(program, "/") == false {
+							allowed_programs = append(allowed_programs, program)
+						}
+
+					}
+
+					is_metadata = false
+
 				} else if strings.HasPrefix(line, "allowed-tools: ") {
 
 					tmp := strings.Split(line[15:], " ")
@@ -124,14 +141,15 @@ func ParseSkill(buffer []byte) *types.Skill {
 			}
 
 			return &types.Skill{
-				Name:          name,
-				Description:   description,
-				License:       license,
-				Compatibility: compatibility,
-				Metadata:      metadata,
-				AllowedTools:  allowed_tools,
-				Body:          strings.Join(body, "\n"),
-				Scripts:       make(map[string]string),
+				Name:            name,
+				Description:     description,
+				License:         license,
+				Compatibility:   compatibility,
+				Metadata:        metadata,
+				AllowedPrograms: allowed_programs,
+				AllowedTools:    allowed_tools,
+				Body:            strings.Join(body, "\n"),
+				Scripts:         make(map[string]string),
 			}
 
 		} else {

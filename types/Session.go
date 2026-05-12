@@ -329,8 +329,9 @@ func (session *Session) GetToolSchema(name string) *schemas.Tool {
 
 func (session *Session) LoadSkill(name string, skill *Skill) error {
 
-	index         := int(-1)
-	missing_tools := make([]string, 0)
+	index            := int(-1)
+	missing_programs := make([]string, 0)
+	missing_tools    := make([]string, 0)
 
 	session.mutex.Lock()
 
@@ -345,15 +346,37 @@ func (session *Session) LoadSkill(name string, skill *Skill) error {
 
 	session.mutex.Unlock()
 
+	if len(skill.AllowedPrograms) > 0 {
+
+		for _, program_name := range skill.AllowedPrograms {
+
+			found := false
+
+			for _, program := range session.Agent.AllowedPrograms {
+
+				if program == program_name {
+					found = true
+					break
+				}
+
+			}
+
+			if found == false {
+				missing_programs = append(missing_programs, program_name)
+			}
+
+		}
+
+	}
 	if len(skill.AllowedTools) > 0 {
 
 		for _, tool_name := range skill.AllowedTools {
 
 			found := false
 
-			for _, tool := range session.Tools {
+			for _, tool := range session.Agent.AllowedTools {
 
-				if tool.Function.Name == tool_name {
+				if tool == tool_name {
 					found = true
 					break
 				}
