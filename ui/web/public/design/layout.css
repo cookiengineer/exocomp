@@ -28,7 +28,7 @@ body > main {
 	overflow-y: scroll;
 }
 
-body:has(footer.disabled) > main {
+body:has(footer.command) > main {
 	bottom: 50px;
 }
 
@@ -41,7 +41,7 @@ body > aside {
 	width: 200px;
 }
 
-body:has(footer.disabled) > aside {
+body:has(footer.command) > aside {
 	bottom: 50px;
 }
 
@@ -50,7 +50,7 @@ body > footer {
 	height: unset;
 }
 
-body > footer.disabled {
+body > footer.command {
 	padding: 8px 8px 8px 0px;
 	height: 50px;
 }
@@ -59,10 +59,6 @@ body > footer > div:nth-of-type(1) {
 	width: 198px; /* somehow this is 2px less than it should be */
 	line-height: 20px;
 	text-align: center;
-}
-
-body > footer.disabled > div:nth-of-type(1) label {
-	opacity: 0;
 }
 
 body > footer > div:nth-of-type(2) {
@@ -78,7 +74,7 @@ body > footer > div:nth-of-type(2) textarea {
 	box-sizing: border-box;
 }
 
-body > footer.disabled > div:nth-of-type(2) textarea {
+body > footer.command > div:nth-of-type(2) textarea {
 	height: calc(1em + 16px);
 	min-height: unset;
 }

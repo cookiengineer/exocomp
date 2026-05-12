@@ -14,6 +14,7 @@ export const Client = function(config) {
 
 	this.elements = {
 		"nav":    document.querySelector("body > aside > nav[aria-label=\"agents\"]"),
+		"footer": document.querySelector("body > footer"),
 		"prompt": document.querySelector("body > footer textarea")
 	};
 
@@ -78,12 +79,7 @@ Client.prototype = {
 		}, 1000 / 4);
 
 		if (this.Renderer !== null) {
-
 			this.Renderer.Init();
-
-			let usage = (this.Session.GetContextUsage() | 0);
-			this.Renderer.RenderLabel("Write Message\n[" + this.Session.Config.Model + " " + usage + "%]");
-
 		}
 
 		if (this.elements["nav"] !== null) {
@@ -181,6 +177,12 @@ Client.prototype = {
 
 					let prompt = (this.elements["prompt"].value || "").trim();
 
+					if (prompt.startsWith("/")) {
+						this.elements["footer"].classList.add("command");
+					} else {
+						this.elements["footer"].classList.remove("command");
+					}
+
 					this.OnChange(prompt);
 
 				}
@@ -231,17 +233,17 @@ Client.prototype = {
 		if (prompt !== "") {
 
 			if (this.Session.Waiting === false) {
-				this.Renderer.RenderLabel("Send with [Ctrl]+[Enter]\n[" + this.Session.Config.Model + " " + usage + "%]");
+				this.Renderer.RenderLabel("[" + this.Session.Config.Model + " " + usage + "%]");
 			} else {
-				this.Renderer.RenderLabel("Processing ...\n[" + this.Session.Config.Model + " " + usage + "%]");
+				this.Renderer.RenderLabel("Processing ...");
 			}
 
 		} else {
 
 			if (this.Session.Waiting === false) {
-				this.Renderer.RenderLabel("Write Message\n[" + this.Session.Config.Model + " " + usage + "%]");
+				this.Renderer.RenderLabel("[" + this.Session.Config.Model + " " + usage + "%]");
 			} else {
-				this.Renderer.RenderLabel("Processing ...\n[" + this.Session.Config.Model + " " + usage + "%]");
+				this.Renderer.RenderLabel("Processing ...");
 			}
 
 		}
@@ -279,6 +281,11 @@ Client.prototype = {
 	UpdatePrompt: function(message) {
 
 		let prompt = message.trim();
+		if (prompt.startsWith("/")) {
+			this.elements["footer"].classList.add("command");
+		} else {
+			this.elements["footer"].classList.remove("command");
+		}
 
 		this.elements["prompt"].value = prompt;
 
