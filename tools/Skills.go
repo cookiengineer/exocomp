@@ -1,8 +1,9 @@
 package tools
 
 import "exocomp/types"
+import utils_bytes "exocomp/utils/bytes"
 import utils_fmt "exocomp/utils/fmt"
-import "bytes"
+import "context"
 import "errors"
 import "fmt"
 import "io/fs"
@@ -11,6 +12,8 @@ import "os/exec"
 import "path/filepath"
 import "sort"
 import "strings"
+import "syscall"
+import "time"
 
 type Skills struct {
 	AllowedPrograms []string
@@ -325,46 +328,78 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 					}
 
-					buffer    := bytes.Buffer{}
+					ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Minute)
+					buffer      := utils_bytes.NewContextBuffer(16*1024*1024, cancel)
+
+					defer cancel()
+
+					go func() {
+
+						ticker := time.NewTicker(10 * time.Second)
+
+						for {
+
+							select {
+
+							case <-ctx.Done():
+								break
+
+							case <-ticker.C:
+
+								last_write := buffer.LastWrite()
+
+								if time.Since(last_write) > 1 * time.Minute {
+									cancel()
+									break
+								}
+
+							}
+
+						}
+
+						ticker.Stop()
+
+					}()
+
+
 					cmd       := exec.Command(runtime, runtime_arguments...)
 					cmd.Dir    = tool.Sandbox
-					cmd.Stdout = &buffer
-					cmd.Stderr = &buffer
 
-					err2 := cmd.Run()
+					cmd.Stdin  = strings.NewReader("")
+					cmd.Stdout = buffer
+					cmd.Stderr = buffer
 
-					first_line := ""
-
-					if len(runtime_arguments) > 0 {
-						first_line = fmt.Sprintf("skills.Execute: %s %s %s", runtime, script_path, strings.Join(runtime_arguments, " "))
-					} else {
-						first_line = fmt.Sprintf("skills.Execute: %s %s", runtime, script_path)
+					// Enforce sub processes to have same group
+					cmd.SysProcAttr = &syscall.SysProcAttr{
+						Setpgid: true,
 					}
 
-					if err2 == nil {
+					err2   := cmd.Run()
+					result := strings.Join([]string{
+						fmt.Sprintf("skills.Execute: %s %s", runtime, strings.Join(runtime_arguments, " ")),
+						buffer.String(),
+					}, "\n")
 
-						result := strings.Join([]string{
-							first_line,
-							buffer.String(),
-						}, "\n")
+					if ctx.Err() == context.Canceled && buffer.IsTruncated() {
+
+						return result, fmt.Errorf("skills.Execute: Script output exceeded 16MB limit")
+
+					} else if ctx.Err() == context.DeadlineExceeded {
+
+						return result, fmt.Errorf("skills.Execute: Script timeout exceeded 10mins limit")
+
+					} else if err2 == nil {
 
 						return result, nil
 
 					} else {
 
 						if errors.Is(err2, fs.ErrPermission) {
-							return "", fmt.Errorf("skills.Execute: Invalid script \"%s\": Permission denied.", script)
+							return "", fmt.Errorf("skills.Execute: Invalid script \"%s\": Permission denied.", script_path)
 						} else if errors.Is(err2, fs.ErrNotExist) || strings.Contains(err2.Error(), "executable file not found") {
-							return "", fmt.Errorf("skills.Execute: Invalid script \"%s\": Script doesn't exist.", script)
+							return "", fmt.Errorf("skills.Execute: Invalid runtime \"%s\": Program doesn't exist.", runtime)
 						} else {
-
-							result := strings.Join([]string{
-								first_line,
-								buffer.String(),
-							}, "\n")
-
-							return result, fmt.Errorf("skills.Execute: Script \"%s\" execution error \"%s\".", script, err2.Error())
-
+							return result, fmt.Errorf("skills.Execute: Runtime \"%s\" execution error \"%s\".", runtime, err2.Error())
 						}
 
 					}
