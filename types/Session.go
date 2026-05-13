@@ -579,10 +579,11 @@ func (session *Session) infer_chat_completions() error {
 		Stream:      false,
 		Tools:       session.Tools,
 		ToolChoice:  "auto",
-		Options:     schemas.Options{
-			NumContext: 262144,
-			NumPredict: 8192,
-		},
+		Options:     nil,
+		// Options:     &schemas.Options{
+		// 	NumContext: 262144,
+		// 	NumPredict: 8192,
+		// },
 	}, "", "\t")
 
 	if err0 == nil {
