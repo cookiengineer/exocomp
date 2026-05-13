@@ -53,6 +53,10 @@ Client.prototype = {
 			clearInterval(this.interval_id);
 		}
 
+		if (this.elements["nav"] !== null) {
+			this.elements["nav"].removeEventListener("click");
+		}
+
 		if (this.elements["prompt"] !== null) {
 			this.elements["prompt"].removeEventListener("keyup");
 		}
@@ -307,7 +311,7 @@ Client.prototype = {
 				console.info("ViewAgent: Viewing Agent \"" + name + "\" ...");
 				console.info(agent);
 
-				this.Session.SetAgent(agent);
+				this.Session.SetAgent(agent.Name);
 
 				this.Renderer.ClearAgents();
 				this.Renderer.RenderAgents(this.Session.Agent, this.Session.GetAgents());

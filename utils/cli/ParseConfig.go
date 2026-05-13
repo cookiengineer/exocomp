@@ -65,7 +65,7 @@ func ParseConfig(arguments []string) *types.Config {
 
 				case "prompt":
 
-					prompt = utils_fmt.FormatSingleLine(flag[1])
+					prompt = utils_fmt.FormatMultiLine(flag[1])
 
 				case "sandbox":
 

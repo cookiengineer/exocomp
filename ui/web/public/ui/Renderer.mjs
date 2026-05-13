@@ -123,7 +123,7 @@ Renderer.prototype = {
 
 	RenderAgents: function(active, agents) {
 
-		active = Object.prototype.toString.call(active) === "[object Object]" ? active : null;
+		active = typeof active === "string"                                   ? active : null;
 		agents = Object.prototype.toString.call(agents) === "[object Object]" ? agents : {};
 
 
@@ -134,7 +134,7 @@ Renderer.prototype = {
 
 			let agent = agents[name];
 
-			if (active !== null && active.Name === agent.Name) {
+			if (active !== null && active === agent.Name) {
 				return "<li class=\"active\" title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><label>" + agent.Name + "</label></li>";
 			} else {
 				return "<li title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><label>" + agent.Name + "</label></li>";

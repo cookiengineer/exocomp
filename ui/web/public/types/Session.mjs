@@ -5,7 +5,7 @@ import { Console } from "./Console.mjs";
 export const Session = function(config) {
 
 	// Managed by ui.Client
-	this.Agent  = null;
+	this.Agent  = "";
 	this.Agents = {};
 
 	this.Config  = config;
@@ -78,7 +78,7 @@ Session.prototype = {
 		name = typeof name === "string" ? name : null;
 
 		if (name === null) {
-			return this.Agent;
+			return this.Agents[this.Agent] || null;
 		} else if (this.Agents[name] !== undefined) {
 			return this.Agents[name];
 		}
@@ -118,12 +118,17 @@ Session.prototype = {
 
 		let result = [];
 
-		if (this.Agent !== null) {
+		if (this.Agent !== "") {
 
-			if (this.Agent.Messages.length > 0 && from < this.Agent.Messages.length) {
+			let agent = this.Agents[this.Agent] || null;
+			if (agent !== null) {
 
-				for (let m = from; m < this.Agent.Messages.length; m++) {
-					result.push(this.Agent.Messages[m]);
+				if (agent.Messages.length > 0 && from < agent.Messages.length) {
+
+					for (let m = from; m < agent.Messages.length; m++) {
+						result.push(agent.Messages[m]);
+					}
+
 				}
 
 			}
@@ -179,8 +184,8 @@ Session.prototype = {
 
 			this.Agents[agent.Name] = agent;
 
-			if (agent.Name === this.Config.Name) {
-				this.Agent = this.Agents[agent.Name];
+			if (this.Agent === "" && agent.Name === this.Config.Name) {
+				this.Agent = agent.Name;
 			}
 
 			return true;
@@ -239,7 +244,7 @@ Session.prototype = {
 
 	SetAgent: function(agent) {
 
-		agent = Object.prototype.toString.call(agent) === "[object Object]" ? agent : null;
+		agent = typeof agent === "string" ? agent : null;
 
 		if (agent !== null) {
 

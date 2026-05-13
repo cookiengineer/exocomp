@@ -6,6 +6,7 @@ import "encoding/json"
 import "fmt"
 import "os"
 import "sync"
+import "time"
 
 type Renderer struct {
 	Session   *types.Session
@@ -48,7 +49,10 @@ func (renderer *Renderer) RenderLoop() {
 			renderer.mutex.Unlock()
 
 		} else {
+
+			time.Sleep(100 * time.Millisecond)
 			continue
+
 		}
 
 	}

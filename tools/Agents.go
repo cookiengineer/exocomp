@@ -277,6 +277,12 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 						tool.URL,
 						false,
 					))
+
+					if debug_flag != "" {
+						// XXX: "exocomp jsonl" prints system message
+						tool.contents[name].Messages = make([]*schemas.Message, 0)
+					}
+
 					tool.processes[name] = cmd.Process
 					tool.Mutex.Unlock()
 

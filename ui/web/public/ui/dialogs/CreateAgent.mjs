@@ -191,14 +191,14 @@ CreateAgent.prototype = {
 			method: "GET"
 		}).then((response) => {
 			return response.json();
-		}).then((agents) => {
+		}).then((models) => {
 
-			if (Object.prototype.toString.call(agents) === "[object Array]") {
+			if (Object.prototype.toString.call(models) === "[object Array]") {
 
 				models.forEach((model) => {
 
 					if (this.options["model"].includes(model) === false) {
-						this.options["model"].push(agent);
+						this.options["model"].push(model);
 					}
 
 				});
