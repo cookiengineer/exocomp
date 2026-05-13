@@ -1,6 +1,7 @@
 package tools
 
-import "bytes"
+import utils_bytes "exocomp/utils/bytes"
+import "context"
 import "errors"
 import "fmt"
 import "io/fs"
@@ -9,6 +10,7 @@ import "os/exec"
 import "path/filepath"
 import "slices"
 import "strings"
+import "syscall"
 
 type Programs struct {
 	Sandbox         string
@@ -89,33 +91,75 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		}
 
-		buffer    := bytes.Buffer{}
-		cmd       := exec.Command(program, program_arguments...)
+		ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Minute)
+		buffer      := utils_bytes.NewContextBuffer(16*1024*1024, cancel)
+
+		defer cancel()
+
+		go func() {
+
+			ticker := time.NewTicker(10 * time.Second)
+
+			for {
+
+				select {
+
+				case <-ctx.Done():
+					break
+
+				case <-ticker.C:
+
+					last_write := buffer.LastWrite()
+
+					if time.Since(last_write) > 1 * time.Minute {
+						cancel()
+						break
+					}
+
+				}
+
+			}
+
+			ticker.Stop()
+
+		}()
+
+		cmd       := exec.CommandContext(ctx, program, program_arguments...)
 		cmd.Dir    = tool.Sandbox
-		cmd.Stdout = &buffer
-		cmd.Stderr = &buffer
 
-		err2 := cmd.Run()
+		cmd.Stdin  = strings.NewReader("")
+		cmd.Stdout = buffer
+		cmd.Stderr = buffer
 
-		// TODO: Better errors for permission denied
-		// fmt.Println("RUN ERROR", err)
-		// fmt.Println(program, program_arguments)
-		// fmt.Println(cmd.Dir)
-
-		first_line := ""
-
-		if len(program_arguments) > 0 {
-			first_line = fmt.Sprintf("programs.Execute: %s %s", program, strings.Join(program_arguments, " "))
-		} else {
-			first_line = fmt.Sprintf("programs.Execute: %s", program)
+		// Enforce sub processes to have same group
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Setpgid: true,
 		}
 
-		if err2 == nil {
+		result := ""
+		err2   := cmd.Run()
 
-			result := strings.Join([]string{
-				first_line,
+		if len(program_arguments) > 0 {
+			result = strings.Join([]string{
+				fmt.Sprintf("programs.Execute: %s %s", program, strings.Join(program_arguments, " ")),
 				buffer.String(),
 			}, "\n")
+		} else {
+			result = strings.Join([]string{
+				fmt.Sprintf("programs.Execute: %s", program),
+				buffer.String(),
+			}, "\n")
+		}
+
+		if ctx.Err() == context.Canceled && buffer.IsTruncated() {
+
+			return result, fmt.Errorf("programs.Execute: Program output exceeded 16MB limit")
+
+		} else if ctx.Err() == context.DeadlineExceeded {
+
+			return result, fmt.Errorf("programs.Execute: Program timeout exceeded 10mins limit")
+
+		} else if err2 == nil {
 
 			return result, nil
 
@@ -126,14 +170,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 			} else if errors.Is(err2, fs.ErrNotExist) || strings.Contains(err2.Error(), "executable file not found") {
 				return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Program doesn't exist.", program)
 			} else {
-
-				result := strings.Join([]string{
-					first_line,
-					buffer.String(),
-				}, "\n")
-
 				return result, fmt.Errorf("programs.Execute: Program \"%s\" execution error \"%s\".", program, err2.Error())
-
 			}
 
 		}
