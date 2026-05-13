@@ -26,10 +26,12 @@ body > main {
 	left: 200px;
 	overflow-x: hidden;
 	overflow-y: scroll;
+	transition: bottom 200ms ease-out;
 }
 
 body:has(footer.command) > main {
-	bottom: 50px;
+	bottom: 64px;
+	transition: bottom 200ms ease-out;
 }
 
 body > main > article {
@@ -39,20 +41,24 @@ body > main > article {
 
 body > aside {
 	width: 200px;
+	transition: bottom 200ms ease-out;
 }
 
 body:has(footer.command) > aside {
-	bottom: 50px;
+	bottom: 64px;
+	transition: bottom 200ms ease-out;
 }
 
 body > footer {
 	padding: 16px 16px 16px 0px;
-	height: unset;
+	/* height: unset; */
+	height: 160px;
+	transition: all 200ms ease-out;
 }
 
 body > footer.command {
-	padding: 8px 8px 8px 0px;
-	height: 50px;
+	height: 64px;
+	transition: all 200ms ease-out;
 }
 
 body > footer > div:nth-of-type(1) {
@@ -72,10 +78,18 @@ body > footer > div:nth-of-type(2) textarea {
 	min-height: 8em;
 	resize: horizontal;
 	box-sizing: border-box;
+	transition: all 200ms ease-out;
+}
+
+body > footer > div:nth-of-type(2) textarea.disabled {
+	height: calc(1em + 16px);
+	min-height: unset;
+	transition: all 200ms ease-out;
 }
 
 body > footer.command > div:nth-of-type(2) textarea {
 	height: calc(1em + 16px);
 	min-height: unset;
+	transition: all 200ms ease-out;
 }
 

@@ -319,6 +319,12 @@ Client.prototype = {
 				this.Renderer.ClearMessages();
 				this.Renderer.RenderMessages(this.Session.GetMessages(0));
 
+				if (agent.Name === this.Session.Config.Name) {
+					this.elements["prompt"].removeAttribute("disabled");
+				} else {
+					this.elements["prompt"].setAttribute("disabled", "");
+				}
+
 			} else {
 
 				if (agent === active) {

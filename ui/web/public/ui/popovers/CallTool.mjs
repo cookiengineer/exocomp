@@ -114,8 +114,8 @@ CallTool.prototype = {
 
 								if (Object.prototype.toString.call(property["enum"]) === "[object Array]") {
 
-									value        = "\"" + property["enum"][0] + "\"";
-									description += property["description"] + " (" + property["enum"].map((v) => "\"" + v + "\"").join(", ") + ")";
+									value       = "\"" + property["enum"][0] + "\"";
+									description = property["description"] + " (" + property["enum"].map((v) => "\"" + v + "\"").join(", ") + ")";
 
 								} else {
 									value = "\"...\"";
