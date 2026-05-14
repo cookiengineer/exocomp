@@ -15,21 +15,26 @@
 ## Models
 
 - [ ] ollama has 32k context length limit, even though model supports 256k
-- [ ] `env OLLAMA_CONTEXT_LENGTH=256k ollama serve`
+- [ ] `env OLLAMA_CONTEXT_LENGTH=256k ollama serve` doesn't change shit
 - [ ] Use `https://github.com/dianlight/gollama.cpp` bindings
-- [ ] Implement `models/LLM.go` for inference tasks
-- [ ] Implement templating for both qwen3-coder and gemma4 models
-- [ ] Figure out what format gollama.cpp needs and if it can load GGUF files
+- [ ] Implement correct llama.cpp templates for `qwen3-coder:30b` (tool calls don't work)
+- [ ] Implement correct llama.cpp templates for `gemma4:31b` (tool calls don't work)
+- [ ] Implement correct llama.cpp templates for `qwen3.6:35b-heretic` (tool calls don't work)
 
+## Types
+
+- [ ] SessionContext should actually be per-agent, not per-session
 
 ## Agents
 
 - [ ] `redteamer` who writes malware and targets victim sandboxes
 - [ ] `blueteamer` who analyzes metrics and logs of victim sandboxes
 
+
 ## Tools
 
 - [ ] Implement unit tests for `tools/Agents`
+- [ ] Backport the `exec/Command` with `context` workflow to `agents.Hire`
 - [ ] Implement `tools/Containers` to be able to use `podman`
 - [ ] Implement `tools/Websites` to be able to use `zimdex`
 - [ ] Implement `tools/Skills` to parse `$PWD/skills` directory
@@ -41,22 +46,19 @@
 
 ## Web UI
 
-- [ ] Implement "auto-complete" with "[Tab]" leading to autocomplete of next parameter name
-      Set cursor on auto complete to `parameter-name="<here>"`
-- [ ] Implement "read-only" chat tabs for Agent conversations, with indicator of whether they're alive or not in the sidebar
-- [ ] `public/ui/Renderer.mjs` should implement lazy-rendering and avoid setting `nav.innerHTML = ""`
-- [ ] `public/ui/Renderer.mjs` should implement lazy-rendering and avoid setting `main.innerHTML = ""`
+- [ ] Implement "auto-complete" for suggestions with "[Tab]" leading to autocomplete of next
+      parameter name. Set cursor on auto complete to `parameter-name="<here>"`
+- [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `nav` element to avoid setting `innerHTML`
+- [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `main` element to avoid setting `innerHTML`
 
 
-## Planner Agent
+## Agent History Compression
 
-- [ ] Watches the completeness of the implementation phases
-- [ ] Phases should be Discover, Plan, Specify, Implement, Test
-- [ ] Should be a state machine
 - [ ] Implement a compression between LLM agents to communicate more efficient
+- [ ] Might be optimum use case for summarizer inventing its own language
 - [ ] https://github.com/LLM-Coding/Semantic-Anchors
 - [ ] https://github.com/LLM-Coding/Semantic-Anchors/blob/main/docs/spec-driven-workflow.adoc
-- [ ] https://github.com/basicmachines-co/basic-memory
+- [ ] https://github.com/juliusbrussee/caveman
 - [ ] https://github.com/mrsimpson/responsible-vibe-mcp/blob/main/packages/core/src/plan-manager.ts
 
 
