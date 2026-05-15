@@ -34,7 +34,6 @@
 ## Tools
 
 - [ ] Implement unit tests for `tools/Agents`
-- [ ] Backport the `exec/Command` with `context` workflow to `agents.Hire`
 - [ ] Implement `tools/Containers` to be able to use `podman`
 - [ ] Implement `tools/Websites` to be able to use `zimdex`
 - [ ] Implement `tools/Skills` to parse `$PWD/skills` directory

@@ -362,8 +362,8 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 					}()
 
 
-					cmd       := exec.Command(runtime, runtime_arguments...)
-					cmd.Dir    = tool.Sandbox
+					cmd    := exec.CommandContext(ctx, runtime, runtime_arguments...)
+					cmd.Dir = tool.Sandbox
 
 					cmd.Stdin  = strings.NewReader("")
 					cmd.Stdout = buffer

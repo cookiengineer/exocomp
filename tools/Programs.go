@@ -125,8 +125,8 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		}()
 
-		cmd       := exec.CommandContext(ctx, program, program_arguments...)
-		cmd.Dir    = tool.Sandbox
+		cmd    := exec.CommandContext(ctx, program, program_arguments...)
+		cmd.Dir = tool.Sandbox
 
 		cmd.Stdin  = strings.NewReader("")
 		cmd.Stdout = buffer

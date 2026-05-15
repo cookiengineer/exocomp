@@ -7,15 +7,17 @@ import utils_chat "exocomp/utils/chat"
 import utils_fmt "exocomp/utils/fmt"
 import "bufio"
 import "bytes"
+import "context"
 import "encoding/json"
 import "fmt"
-// import "io"
+import "io"
 import net_url "net/url"
 import "os"
 import "os/exec"
 import "sort"
 import "strings"
 import "sync"
+import "time"
 
 type Agents struct {
 	Playground string
@@ -235,8 +237,10 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				exe = os.Getenv("EXOCOMP_FOR_AGENTS")
 			}
 
-			// NOTE: child process's playground is parent process's sandbox
-			cmd := exec.Command(
+			// NOTE: child's playground is parent's sandbox
+			ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Minute)
+			cmd := exec.CommandContext(
+				ctx,
 				exe,
 				"jsonl",
 				fmt.Sprintf("--name=\"%s\"", name),
@@ -251,11 +255,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 			)
 			cmd.Dir = resolved
 
-			// XXX: USE THIS FOR DEBUGGING
-			// stdout_pipe, stdout_write := io.Pipe()
-			// cmd.Stdout = io.MultiWriter(os.Stdout, stdout_write)
-			// cmd.Stderr = os.Stderr
-			// err2 := error(nil)
+			cmd.Stdin = strings.NewReader("")
 
 			stdout_pipe, err2 := cmd.StdoutPipe()
 
@@ -279,7 +279,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 					))
 
 					if debug_flag != "" {
-						// XXX: "exocomp jsonl" prints system message
+						// XXX: "exocomp jsonl" prints first system message
 						tool.contents[name].Messages = make([]*schemas.Message, 0)
 					}
 
@@ -287,8 +287,9 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 					tool.Mutex.Unlock()
 
 
-					// Background Reader
-					go func(name string) {
+
+					// Background Reaper
+					go func(name string, tool *Agents, stdout_pipe io.ReadCloser) {
 
 						scanner := bufio.NewScanner(stdout_pipe)
 
@@ -313,10 +314,56 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 						}
 
-					}(name)
+						stdout_pipe.Close()
+
+					}(name, tool, stdout_pipe)
 
 					// Background Reaper
-					go func(name string, cmd *exec.Cmd) {
+					go func(name string, tool *Agents, cancel context.CancelFunc) {
+
+						tool.Mutex.Lock()
+						last_length := len(tool.contents[name].Messages)
+						tool.Mutex.Unlock()
+
+						last_time := time.Now()
+						ticker    := time.NewTicker(10 * time.Second)
+
+						for {
+
+							select {
+							case <-ctx.Done():
+								break
+
+							case <-ticker.C:
+
+								if time.Since(last_time) > 1 * time.Minute {
+
+									cancel()
+									break
+
+								} else {
+
+									tool.Mutex.Lock()
+									length := len(tool.contents[name].Messages)
+									tool.Mutex.Unlock()
+
+									if length > last_length {
+										last_length = length
+										last_time   = time.Now()
+									}
+
+								}
+
+							}
+
+						}
+
+						ticker.Stop()
+
+					}(name, tool, cancel)
+
+					// Background Reaper
+					go func(name string, tool *Agents, cmd *exec.Cmd) {
 
 						cmd.Wait()
 
@@ -324,7 +371,9 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 						delete(tool.processes, name)
 						tool.Mutex.Unlock()
 
-					}(name, cmd)
+					}(name, tool, cmd)
+
+
 
 					return fmt.Sprintf("agents.Hire: Agent \"%s\" got hired.", name), nil
 
