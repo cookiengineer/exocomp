@@ -232,7 +232,16 @@ Client.prototype = {
 	UpdateLabel: function() {
 
 		let prompt = (this.elements["prompt"].value || "").trim();
-		let usage  = (this.Session.GetContextUsage() | 0);
+		let usage  = 0.0;
+
+		if (this.Session.Agent !== "") {
+
+			let agent = this.Session.GetAgent(null);
+			if (agent !== null && agent.ContextUsage.Length > 0) {
+				usage = ((agent.ContextUsage.Tokens / agent.ContextUsage.Length) * 100) | 0;
+			}
+
+		}
 
 		if (prompt !== "") {
 

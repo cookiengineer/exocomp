@@ -10,10 +10,6 @@ export const Session = function(config) {
 
 	this.Config  = config;
 	this.Console = new Console();
-	this.Context = {
-		Length: 0,
-		Tokens: 0
-	};
 	this.Tools   = [];
 	this.Waiting = false;
 
@@ -97,16 +93,6 @@ Session.prototype = {
 			return this.Console.GetMessages(from);
 		} else {
 			return [];
-		}
-
-	},
-
-	GetContextUsage: function() {
-
-		if (this.Context.Length > 0) {
-			return (this.Context.Tokens / this.Context.Length) * 100.0;
-		} else {
-			return 0.0;
 		}
 
 	},
@@ -260,27 +246,7 @@ Session.prototype = {
 
 	Update: function() {
 
-		this.UpdateContextUsage();
 		this.UpdateTools();
-
-	},
-
-	UpdateContextUsage: function() {
-
-		fetch(this.Config.ResolveAPI("/api/session/context").toString(), {
-			method: "GET"
-		}).then((response) => {
-			return response.json();
-		}).then((context) => {
-
-			if (Object.prototype.toString.call(context) === "[object Object]") {
-
-				this.Context.Length = context["length"] || 0;
-				this.Context.Tokens = context["tokens"] || 0;
-
-			}
-
-		});
 
 	},
 

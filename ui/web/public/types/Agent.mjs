@@ -1,15 +1,19 @@
 
 export const Agent = function() {
 
-	this.Name        = "";
-	this.Type        = "";
-	this.Model       = "";
-	this.Prompt      = "";
-	this.Temperature = 0.0;
-	this.Messages    = [];
-	this.Programs    = [];
-	this.Tools       = [];
-	this.Sandbox     = "";
+	this.Name         = "";
+	this.Type         = "";
+	this.Model        = "";
+	this.Prompt       = "";
+	this.Temperature  = 0.0;
+	this.Messages     = [];
+	this.Programs     = [];
+	this.Tools        = [];
+	this.Sandbox      = "";
+	this.ContextUsage = {
+		Length: 0,
+		Tokens: 0,
+	};
 
 };
 
@@ -26,6 +30,11 @@ Agent.from = (data) => {
 	agent.Programs    = data["programs"]    || [];
 	agent.Tools       = data["tools"]       || [];
 	agent.Sandbox     = data["sandbox"]     || "";
+
+	if (Object.prototype.toString.call(data["context-usage"]) === "[object Object]") {
+		agent.ContextUsage.Length = data["context-usage"]["length"] || 0;
+		agent.ContextUsage.Tokens = data["context-usage"]["tokens"] || 0;
+	}
 
 	return agent;
 
