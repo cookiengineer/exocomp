@@ -257,6 +257,9 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 			cmd.Stdin = strings.NewReader("")
 
+			// XXX: Use this for debugging
+			// cmd.Stderr = os.Stderr
+
 			stdout_pipe, err2 := cmd.StdoutPipe()
 
 			if err2 == nil {
@@ -349,7 +352,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 					}(name, tool, stdout_pipe)
 
 					// Background Reaper
-					go func(name string, tool *Agents, cancel context.CancelFunc) {
+					go func(name string, tool *Agents, ctx context.Context, cancel context.CancelFunc) {
 
 						tool.Mutex.Lock()
 						last_length := len(tool.contents[name].Messages)
@@ -358,18 +361,20 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 						last_time := time.Now()
 						ticker    := time.NewTicker(10 * time.Second)
 
+						BackgroundLoop:
 						for {
 
 							select {
 							case <-ctx.Done():
-								break
+
+								break BackgroundLoop
 
 							case <-ticker.C:
 
 								if time.Since(last_time) > 1 * time.Minute {
 
 									cancel()
-									break
+									break BackgroundLoop
 
 								} else {
 
@@ -390,7 +395,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 						ticker.Stop()
 
-					}(name, tool, cancel)
+					}(name, tool, ctx, cancel)
 
 					// Background Reaper
 					go func(name string, tool *Agents, cmd *exec.Cmd) {

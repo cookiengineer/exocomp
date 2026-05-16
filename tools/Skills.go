@@ -337,20 +337,24 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 						ticker := time.NewTicker(10 * time.Second)
 
+						BackgroundLoop:
 						for {
 
 							select {
 
 							case <-ctx.Done():
-								break
+
+								break BackgroundLoop
 
 							case <-ticker.C:
 
 								last_write := buffer.LastWrite()
 
 								if time.Since(last_write) > 1 * time.Minute {
+
 									cancel()
-									break
+									break BackgroundLoop
+
 								}
 
 							}

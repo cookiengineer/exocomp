@@ -65,7 +65,6 @@ func (client *Client) Init() {
 
 	go func() {
 		client.InputLoop()
-		signals<-syscall.SIGINT
 	}()
 
 	go func() {
@@ -83,19 +82,19 @@ func (client *Client) Init() {
 		case syscall.SIGINT:
 
 			client.Destroy()
-			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGINT")
+			fmt.Fprintf(os.Stderr, "Received signal: %s\n", "SIGINT")
 			os.Exit(0)
 
 		case syscall.SIGTERM:
 
 			client.Destroy()
-			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGTERM")
+			fmt.Fprintf(os.Stderr, "Received signal: %s\n", "SIGTERM")
 			os.Exit(0)
 
 		default:
 
 			client.Destroy()
-			fmt.Printf("Received signal: %s\n", sig.String())
+			fmt.Fprintf(os.Stderr, "Received signal: %s\n", sig.String())
 			os.Exit(0)
 
 		}
