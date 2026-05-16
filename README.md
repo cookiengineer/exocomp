@@ -1,7 +1,7 @@
 
 # Exocomp
 
-Self-hosted short-living multi-agent agentic development environment tailored to Golang.
+Self-hosted multi-agent environment tailored to Golang.
 
 <p align="center">
     <img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
@@ -52,8 +52,8 @@ Exocomp uses Tools to interact with the sandbox. Check the implementations to
 see which tools are allowed for which Agent role.
 
 Each of those Agent roles is specialized on using `golang` as their programming
-language because `go test` allows to use integrated unit tests to document issues
-with generated code very easily in a standardized manner.
+language because `go test` allows to use integrated unit tests to document
+issues with generated code very easily in a standardized manner.
 
 
 ### Tools
@@ -84,11 +84,11 @@ Check the unit tests on whether the Tools can be relied on or not.
 
 ### Dependencies
 
-The `exocomp` program is a standalone binary, once compiled with the `go`
+The `exocomp` program is a standalone binary, once compiled with the `go build`
 toolchain and it comes with `llama.cpp` as a bundled inference server.
 
-The third-party `llama.ccp` inference server and LLM models are installed
-inside the [third_party](./third_party) folder, and are installed with the
+The third-party `llama.ccp` inference server and LLM models are installed inside
+the [third_party](./third_party) folder, and are installed by executing the
 [install-deps.sh](./install-deps.sh) shell script.
 
 ```bash
@@ -98,19 +98,28 @@ cd /path/to/exocomp;
 bash install-deps.sh;
 ```
 
-It is heavily recommended to use that workflow for the best development
-experience using exocomp as an agentic development environment.
+It is recommended to use that workflow for the best development experience using
+exocomp as an agentic development environment.
 
-The unit tests tagged with the `agents` build tag also rely on this workflow
-to be setup and working.
+The unit tests tagged with the `agents` build tag also rely on this workflow to
+be setup and working.
+
+```bash
+cd /path/to/exocomp;
+
+cd ./tools;
+
+# Needs around 32GB of VRAM
+go test -tags=agents -v ./
+```
 
 
 ### External Inference Servers
 
-However, it's also possible to use exocomp with an external inference
-server that supports the OpenAI compatible endpoints. If you're using
-`ollama` as a beginner, all models with the `tools` tag in the
-[ollama library](https://ollama.com/library) should be compatible.
+However, it's also possible to use exocomp with an external inference server
+that supports the OpenAI compatible endpoints. If you're using `ollama`, all
+models with the `tools` tag in the [ollama library](https://ollama.com/library)
+should be compatible.
 
 Exocomp uses the following OpenAI compatible API endpoints:
 
@@ -123,9 +132,9 @@ details on how to use external inference servers.
 
 ### Usage
 
-Exocomp's sandboxes are based on the `current working directory`, meaning
-that the folder the program is executed in is the sandbox that the running
-agent can't escape from.
+Exocomp's sandboxes are based on the `current working directory`, meaning that
+the folder in which the program is executed is the sandbox that the running agent
+can't escape from.
 
 The recommended default usage is to use the `Web UI` so that you can observe
 other agents working for the agent you're talking with.

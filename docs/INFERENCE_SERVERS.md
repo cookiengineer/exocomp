@@ -1,6 +1,18 @@
 
 # Inference Servers
 
+Exocomp supports the following inference servers:
+
+- [llama.cpp](../utils/api/llamacpp)
+- [ollama](../utils/api/ollama)
+- [vllm](../utils/api/vllm)
+
+Support for a new inference server requires the following API endpoints:
+
+- `http://server:port/v1/chat/completions` support
+- `http://server:port/v1/models` support
+- [types.Config](../types/Config.go) `GetContextLength(model)` support via custom `utils/api` adapter
+
 ## ollama Usage
 
 [ollama](https://ollama.com) has been tested and can be used as an inference server.
