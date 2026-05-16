@@ -168,13 +168,13 @@ sub-agent's `playground` is set to the parent process's `sandbox`.
 **Example Process Hierarchy**
 
 ```
-# Hierarchy   # Sandbox                         | Playground       | Task                          |
-# ----------- # ------------------------------- | ---------------- | ----------------------------- |
-| planner     # /path/to/project                | /path/to/project |                               |
-|-> architect # /path/to/project                | /path/to/project | specifies utils package       |
-|-> coder     # /path/to/project/utils          | /path/to/project | implements CalculateFibonacci |
-|-> tester    # /path/to/project/utils          | /path/to/project | tests CalculateFibonacci      |
-|-> coder     # /path/to/project/cmds/fibonacci | /path/to/project | implements main.go            |
+| Hierarchy   | Sandbox                         | Playground       | Task                          |
+|:------------|:--------------------------------|:-----------------|:------------------------------|
+| planner     | /path/to/project                | /path/to/project |                               |
+|-> architect | /path/to/project                | /path/to/project | specifies utils package       |
+|-> coder     | /path/to/project/utils          | /path/to/project | implements CalculateFibonacci |
+|-> tester    | /path/to/project/utils          | /path/to/project | tests CalculateFibonacci      |
+|-> coder     | /path/to/project/cmds/fibonacci | /path/to/project | implements main.go            |
 ```
 
 **Example Process Parameters**
