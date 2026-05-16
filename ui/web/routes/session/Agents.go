@@ -1,7 +1,6 @@
 package session
 
 import "exocomp/ui/web/handlers"
-import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
 import "encoding/json"
@@ -22,35 +21,15 @@ func Agents(session *types.Session, request *http.Request, response http.Respons
 
 				agent_names := agent_tool.GetNames()
 
-				agents := make([]schemas.Agent, 0)
-				agents = append(agents, schemas.Agent{
-					Name:            session.Agent.Name,
-					Type:            session.Agent.Type,
-					Model:           session.Agent.Model,
-					Temperature:     session.Agent.Temperature,
-					Messages:        session.Agent.Messages,
-					AllowedPrograms: session.Agent.AllowedPrograms,
-					AllowedTools:    session.Agent.AllowedTools,
-					Sandbox:         session.Agent.Sandbox,
-				})
+				agents := make([]*types.Agent, 0)
+				agents = append(agents, session.Agent)
 
 				for _, name := range agent_names {
 
 					agent := agent_tool.GetAgent(name)
 
 					if agent != nil {
-
-						agents = append(agents, schemas.Agent{
-							Name:            agent.Name,
-							Type:            agent.Type,
-							Model:           agent.Model,
-							Temperature:     agent.Temperature,
-							Messages:        agent.Messages,
-							AllowedPrograms: agent.AllowedPrograms,
-							AllowedTools:    agent.AllowedTools,
-							Sandbox:         agent.Sandbox,
-						})
-
+						agents = append(agents, agent)
 					}
 
 				}

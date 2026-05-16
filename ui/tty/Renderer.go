@@ -153,7 +153,13 @@ func (renderer *Renderer) RenderPrompt() {
 
 	if renderer.Session != nil && renderer.Session.Config != nil {
 		model = renderer.Session.Config.Model
-		usage = renderer.Session.GetContextUsage()
+
+		context_usage := renderer.Session.Agent.ContextUsage
+
+		if context_usage.Length != 0 {
+			usage = float64(float64(context_usage.Tokens) / float64(context_usage.Length))
+		}
+
 	}
 
 	percentage := fmt.Sprintf("%3d%%", int(usage + 0.5))

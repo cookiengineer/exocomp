@@ -295,20 +295,50 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 						for scanner.Scan() {
 
-							line    := scanner.Bytes()
-							message := schemas.Message{}
+							line := scanner.Text()
 
-							err3 := json.Unmarshal(line, &message)
+							if strings.HasPrefix(line, "schemas.Message:") {
 
-							if err3 == nil {
+								buffer  := []byte(line[16:])
+								message := schemas.Message{}
 
-								tool.Mutex.Lock()
-								_, ok1 := tool.contents[name]
+								err3 := json.Unmarshal(buffer, &message)
 
-								if ok1 == true {
-									tool.contents[name].Messages = append(tool.contents[name].Messages, &message)
+								if err3 == nil {
+
+									tool.Mutex.Lock()
+
+									agent, ok1 := tool.contents[name]
+
+									if ok1 == true {
+										agent.Messages = append(agent.Messages, &message)
+									}
+
+									tool.Mutex.Unlock()
+
 								}
-								tool.Mutex.Unlock()
+
+							} else if strings.HasPrefix(line, "types.ContextUsage:") {
+
+								buffer   := []byte(line[19:])
+								usage    := types.ContextUsage{}
+
+								err3 := json.Unmarshal(buffer, &usage)
+
+								if err3 == nil {
+
+									tool.Mutex.Lock()
+
+									agent, ok1 := tool.contents[name]
+
+									if ok1 == true {
+										agent.ContextUsage.Length = usage.Length
+										agent.ContextUsage.Tokens = usage.Tokens
+									}
+
+									tool.Mutex.Unlock()
+
+								}
 
 							}
 

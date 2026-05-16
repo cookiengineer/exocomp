@@ -98,10 +98,6 @@ func (server *Server) Init() bool {
 		routes_session.Console(server.Session, request, response)
 	})
 
-	http.HandleFunc("/api/session/context", func(response http.ResponseWriter, request *http.Request) {
-		routes_session.Context(server.Session, request, response)
-	})
-
 	http.HandleFunc("/api/session/tools", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.Tools(server.Session, request, response)
 	})

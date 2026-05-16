@@ -1,7 +1,6 @@
 package session
 
 import "exocomp/ui/web/handlers"
-import "exocomp/schemas"
 import "exocomp/types"
 import "encoding/json"
 import "net/http"
@@ -11,16 +10,7 @@ func Agent(session *types.Session, request *http.Request, response http.Response
 
 	if request.Method == http.MethodGet {
 
-		response_payload, err0 := json.MarshalIndent(schemas.Agent{
-			Name:            session.Agent.Name,
-			Type:            session.Agent.Type,
-			Model:           session.Agent.Model,
-			Temperature:     session.Agent.Temperature,
-			Messages:        session.Agent.Messages,
-			AllowedPrograms: session.Agent.AllowedPrograms,
-			AllowedTools:    session.Agent.AllowedTools,
-			Sandbox:         session.Agent.Sandbox,
-		}, "", "\t")
+		response_payload, err0 := json.MarshalIndent(session.Agent, "", "\t")
 
 		if err0 == nil {
 

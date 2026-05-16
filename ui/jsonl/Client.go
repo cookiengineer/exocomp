@@ -68,7 +68,13 @@ func (client *Client) Init() {
 		signals<-syscall.SIGINT
 	}()
 
-	go client.Renderer.RenderLoop()
+	go func() {
+		client.ContextUsageLoop()
+	}()
+
+	go func() {
+		client.Renderer.RenderLoop()
+	}()
 
 	select {
 	case sig := <-signals:
@@ -149,6 +155,30 @@ func (client *Client) InputLoop() {
 					}
 
 				}
+
+			}
+
+		}
+
+	}
+
+}
+
+func (client *Client) ContextUsageLoop() {
+
+	last_tokens := 0
+
+	for {
+
+		if last_tokens != client.Session.Agent.ContextUsage.Tokens {
+
+			bytes, err := json.Marshal(client.Session.Agent.ContextUsage)
+
+			if err == nil {
+
+				last_tokens = client.Session.Agent.ContextUsage.Tokens
+				fmt.Fprintf(os.Stdout, "types.ContextUsage:%s\n", string(bytes))
+				os.Stderr.Sync()
 
 			}
 

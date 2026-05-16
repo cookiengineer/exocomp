@@ -76,7 +76,7 @@ func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 
 		if err == nil {
 
-			fmt.Fprintf(os.Stdout, "%s\n", string(bytes))
+			fmt.Fprintf(os.Stdout, "schemas.Message:%s\n", string(bytes))
 			os.Stdout.Sync()
 
 		}
