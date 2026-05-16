@@ -1,4 +1,4 @@
-package schemas
+package llamacpp
 
 import utils_time "exocomp/utils/time"
 
@@ -9,8 +9,6 @@ type Model struct {
 	Object  string              `json:"object"`
 	Created utils_time.UnixTime `json:"created"`
 	OwnedBy string              `json:"owned_by"`
-
-	// XXX: llama.cpp only
-	Meta    map[string]any      `json:"meta"`
+	Meta    ModelMeta           `json:"meta"`
 
 }

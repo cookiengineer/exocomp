@@ -12,5 +12,6 @@ type Agent struct {
 	AllowedPrograms []string
 	AllowedTools    []string
 	Sandbox         string
+	ContextUsage    ContextUsage
 }
 

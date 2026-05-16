@@ -12,38 +12,28 @@ import "sort"
 import "strings"
 import "sync"
 
-type SessionContext struct {
-	Length int `json:"length"`
-	Tokens int `json:"tokens"`
-}
-
 type Session struct {
-	Agent    *Agent             `json:"agent"`
-	Config   *Config            `json:"config"`
-	Console  *Console           `json:"console"`
-	Context  SessionContext     `json:"context"`
-	Tools    []*schemas.Tool    `json:"tools"`
-	Waiting  bool               `json:"waiting"`
-	client   *http.Client       `json:"-"`
-	mutex    *sync.RWMutex      `json:"-"`
-	tools    map[string]Tool    `json:"-"`
+	Agent    *Agent          `json:"agent"`
+	Config   *Config         `json:"config"`
+	Console  *Console        `json:"console"`
+	Tools    []*schemas.Tool `json:"tools"`
+	Waiting  bool            `json:"waiting"`
+	client   *http.Client    `json:"-"`
+	mutex    *sync.RWMutex   `json:"-"`
+	tools    map[string]Tool `json:"-"`
 }
 
 func NewSession(agent *Agent, config *Config) *Session {
 
 	session := &Session{
-		Agent:    agent,
-		Config:   config,
-		Console:  NewConsole(os.Stdout, os.Stderr, 0),
-		Context:  SessionContext{
-			Length: 0,
-			Tokens: 0,
-		},
-		Tools:    make([]*schemas.Tool, 0),
-		Waiting:  false,
-		client:   &http.Client{},
-		mutex:    &sync.RWMutex{},
-		tools:    make(map[string]Tool),
+		Agent:   agent,
+		Config:  config,
+		Console: NewConsole(os.Stdout, os.Stderr, 0),
+		Tools:   make([]*schemas.Tool, 0),
+		Waiting: false,
+		client:  &http.Client{},
+		mutex:   &sync.RWMutex{},
+		tools:   make(map[string]Tool),
 	}
 
 	session.mutex.Lock()
@@ -57,7 +47,7 @@ func NewSession(agent *Agent, config *Config) *Session {
 
 	}
 
-	session.Context.Length = session.Config.GetContextLength()
+	session.Agent.ContextUsage.Length = session.Config.GetContextLength()
 
 	session.mutex.Unlock()
 
@@ -233,16 +223,6 @@ func (session *Session) GetConsoleMessages(from int) []ConsoleMessage {
 		return session.Console.GetMessages(from)
 	} else {
 		return []ConsoleMessage{}
-	}
-
-}
-
-func (session *Session) GetContextUsage() float64 {
-
-	if session.Context.Length > 0 {
-		return float64(float64(session.Context.Tokens) / float64(session.Context.Length)) * 100.0
-	} else {
-		return 0.0
 	}
 
 }
@@ -627,9 +607,9 @@ func (session *Session) infer_chat_completions() error {
 				if err3 == nil {
 
 					if response.Usage != nil && response.Usage.PromptTokens != 0 {
-						session.Context.Tokens = response.Usage.PromptTokens
+						session.Agent.ContextUsage.Tokens = response.Usage.PromptTokens
 					} else {
-						session.Context.Tokens = utils_chat.CalculateTokens(session.Agent.Messages)
+						session.Agent.ContextUsage.Tokens = utils_chat.CalculateTokens(session.Agent.Messages)
 					}
 
 					if len(response.Choices) > 0 {
