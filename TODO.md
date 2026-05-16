@@ -21,10 +21,6 @@
 - [ ] Implement correct llama.cpp templates for `gemma4:31b` (tool calls don't work)
 - [ ] Implement correct llama.cpp templates for `qwen3.6:35b-heretic` (tool calls don't work)
 
-## Types
-
-- [ ] SessionContext should actually be per-agent, not per-session
-
 ## Agents
 
 - [ ] `redteamer` who writes malware and targets victim sandboxes
