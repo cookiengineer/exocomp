@@ -12,38 +12,81 @@ func GetContextLength(base_url *url.URL, model string) int {
 
 	if ok == false {
 
-		client := &http.Client{}
+		result := load_model(base_url, model)
 
-		endpoint := base_url.ResolveReference(&url.URL{
-			Path: "/api/show",
-		})
+		if result == true {
 
-		if endpoint != nil {
-
-			request_body, _ := json.Marshal(ShowRequest{
-				Name: model,
+			endpoint := base_url.ResolveReference(&url.URL{
+				Path: "/api/ps",
 			})
 
-			request, err1 := http.NewRequest(http.MethodPost, endpoint.String(), bytes.NewBuffer(request_body))
+			if endpoint != nil {
 
-			if err1 == nil {
+				client        := &http.Client{}
+				request, err1 := http.NewRequest(http.MethodGet, endpoint.String(), nil)
 
-				request.Header.Set("Accept", "application/json")
-				request.Header.Set("Content-Type", "application/json")
+				if err1 == nil {
 
-				response, err2 := client.Do(request)
+					request.Header.Set("Accept", "application/json")
 
-				if err2 == nil {
+					response, err2 := client.Do(request)
 
-					response_payload, err3 := io.ReadAll(response.Body)
+					if err2 == nil {
 
-					if err3 == nil {
+						response_payload, err3 := io.ReadAll(response.Body)
 
-						schema := ShowResponse{}
-						err4   := json.Unmarshal(response_payload, &schema)
+						if err3 == nil {
 
-						if err4 == nil {
-							context_lengths[model] = schema.ContextLength()
+							schema := RunningModelsResponse{}
+							err4   := json.Unmarshal(response_payload, &schema)
+
+							if err4 == nil {
+								context_lengths[model] = schema.ContextLength(model)
+							}
+
+						}
+
+					}
+
+				}
+
+			}
+
+		} else {
+
+			endpoint := base_url.ResolveReference(&url.URL{
+				Path: "/api/show",
+			})
+
+			if endpoint != nil {
+
+				client          := &http.Client{}
+				request_body, _ := json.Marshal(ShowRequest{
+					Name: model,
+				})
+
+				request, err1 := http.NewRequest(http.MethodPost, endpoint.String(), bytes.NewBuffer(request_body))
+
+				if err1 == nil {
+
+					request.Header.Set("Accept", "application/json")
+					request.Header.Set("Content-Type", "application/json")
+
+					response, err2 := client.Do(request)
+
+					if err2 == nil {
+
+						response_payload, err3 := io.ReadAll(response.Body)
+
+						if err3 == nil {
+
+							schema := ShowResponse{}
+							err4   := json.Unmarshal(response_payload, &schema)
+
+							if err4 == nil {
+								context_lengths[model] = schema.ContextLength()
+							}
+
 						}
 
 					}
