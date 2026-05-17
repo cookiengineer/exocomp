@@ -19,7 +19,7 @@ func InstallPrograms(prefix string) error {
 			for _, entry := range entries {
 
 				name := entry.Name()
-				buffer1, err12 := fs.ReadFile(assets.FS, "programs/" + name)
+				buffer1, err12 := fs.ReadFile(assets.FS, filepath.Join("programs", name))
 
 				if err12 == nil {
 
