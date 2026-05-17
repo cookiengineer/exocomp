@@ -1,0 +1,9 @@
+
+# Ignore exocomps due to size
+/assets/exocomps/*
+!/assets/exocomps/.gitkeep
+
+# Ignore programs due to size
+/assets/programs/*
+!/assets/programs/.gitkeep
+
