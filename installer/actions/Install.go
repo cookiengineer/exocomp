@@ -11,11 +11,25 @@ var gibi_byte uint64 = 1024 * 1024 * 1024
 
 func Install(prefix string) {
 
+	if os.Geteuid() != 0 {
+
+		if sudo_user := os.Getenv("SUDO_USER"); sudo_user != "" {
+			fmt.Fprintf(os.Stderr, "Please run this installer with sudo:\n")
+			fmt.Fprintf(os.Stderr, "    sudo exocomp-installer;\n")
+		} else {
+			fmt.Fprintf(os.Stderr, "Please run this installer as root.\n")
+		}
+
+		os.Exit(1)
+		return
+
+	}
+
 	available_space := utils_fs.AvailableSpace(prefix)
 	install_options := make(map[string]bool, 0)
 
-	fmt.Fprintf(os.Stdout, "Installation folder:  %s\n", prefix)
-	fmt.Fprintf(os.Stdout, "Available disk space: %s\n", utils_fmt.FormatBytes(available_space))
+	fmt.Fprintf(os.Stdout, "Prefix:     %s\n", prefix)
+	fmt.Fprintf(os.Stdout, "Disk Space: %s\n", utils_fmt.FormatBytes(available_space))
 
 	if available_space > 1 * gibi_byte {
 
@@ -35,7 +49,7 @@ func Install(prefix string) {
 	}
 
 	fmt.Fprintf(os.Stdout, "\n")
-	fmt.Fprintf(os.Stdout, "Select installation options:\n")
+	fmt.Fprintf(os.Stdout, "Select installation option:\n")
 	fmt.Fprintf(os.Stdout, "\n")
 
 	if install_options["exocomp"] == true {
@@ -45,9 +59,9 @@ func Install(prefix string) {
 	}
 
 	if install_options["programs"] == true {
-		fmt.Fprintf(os.Stdout, "2) Install exocomp with programs\n")
+		fmt.Fprintf(os.Stdout, "2) Install exocomp with agent programs\n")
 	} else {
-		fmt.Fprintf(os.Stdout, "2) Install exocomp with programs (requires %s more space)\n", utils_fmt.FormatBytes(1 * gibi_byte - available_space))
+		fmt.Fprintf(os.Stdout, "2) Install exocomp with agent programs (requires %s more space)\n", utils_fmt.FormatBytes(1 * gibi_byte - available_space))
 	}
 
 	fmt.Fprintf(os.Stdout, "\n")
@@ -57,17 +71,51 @@ func Install(prefix string) {
 	scanner.Scan()
 
 	choice := scanner.Text()
+	errors := make([]error, 0)
 
 	fmt.Fprintf(os.Stdout, "Selected choice: %s\n", choice)
+	fmt.Fprintf(os.Stdout, "\n")
 
 	if choice == "1" {
 
-		InstallExocomp(prefix)
+		err1 := InstallExocomp(prefix)
+
+		if err1 != nil {
+			errors = append(errors, err1)
+		}
 
 	} else if choice == "2" {
 
-		InstallExocomp(prefix)
-		InstallPrograms(prefix)
+		err1 := InstallExocomp(prefix)
+
+		if err1 != nil {
+			errors = append(errors, err1)
+		}
+
+		err2 := InstallPrograms(prefix)
+
+		if err2 != nil {
+			errors = append(errors, err2)
+		}
+
+	}
+
+	if len(errors) > 0 {
+
+		fmt.Fprintf(os.Stdout, "\n")
+
+		for _, err := range errors {
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		}
+
+		os.Exit(1)
+
+	} else {
+
+		fmt.Fprintf(os.Stdout, "\n")
+		fmt.Fprintf(os.Stdout, "%s\n", "Done.")
+
+		os.Exit(0)
 
 	}
 

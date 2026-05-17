@@ -12,7 +12,6 @@ import "os/exec"
 import "path/filepath"
 import "sort"
 import "strings"
-import "syscall"
 import "time"
 
 type Skills struct {
@@ -372,11 +371,6 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 					cmd.Stdin  = strings.NewReader("")
 					cmd.Stdout = buffer
 					cmd.Stderr = buffer
-
-					// Enforce sub processes to have same group
-					cmd.SysProcAttr = &syscall.SysProcAttr{
-						Setpgid: true,
-					}
 
 					err2   := cmd.Run()
 					result := strings.Join([]string{

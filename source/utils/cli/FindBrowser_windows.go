@@ -2,7 +2,7 @@
 
 package cli
 
-import "errors"
+import "fmt"
 import "os"
 import "os/exec"
 import "path/filepath"

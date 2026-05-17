@@ -1,0 +1,5 @@
+
+# Ignore exocomp builds
+/build/*
+!/build/.gitkeep
+

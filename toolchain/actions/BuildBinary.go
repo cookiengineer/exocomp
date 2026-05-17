@@ -1,0 +1,37 @@
+package actions
+
+import "fmt"
+import "os"
+import "os/exec"
+import "strings"
+
+func BuildBinary(cwd string, source string, output string, tags []string, operating_system string) error {
+
+	args := []string{"build"}
+	env  := os.Environ()
+
+	if len(tags) > 0 {
+		args = append(args, "-tags", strings.Join(tags, " "))
+	}
+
+	if operating_system == "windows" {
+		output = fmt.Sprintf("%s.exe", output)
+	}
+
+	args = append(args, "-o", output)
+	args = append(args, source)
+
+	env = append(env, "CGO_ENABLED=0")
+	env = append(env, fmt.Sprintf("GOOS=%s", operating_system))
+	env = append(env, fmt.Sprintf("GOARCH=%s", "amd64"))
+
+	cmd := exec.Command("go", args...)
+	cmd.Dir = cwd
+	cmd.Env = env
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+
+}

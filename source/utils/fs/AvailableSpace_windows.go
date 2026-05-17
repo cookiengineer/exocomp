@@ -3,6 +3,8 @@
 package fs
 
 import "golang.org/x/sys/windows"
+import "errors"
+import "path/filepath"
 
 func AvailableSpace(path string) uint64 {
 

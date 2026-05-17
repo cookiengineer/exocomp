@@ -10,7 +10,6 @@ import "os/exec"
 import "path/filepath"
 import "slices"
 import "strings"
-import "syscall"
 import "time"
 
 type Programs struct {
@@ -135,11 +134,6 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 		cmd.Stdin  = strings.NewReader("")
 		cmd.Stdout = buffer
 		cmd.Stderr = buffer
-
-		// Enforce sub processes to have same group
-		cmd.SysProcAttr = &syscall.SysProcAttr{
-			Setpgid: true,
-		}
 
 		result := ""
 		err2   := cmd.Run()
