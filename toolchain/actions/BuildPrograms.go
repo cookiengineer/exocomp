@@ -14,76 +14,65 @@ func BuildPrograms(base_dir string, operating_system string) {
 
 	if err01 == nil && err02 == nil {
 
-		installs := []struct {
+		builds := []struct {
 			name   string
+			folder string
 			output string
 			source string
-			url    string
 		}{
 			{
 				name:   "amass",
+				folder: filepath.Join(vendor_dir, "amass"),
 				output: filepath.Join(programs_dir, "amass"),
 				source: "./cmd/amass",
-				url:    "https://github.com/owasp-amass/amass.git",
 			},
 			{
 				name:   "asnmap",
+				folder: filepath.Join(vendor_dir, "asnmap"),
 				output: filepath.Join(programs_dir, "asnmap"),
 				source: "./cmd/asnmap",
-				url:    "https://github.com/projectdiscovery/asnmap.git",
 			},
 			{
 				name:   "httpx",
+				folder: filepath.Join(vendor_dir, "httpx"),
 				output: filepath.Join(programs_dir, "httpx"),
 				source: "./cmd/httpx",
-				url:    "https://github.com/projectdiscovery/httpx.git",
 			},
 			{
 				name:   "katana",
+				folder: filepath.Join(vendor_dir, "katana"),
 				output: filepath.Join(programs_dir, "katana"),
 				source: "./cmd/katana",
-				url:    "https://github.com/projectdiscovery/katana.git",
 			},
 			{
 				name:   "naabu",
+				folder: filepath.Join(vendor_dir, "naabu"),
 				output: filepath.Join(programs_dir, "naabu"),
 				source: "./cmd/naabu",
-				url:    "https://github.com/projectdiscovery/naabu.git",
 			},
 			{
 				name:   "nuclei",
+				folder: filepath.Join(vendor_dir, "nuclei"),
 				output: filepath.Join(programs_dir, "nuclei"),
 				source: "./cmd/nuclei",
-				url:    "https://github.com/projectdiscovery/nuclei.git",
 			},
 			{
 				name:   "subfinder",
+				folder: filepath.Join(vendor_dir, "subfinder"),
 				output: filepath.Join(programs_dir, "subfinder"),
 				source: "./cmd/subfinder",
-				url:    "https://github.com/projectdiscovery/subfinder.git",
 			},
 		}
 
-		for _, install := range installs {
+		for _, build := range builds {
 
-			repo_dir := filepath.Join(vendor_dir, install.name)
-			err1     := CloneRepository(vendor_dir, install.url, repo_dir)
+			err     := BuildBinary(build.folder, build.source, build.output, []string{}, operating_system)
+			path, _ := filepath.Rel(base_dir, build.output)
 
-			if err1 == nil {
-
-				fmt.Fprintf(os.Stdout, "-> Cloned %s\n", repo_dir)
-
-				err2    := BuildBinary(repo_dir, install.source, install.output, []string{}, operating_system)
-				path, _ := filepath.Rel(base_dir, install.output)
-
-				if err2 == nil {
-					fmt.Fprintf(os.Stdout, "-> Built %s\n", path)
-				} else {
-					fmt.Fprintf(os.Stderr, "!! Error building %s: %s\n", path, err2.Error())
-				}
-
+			if err == nil {
+				fmt.Fprintf(os.Stdout, "-> Built %s\n", path)
 			} else {
-				fmt.Fprintf(os.Stderr, "!! Error cloning %s: %s\n", repo_dir, err1.Error())
+				fmt.Fprintf(os.Stderr, "!! Error building %s: %s\n", path, err.Error())
 			}
 
 		}

@@ -32,6 +32,11 @@ func main() {
 
 	if err0 == nil {
 
+		fmt.Fprint(os.Stdout, "== Clone programs ==\n")
+
+		actions.ClonePrograms(base_dir)
+
+		fmt.Fprint(os.Stdout, "\n")
 		fmt.Fprint(os.Stdout, "== Build linux ==\n")
 
 		actions.ClearAssets(base_dir)
