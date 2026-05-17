@@ -130,64 +130,10 @@ cd /path/to/project-root;
 exocomp webview planner;
 ```
 
-There are several User Interfaces implemented in Exocomp:
-
-- `exocomp agent` uses line-separated JSON messages to communicate via `stdin` and `stdout`. Used for cross-agent communication.
-- `exocomp terminal` uses the [ui/tty/Client](./ui/tty/Client.go)
-- `exocomp web` spawns the [ui/web/Server](./ui/web/Server.go) on port `3000` that serves the [Web UI](./ui/web/public/).
-- `exocomp webview` spawns a [ui/web/Server](./ui/web/Server.go) on port `3000` and opens a [ui/webview/Client](./ui/webview/Client.go) window.
+Take a look at the [USAGE.md](./docs/USAGE.md) for more details.
 
 
-### Multi Agent Usage
-
-The defaulted `planner` agent is allowed to hire contracting sub-agents with the
-[Agents](./tools/Agents.go) tool.
-
-Multi agent communication works with a sub process hierarchy, where each process
-works in their own sandbox with the `jsonl` frontend and their own agent type and
-system/user prompts.
-
-Cross-agent communication works with a strict process hierarchy, each contracted
-sub-agent's `playground` is set to the parent process's `sandbox`.
-
-**Example Process Hierarchy**
-
-```
-| Hierarchy   | Sandbox                         | Playground       | Task                          |
-|:------------|:--------------------------------|:-----------------|:------------------------------|
-| planner     | /path/to/project                | /path/to/project |                               |
-|-> architect | /path/to/project                | /path/to/project | specifies utils package       |
-|-> coder     | /path/to/project/utils          | /path/to/project | implements CalculateFibonacci |
-|-> tester    | /path/to/project/utils          | /path/to/project | tests CalculateFibonacci      |
-|-> coder     | /path/to/project/cmds/fibonacci | /path/to/project | implements main.go            |
-```
-
-**Example Process Parameters**
-
-```bash
-# Humans interact with planner agents
-cd /path/to/project;
-exocomp web planner;
-
-#
-# What the planner "spawns" behind the scenes as sub processes:
-#
-
-# cd /path/to/project;
-# exocomp jsonl architect --prompt="Implement a utils package and specify the CalculateFibonacci method signature.";
-
-# cd /path/to/project/utils;
-# exocomp jsonl coder --prompt="Implement a public method called CalculateFibonacci(step int) int that calculates the fibonacci numbers.";
-
-# cd /path/to/project/utils;
-# exocomp jsonl tester --prompt="Implement the unit tests for the CalculateFibonacci method.";
-
-# cd /path/to/project/cmds/fibonacci;
-# exocomp jsonl coder --prompt="Implement a main.go that calculates fibonacci numbers. Use the first CLI parameter as the step or sequence argument.";
-```
-
-
-### LLM Servers Support
+### Supported Inference Servers
 
 It's also possible to use exocomp with an external inference server
 that supports the OpenAI compatible endpoints. Take a look at the
