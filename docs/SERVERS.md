@@ -1,11 +1,11 @@
 
-# Inference Servers
+# Servers
 
 Exocomp supports the following inference servers:
 
-- [llama.cpp](../utils/api/llamacpp)
-- [ollama](../utils/api/ollama)
-- [vllm](../utils/api/vllm)
+- [llama.cpp](../source/utils/api/llamacpp)
+- [ollama](../source/utils/api/ollama)
+- [vllm](../source/utils/api/vllm)
 
 Support for a new inference server requires the following API endpoints:
 
@@ -59,10 +59,8 @@ go run -tags=with_llamacpp ./cmds/exocomp/main.go web planner;
 Full llama.cpp server parameters:
 
 ```bash
-cd /path/to/exocomp/third_party;
-
 # On systems with less than 48GB of VRAM
-./llama/llama-server \
+llama-server \
 	--models-dir ./models \
 	--gpu-layers all \
 	--ctx-size 32768 \
@@ -78,7 +76,7 @@ cd /path/to/exocomp/third_party;
     --port=11434;
 
 # On systems with at least 48GB of VRAM
-./llama/llama-server \
+llama-server \
 	--models-dir ./models \
 	--gpu-layers all \
 	--ctx-size 262144 \

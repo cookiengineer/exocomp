@@ -79,55 +79,32 @@ Check the unit tests on whether the Tools can be relied on or not.
 | Vulnerabilities                         |                                     | Manages vulnerabilities from local dataset.         | `pentester`, `threathunter`                             |
 | Websites                                |                                     | Researches knowledge from the web.                  | `pentester`, `researcher`                               |
 
-- [1] Install dependencies with [install-deps.sh](./install-deps.sh). Requires 80GB of HDD space, 48GB of VRAM, and an iGPU or dGPU with `vulkan` support.
+- [1] Requires `llama.cpp` with `qwen3-coder:30b` and `Q8_0` quantization. Requires 48GB of VRAM, and GPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).
 
-### Dependencies
 
-The `exocomp` program is a standalone binary, once compiled with the `go build`
-toolchain and it comes with `llama.cpp` as a bundled inference server.
+### Building
 
-The third-party `llama.ccp` inference server and LLM models are installed inside
-the [third_party](./third_party) folder, and are installed by executing the
-[install-deps.sh](./install-deps.sh) shell script.
+The `exocomp` program is a standalone binary, and the `exocomp-installer` contains
+the programs that the agents need to run.
 
 ```bash
-cd /path/to/exocomp;
+# Build exocomp and exocomp-installer
+cd path/to/exocomp/toolchain;
+go run build.go;
 
-# Look ma, no sudo!
-bash install-deps.sh;
-```
-
-It is recommended to use that workflow for the best development experience using
-exocomp as an agentic development environment.
-
-The unit tests tagged with the `agents` build tag also rely on this workflow to
-be setup and working.
-
-```bash
-cd /path/to/exocomp;
-
-cd ./tools;
-
-# Needs around 32GB of VRAM
-go test -tags=agents -v ./
+# Show exocomp usage instructions
+cd /path/to/exocomp/build;
+./linux/exocomp;
 ```
 
 
-### External Inference Servers
+### Testing
 
-However, it's also possible to use exocomp with an external inference server
-that supports the OpenAI compatible endpoints. If you're using `ollama`, all
-models with the `tools` tag in the [ollama library](https://ollama.com/library)
-should be compatible.
-
-Exocomp uses the following OpenAI compatible API endpoints:
-
-- `http://server:port/v1/chat/completions`
-- `http://server:port/v1/models`
-
-Take a look at the [INFERENCE_SERVERS.md](./docs/INFERENCE_SERVERS.md) for more
-details on how to use external inference servers.
+Testing requires a [llama.cpp](https://github.com/ggml-org/llama.cpp)
+`llama-server` instance running with a `qwen3-coder:30b` model and `Q8_0`
+quantization. Take a look at the [TESTING.md](./docs/TESTING.md) for more
+details.
 
 
 ### Usage
@@ -146,12 +123,13 @@ cd /path/to/project-root;
 exocomp webview planner;
 ```
 
-Additionally, there are several UI frontends implemented in Exocomp:
+There are several User Interfaces implemented in Exocomp:
 
-- `exocomp jsonl <agent-type>` uses line-separated JSON messages to communicate via `stdin` and `stdout`. Used for cross-contractor-agent communication.
-- `exocomp tty <agent-type>` uses the [ui/tty/Client](./ui/tty/Client.go)
-- `exocomp web <agent-type>` spawns the [ui/web/Server](./ui/web/Server.go) on port `3000` that serves the [Web UI](./ui/web/public/)
-- `exocomp webview <agent-type>` spawns a [ui/web/Server](./ui/web/Server.go) on port `3000` and opens a [ui/webview/Client](./ui/webview/Client.go) window
+- `exocomp agent` uses line-separated JSON messages to communicate via `stdin` and `stdout`. Used for cross-agent communication.
+- `exocomp terminal` uses the [ui/tty/Client](./ui/tty/Client.go)
+- `exocomp web` spawns the [ui/web/Server](./ui/web/Server.go) on port `3000` that serves the [Web UI](./ui/web/public/).
+- `exocomp webview` spawns a [ui/web/Server](./ui/web/Server.go) on port `3000` and opens a [ui/webview/Client](./ui/webview/Client.go) window.
+
 
 ### Multi Agent Usage
 
@@ -200,6 +178,13 @@ exocomp web planner;
 # cd /path/to/project/cmds/fibonacci;
 # exocomp jsonl coder --prompt="Implement a main.go that calculates fibonacci numbers. Use the first CLI parameter as the step or sequence argument.";
 ```
+
+
+### LLM Servers Support
+
+It's also possible to use exocomp with an external inference server
+that supports the OpenAI compatible endpoints. Take a look at the
+[SERVERS.md](./docs/SERVERS.md) for more details.
 
 
 ### License
