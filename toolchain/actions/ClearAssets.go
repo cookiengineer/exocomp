@@ -6,13 +6,12 @@ import "path/filepath"
 
 func ClearAssets(base_dir string) {
 
-	assets_dir := filepath.Join(base_dir, "installer", "assets", "exocomps")
+	exocomps_dir   := filepath.Join(base_dir, "installer", "assets", "exocomps")
+	entries1, err1 := os.ReadDir(exocomps_dir)
 
-	entries, err0 := os.ReadDir(assets_dir)
+	if err1 == nil {
 
-	if err0 == nil {
-
-		for _, entry := range entries {
+		for _, entry := range entries1 {
 
 			name := entry.Name()
 
@@ -22,7 +21,7 @@ func ClearAssets(base_dir string) {
 
 			} else {
 
-				binary  := filepath.Join(assets_dir, name)
+				binary  := filepath.Join(exocomps_dir, name)
 				err     := os.Remove(binary)
 				path, _ := filepath.Rel(base_dir, binary)
 
@@ -37,11 +36,40 @@ func ClearAssets(base_dir string) {
 		}
 
 	} else {
+		fmt.Fprintf(os.Stderr, "!! Error: %s\n", err1.Error())
+	}
 
-		if err0 != nil {
-			fmt.Fprintf(os.Stderr, "!! Error: %s\n", err0.Error())
+	programs_dir   := filepath.Join(base_dir, "installer", "assets", "programs")
+	entries2, err2 := os.ReadDir(programs_dir)
+
+	if err2 == nil {
+
+		for _, entry := range entries2 {
+
+			name := entry.Name()
+
+			if name == ".gitkeep" {
+
+				// Do Nothing
+
+			} else {
+
+				binary  := filepath.Join(programs_dir, name)
+				err     := os.Remove(binary)
+				path, _ := filepath.Rel(base_dir, binary)
+
+				if err == nil {
+					fmt.Fprintf(os.Stdout, "-> Removed %s\n", path)
+				} else {
+					fmt.Fprintf(os.Stderr, "!! Error removing %s: %s\n", path, err.Error())
+				}
+
+			}
+
 		}
 
+	} else {
+		fmt.Fprintf(os.Stderr, "!! Error: %s\n", err2.Error())
 	}
 
 }

@@ -3,3 +3,6 @@
 /build/*
 !/build/.gitkeep
 
+# Ignore vendor
+/vendor/*
+!/vendor/.gitkeep

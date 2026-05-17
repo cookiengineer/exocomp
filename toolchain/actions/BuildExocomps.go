@@ -6,12 +6,12 @@ import "path/filepath"
 
 func BuildExocomps(base_dir string, operating_system string) {
 
-	build_dir  := filepath.Join(base_dir, "build")
-	source_dir := filepath.Join(base_dir, "source")
-	assets_dir := filepath.Join(base_dir, "installer", "assets", "exocomps")
+	build_dir    := filepath.Join(base_dir, "build")
+	source_dir   := filepath.Join(base_dir, "source")
+	exocomps_dir := filepath.Join(base_dir, "installer", "assets", "exocomps")
 
 	err01 := os.MkdirAll(filepath.Join(build_dir, operating_system), 0755)
-	err02 := os.MkdirAll(assets_dir, 0755)
+	err02 := os.MkdirAll(exocomps_dir, 0755)
 
 	if err01 == nil && err02 == nil {
 
@@ -22,17 +22,17 @@ func BuildExocomps(base_dir string, operating_system string) {
 		}{
 			{
 				name:   "exocomp",
-				output: filepath.Join(assets_dir, "exocomp"),
+				output: filepath.Join(exocomps_dir, "exocomp"),
 				source: "./cmds/exocomp/main.go",
 			},
 			{
 				name:   "exocomp-agent",
-				output: filepath.Join(assets_dir, "exocomp-agent"),
+				output: filepath.Join(exocomps_dir, "exocomp-agent"),
 				source: "./cmds/exocomp-agent/main.go",
 			},
 			{
 				name:   "agimus",
-				output: filepath.Join(assets_dir, "agimus"),
+				output: filepath.Join(exocomps_dir, "agimus"),
 				source: "./cmds/agimus/main.go",
 			},
 			{

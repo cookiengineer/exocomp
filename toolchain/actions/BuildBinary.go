@@ -7,15 +7,15 @@ import "strings"
 
 func BuildBinary(cwd string, source string, output string, tags []string, operating_system string) error {
 
+	if operating_system == "windows" && strings.HasSuffix(output, ".exe") == false {
+		output = fmt.Sprintf("%s.exe", output)
+	}
+
 	args := []string{"build"}
 	env  := os.Environ()
 
 	if len(tags) > 0 {
 		args = append(args, "-tags", strings.Join(tags, " "))
-	}
-
-	if operating_system == "windows" {
-		output = fmt.Sprintf("%s.exe", output)
 	}
 
 	args = append(args, "-o", output)

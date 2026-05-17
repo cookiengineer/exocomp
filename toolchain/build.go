@@ -36,6 +36,7 @@ func main() {
 
 		actions.ClearAssets(base_dir)
 		actions.BuildExocomps(base_dir, "linux")
+		actions.BuildPrograms(base_dir, "linux")
 		actions.BuildInstaller(base_dir, "linux")
 
 		fmt.Fprint(os.Stdout, "\n")
@@ -43,6 +44,7 @@ func main() {
 
 		actions.ClearAssets(base_dir)
 		actions.BuildExocomps(base_dir, "darwin")
+		actions.BuildPrograms(base_dir, "darwin")
 		actions.BuildInstaller(base_dir, "darwin")
 
 		fmt.Fprint(os.Stdout, "\n")
@@ -50,6 +52,7 @@ func main() {
 
 		actions.ClearAssets(base_dir)
 		actions.BuildExocomps(base_dir, "windows")
+		actions.BuildPrograms(base_dir, "windows")
 		actions.BuildInstaller(base_dir, "windows")
 
 	} else {
