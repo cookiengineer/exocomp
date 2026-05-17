@@ -79,14 +79,21 @@ Check the unit tests on whether the Tools can be relied on or not.
 | Vulnerabilities                         |                                     | Manages vulnerabilities from local dataset.         | `pentester`, `threathunter`                             |
 | Websites                                |                                     | Researches knowledge from the web.                  | `pentester`, `researcher`                               |
 
-- [1] Requires `llama.cpp` with `qwen3-coder:30b` and `Q8_0` quantization. Requires 48GB of VRAM, and GPU with `vulkan` support.
+- [1] Requires `llama.cpp` with `qwen3-coder:30b` and `Q8_0` quantization and 48GB VRAM GPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).
 
 
 ### Building
 
-The `exocomp` program is a standalone binary, and the `exocomp-installer` contains
-the programs that the agents need to run.
+The `exocomp` project comes in several variants. All programs support `CGO_ENABLED=0`,
+so they can be used without any dynamically linked dependencies.
+
+- [agimus](./source/cmds/agimus/main.go) which is used for testing `assistant` sandboxes.
+- [exocomp](./source/cmds/exocomp-web/main.go) which supports all UIs.
+- [exocomp-agent](./source/cmds/exocomp-agent/main.go) which supports only the `agent` and `terminal` UI.
+- [exocomp-web](./source/cmds/exocomp-web/main.go) which supports only the `agent` and `web` UI.
+- [exocomp-installer](./installer/cmds/exocomp-installer/main.go) that bundles all exocomp builds and required agent programs.
+
 
 ```bash
 # Build exocomp and exocomp-installer
