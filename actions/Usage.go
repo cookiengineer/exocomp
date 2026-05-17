@@ -8,7 +8,7 @@ import "sort"
 import "strconv"
 import "strings"
 
-func Usage(agent *types.Agent, config *types.Config) {
+func Usage(agent *types.Agent, config *types.Config, options_ui []string) {
 
 	default_ui          := "unset"
 	default_agent       := strconv.Quote("planner")
@@ -19,12 +19,6 @@ func Usage(agent *types.Agent, config *types.Config) {
 	default_sandbox     := "current working directory"
 	default_url         := strconv.Quote("http://localhost:11434/v1")
 
-	options_ui    := []string{
-		"agent",
-		"terminal",
-		"web",
-		"webview",
-	}
 	options_agent := make([]string, 0)
 	options_model := []string{
 		strconv.Quote("gemma4:31b"),

@@ -14,7 +14,7 @@ import "syscall"
 type Client struct {
 	Renderer *Renderer
 	Session  *types.Session
-	role     string
+	Role     string
 }
 
 func NewClient(agent *types.Agent, config *types.Config) *Client {
@@ -47,7 +47,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 	return &Client{
 		Renderer: renderer,
 		Session:  session,
-		role:     "user",
+		Role:     "user",
 	}
 
 }
@@ -119,7 +119,7 @@ func (client *Client) InputLoop() {
 
 	for scanner.Scan() {
 
-		role   := client.role
+		role   := client.Role
 		prompt := strings.TrimSpace(scanner.Text())
 
 		if prompt != "" && client.Session != nil {
@@ -170,7 +170,8 @@ func (client *Client) InputLoop() {
 func (client *Client) SetRole(role string) {
 
 	if role == "user" || role == "assistant" {
-		client.role = role
+		client.Role = role
+		client.Renderer.Role = role
 	}
 
 }

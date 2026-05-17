@@ -8,6 +8,7 @@ import "sync"
 
 type Renderer struct {
 	Prompt    string
+	Role      string
 	Session   *types.Session
 	mutex     *sync.RWMutex
 	rendered  int
@@ -164,7 +165,14 @@ func (renderer *Renderer) RenderPrompt() {
 
 	percentage := fmt.Sprintf("%3d%%", int(usage + 0.5))
 
-	fmt.Fprintf(os.Stdout, "\r%s[to %s %s]%s > ", ColorGreen, model, percentage, ColorReset)
+	if renderer.Role == "assistant" {
+		fmt.Fprintf(os.Stdout, "\r%s[as %s %s]%s > ", ColorGreen, model, percentage, ColorReset)
+	} else if renderer.Role == "user" {
+		fmt.Fprintf(os.Stdout, "\r%s[to %s %s]%s > ", ColorGreen, model, percentage, ColorReset)
+	} else {
+		fmt.Fprintf(os.Stdout, "\r%s[%s %s]%s > ", ColorGreen, model, percentage, ColorReset)
+	}
+
 	os.Stdout.Sync()
 
 }
