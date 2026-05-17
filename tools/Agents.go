@@ -242,7 +242,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 			cmd := exec.CommandContext(
 				ctx,
 				exe,
-				"jsonl",
+				"agent",
 				fmt.Sprintf("--name=\"%s\"", name),
 				fmt.Sprintf("--agent=\"%s\"", agent),
 				fmt.Sprintf("--model=\"%s\"", tool.Model),
@@ -282,7 +282,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 					))
 
 					if debug_flag != "" {
-						// XXX: "exocomp jsonl" prints first system message
+						// XXX: "exocomp agent" prints first system message
 						tool.contents[name].Messages = make([]*schemas.Message, 0)
 					}
 
@@ -494,7 +494,7 @@ func (tool *Agents) Inquire(name string) (string, error) {
 
 			cmd := exec.Command(
 				exe,
-				"jsonl",
+				"agent",
 				fmt.Sprintf("--name=\"%s\"", "Summarizer"),
 				fmt.Sprintf("--agent=\"%s\"", "summarizer"),
 				fmt.Sprintf("--model=\"%s\"", tool.Model),

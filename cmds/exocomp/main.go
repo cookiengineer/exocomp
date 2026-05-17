@@ -1,12 +1,9 @@
 package main
 
+import "exocomp/actions"
 import "exocomp/agents"
 import "exocomp/types"
-import ui_jsonl "exocomp/ui/jsonl"
-import ui_tty "exocomp/ui/tty"
-import ui_web "exocomp/ui/web"
-import ui_webview "exocomp/ui/webview"
-import utils_cli "exocomp/utils/cli"
+import "exocomp/utils/cli"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -21,11 +18,24 @@ func main() {
 
 		tmp1 := strings.TrimSpace(os.Args[1])
 
-		if (tmp1 == "jsonl" || tmp1 == "tty" || tmp1 == "web" || tmp1 == "webview") {
-			mode = tmp1
+		switch tmp1 {
+		case "agent":
+			mode = "agent"
+		case "jsonl":
+			mode = "agent"
+		case "tty":
+			mode = "terminal"
+		case "term":
+			mode = "terminal"
+		case "terminal":
+			mode = "terminal"
+		case "web":
+			mode = "web"
+		case "webview":
+			mode = "webview"
 		}
 
-		config = utils_cli.ParseConfig(os.Args[1:])
+		config = cli.ParseConfig(os.Args[1:])
 
 	}
 
@@ -51,71 +61,25 @@ func main() {
 			}
 
 			switch mode {
-			case "jsonl":
+			case "agent":
 
-				fmt.Fprintf(os.Stderr, "[config]:\n")
-				fmt.Fprintf(os.Stderr, "| Agent:    %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
-				fmt.Fprintf(os.Stderr, "| Sandbox:  %s\n", config.Sandbox)
-				fmt.Fprintf(os.Stderr, "| Tools:    %s\n", strings.Join(agent.AllowedTools, ", "))
-				fmt.Fprintf(os.Stderr, "| URL:      %s\n", config.URL.String())
-				fmt.Fprintf(os.Stderr, "\n")
+				actions.Agent(agent, config)
 
-				os.Stdout.Sync()
-				os.Stderr.Sync()
+			case "terminal":
 
-				client := ui_jsonl.NewClient(agent, config)
-				client.SetRole("user")
-				client.Init()
-
-			case "tty":
-
-				fmt.Fprintf(os.Stdout, "[config]:\n")
-				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
-				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
-				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.AllowedTools, ", "))
-				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
-				fmt.Fprintf(os.Stdout, "\n")
-				os.Stdout.Sync()
-
-				client := ui_tty.NewClient(agent, config)
-				client.SetRole("user")
-				client.Init()
+				actions.Terminal(agent, config, "user")
 
 			case "web":
 
-				server := ui_web.NewServer(agent, config)
-
-				fmt.Fprintf(os.Stdout, "[config]:\n")
-				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
-				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
-				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.AllowedTools, ", "))
-				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
-				fmt.Fprintf(os.Stdout, "| Web:     %s\n", server.URL.String())
-				fmt.Fprintf(os.Stdout, "\n")
-				os.Stdout.Sync()
-
-				server.Init()
+				actions.Web(agent, config)
 
 			case "webview":
 
-				fmt.Fprintf(os.Stdout, "[config]:\n")
-				fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
-				fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", config.Sandbox)
-				fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(agent.AllowedTools, ", "))
-				fmt.Fprintf(os.Stdout, "| URL:     %s\n", config.URL.String())
-				fmt.Fprintf(os.Stdout, "\n")
-				os.Stdout.Sync()
-
-				server := ui_web.NewServer(agent, config)
-				client := ui_webview.NewClient(server.URL)
-
-				go client.Init()
-				server.Init()
+				actions.Webview(agent, config)
 
 			default:
 
-				utils_cli.PrintUsage()
-				os.Exit(1)
+				actions.Usage(agent, config)
 
 			}
 
@@ -128,8 +92,7 @@ func main() {
 
 	} else {
 
-		utils_cli.PrintUsage()
-		os.Exit(1)
+		actions.Usage(nil, config)
 
 	}
 

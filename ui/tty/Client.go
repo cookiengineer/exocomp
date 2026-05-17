@@ -60,7 +60,7 @@ func (client *Client) Destroy() {
 
 }
 
-func (client *Client) Init() {
+func (client *Client) Init() bool {
 
 	signals := make(chan os.Signal, 1)
 
@@ -108,6 +108,8 @@ func (client *Client) Init() {
 		}
 
 	}
+
+	return true
 
 }
 

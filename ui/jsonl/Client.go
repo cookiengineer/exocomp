@@ -49,7 +49,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 }
 
-func (client *Client) Init() {
+func (client *Client) Init() bool {
 
 	signals := make(chan os.Signal, 1)
 
@@ -100,6 +100,8 @@ func (client *Client) Init() {
 		}
 
 	}
+
+	return true
 
 }
 
