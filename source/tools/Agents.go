@@ -575,13 +575,21 @@ func (tool *Agents) Quit(message string) (string, error) {
 
 	if strings.Contains(strings.ToLower(message), "my work is done") {
 
-		defer os.Exit(0)
+		go func() {
+			// Give Renderer time to catch up
+			time.Sleep(200 * time.Millisecond)
+			os.Exit(0)
+		}()
 
 		return fmt.Sprintf("agents.Quit: Agent quit with work report:\n%s", strings.TrimSpace(message)), nil
 
 	} else {
 
-		defer os.Exit(1)
+		go func() {
+			// Give Renderer time to catch up
+			time.Sleep(200 * time.Millisecond)
+			os.Exit(1)
+		}()
 
 		return fmt.Sprintf("agents.Quit: Agent quit with work report:\n%s", strings.TrimSpace(message)), nil
 

@@ -2,7 +2,6 @@ package web
 
 import "exocomp/tools"
 import "exocomp/types"
-import "exocomp/ui/web/routes"
 import routes_parameters "exocomp/ui/web/routes/parameters"
 import routes_session "exocomp/ui/web/routes/session"
 import "embed"
