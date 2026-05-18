@@ -284,7 +284,7 @@ Client.prototype = {
 		if (prompt !== "") {
 
 			if (this.Session.Waiting === false) {
-				this.Renderer.RenderLabel("[" + this.Session.Config.Model + " " + usage + "%]");
+				this.Renderer.RenderLabel(usage.toFixed(2) + "%");
 			} else {
 				this.Renderer.RenderLabel("Processing ...");
 			}
@@ -292,7 +292,7 @@ Client.prototype = {
 		} else {
 
 			if (this.Session.Waiting === false) {
-				this.Renderer.RenderLabel("[" + this.Session.Config.Model + " " + usage + "%]");
+				this.Renderer.RenderLabel(usage.toFixed(2) + "%");
 			} else {
 				this.Renderer.RenderLabel("Processing ...");
 			}
@@ -355,12 +355,9 @@ Client.prototype = {
 
 			if (agent !== null && agent !== active) {
 
-				console.info("ViewAgent: Viewing Agent \"" + name + "\" ...");
-				console.info(agent);
-
 				this.Session.SetAgent(agent.Name);
 
-				this.Renderer.RenderHeader(agent.Name + " | " + agent.Type + " | " + " | " + agent.Model + " | " + agent.Temperature.toFixed(1))
+				this.Renderer.RenderHeader(agent.Name + " | " + agent.Type + " | " + agent.Model + " | " + agent.Temperature.toFixed(1))
 
 				this.Renderer.ClearAgents();
 				this.Renderer.RenderAgents(this.Session.Agent, this.Session.GetAgents());
@@ -372,14 +369,6 @@ Client.prototype = {
 					this.elements["prompt"].removeAttribute("disabled");
 				} else {
 					this.elements["prompt"].setAttribute("disabled", "");
-				}
-
-			} else {
-
-				if (agent === active) {
-					console.warn("ViewAgent: Agent \"" + name + "\" already viewed!");
-				} else {
-					console.warn("ViewAgent: Agent \"" + name + "\" doesn't exist?", agent);
 				}
 
 			}
