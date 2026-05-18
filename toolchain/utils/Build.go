@@ -1,11 +1,11 @@
-package actions
+package utils
 
 import "fmt"
 import "os"
 import "os/exec"
 import "strings"
 
-func BuildBinary(cwd string, source string, output string, tags []string, operating_system string) error {
+func Build(cwd string, source string, output string, tags []string, operating_system string) error {
 
 	if operating_system == "windows" && strings.HasSuffix(output, ".exe") == false {
 		output = fmt.Sprintf("%s.exe", output)

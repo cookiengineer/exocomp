@@ -99,6 +99,8 @@ func (config *Config) GetContextLength() int {
 
 		if err2 == nil {
 
+			defer response.Close()
+
 			response_payload, err3 := io.ReadAll(response.Body)
 
 			if err3 == nil {

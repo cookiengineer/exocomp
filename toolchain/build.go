@@ -1,34 +1,13 @@
 package main
 
 import "exocomp-toolchain/actions"
+import "exocomp-toolchain/utils"
 import "fmt"
 import "os"
-import "path/filepath"
-import "runtime"
-
-func getRepositoryRoot() (string, error) {
-
-	_, self, _, ok := runtime.Caller(0)
-
-	if ok == true {
-
-		// self = ./toolchain/build.go
-		toolchain := filepath.Dir(self)
-
-		// root = parent of toolchain/
-		root := filepath.Dir(toolchain)
-
-		return root, nil
-
-	} else {
-		return "", fmt.Errorf("unable to determine current file")
-	}
-
-}
 
 func main() {
 
-	base_dir, err0 := getRepositoryRoot()
+	base_dir, err0 := utils.GetRoot()
 
 	if err0 == nil {
 

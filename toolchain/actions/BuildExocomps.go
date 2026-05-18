@@ -1,5 +1,6 @@
 package actions
 
+import "exocomp-toolchain/utils"
 import "fmt"
 import "os"
 import "path/filepath"
@@ -54,7 +55,7 @@ func BuildExocomps(base_dir string, operating_system string) {
 
 		for _, build := range builds {
 
-			err     := BuildBinary(source_dir, build.source, build.output, []string{}, operating_system)
+			err     := utils.Build(source_dir, build.source, build.output, []string{}, operating_system)
 			path, _ := filepath.Rel(base_dir, build.output)
 
 			if err == nil {
