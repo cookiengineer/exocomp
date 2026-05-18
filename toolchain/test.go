@@ -5,6 +5,7 @@ import "fmt"
 import "net/url"
 import "os"
 import "strings"
+import "time"
 
 func main() {
 
@@ -27,22 +28,34 @@ func main() {
 
 			fmt.Fprint(os.Stdout, "== Start llama-server ==\n")
 
-			// err3 := utils.StartServer(base_url, "qwen3-coder:30b")
+			server, err := utils.CreateServer(
+				base_url,
+				"qwen3-coder:30b",
+				"/opt/llama/models/qwen3-coder-30b-a3b-instruct-q8_0.gguf",
+			)
 
-			fmt.Fprint(os.Stdout, "\n")
-			fmt.Fprint(os.Stdout, "== Test tools ==\n")
+			if err == nil && server != nil {
 
-			// TODO
+				server.Start()
 
-			fmt.Fprint(os.Stdout, "\n")
-			fmt.Fprint(os.Stdout, "== Test agents ==\n")
+				// TODO: Wait 30 seconds?
 
-			// TODO
+				time.Sleep(30 * time.Second)
 
-			// TODO: Start llama.cpp
+				fmt.Fprint(os.Stdout, "\n")
+				fmt.Fprint(os.Stdout, "== Test tools ==\n")
 
-			if 1 == 2 {
-				fmt.Println(base_dir)
+				fmt.Fprintf(os.Stdout, "base_dir: %s\n", base_dir)
+
+				// TODO
+
+				fmt.Fprint(os.Stdout, "\n")
+				fmt.Fprint(os.Stdout, "== Test agents ==\n")
+
+				server.Stop()
+
+			} else {
+				fmt.Fprint(os.Stderr, "Couldn't create llama.cpp server: %s", err.Error())
 			}
 
 		}
