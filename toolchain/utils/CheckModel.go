@@ -8,7 +8,7 @@ import "net/http"
 import "net/url"
 import "slices"
 
-func CheckServer(api_url *url.URL, model_name string) error {
+func CheckModel(api_url *url.URL, model_name string) error {
 
 	response, err1 := http.Get(api_url.String())
 

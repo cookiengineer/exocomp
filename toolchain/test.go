@@ -1,6 +1,10 @@
 package main
 
 import "exocomp-toolchain/utils"
+import "fmt"
+import "net/url"
+import "os"
+import "strings"
 
 func main() {
 
@@ -9,19 +13,21 @@ func main() {
 
 	if err0 == nil && err1 == nil {
 
-		err2 := utils.CheckServer(base_url, "qwen3-coder:30b")
+		err2 := utils.CheckModel(base_url, "qwen3-coder:30b")
+
+		fmt.Println(err2)
 
 		if err2 == nil {
 
 			// TODO: server is managed externally
 
-		} else {
+		} else if strings.Contains(err2.Error(), "connection refused") {
 
 			// TODO: kill process that runs on port 11434
 
 			fmt.Fprint(os.Stdout, "== Start llama-server ==\n")
 
-			err := utils.StartServer(base_url, "qwen3-coder:30b")
+			// err3 := utils.StartServer(base_url, "qwen3-coder:30b")
 
 			fmt.Fprint(os.Stdout, "\n")
 			fmt.Fprint(os.Stdout, "== Test tools ==\n")
@@ -34,6 +40,10 @@ func main() {
 			// TODO
 
 			// TODO: Start llama.cpp
+
+			if 1 == 2 {
+				fmt.Println(base_dir)
+			}
 
 		}
 
