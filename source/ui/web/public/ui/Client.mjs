@@ -32,6 +32,16 @@ export const Client = function(config) {
 		this.UpdateAgents();
 	}, 500);
 
+	setTimeout(() => {
+
+		let agent = this.Session.GetAgent(null);
+		if (agent !== null) {
+			this.Renderer.RenderHeader(agent.Name + " | " + agent.Type + " | " + agent.Model + " | " + agent.Temperature.toFixed(1))
+			this.Renderer.RenderTitle("Exocomp - " + agent.Name)
+		}
+
+	}, 1000);
+
 };
 
 Client.prototype = {
@@ -91,15 +101,35 @@ Client.prototype = {
 			this.elements["nav"].addEventListener("click", (event) => {
 
 				let element = event.target || null;
-				if (element !== null && element.tagName === "LABEL") {
+				if (element !== null) {
 
-					let name = (element.innerText || "").trim();
-					if (name !== "") {
-						this.ViewAgent(name);
+					if (element.tagName === "LABEL") {
+
+						let name = (element.innerText || "").trim();
+						if (name !== "") {
+
+							this.ViewAgent(name);
+
+							event.preventDefault()
+							event.stopPropagation()
+
+						}
+
+						return true;
+
+					} else if (element.tagName === "A") {
+
+						event.preventDefault()
+						event.stopPropagation()
+
+						return false;
+
 					}
 
 				}
 
+			}, {
+				capture: true
 			});
 
 		}
@@ -231,14 +261,22 @@ Client.prototype = {
 
 	UpdateLabel: function() {
 
-		let prompt = (this.elements["prompt"].value || "").trim();
+		let prompt = "";
 		let usage  = 0.0;
+
+		if (this.elements["prompt"] !== null) {
+			prompt = (this.elements["prompt"].value || "").trim();
+		}
 
 		if (this.Session.Agent !== "") {
 
 			let agent = this.Session.GetAgent(null);
-			if (agent !== null && agent.ContextUsage.Length > 0) {
-				usage = ((agent.ContextUsage.Tokens / agent.ContextUsage.Length) * 100) | 0;
+			if (agent !== null) {
+
+				if (agent.ContextUsage.Length > 0) {
+					usage = ((agent.ContextUsage.Tokens / agent.ContextUsage.Length) * 100) | 0;
+				}
+
 			}
 
 		}
@@ -321,6 +359,8 @@ Client.prototype = {
 				console.info(agent);
 
 				this.Session.SetAgent(agent.Name);
+
+				this.Renderer.RenderHeader(agent.Name + " | " + agent.Type + " | " + " | " + agent.Model + " | " + agent.Temperature.toFixed(1))
 
 				this.Renderer.ClearAgents();
 				this.Renderer.RenderAgents(this.Session.Agent, this.Session.GetAgents());

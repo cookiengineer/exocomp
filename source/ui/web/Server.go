@@ -86,6 +86,10 @@ func (server *Server) Init() bool {
 		routes_session.Config(server.Session, request, response)
 	})
 
+	http.HandleFunc("/api/session/config/{name}", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.AgentConfig(server.Session, request, response)
+	})
+
 	http.HandleFunc("/api/session/agent", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.Agent(server.Session, request, response)
 	})
@@ -112,12 +116,6 @@ func (server *Server) Init() bool {
 		routes_session.SendChatRequest(server.Session, request, response)
 	})
 
-
-	// TODO: Modify Agent Settings, move to /api/config/agent instad
-	// TODO: move implementation to routes_config.Agents
-	http.HandleFunc("/api/settings/agent", func(response http.ResponseWriter, request *http.Request) {
-		routes.AgentSettings(server.Session, request, response)
-	})
 
 	err := http.ListenAndServe(":" + server.URL.Port(), nil)
 

@@ -18,6 +18,7 @@ export const Renderer = function(session) {
 
 	this.elements = {
 		"main":   document.querySelector("body > main"),
+		"header": document.querySelector("body > header > div:nth-of-type(2) > label"),
 		"nav":    document.querySelector("body > aside > nav[aria-label=\"agents\"]"),
 		"label":  document.querySelector("body > footer label")
 	};
@@ -79,12 +80,22 @@ Renderer.prototype = {
 
 	},
 
-	RenderLabel: function(message) {
+	RenderHeader: function(text) {
 
-		message = typeof message === "string" ? message : "";
+		text = typeof text === "string" ? text : "";
+
+		if (this.elements["header"] !== null) {
+			this.elements["header"].innerHTML = text;
+		}
+
+	},
+
+	RenderLabel: function(text) {
+
+		text = typeof text === "string" ? text : "";
 
 
-		let lines = message.split("\n");
+		let lines = text.split("\n");
 
 		if (this.elements["label"] !== null) {
 			this.elements["label"].innerHTML = lines.join("<br>");
@@ -135,9 +146,9 @@ Renderer.prototype = {
 			let agent = agents[name];
 
 			if (active !== null && active === agent.Name) {
-				return "<li class=\"active\" title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><label>" + agent.Name + "</label></li>";
+				return "<li class=\"active\" title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><a href=\"/agent.html?name=" + encodeURIComponent(agent.Name) + "\"><label>" + agent.Name + "</label></a></li>";
 			} else {
-				return "<li title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><label>" + agent.Name + "</label></li>";
+				return "<li title=\"" + agent.Name + " working in " + agent.Sandbox + "\"><a href=\"/agent.html?name=" + encodeURIComponent(agent.Name) + "\"><label>" + agent.Name + "</label></a></li>";
 			}
 
 		}).join("");
@@ -172,6 +183,16 @@ Renderer.prototype = {
 			}
 
 		});
+
+	},
+
+	RenderTitle: function(text) {
+
+		text = typeof text === "string" ? text : "";
+
+		if (window.document.title !== undefined) {
+			window.document.title = text.trim();
+		}
 
 	}
 

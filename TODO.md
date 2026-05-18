@@ -1,6 +1,14 @@
 
 # TODO
 
+## Tools
+
+- [ ] Implement `tools/Symbols` which uses functions, classes, symbols.
+      Behind the scenes a code graph and "who calls what" would complement
+      the requirements tool.
+- [ ] Should have a Get(package name, symbol name) method
+- [ ] Should have a Search(package name, symbol name) method
+
 ## Agents
 
 - [ ] Check the repos in described order to find better prompts

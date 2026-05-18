@@ -99,8 +99,6 @@ func (config *Config) GetContextLength() int {
 
 		if err2 == nil {
 
-			defer response.Close()
-
 			response_payload, err3 := io.ReadAll(response.Body)
 
 			if err3 == nil {
@@ -154,60 +152,70 @@ func (config *Config) ResolveAPI(path string) *net_url.URL {
 
 func (config *Config) MarshalJSON() ([]byte, error) {
 
-	type Alias Config
-
 	url_str := ""
 
 	if config.URL != nil {
 		url_str = config.URL.String()
 	}
 
-	return json.Marshal(&struct {
-		*Alias
-		URL *string `json:"url"`
+	return json.Marshal(struct {
+		Name        string  `json:"name"`
+		Agent       string  `json:"agent"`
+		Model       string  `json:"model"`
+		Prompt      string  `json:"prompt"`
+		Temperature float64 `json:"temperature"`
+		Playground  string  `json:"playground"`
+		Sandbox     string  `json:"sandbox"`
+		URL         string  `json:"url"`
+		Debug       bool    `json:"debug"`
 	}{
-		Alias: (*Alias)(config),
-		URL:   &url_str,
+		Name:        config.Name,
+		Agent:       config.Agent,
+		Model:       config.Model,
+		Prompt:      config.Prompt,
+		Temperature: config.Temperature,
+		Playground:  config.Playground,
+		Sandbox:     config.Sandbox,
+		URL:         url_str,
+		Debug:       config.Debug,
 	})
 
 }
 
 func (config *Config) UnmarshalJSON(data []byte) error {
 
-	type Alias Config
-
-	tmp := struct {
-		*Alias
-		URL *string `json:"url"`
-	}{
-		Alias: (*Alias)(config),
+	var tmp struct {
+		Name        string  `json:"name"`
+		Agent       string  `json:"agent"`
+		Model       string  `json:"model"`
+		Prompt      string  `json:"prompt"`
+		Temperature float64 `json:"temperature"`
+		Playground  string  `json:"playground"`
+		Sandbox     string  `json:"sandbox"`
+		URL         string  `json:"url"`
+		Debug       bool    `json:"debug"`
 	}
 
 	err0 := json.Unmarshal(data, &tmp)
 
 	if err0 == nil {
 
-		if tmp.URL != nil {
+		config.Name        = tmp.Name
+		config.Agent       = tmp.Agent
+		config.Model       = tmp.Model
+		config.Prompt      = tmp.Prompt
+		config.Temperature = tmp.Temperature
+		config.Playground  = tmp.Playground
+		config.Sandbox     = tmp.Sandbox
+		config.Debug       = tmp.Debug
 
-			url, err1 := net_url.Parse(*tmp.URL)
+		tmp_url, err1 := net_url.Parse(tmp.URL)
 
-			if err1 == nil {
-
-				config.URL = url
-
-				return nil
-
-			} else {
-				return err1
-			}
-
-		} else {
-
-			config.URL = nil
-
-			return nil
-
+		if err1 == nil {
+			config.URL = tmp_url
 		}
+
+		return nil
 
 	} else {
 		return err0

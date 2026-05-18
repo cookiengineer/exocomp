@@ -22,11 +22,19 @@ body > main {
 	position: fixed;
 	top: 50px;
 	right: 0px;
-	bottom: 160px;
-	left: 200px;
+	bottom: 0px;
+	left: 0px;
 	overflow-x: hidden;
 	overflow-y: scroll;
 	transition: bottom 200ms ease-out;
+}
+
+body:has(aside) > main {
+	left: 200px;
+}
+
+body:has(footer) > main {
+	bottom: 160px;
 }
 
 body:has(footer.command) > main {

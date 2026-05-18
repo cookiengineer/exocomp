@@ -5,27 +5,63 @@ import { CreateAgent as CreateAgentDialog } from "./ui/dialogs/CreateAgent.mjs";
 import { RenderSelect                     } from "./utils/ui/RenderSelect.mjs";
 import { BootstrapConfig                  } from "./types/Config.mjs";
 
+const getAgentName = () => {
+
+	let result = "";
+
+	if (window.location.pathname === "/agent.html") {
+
+		if (window.location.search.startsWith("?name=") === true) {
+
+			let name = decodeURIComponent((window.location.search || "").substr(6).split("&").shift()).trim();
+			if (name !== "") {
+				result = name;
+			}
+
+		}
+
+	}
+
+	return result;
+
+};
+
 async function main() {
 
 	try {
 
-		const config  = await BootstrapConfig();
-		const client  = new Client(config);
-		const dialog  = new CreateAgentDialog(document.querySelector("dialog#create-agent"), config);
-		const popover = new CallToolPopover(document.querySelector("div#call-tool"), client.Session.Tools);
+		const name   = getAgentName();
+		const config = await BootstrapConfig(name);
+		const client = new Client(config);
 
-		client.OnChange  = (prompt) => popover.Render(prompt);
-		dialog.OnConfirm = (data)   => client.CreateAgent(data);
+		((element, button) => {
+
+			if (element !== null && button !== null) {
+
+				let dialog = new CreateAgentDialog(element, config);
+
+				dialog.OnConfirm = (data) => client.CreateAgent(data);
+				button.onclick = () => dialog.Show();
+				button.removeAttribute("disabled");
+
+			}
+
+		})(document.querySelector("dialog#create-agent"), document.querySelector("header button[data-action=\"create-agent\"]"));
+
+		((element) => {
+
+			if (element !== null) {
+
+				let popover = new CallToolPopover(element, client.Session.Tools);
+
+				client.OnChange = (prompt) => popover.Render(prompt);
+
+			}
+
+		})(document.querySelector("div#call-tool"));
 
 		window.CLIENT = client;
-
-		let button = document.querySelector("header button[data-action=\"create-agent\"]");
-		if (button !== null) {
-			button.onclick = () => dialog.Show();
-			button.removeAttribute("disabled");
-		}
-
-		client.Init();
+		window.CLIENT.Init();
 
 		document.addEventListener("keyup", (event) => {
 

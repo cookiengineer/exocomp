@@ -39,7 +39,12 @@ aside nav ul li {
 	padding: 0px;
 }
 
-aside nav ul li > label {
+aside nav ul li > a {
+	display: block;
+	text-decoration: none;
+}
+
+aside nav ul li > a > label {
 	display: block;
 	margin: 0px;
 	padding: 8px 16px;
@@ -57,7 +62,7 @@ aside nav ul li.active {
 	padding: 0px 0px;
 }
 
-aside nav ul li.active > label {
+aside nav ul li.active > a > label {
 	padding: 8px 8px;
 	color: var(--main-color);
 	background: var(--main-background);
@@ -69,7 +74,7 @@ aside nav ul li:has(+ li.active) {
 	background: var(--main-background);
 }
 
-aside nav ul li:has(+ li.active) > label {
+aside nav ul li:has(+ li.active) > a > label {
 	color: var(--aside-color);
 	background: var(--aside-background);
 	border-radius: 0px 0px 8px 0px;
@@ -79,7 +84,7 @@ aside nav ul li.active + li {
 	background: var(--main-background);
 }
 
-aside nav ul li.active + li > label {
+aside nav ul li.active + li > a > label {
 	color: var(--aside-color);
 	background: var(--aside-background);
 	border-radius: 0px 8px 0px 0px;
