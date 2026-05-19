@@ -17,7 +17,7 @@
 	</head>
 	<body>
 		<header>
-			<div><button data-action="create-agent" disabled>Create Agent</button></div>
+			<div><button data-action="hire-agent" disabled>Hire Agent</button></div>
 			<div><label></label></div>
 			<div></div>
 		</header>
@@ -30,13 +30,17 @@
 			<div><label title="Context Window Usage">0.00%</label></div>
 			<div><textarea id="prompt"></textarea></div>
 		</footer>
-		<dialog id="create-agent">
+		<dialog id="hire-agent">
 			<article>
-				<h3>Create Agent</h3>
+				<h3>Hire Agent</h3>
 				<button data-action="close"></button>
 				<fieldset>
 					<div>
-						<label data-type="user" for="dialog-select-agent">Agent</label>
+						<label data-type="rebel" for="dialog-select-name">Name</label>
+						<input id="dialog-select-name" type="text" data-name="name" placeholder="Coderino"/>
+					</div>
+					<div>
+						<label data-type="experimental" for="dialog-select-agent">Agent</label>
 						<select id="dialog-select-agent" title="Agent Type" data-name="agent">
 							<option value="planner">Planner</option>
 							<option value="architect">Architect</option>
@@ -46,19 +50,14 @@
 						</select>
 					</div>
 					<div>
-						<label data-type="rebel" for="dialog-select-model">Model</label>
-						<select id="dialog-select-model" title="Model" data-name="model">
-							<option value="qwen3-coder:30b">qwen3-coder:30b</option>
-						</select>
-					</div>
-					<div>
 						<label data-type="folder" for="dialog-input-sandbox">Sandbox</label>
-						<input id="dialog-input-sandbox" type="text" data-name="sandbox" value="" placeholder="./path/to/sandbox">
+						<input id="dialog-input-sandbox" type="text" data-name="sandbox" value="" placeholder="./sandbox">
 					</div>
 					<div>
 						<label data-type="text" for="dialog-input-prompt">Prompt</label>
 						<textarea id="dialog-input-prompt" data-name="prompt" placeholder="What is your name?"></textarea>
 					</div>
+					<div data-name="errors"></div>
 				</fieldset>
 				<footer>
 					<div><button data-action="cancel">Cancel</button></div>

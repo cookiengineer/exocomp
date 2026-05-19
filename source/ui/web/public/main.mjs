@@ -1,9 +1,9 @@
 
-import { Client                           } from "./ui/Client.mjs";
-import { CallTool    as CallToolPopover   } from "./ui/popovers/CallTool.mjs";
-import { CreateAgent as CreateAgentDialog } from "./ui/dialogs/CreateAgent.mjs";
-import { RenderSelect                     } from "./utils/ui/RenderSelect.mjs";
-import { BootstrapConfig                  } from "./types/Config.mjs";
+import { Client                       } from "./ui/Client.mjs";
+import { CallTool  as CallToolPopover } from "./ui/popovers/CallTool.mjs";
+import { HireAgent as HireAgentDialog } from "./ui/dialogs/HireAgent.mjs";
+import { RenderSelect                 } from "./utils/ui/RenderSelect.mjs";
+import { BootstrapConfig              } from "./types/Config.mjs";
 
 const getAgentName = () => {
 
@@ -38,15 +38,33 @@ async function main() {
 
 			if (element !== null && button !== null) {
 
-				let dialog = new CreateAgentDialog(element, config);
+				let dialog = new HireAgentDialog(element, config);
 
-				dialog.OnConfirm = (data) => client.CreateAgent(data);
+				dialog.OnConfirm = (data) => {
+
+					let { result, errors } = client.HireAgent(data);
+
+					if (result === true && errors.length === 0) {
+
+						dialog.Reset();
+						dialog.Hide();
+
+					} else {
+
+						if (errors.length > 0) {
+							dialog.Error(errors);
+						}
+
+					}
+
+				};
+
 				button.onclick = () => dialog.Show();
 				button.removeAttribute("disabled");
 
 			}
 
-		})(document.querySelector("dialog#create-agent"), document.querySelector("header button[data-action=\"create-agent\"]"));
+		})(document.querySelector("dialog#hire-agent"), document.querySelector("header button[data-action=\"hire-agent\"]"));
 
 		((element) => {
 

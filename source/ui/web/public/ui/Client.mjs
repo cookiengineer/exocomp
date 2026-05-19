@@ -73,6 +73,68 @@ Client.prototype = {
 
 	},
 
+	HireAgent: function(data) {
+
+		let result = false;
+		let errors = [];
+
+		let name    = (data["name"]    || "").trim();
+		let agent   = (data["agent"]   || "").trim();
+		let sandbox = (data["sandbox"] || "").trim();
+		let prompt  = (data["prompt"]  || "").trim();
+
+		if (name != "") {
+
+			let tmp = this.Session.GetAgent(name);
+			if (tmp !== null) {
+				errors.push(new Error("Invalid Agent Name, must be a unique Pseudonym."));
+			}
+
+		} else {
+			errors.push(new Error("Invalid Agent Name, must be a unique Pseudonym."));
+		}
+
+		if (agent == "") {
+			errors.push(new Error("Invalid Agent Type."));
+		}
+
+		if (sandbox != "" && sandbox.startsWith("./")) {
+			// Valid
+		} else {
+			errors.push(new Error("Invalid Agent Sandbox, must start with \"./path/to/sandbox\""));
+		}
+
+		if (prompt != "") {
+			// Valid
+		} else {
+			errors.push(new Error("Invalid Agent Prompt, must not be empty."));
+		}
+
+		if (errors.length === 0) {
+
+			this.CallTool("agents.Hire", "Hire", {
+				"name":    name,
+				"agent":   agent,
+				"sandbox": sandbox,
+				"prompt":  prompt,
+			});
+
+			return {
+				result: true,
+				errors: [],
+			};
+
+		} else {
+
+			return {
+				result: false,
+				errors: errors,
+			};
+
+		}
+
+	},
+
 	Init: function() {
 
 		if (this.Session !== null) {

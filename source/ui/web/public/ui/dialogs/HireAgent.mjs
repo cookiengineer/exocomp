@@ -1,30 +1,45 @@
 
 import { RenderSelect } from "../../utils/ui/RenderSelect.mjs";
 
-export const CreateAgent = function(element, config) {
+export const HireAgent = function(element, config) {
 
 	this.Config   = config;
 	this.Element  = element;
 	this.elements = {
+		"name":    element.querySelector("input[data-name=\"name\"]"),
 		"agent":   element.querySelector("select[data-name=\"agent\"]"),
-		"model":   element.querySelector("select[data-name=\"model\"]"),
-		"prompt":  element.querySelector("input[data-name=\"prompt\"]"),
 		"sandbox": element.querySelector("input[data-name=\"sandbox\"]"),
+		"prompt":  element.querySelector("textarea[data-name=\"prompt\"]"),
+		"errors":  element.querySelector("div[data-name=\"errors\"]"),
 	};
 
 	this.OnConfirm = (data) => {};
 	this.OnCancel  = (data) => {};
 
 	this.options = {
-		"agent": [ "planner", "architect", "coder", "pentester", "tester" ],
-		"model": [ "qwen3-coder:30b", "gemma4:31b" ],
+		"agent": [ "planner", "architect", "coder", "pentester", "tester" ]
 	};
 
 	this.Init();
 
 };
 
-CreateAgent.prototype = {
+HireAgent.prototype = {
+
+	Error: function(errors) {
+
+		let element = this.elements["errors"] || null;
+		if (element !== null) {
+
+			let items = errors.map((err) => {
+				return "<b>" + err.toString() + "</b>";
+			});
+
+			element.innerHTML = items.join("");
+
+		}
+
+	},
 
 	Hide: function() {
 
@@ -50,11 +65,21 @@ CreateAgent.prototype = {
 				confirm.onclick = () => {
 
 					let data = {
+						"name":    "",
 						"agent":   "planner",
-						"model":   "qwen3-coder:30b",
-						"prompt":  "",
-						"sandbox": ""
+						"sandbox": "",
+						"prompt":  ""
 					};
+
+					let name = this.elements["name"] || null;
+					if (name !== null) {
+
+						let tmp = name.value.trim();
+						if (tmp !== "") {
+							data["name"] = tmp;
+						}
+
+					}
 
 					let agent = this.elements["agent"] || null;
 					if (agent !== null) {
@@ -62,16 +87,6 @@ CreateAgent.prototype = {
 						let tmp = agent.value.trim();
 						if (tmp !== "") {
 							data["agent"] = tmp;
-						}
-
-					}
-
-					let model = this.elements["model"] || null;
-					if (model !== null) {
-
-						let tmp = model.value.trim();
-						if (tmp !== "") {
-							data["model"] = tmp;
 						}
 
 					}
@@ -110,11 +125,6 @@ CreateAgent.prototype = {
 						agent.selectedIndex = 0;
 					}
 
-					let model = this.elements["model"] || null;
-					if (model !== null) {
-						model.selectedIndex = 0;
-					}
-
 					let prompt = this.elements["prompt"] || null;
 					if (prompt !== null) {
 						prompt.value = "";
@@ -143,6 +153,30 @@ CreateAgent.prototype = {
 		}
 
 		return false;
+
+	},
+
+	Reset: function() {
+
+		let name = this.elements["name"] || null;
+		if (name !== null) {
+			name.value = "";
+		}
+
+		let agent = this.elements["agent"] || null;
+		if (agent !== null) {
+			agent.selectedIndex = 0;
+		}
+
+		let sandbox = this.elements["sandbox"] || null;
+		if (sandbox !== null) {
+			sandbox.value = "";
+		}
+
+		let prompt = this.elements["prompt"] || null;
+		if (prompt !== null) {
+			prompt.value = "";
+		}
 
 	},
 
@@ -181,33 +215,6 @@ CreateAgent.prototype = {
 				let element = this.elements["agent"];
 				if (element !== null) {
 					RenderSelect(element, this.options["agent"]);
-				}
-
-			}
-
-		});
-
-		fetch(this.Config.ResolveAPI("/api/parameters/models"), {
-			method: "GET"
-		}).then((response) => {
-			return response.json();
-		}).then((models) => {
-
-			if (Object.prototype.toString.call(models) === "[object Array]") {
-
-				models.forEach((model) => {
-
-					if (this.options["model"].includes(model) === false) {
-						this.options["model"].push(model);
-					}
-
-				});
-
-				this.options["model"] = this.options["model"].sort();
-
-				let element = this.elements["model"];
-				if (element !== null) {
-					RenderSelect(element, this.options["model"]);
 				}
 
 			}

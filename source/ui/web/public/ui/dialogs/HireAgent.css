@@ -1,0 +1,17 @@
+
+dialog#hire-agent {
+}
+
+dialog#hire-agent div[data-name="errors"] b {
+	display: block;
+	margin: 8px 0px;
+	padding: 2px 4px;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-style: normal;
+	font-weight: normal;
+	color: #ff3333;
+	background: #303030;
+	border: 1px solid #ff3333;
+	border-radius: 4px;
+}
