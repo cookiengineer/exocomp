@@ -20,6 +20,6 @@ type ToolFunctionParameters struct {
 type ToolFunctionParameterProperty struct {
 	Type        string   `json:"type"`
 	Description string   `json:"description"`
-	Enum        []string `json:"enum"`
+	Enum        []string `json:"enum,omitempty"`
 }
 

@@ -566,6 +566,16 @@ func (session *Session) infer_chat_completions() error {
 		// },
 	}, "", "\t")
 
+	if session.Config.Debug == true {
+
+		var tmp1 interface{}
+		json.Unmarshal(request_payload, &tmp1)
+		tmp2, _ := json.MarshalIndent(tmp1, "", "\t")
+
+		os.WriteFile(session.Config.Sandbox + "/.exocomp-request.json", tmp2, 0666)
+
+	}
+
 	if err0 == nil {
 
 		response, err1 := session.client.Post(
@@ -574,31 +584,21 @@ func (session *Session) infer_chat_completions() error {
 			bytes.NewReader(request_payload),
 		)
 
-		if session.Config.Debug == true {
-
-			var tmp1 interface{}
-			json.Unmarshal(request_payload, &tmp1)
-			tmp2, _ := json.MarshalIndent(tmp1, "", "\t")
-
-			os.WriteFile(session.Config.Sandbox + "/.exocomp-request.json", tmp2, 0666)
-
-		}
-
 		if err1 == nil && response.StatusCode == 200 {
 
 			response_payload, err2 := io.ReadAll(response.Body)
 
-			if session.Config.Debug == true {
-
-				var tmp1 interface{}
-				json.Unmarshal(response_payload, &tmp1)
-				tmp2, _ := json.MarshalIndent(tmp1, "", "\t")
-
-				os.WriteFile(session.Config.Sandbox + "/.exocomp-response.json", tmp2, 0666)
-
-			}
-
 			if err2 == nil {
+
+				if session.Config.Debug == true {
+
+					var tmp1 interface{}
+					json.Unmarshal(response_payload, &tmp1)
+					tmp2, _ := json.MarshalIndent(tmp1, "", "\t")
+
+					os.WriteFile(session.Config.Sandbox + "/.exocomp-response.json", tmp2, 0666)
+
+				}
 
 				var response schemas.ChatResponse
 
