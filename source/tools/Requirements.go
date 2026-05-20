@@ -539,75 +539,65 @@ func (tool *Requirements) Search(path string, symbol string) (string, error) {
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		search_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
 			readRequirements(tool)
 
-			if symbol != "" {
+			lines := make([]string, 0)
 
-				lines  := make([]string, 0)
-				_, ok1 := tool.contents[internal_path]
+			for internal_path, specifications := range tool.contents {
 
-				if ok1 == true {
+				if strings.HasPrefix(internal_path, search_path) {
 
-					specification, ok2 := tool.contents[internal_path][symbol]
+					for internal_symbol, specification := range specifications {
 
-					if ok2 == true {
+						if symbol != "" {
 
-						sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, specification.File)
+							matches_symbol := strings.Contains(strings.ToLower(internal_symbol), strings.ToLower(symbol))
 
-						if err3 == nil {
-							lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
+							if matches_symbol == true {
+
+								sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, specification.File)
+
+								if err3 == nil {
+									lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
+								}
+
+							}
+
+						} else if symbol == "" {
+
+							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, specification.File)
+
+							if err3 == nil {
+								lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
+							}
+
 						}
 
 					}
 
 				}
-
-				sort.Strings(lines)
-
-				result := make([]string, 0)
-				result = append(result, fmt.Sprintf("requirements.Search: %s#%s contains %d specifications.", path, symbol, len(lines)))
-
-				for l := 0; l < len(lines); l++ {
-					result = append(result, lines[l])
-				}
-
-				return strings.Join(result, "\n"), nil
-
-			} else {
-
-				lines               := make([]string, 0)
-				specifications, ok1 := tool.contents[internal_path]
-
-				if ok1 == true {
-
-					for _, specification := range specifications {
-
-						sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, specification.File)
-
-						if err3 == nil {
-							lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
-						}
-
-					}
-
-				}
-
-				sort.Strings(lines)
-
-				result := make([]string, 0)
-				result = append(result, fmt.Sprintf("requirements.Search: %s contains %d specifications.", path, len(lines)))
-
-				for l := 0; l < len(lines); l++ {
-					result = append(result, lines[l])
-				}
-
-				return strings.Join(result, "\n"), nil
 
 			}
+
+			sort.Strings(lines)
+
+			result := make([]string, 0)
+
+			if symbol != "" {
+				result = append(result, fmt.Sprintf("requirements.Search: %s#%s* contains %d specifications.", path, symbol, len(lines)))
+			} else {
+				result = append(result, fmt.Sprintf("requirements.Search: %s#* contains %d specifications.", path, len(lines)))
+			}
+
+			for l := 0; l < len(lines); l++ {
+				result = append(result, lines[l])
+			}
+
+			return strings.Join(result, "\n"), nil
 
 		} else {
 			return "", fmt.Errorf("requirements.Search: %s", err2.Error())

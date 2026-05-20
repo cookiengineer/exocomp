@@ -12,7 +12,6 @@
 ## Agents
 
 - [ ] Check the repos in described order to find better prompts
-- [ ] Web Pentester
 - [ ] Binary Reverse Engineer
 - [ ] Web Recon Analyst
 - [ ] Web Business Analyst
@@ -29,12 +28,6 @@
 - [ ] Implement correct llama.cpp templates for `gemma4:31b` (tool calls don't work)
 - [ ] Implement correct llama.cpp templates for `qwen3.6:35b-heretic` (tool calls don't work)
 
-## Agents
-
-- [ ] `redteamer` who writes malware and targets victim sandboxes
-- [ ] `blueteamer` who analyzes metrics and logs of victim sandboxes
-
-
 ## Tools
 
 - [ ] Implement unit tests for `tools/Agents`
@@ -45,7 +38,6 @@
 ## JSONL UI
 
 - [ ] Implement `agents` unit tests
-- [ ] Implement `agents.Inquire(name)` which should summarize the status reports by using a separate summarizer agent and return the result.
 
 ## Web UI
 

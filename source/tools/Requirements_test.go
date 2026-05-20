@@ -5,8 +5,6 @@ import "path/filepath"
 import "strings"
 import "testing"
 
-import "fmt"
-
 func TestRequirements_DefineFunc(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
@@ -276,7 +274,69 @@ func TestRequirements_Search(t *testing.T) {
 
 	if tool != nil {
 
-		fmt.Println("TODO: requirements.Search")
+		declaration1 := strings.Join([]string{
+			"type Data struct {",
+			"\tName string `json:\"name\"`",
+			"\tAge int `json:\"age\"`",
+			"\tAddress []string `json:\"address\"`",
+			"}",
+		}, "\n")
+
+		declaration2 := "func (data *structs.Data) Parse(specification *schemas.Input)"
+
+		_, err1 := tool.DefineFunc("./core/FirstFunction.go", "FirstFunction", "func FirstFunction(current int64, added int64) (string, error)", "The method needs to implement a fibonacci sequence.")
+		_, err2 := tool.DefineFunc("./parsers/Parser.go", "Parse", "func Parse(specification *structs.Specification, debug bool) *schemas.Result", "The method needs to implement a specification parser.")
+		_, err3 := tool.DefineFunc("./parsers/Parser.go", "ProcessData", "func ProcessData(specification *structs.Data)", "The method needs to implement a data processor.")
+		_, err4 := tool.DefineStruct("./structs/Data.go", "Data", declaration1, "The struct needs to implement a database entry for a person.")
+		_, err5 := tool.DefineFunc("./structs/Data.go", "Parse", declaration2, "The method needs to implement a schema parser.")
+
+		result1, err6 := tool.Search("./structs", "")
+		result2, err7 := tool.Search("./parsers/Parser.go", "")
+		result3, err8 := tool.Search("./parsers/Parser.go", "Process")
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if err4 != nil {
+			t.Errorf("Expected %v to be nil", err4)
+		}
+
+		if err5 != nil {
+			t.Errorf("Expected %v to be nil", err5)
+		}
+
+		if strings.HasPrefix(result1, "requirements.Search: ./structs#* contains 2 specifications.") == false {
+			t.Errorf("Expected %d requirement specifications for \"%s\"", 2, "./structs")
+		}
+
+		if err6 != nil {
+			t.Errorf("Expected %v to be nil", err6)
+		}
+
+		if strings.HasPrefix(result2, "requirements.Search: ./parsers/Parser.go#* contains 2 specifications.") == false {
+			t.Errorf("Expected %d requirement specifications for \"%s\"", 2, "./parsers/Parser.go")
+		}
+
+		if err7 != nil {
+			t.Errorf("Expected %v to be nil", err7)
+		}
+
+		if strings.HasPrefix(result3, "requirements.Search: ./parsers/Parser.go#Process* contains 1 specifications.") == false {
+			t.Errorf("Expected %d requirement specifications for \"%s\"", 1, "./parsers/Parser.go")
+		}
+
+		if err8 != nil {
+			t.Errorf("Expected %v to be nil", err8)
+		}
 
 	} else {
 		t.Errorf("Expected %v to be not nil", tool)
