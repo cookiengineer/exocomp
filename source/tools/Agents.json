@@ -42,7 +42,7 @@
 					},
 					"sandbox": {
 						"type": "string",
-						"description": "Relative path to the folder"
+						"description": "Relative path to the folder, set to \".\" to use the same sandbox"
 					},
 					"prompt": {
 						"type": "string",

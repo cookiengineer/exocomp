@@ -238,6 +238,10 @@ func (tool *Agents) Hire(name string, role string, sandbox string, prompt string
 
 	if ok == false {
 
+		if sandbox == "" || sandbox == "." {
+			sandbox = tool.Sandbox
+		}
+
 		resolved, err0 := resolveSandboxPath(tool.Sandbox, sandbox)
 
 		if err0 == nil {
