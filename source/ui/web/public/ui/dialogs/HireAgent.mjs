@@ -17,7 +17,7 @@ export const HireAgent = function(element, config) {
 	this.OnCancel  = (data) => {};
 
 	this.options = {
-		"role": [ "planner", "architect", "coder", "pentester", "tester" ]
+		"role": [ "architect", "coder", "tester" ]
 	};
 
 	this.Init();
@@ -206,11 +206,17 @@ HireAgent.prototype = {
 
 				roles.forEach((role) => {
 
-					if (this.options["role"].includes(role) === false) {
-						this.options["role"].push(role);
+					if (role !== "planner") {
+
+						if (this.options["role"].includes(role) === false) {
+							this.options["role"].push(role);
+						}
+
 					}
 
 				});
+
+				this.options["role"] = this.options["role"].sort();
 
 				let element = this.elements["role"];
 				if (element !== null) {
