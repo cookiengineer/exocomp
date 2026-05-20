@@ -287,6 +287,10 @@ Client.prototype = {
 
 					}
 
+				} else if (event.key === "Backspace" || event.key === "Delete") {
+
+					// Don't fire OnChange event
+
 				} else {
 
 					let prompt = (this.elements["prompt"].value || "").trim();
@@ -323,32 +327,63 @@ Client.prototype = {
 			let tool_command    = prompt.split(" ").shift();
 			let tool_parameters = prompt.split(" ").slice(1);
 
-			// TODO: Find next parameter that looks like suggestion.key
-			// Prompt example: /tool.Method key="value" key2="value2" key3=true key4=["array","of","strings"]
-			//
-			// TODO: Autocomplete: n... to name="
-			// TODO: Autocomplete: name="foo... to name="foo..." {suggestion.key}=
-			// TODO: Autocomplete: name=" to name={suggestion.value}
-			//
-			// TODO: If suggestion === null, that means only closing character is required
-			// Autocomplete: last_parameter="foobar... to last_parameter="foobar..."
-			//
-			// TODO: Use cursor selection in textarea to "select/mark ahead of current cursor"
-			// where the selection contains the suggestion, so it doesn't interrupt
-			// typing. Don't change the textarea's cursor position
+			let current_parameter = tool_parameters[tool_parameters.length - 1];
+			let next_suggestion   = "";
 
-			// TODO: Supported parameter types: "boolean", "number", "string"
-			// TODO: Supported parameter types: "array-of-booleans", "array-of-numbers", "array-of-strings"
-			// "number" allows both float numbers and integers
+			if (
+				suggestion.type == "array-of-booleans"
+				|| suggestion.type == "array-of-numbers"
+				|| suggestion.type == "array-of-strings"
+			) {
 
-			// suggestion is an object like this:
-			// values are always strings, already containing the prefix and suffix characters, e.g. [ and ] or " and "
-			// { key: "parameter_name", type: (see above for possible types), value: "\"example value\"", label: "name=\"example value\"" }
+				if (current_parameter.endsWith("=")) {
 
-			// Autocompletion should modify the this.elements["prompt"] element, which is a <textarea> element
+					next_suggestion = suggestion.value;
 
-			console.log("Prompt:", tool_command, tool_parameters);
-			console.log("Suggestion:", suggestion);
+				} else if (!current_parameter.includes("=")) {
+
+					if (suggestion.key.startsWith(current_parameter) && current_parameter.length < suggestion.key.length) {
+						next_suggestion = suggestion.key.substr(current_parameter.length);
+					} else if (current_parameter == suggestion.key) {
+						next_suggestion = "=[";
+					}
+
+				}
+
+			} else if (
+				suggestion.type == "boolean"
+				|| suggestion.type == "number"
+				|| suggestion.type == "string"
+			) {
+
+				if (current_parameter.endsWith("=")) {
+
+					next_suggestion = suggestion.value;
+
+				} else if (!current_parameter.includes("=")) {
+
+					if (suggestion.key.startsWith(current_parameter) && current_parameter.length < suggestion.key.length) {
+						next_suggestion = suggestion.key.substr(current_parameter.length);
+					} else if (current_parameter === suggestion.key) {
+						next_suggestion = "=";
+					}
+
+				}
+
+			} else {
+				console.error("Unsupported suggestion", suggestion);
+			}
+
+			if (next_suggestion !== "") {
+
+				let new_prompt = prompt + "" + next_suggestion;
+
+				if (this.elements["prompt"] !== null) {
+					this.elements["prompt"].value = new_prompt;
+					this.elements["prompt"].setSelectionRange(prompt.length, prompt.length + next_suggestion.length);
+				}
+
+			}
 
 		}
 

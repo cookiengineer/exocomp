@@ -49,8 +49,6 @@
 
 ## Web UI
 
-- [ ] Implement "auto-complete" for suggestions with "[Tab]" leading to autocomplete of next
-      parameter name. Set cursor on auto complete to `parameter-name="<here>"`
 - [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `nav` element to avoid setting `innerHTML`
 - [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `main` element to avoid setting `innerHTML`
 
