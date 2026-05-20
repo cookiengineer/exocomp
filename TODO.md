@@ -1,6 +1,12 @@
 
 # TODO
 
+## Parsers
+
+- [ ] Redefine all `agents/...{go,txt}` in `agents/<name>.yml`
+- [ ] Implement a parser for yaml to `*types.Agent`
+- [ ] Allow custom agents to be defined inside the `{playground}/agents` folder
+
 ## Tools
 
 - [ ] Implement `tools/Symbols` which uses functions, classes, symbols.
