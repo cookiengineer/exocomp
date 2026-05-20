@@ -3,7 +3,7 @@
 		"type": "function",
 		"function": {
 			"name": "agents.List",
-			"description": "List all currently working contractor agents.",
+			"description": "List all contractor agents.",
 			"parameters": {
 				"type": "object",
 				"properties": {},
@@ -23,10 +23,10 @@
 						"type": "string",
 						"description": "Contractor agent's unique pseudonym name"
 					},
-					"agent": {
+					"role": {
 						"type": "string",
-						"description": "Contractor agent's type",
-						"enum": ["architect", "coder", "pentester", "researcher", "tester"]
+						"description": "Contractor agent's role",
+						"enum": ["architect", "coder", "researcher", "summarizer", "tester"]
 					},
 					"sandbox": {
 						"type": "string",
@@ -37,7 +37,7 @@
 						"description": "Specific task instructions, agent will quit with a report after completion"
 					}
 				},
-				"required": ["name", "agent", "sandbox", "prompt"]
+				"required": ["name", "role", "sandbox", "prompt"]
 			}
 		}
 	},

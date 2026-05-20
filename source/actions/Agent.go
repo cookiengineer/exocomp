@@ -9,7 +9,7 @@ import "strings"
 func Agent(agent *types.Agent, config *types.Config) {
 
 	fmt.Fprintf(os.Stderr, "[config]:\n")
-	fmt.Fprintf(os.Stderr, "| Agent:    %s | %s | %s | %.2f\n", agent.Name, agent.Type, agent.Model, agent.Temperature)
+	fmt.Fprintf(os.Stderr, "| Agent:    %s | %s | %s | %.2f\n", agent.Name, agent.Role, agent.Model, agent.Temperature)
 	fmt.Fprintf(os.Stderr, "| Sandbox:  %s\n", config.Sandbox)
 	fmt.Fprintf(os.Stderr, "| Tools:    %s\n", strings.Join(agent.AllowedTools, ", "))
 	fmt.Fprintf(os.Stderr, "| URL:      %s\n", config.URL.String())

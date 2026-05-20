@@ -35,7 +35,7 @@ func main() {
 
 		config.Update(
 			agent.Name,
-			agent.Type,
+			agent.Role,
 			agent.Model,
 			config.Prompt,
 			agent.Temperature,

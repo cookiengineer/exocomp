@@ -7,7 +7,7 @@ export const HireAgent = function(element, config) {
 	this.Element  = element;
 	this.elements = {
 		"name":    element.querySelector("input[data-name=\"name\"]"),
-		"agent":   element.querySelector("select[data-name=\"agent\"]"),
+		"role":    element.querySelector("select[data-name=\"role\"]"),
 		"sandbox": element.querySelector("input[data-name=\"sandbox\"]"),
 		"prompt":  element.querySelector("textarea[data-name=\"prompt\"]"),
 		"errors":  element.querySelector("div[data-name=\"errors\"]"),
@@ -17,7 +17,7 @@ export const HireAgent = function(element, config) {
 	this.OnCancel  = (data) => {};
 
 	this.options = {
-		"agent": [ "planner", "architect", "coder", "pentester", "tester" ]
+		"role": [ "planner", "architect", "coder", "pentester", "tester" ]
 	};
 
 	this.Init();
@@ -66,7 +66,7 @@ HireAgent.prototype = {
 
 					let data = {
 						"name":    "",
-						"agent":   "planner",
+						"role":    "planner",
 						"sandbox": "",
 						"prompt":  ""
 					};
@@ -81,12 +81,12 @@ HireAgent.prototype = {
 
 					}
 
-					let agent = this.elements["agent"] || null;
-					if (agent !== null) {
+					let roles = this.elements["role"] || null;
+					if (roles !== null) {
 
-						let tmp = agent.value.trim();
+						let tmp = roles.value.trim();
 						if (tmp !== "") {
-							data["agent"] = tmp;
+							data["role"] = tmp;
 						}
 
 					}
@@ -120,9 +120,9 @@ HireAgent.prototype = {
 			if (cancel !== null) {
 				cancel.onclick = () => {
 
-					let agent = this.elements["agent"] || null;
-					if (agent !== null) {
-						agent.selectedIndex = 0;
+					let roles = this.elements["role"] || null;
+					if (roles !== null) {
+						roles.selectedIndex = 0;
 					}
 
 					let prompt = this.elements["prompt"] || null;
@@ -163,9 +163,9 @@ HireAgent.prototype = {
 			name.value = "";
 		}
 
-		let agent = this.elements["agent"] || null;
-		if (agent !== null) {
-			agent.selectedIndex = 0;
+		let roles = this.elements["role"] || null;
+		if (roles !== null) {
+			roles.selectedIndex = 0;
 		}
 
 		let sandbox = this.elements["sandbox"] || null;
@@ -196,25 +196,25 @@ HireAgent.prototype = {
 
 	UpdateParameters: async function() {
 
-		fetch(this.Config.ResolveAPI("/api/parameters/agents"), {
+		fetch(this.Config.ResolveAPI("/api/parameters/roles"), {
 			method: "GET"
 		}).then((response) => {
 			return response.json();
-		}).then((agents) => {
+		}).then((roles) => {
 
-			if (Object.prototype.toString.call(agents) === "[object Array]") {
+			if (Object.prototype.toString.call(roles) === "[object Array]") {
 
-				agents.forEach((agent) => {
+				roles.forEach((role) => {
 
-					if (this.options["agent"].includes(agent) === false) {
-						this.options["agent"].push(agent);
+					if (this.options["role"].includes(role) === false) {
+						this.options["role"].push(role);
 					}
 
 				});
 
-				let element = this.elements["agent"];
+				let element = this.elements["role"];
 				if (element !== null) {
-					RenderSelect(element, this.options["agent"]);
+					RenderSelect(element, this.options["role"]);
 				}
 
 			}

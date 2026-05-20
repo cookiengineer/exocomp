@@ -8,19 +8,19 @@ import "net/http"
 import "sort"
 import "strconv"
 
-func Agents(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Roles(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 
-		types := make([]string, 0)
+		options := make([]string, 0)
 
-		for _, typ := range agents.Types {
-			types = append(types, typ)
+		for role, _ := range agents.Roles {
+			options = append(options, role)
 		}
 
-		sort.Strings(types)
+		sort.Strings(options)
 
-		response_payload, err1 := json.MarshalIndent(types, "", "\t")
+		response_payload, err1 := json.MarshalIndent(options, "", "\t")
 
 		if err1 == nil {
 

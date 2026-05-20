@@ -2,13 +2,13 @@ package agent
 
 import "exocomp/agents"
 
-func IsType(raw string) bool {
+func IsRole(search string) bool {
 
 	found := false
 
-	for _, typ := range agents.Types {
+	for role := range agents.Roles {
 
-		if typ == raw {
+		if role == search {
 			found = true
 			break
 		}

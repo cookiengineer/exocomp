@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/agents"
 import "exocomp/schemas"
 import "exocomp/types"
 import _ "embed"
@@ -14,6 +15,24 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 	for _, schema := range AgentsSchema {
 
 		if slices.Contains(allowed_tools, schema.Function.Name) {
+
+			// XXX: Make all agent roles available in schema
+			if schema.Function.Name == "agents.Hire" {
+
+				roles := make([]string, 0)
+
+				for role, _ := range agents.Roles {
+					roles = append(roles, role)
+				}
+
+				property, ok := schema.Function.Parameters.Properties["role"]
+
+				if ok == true {
+					property.Enum = roles
+					schema.Function.Parameters.Properties["role"] = property
+				}
+
+			}
 
 			_, ok1 := result_schemas["agents"]
 

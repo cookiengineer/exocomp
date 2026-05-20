@@ -11,7 +11,7 @@ import "strings"
 func ParseConfig(arguments []string) *types.Config {
 
 	name          := ""
-	agent         := "planner"
+	role          := "planner"
 	debug         := false
 	model         := "qwen3-coder:30b"
 	playground, _ := os.Getwd()
@@ -43,10 +43,10 @@ func ParseConfig(arguments []string) *types.Config {
 						name = utils_fmt.FormatAgentName(flag[1])
 					}
 
-				case "agent":
+				case "role":
 
-					if utils_agent.IsType(flag[1]) {
-						agent = strings.TrimSpace(flag[1])
+					if utils_agent.IsRole(flag[1]) {
+						role = utils_fmt.FormatAgentRole(flag[1])
 					}
 
 				case "model":
@@ -126,7 +126,7 @@ func ParseConfig(arguments []string) *types.Config {
 
 		return types.NewConfig(
 			name,
-			agent,
+			role,
 			model,
 			prompt,
 			temperature,

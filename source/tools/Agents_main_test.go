@@ -13,10 +13,6 @@ import "strings"
 import "testing"
 import "time"
 
-type Pipe interface {
-	Read([]byte) (int, error)
-}
-
 func getToolsPath() string {
 
 	_, filename, _, ok := runtime.Caller(0)

@@ -5,17 +5,17 @@ import "exocomp/types"
 import _ "embed"
 import "strings"
 
-//go:embed Coder.txt
-var coder_prompt []byte
+//go:embed WebScanner.txt
+var webscanner_prompt []byte
 
-func NewCoder(config *types.Config) *types.Agent {
+func NewWebScanner(config *types.Config) *types.Agent {
 
 	name  := strings.TrimSpace(config.Name)
 	model := strings.TrimSpace(config.Model)
 	temp  := config.Temperature
 
 	if name == "" {
-		name = "Peanut Coder"
+		name = "Peanut Webscanner"
 	}
 
 	if model == "" {
@@ -23,10 +23,10 @@ func NewCoder(config *types.Config) *types.Agent {
 	}
 
 	if temp == 0.0 {
-		temp = 0.3
+		temp = 0.5
 	}
 
-	prompt   := renderPrompt(name, string(coder_prompt))
+	prompt   := renderPrompt(name, string(architect_prompt))
 	messages := make([]*schemas.Message, 0)
 	messages = append(messages, &schemas.Message{
 		Role:    "system",
@@ -35,38 +35,33 @@ func NewCoder(config *types.Config) *types.Agent {
 
 	return &types.Agent{
 		Name:            name,
-		Role:            "coder",
+		Role:            "webscanner",
 		Model:           model,
 		Prompt:          prompt,
 		Temperature:     temp,
 		Messages:        messages,
-		AllowedPrograms: []string{"go", "gofmt", "gopls"},
+		AllowedPrograms: []string{
+			"curl",
+			"amass",
+			"asnmap",
+			"go",
+			"httpx",
+			"naabu",
+			"nuclei",
+			"subfinder",
+		},
 		AllowedTools:    []string{
-			// No agents.List
-			// No agents.Hire
-			// No agents.Fire
+			// No agents hiring
 			"agents.Quit",
-			// No bugs.Add
-			"bugs.Fix",
-			"bugs.List",
-			"bugs.Search",
-			"changelog.Add",
-			"changelog.Change",
-			"changelog.Deprecate",
-			"changelog.Fix",
-			"changelog.Remove",
-			"changelog.Search",
+			// No bugs
+			// No changelog
 			"files.List",
 			"files.Read",
 			"files.Stat",
 			"files.Write",
 			"programs.List",
 			"programs.Execute",
-			// No requirements.DefineFunc
-			// No requirements.DefineStruct
-			// No requirements.DefineTest
-			"requirements.List",
-			"requirements.Search",
+			// No requirements
 		},
 		Sandbox: config.Sandbox,
 	}

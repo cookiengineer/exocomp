@@ -15,7 +15,7 @@ import "strings"
 
 type Config struct {
 	Name        string       `json:"name"`
-	Agent       string       `json:"agent"`
+	Role        string       `json:"role"`
 	Model       string       `json:"model"`
 	Prompt      string       `json:"prompt"`
 	Temperature float64      `json:"temperature"`
@@ -25,10 +25,10 @@ type Config struct {
 	Debug       bool         `json:"debug"`
 }
 
-func NewConfig(name string, agent string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, debug bool) *Config {
+func NewConfig(name string, role string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, debug bool) *Config {
 
 	name   = strings.TrimSpace(name)
-	agent  = strings.TrimSpace(agent)
+	role   = strings.TrimSpace(role)
 	model  = strings.TrimSpace(model)
 	prompt = utils_fmt.FormatSingleLine(prompt)
 
@@ -75,7 +75,7 @@ func NewConfig(name string, agent string, model string, prompt string, temperatu
 
 	return &Config{
 		Name:        name,
-		Agent:       agent,
+		Role:        role,
 		Model:       model,
 		Prompt:      prompt,
 		Temperature: temperature,
@@ -160,7 +160,7 @@ func (config *Config) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(struct {
 		Name        string  `json:"name"`
-		Agent       string  `json:"agent"`
+		Role        string  `json:"role"`
 		Model       string  `json:"model"`
 		Prompt      string  `json:"prompt"`
 		Temperature float64 `json:"temperature"`
@@ -170,7 +170,7 @@ func (config *Config) MarshalJSON() ([]byte, error) {
 		Debug       bool    `json:"debug"`
 	}{
 		Name:        config.Name,
-		Agent:       config.Agent,
+		Role:        config.Role,
 		Model:       config.Model,
 		Prompt:      config.Prompt,
 		Temperature: config.Temperature,
@@ -186,7 +186,7 @@ func (config *Config) UnmarshalJSON(data []byte) error {
 
 	var tmp struct {
 		Name        string  `json:"name"`
-		Agent       string  `json:"agent"`
+		Role        string  `json:"role"`
 		Model       string  `json:"model"`
 		Prompt      string  `json:"prompt"`
 		Temperature float64 `json:"temperature"`
@@ -201,7 +201,7 @@ func (config *Config) UnmarshalJSON(data []byte) error {
 	if err0 == nil {
 
 		config.Name        = tmp.Name
-		config.Agent       = tmp.Agent
+		config.Role        = tmp.Role
 		config.Model       = tmp.Model
 		config.Prompt      = tmp.Prompt
 		config.Temperature = tmp.Temperature
@@ -223,7 +223,7 @@ func (config *Config) UnmarshalJSON(data []byte) error {
 
 }
 
-func (config *Config) Update(name string, agent string, model string, prompt string, temperature float64) {
+func (config *Config) Update(name string, role string, model string, prompt string, temperature float64) {
 
 	prompt = utils_fmt.FormatSingleLine(prompt)
 
@@ -234,7 +234,7 @@ func (config *Config) Update(name string, agent string, model string, prompt str
 	}
 
 	config.Name        = name
-	config.Agent       = agent
+	config.Role        = role
 	config.Model       = model
 	config.Prompt      = prompt
 	config.Temperature = temperature

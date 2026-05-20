@@ -35,7 +35,7 @@ func NewPlanner(config *types.Config) *types.Agent {
 
 	return &types.Agent{
 		Name:            name,
-		Type:            "planner",
+		Role:            "planner",
 		Model:           model,
 		Prompt:          prompt,
 		Temperature:     temp,

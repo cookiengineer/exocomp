@@ -50,7 +50,7 @@ func AgentConfig(session *types.Session, request *http.Request, response http.Re
 
 						response_payload, err1 := json.MarshalIndent(&types.Config{
 							Name:        agent.Name,
-							Agent:       agent.Type,
+							Role:        agent.Role,
 							Model:       agent.Model,
 							Prompt:      agent.Prompt,
 							Temperature: agent.Temperature,

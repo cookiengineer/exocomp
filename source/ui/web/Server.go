@@ -8,7 +8,6 @@ import "embed"
 import "net/http"
 import "io/fs"
 import net_url "net/url"
-import "os"
 
 //go:embed public/*
 var embed_fs embed.FS
@@ -50,30 +49,18 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 
 func (server *Server) Init() bool {
 
-	if server.Session.Config.Debug == true {
+	fsys, err0 := fs.Sub(embed_fs, "public")
 
-		dir_fs    := os.DirFS("ui/web")
-		fsys, err := fs.Sub(dir_fs, "public")
-
-		if err == nil {
-			fsrv := http.FileServer(http.FS(fsys))
-			http.Handle("/", fsrv)
-		}
-
+	if err0 == nil {
+		fsrv := http.FileServer(http.FS(fsys))
+		http.Handle("/", fsrv)
 	} else {
-
-		fsys, err := fs.Sub(embed_fs, "public")
-
-		if err == nil {
-			fsrv := http.FileServer(http.FS(fsys))
-			http.Handle("/", fsrv)
-		}
-
+		panic(err0)
 	}
 
 	// CLI Parameters
-	http.HandleFunc("/api/parameters/agents", func(response http.ResponseWriter, request *http.Request) {
-		routes_parameters.Agents(server.Session, request, response)
+	http.HandleFunc("/api/parameters/roles", func(response http.ResponseWriter, request *http.Request) {
+		routes_parameters.Roles(server.Session, request, response)
 	})
 
 	http.HandleFunc("/api/parameters/models", func(response http.ResponseWriter, request *http.Request) {

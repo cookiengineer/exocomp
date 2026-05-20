@@ -34,19 +34,23 @@ Ethical subroutines sold separately.
 
 ### Agents
 
-Exocomp uses multiple Agent [Types](./agents/Types.go):
+Exocomp uses multiple [Agent Roles](./agents/Roles.go):
 
-| Role                                 | Lifecycle | Default Model     | Description                                                   |
-|:-------------------------------------|:---------:|:-----------------:|:--------------------------------------------------------------|
-| [Planner](./agents/Planner.go)       | long      | `gemma4:31b`      | writes with humans, contracts agents and plans project phases |
-| [Architect](./agents/Architect.go)   | short     | `qwen3-coder:30b` | defines `specifications`                                      |
-| [Coder](./agents/Coder.go)           | short     | `qwen3-coder:30b` | implements features, reads `specifications` and `bugs`        |
-| [Summarizer](./agents/Summarizer.go) | short     | `qwen3-coder:30b` | reads long texts and summarizes them                          |
-| [Pentester](./agents/Pentester.go)   | short     | `qwen3-coder:30b` | reports `findings` and discovers `vulnerabilities`            |
-| Researcher                           | short     | `qwen3-coder:30b` | reads websites, API documentation, and reports to `Architect` |
-| Reverser                             | short     | `qwen3-coder:30b` | translates binaries or code into Go/CGo code                  |
-| [Tester](./agents/Tester.go)         | short     | `qwen3-coder:30b` | implements unit tests, writes reports into `bugs`             |
-| ThreatHunter                         | short     | `qwen3-coder:30b` | researches `weaknesses` and `vulnerabilities`                 |
+| Role                                 | Lifecycle | Default Model     | Description                                                 |
+|:-------------------------------------|:---------:|:-----------------:|:------------------------------------------------------------|
+| [Planner](./agents/Planner.go)       | long      | `gemma4:31b`      | writes with humans and plans project phases                 |
+| [Architect](./agents/Architect.go)   | short     | `qwen3-coder:30b` | defines software specifications                             |
+| [Coder](./agents/Coder.go)           | short     | `qwen3-coder:30b` | implements specifications into code                         |
+| Researcher                           | short     | `qwen3-coder:30b` | reads websites and API documentation                        |
+| [Summarizer](./agents/Summarizer.go) | short     | `qwen3-coder:30b` | reads long texts and summarizes them                        |
+| [Tester](./agents/Tester.go)         | short     | `qwen3-coder:30b` | implements unit tests, writes bug reports                   |
+
+| Role                                 | Lifecycle | Default Model     | Description                                                 |
+|:-------------------------------------|:---------:|:-----------------:|:------------------------------------------------------------|
+| [Exploiter](./agents/Exploiter.go)   | short     | `qwen3-coder:30b` | implements exploits in CGo                                  |
+| Reverser                             | short     | `qwen3-coder:30b` | translates binaries or code into Go/CGo code                |
+| ThreatHunter                         | short     | `qwen3-coder:30b` | researches weaknesses and vulnerabilities in infrastructure |
+| [WebScanner](./agents/WebScanner.go) | short     | `qwen3-coder:30b` | discovers vulnerabilities in web applications               |
 
 Exocomp uses Tools to interact with the sandbox. Check the implementations to
 see which tools are allowed for which Agent role.

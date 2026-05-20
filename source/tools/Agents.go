@@ -56,18 +56,18 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 	} else if method == "Hire" {
 
 		name,    ok1 := arguments["name"].(string)
-		agent,   ok2 := arguments["agent"].(string)
+		role,    ok2 := arguments["role"].(string)
 		sandbox, ok3 := arguments["sandbox"].(string)
 		prompt,  ok4 := arguments["prompt"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
-			return tool.Hire(utils_fmt.FormatAgentName(name), agent, sandbox, utils_fmt.FormatMultiLine(prompt))
+			return tool.Hire(utils_fmt.FormatAgentName(name), utils_fmt.FormatAgentRole(role), sandbox, utils_fmt.FormatMultiLine(prompt))
 		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
 		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"sandbox\" is not a string.")
 		} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"agent\" is not a string.")
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" is not a string.")
 		} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		} else {
@@ -183,7 +183,7 @@ func (tool *Agents) List() (string, error) {
 				status = "finished"
 			}
 
-			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: %s", agent.Name, agent.Type, status))
+			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: %s", agent.Name, agent.Role, status))
 
 		}
 		tool.Mutex.Unlock()
@@ -205,7 +205,7 @@ func (tool *Agents) List() (string, error) {
 
 }
 
-func (tool *Agents) Hire(name string, agent string, sandbox string, prompt string) (string, error) {
+func (tool *Agents) Hire(name string, role string, sandbox string, prompt string) (string, error) {
 
 	tool.Mutex.Lock()
 	_, ok := tool.contents[name]
@@ -233,8 +233,8 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 
 			exe, _ := os.Executable()
 
-			if os.Getenv("EXOCOMP_FOR_AGENTS") != "" {
-				exe = os.Getenv("EXOCOMP_FOR_AGENTS")
+			if os.Getenv("EXOCOMP_AGENT") != "" {
+				exe = os.Getenv("EXOCOMP_AGENT")
 			}
 
 			// NOTE: child's playground is parent's sandbox
@@ -244,10 +244,10 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 				exe,
 				"agent",
 				fmt.Sprintf("--name=\"%s\"", name),
-				fmt.Sprintf("--agent=\"%s\"", agent),
+				fmt.Sprintf("--role=\"%s\"", role),
 				fmt.Sprintf("--model=\"%s\"", tool.Model),
 				fmt.Sprintf("--prompt=\"%s\"", prompt),
-				// --temperature set by agent type
+				// --temperature set by agent role
 				fmt.Sprintf("--playground=\"%s\"", tool.Sandbox),
 				fmt.Sprintf("--sandbox=\"%s\"", resolved),
 				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
@@ -271,7 +271,7 @@ func (tool *Agents) Hire(name string, agent string, sandbox string, prompt strin
 					tool.Mutex.Lock()
 					tool.contents[name] = agents.NewAgent(types.NewConfig(
 						name,
-						agent,
+						role,
 						tool.Model,
 						prompt,
 						0.0, // Don't change temperature
@@ -488,18 +488,18 @@ func (tool *Agents) Inquire(name string) (string, error) {
 
 			exe, _ := os.Executable()
 
-			if os.Getenv("EXOCOMP_FOR_AGENTS") != "" {
-				exe = os.Getenv("EXOCOMP_FOR_AGENTS")
+			if os.Getenv("EXOCOMP_AGENT") != "" {
+				exe = os.Getenv("EXOCOMP_AGENT")
 			}
 
 			cmd := exec.Command(
 				exe,
 				"agent",
 				fmt.Sprintf("--name=\"%s\"", "Summarizer"),
-				fmt.Sprintf("--agent=\"%s\"", "summarizer"),
+				fmt.Sprintf("--role=\"%s\"", "summarizer"),
 				fmt.Sprintf("--model=\"%s\"", tool.Model),
 				fmt.Sprintf("--prompt=\"%s\"", prompt),
-				// --temperature set by agent type
+				// --temperature set by agent role
 				// --playground set by cmd.Dir
 				// --sandbox set by cmd.Dir
 				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),

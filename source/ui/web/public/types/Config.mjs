@@ -39,7 +39,7 @@ export const BootstrapConfig = (agent) => {
 export const Config = function() {
 
 	this.Name        = "";
-	this.Agent       = "";
+	this.Role        = "";
 	this.Model       = "";
 	this.Prompt      = "";
 	this.Temperature = 0.0;
@@ -55,7 +55,7 @@ Config.from = (data) => {
 	let config = new Config();
 
 	config.Name        = data["name"]        || "";
-	config.Agent       = data["agent"]       || "";
+	config.Role        = data["role"]        || "";
 	config.Model       = data["model"]       || "";
 	config.Prompt      = data["prompt"]      || "";
 	config.Temperature = data["temperature"] || 0.0;

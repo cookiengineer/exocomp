@@ -2,7 +2,7 @@
 export const Agent = function() {
 
 	this.Name         = "";
-	this.Type         = "";
+	this.Role         = "";
 	this.Model        = "";
 	this.Prompt       = "";
 	this.Temperature  = 0.0;
@@ -22,7 +22,7 @@ Agent.from = (data) => {
 	let agent = new Agent();
 
 	agent.Name        = data["name"]        || "";
-	agent.Type        = data["type"]        || "";
+	agent.Role        = data["role"]        || "";
 	agent.Model       = data["model"]       || "";
 	agent.Prompt      = data["prompt"]      || "";
 	agent.Temperature = data["temperature"] || 0.0;

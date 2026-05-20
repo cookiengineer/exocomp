@@ -35,7 +35,7 @@ func NewSummarizer(config *types.Config) *types.Agent {
 
 	return &types.Agent{
 		Name:            name,
-		Type:            "summarizer",
+		Role:            "summarizer",
 		Model:           model,
 		Prompt:          prompt,
 		Temperature:     temp,

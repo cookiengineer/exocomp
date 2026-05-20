@@ -35,7 +35,7 @@ func NewArchitect(config *types.Config) *types.Agent {
 
 	return &types.Agent{
 		Name:            name,
-		Type:            "architect",
+		Role:            "architect",
 		Model:           model,
 		Prompt:          prompt,
 		Temperature:     temp,

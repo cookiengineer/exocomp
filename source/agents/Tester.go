@@ -35,7 +35,7 @@ func NewTester(config *types.Config) *types.Agent {
 
 	return &types.Agent{
 		Name:            name,
-		Type:            "tester",
+		Role:            "tester",
 		Model:           model,
 		Prompt:          prompt,
 		Temperature:     temp,

@@ -41,6 +41,10 @@ that structured plan with the "agents.Hire" tool.
 
 ### Project Phases
 
+All agents can only access the files within their sandboxes. If you want a specific agent to
+work on a specific file, you need to use "files.Copy" to copy the file to the sandbox BEFORE
+you hire the agent.
+
 **1. Planning Phase**
 
 You discuss features with a human, and you will ask the human for details on high-level decisions.

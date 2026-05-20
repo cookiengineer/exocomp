@@ -36,7 +36,7 @@ export const Client = function(config) {
 
 		let agent = this.Session.GetAgent(null);
 		if (agent !== null) {
-			this.Renderer.RenderHeader(agent.Name + " | " + agent.Type + " | " + agent.Model + " | " + agent.Temperature.toFixed(1))
+			this.Renderer.RenderHeader(agent.Name + " | " + agent.Role + " | " + agent.Model + " | " + agent.Temperature.toFixed(1))
 			this.Renderer.RenderTitle("Exocomp - " + agent.Name)
 		}
 
@@ -79,7 +79,7 @@ Client.prototype = {
 		let errors = [];
 
 		let name    = (data["name"]    || "").trim();
-		let agent   = (data["agent"]   || "").trim();
+		let role    = (data["role"]    || "").trim();
 		let sandbox = (data["sandbox"] || "").trim();
 		let prompt  = (data["prompt"]  || "").trim();
 
@@ -94,8 +94,8 @@ Client.prototype = {
 			errors.push(new Error("Invalid Agent Name, must be a unique Pseudonym."));
 		}
 
-		if (agent == "") {
-			errors.push(new Error("Invalid Agent Type."));
+		if (role == "") {
+			errors.push(new Error("Invalid Agent Role."));
 		}
 
 		if (sandbox != "" && sandbox.startsWith("./")) {
@@ -114,7 +114,7 @@ Client.prototype = {
 
 			this.CallTool("agents.Hire", "Hire", {
 				"name":    name,
-				"agent":   agent,
+				"role":    role,
 				"sandbox": sandbox,
 				"prompt":  prompt,
 			});
@@ -419,7 +419,7 @@ Client.prototype = {
 
 				this.Session.SetAgent(agent.Name);
 
-				this.Renderer.RenderHeader(agent.Name + " | " + agent.Type + " | " + agent.Model + " | " + agent.Temperature.toFixed(1))
+				this.Renderer.RenderHeader(agent.Name + " | " + agent.Role + " | " + agent.Model + " | " + agent.Temperature.toFixed(1))
 
 				this.Renderer.ClearAgents();
 				this.Renderer.RenderAgents(this.Session.Agent, this.Session.GetAgents());
