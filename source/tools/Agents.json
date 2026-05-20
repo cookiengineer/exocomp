@@ -14,6 +14,18 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "agents.Roles",
+			"description": "List all available agent roles.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "agents.Hire",
 			"description": "Hire a contractor agent with a unique name and a task prompt inside a sandbox.",
 			"parameters": {

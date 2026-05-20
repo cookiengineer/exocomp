@@ -43,6 +43,7 @@ func NewPlanner(config *types.Config) *types.Agent {
 		AllowedPrograms: []string{},
 		AllowedTools:    []string{
 			"agents.List",
+			"agents.Roles",
 			"agents.Hire",
 			"agents.Fire",
 			// No agents.Quit

@@ -225,6 +225,24 @@ Client.prototype = {
 
 							}
 
+						} else if (prompt.startsWith("/") && !prompt.includes(" ") && !prompt.includes("\n")) {
+
+							let name = (prompt.substr(1)).trim();
+							if (name.includes(".") === true) {
+
+								let method = name.split(".").pop();
+								let args   = {};
+
+								(async (name, method, args) => {
+									this.CallTool(name, method, args);
+								})(name, method, args);
+
+								event.preventDefault();
+								this.UpdatePrompt("");
+								this.OnChange("");
+
+							}
+
 						} else {
 
 							(async () => {

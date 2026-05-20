@@ -72,7 +72,8 @@ async function main() {
 
 				let popover = new CallToolPopover(element, client.Session.Tools);
 
-				client.OnChange = (prompt) => popover.Render(prompt);
+				client.OnChange   = (prompt)         => popover.Render(prompt);
+				popover.OnSuggest = (prompt, cursor) => client.Suggest(prompt, cursor);
 
 			}
 

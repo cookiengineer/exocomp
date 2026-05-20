@@ -53,6 +53,10 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 		return tool.List()
 
+	} else if method == "Roles" {
+
+		return tool.Roles()
+
 	} else if method == "Hire" {
 
 		name,    ok1 := arguments["name"].(string)
@@ -202,6 +206,27 @@ func (tool *Agents) List() (string, error) {
 	} else {
 		return "", fmt.Errorf("agents.List: No agents are working for us!")
 	}
+
+}
+
+func (tool *Agents) Roles() (string, error) {
+
+	lines := make([]string, 0)
+
+	for role, description := range agents.Roles {
+		lines = append(lines, fmt.Sprintf("- Role: \"%s\", Description: %s", role, description))
+	}
+
+	sort.Strings(lines)
+
+	result := make([]string, 0)
+	result = append(result, fmt.Sprintf("agents.Roles: %d available agent roles.", len(lines)))
+
+	for l := 0; l < len(lines); l++ {
+		result = append(result, lines[l])
+	}
+
+	return strings.Join(result, "\n"), nil
 
 }
 
