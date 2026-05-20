@@ -10,9 +10,11 @@ func main() {
 
 	base_dir, err0 := utils.GetRoot()
 
-	build_linux   := true
-	build_darwin  := true
-	build_windows := true
+	build_linux          := true
+	build_darwin         := true
+	build_windows        := true
+	build_agent_programs := true
+	build_installer      := true
 
 	if len(os.Args) > 1 {
 
@@ -30,13 +32,43 @@ func main() {
 			build_darwin = false
 		}
 
+		if len(os.Args) >= 2 {
+
+			tmp2 := os.Args[1:]
+
+			for _, tmp := range tmp2 {
+
+				flag := strings.TrimSpace(strings.ToLower(tmp))
+
+				switch flag {
+					case "--no-agent-programs":
+						build_agent_programs = false
+						break
+					case "--no-installer":
+						build_installer = false
+						break
+					case "--quick":
+						build_agent_programs = false
+						build_installer = false
+						break
+				}
+
+			}
+
+		}
+
 	}
 
 	if err0 == nil {
 
-		fmt.Fprint(os.Stdout, "== Clone programs ==\n")
+		if build_agent_programs == true {
 
-		actions.ClonePrograms(base_dir)
+			fmt.Fprint(os.Stdout, "\n")
+			fmt.Fprint(os.Stdout, "== Clone programs ==\n")
+
+			actions.ClonePrograms(base_dir)
+
+		}
 
 		if build_linux == true {
 
@@ -45,8 +77,14 @@ func main() {
 
 			actions.ClearAssets(base_dir)
 			actions.BuildExocomps(base_dir, "linux")
-			actions.BuildPrograms(base_dir, "linux")
-			actions.BuildInstaller(base_dir, "linux")
+
+			if build_agent_programs == true {
+				actions.BuildPrograms(base_dir, "linux")
+			}
+
+			if build_installer == true {
+				actions.BuildInstaller(base_dir, "linux")
+			}
 
 		}
 
@@ -57,8 +95,14 @@ func main() {
 
 			actions.ClearAssets(base_dir)
 			actions.BuildExocomps(base_dir, "darwin")
-			actions.BuildPrograms(base_dir, "darwin")
-			actions.BuildInstaller(base_dir, "darwin")
+
+			if build_agent_programs == true {
+				actions.BuildPrograms(base_dir, "darwin")
+			}
+
+			if build_installer == true {
+				actions.BuildInstaller(base_dir, "darwin")
+			}
 
 		}
 
@@ -69,8 +113,14 @@ func main() {
 
 			actions.ClearAssets(base_dir)
 			actions.BuildExocomps(base_dir, "windows")
-			actions.BuildPrograms(base_dir, "windows")
-			actions.BuildInstaller(base_dir, "windows")
+
+			if build_agent_programs == true {
+				actions.BuildPrograms(base_dir, "windows")
+			}
+
+			if build_installer == true {
+				actions.BuildInstaller(base_dir, "windows")
+			}
 
 		}
 
