@@ -315,6 +315,45 @@ Client.prototype = {
 
 	},
 
+	Suggest: function(suggestion) {
+
+		let prompt = (this.elements["prompt"].value || "").trim();
+		if (prompt.startsWith("/") && prompt.includes(" ")) {
+
+			let tool_command    = prompt.split(" ").shift();
+			let tool_parameters = prompt.split(" ").slice(1);
+
+			// TODO: Find next parameter that looks like suggestion.key
+			// Prompt example: /tool.Method key="value" key2="value2" key3=true key4=["array","of","strings"]
+			//
+			// TODO: Autocomplete: n... to name="
+			// TODO: Autocomplete: name="foo... to name="foo..." {suggestion.key}=
+			// TODO: Autocomplete: name=" to name={suggestion.value}
+			//
+			// TODO: If suggestion === null, that means only closing character is required
+			// Autocomplete: last_parameter="foobar... to last_parameter="foobar..."
+			//
+			// TODO: Use cursor selection in textarea to "select/mark ahead of current cursor"
+			// where the selection contains the suggestion, so it doesn't interrupt
+			// typing. Don't change the textarea's cursor position
+
+			// TODO: Supported parameter types: "boolean", "number", "string"
+			// TODO: Supported parameter types: "array-of-booleans", "array-of-numbers", "array-of-strings"
+			// "number" allows both float numbers and integers
+
+			// suggestion is an object like this:
+			// values are always strings, already containing the prefix and suffix characters, e.g. [ and ] or " and "
+			// { key: "parameter_name", type: (see above for possible types), value: "\"example value\"", label: "name=\"example value\"" }
+
+			// Autocompletion should modify the this.elements["prompt"] element, which is a <textarea> element
+
+			console.log("Prompt:", tool_command, tool_parameters);
+			console.log("Suggestion:", suggestion);
+
+		}
+
+	},
+
 	UpdateAgents: function() {
 
 		if (this.Session !== null) {

@@ -1,12 +1,18 @@
 
 export const RenderSuggestion = (suggestion) => {
 
-	let html = "";
+	let html        = "";
+	let label       = suggestion["label"]       || "";
+	let description = suggestion["description"] || "";
+
+	if (!label.startsWith("/")) {
+		label = "&nbsp;&nbsp;" + label;
+	}
 
 	html += "<li>";
-	html += "<label>" + suggestion["label"] + "</label>";
+	html += "<label>" + label + "</label>";
 	html += " ";
-	html += "<span>" + suggestion["description"] + "</span>";
+	html += "<span>" + description + "</span>";
 	html += "</li>";
 
 	return html;

@@ -9,6 +9,8 @@ export const CallTool = function(element, tools) {
 		"suggestions": element.querySelector("ul[data-name=\"suggestions\"]"),
 	};
 
+	this.OnSuggest = (suggestion) => {};
+
 	this.Init();
 
 };
@@ -58,6 +60,8 @@ CallTool.prototype = {
 			}
 
 			let tool_command     = prompt.split(" ")[0];
+			let tool_parameters  = prompt.split(" ").slice(1);
+
 			let tool_suggestions = this.Tools.map((schema) => {
 
 				return {
@@ -79,8 +83,9 @@ CallTool.prototype = {
 
 			} else if (tool_suggestions.length === 1) {
 
-				let list_items  = tool_suggestions.map((suggestion) => RenderSuggestion(suggestion)).sort();
-				let tool_schema = this.Tools.find((schema) => {
+				let next_suggestion = null;
+				let list_items      = tool_suggestions.map((suggestion) => RenderSuggestion(suggestion)).sort();
+				let tool_schema     = this.Tools.find((schema) => {
 					return schema["function"]["name"] === tool_command.substr(1, tool_command.length - 1);
 				}) || null;
 
@@ -89,6 +94,7 @@ CallTool.prototype = {
 					tool_schema["function"]["parameters"]["required"].map((key) => {
 
 						let value       = "...";
+						let type        = "";
 						let description = "";
 
 						let property = tool_schema["function"]["parameters"]["properties"][key] || null;
@@ -99,45 +105,128 @@ CallTool.prototype = {
 							if (property["type"] === "array") {
 
 								if (property["items"]["type"] === "boolean") {
-									value = "[true,...]";
+
+									return {
+										key:         key,
+										type:        "array-of-booleans",
+										value:       "[true,...]",
+										label:       key + "=[true,...]",
+										description: property["description"],
+									};
+
 								} else if (property["items"]["type"] === "number") {
-									value = "[13.37,...]";
+
+									return {
+										key:         key,
+										type:        "array-of-numbers",
+										value:       "[13,37,...]",
+										label:       key + "=[13,37,...]",
+										description: property["description"],
+									};
+
 								} else if (property["items"]["type"] === "string") {
-									value = "[\"foo\",...]";
+
+									return {
+										key:         key,
+										type:        "array-of-strings",
+										value:       "[\"foo\",...]",
+										label:       key + "=[\"foo\",...]",
+										description: property["description"],
+									};
+
+								} else {
+
+									console.error("Unsupported property type", property["type"], property["items"]["type"]);
+									return null;
+
 								}
 
 							} else if (property["type"] === "boolean") {
-								value = "true";
+
+								return {
+									key:         key,
+									type:        "boolean",
+									value:       "true",
+									label:       key + "=true",
+									description: property["description"],
+								};
+
 							} else if (property["type"] === "number") {
-								value = "13.37";
+
+								return {
+									key:         key,
+									type:        "number",
+									value:       "1337",
+									label:       key + "=1337",
+									description: property["description"],
+								};
+
 							} else if (property["type"] === "string") {
 
 								if (Object.prototype.toString.call(property["enum"]) === "[object Array]") {
 
-									value       = "\"" + property["enum"][0] + "\"";
-									description = property["description"] + " (" + property["enum"].map((v) => "\"" + v + "\"").join(", ") + ")";
+									return {
+										key:         key,
+										type:        "string",
+										value:       "\"" + property["enum"][0] + "\"",
+										label:       key + "=\"" + property["enum"][0] + "\"",
+										description: property["description"] + " (" + property["enum"].map((v) => "\"" + v + "\"").join(", ") + ")",
+									};
 
 								} else {
-									value = "\"...\"";
+
+									return {
+										key:         key,
+										type:        "string",
+										value:       "\"...\"",
+										label:       key + "=\"...\"",
+										description: property["description"],
+									};
+
 								}
 
 							} else {
+
 								console.error("Unsupported property type", property["type"]);
+								return null;
+
 							}
 
 						}
 
-						return {
-							label:       "&nbsp;&nbsp;" + key + "=" + value,
-							description: description
-						};
+						return null;
 
-					}).map((suggestion) => {
-						return RenderSuggestion(suggestion);
-					}).forEach((list_item) => {
-						list_items.push(list_item);
+					}).forEach((suggestion) => {
+
+						if (next_suggestion === null) {
+
+							let found = false;
+
+							for (let p = 0; p < tool_parameters.length; p++) {
+
+								let parameter = tool_parameters[p];
+
+								if (parameter !== "" && parameter.startsWith(suggestion.key + "=")) {
+									found = true;
+									break;
+								}
+
+							}
+
+							if (found === false) {
+								next_suggestion = suggestion;
+							}
+
+						}
+
+						list_items.push(RenderSuggestion(suggestion));
+
 					});
 
+				}
+
+				if (next_suggestion !== null) {
+					this.OnSuggest(next_suggestion);
 				}
 
 				if (this.elements["suggestions"] !== null) {
