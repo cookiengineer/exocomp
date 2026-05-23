@@ -5,6 +5,7 @@ import utils_api_llamacpp "exocomp/utils/api/llamacpp"
 import utils_api_ollama "exocomp/utils/api/ollama"
 import utils_api_vllm "exocomp/utils/api/vllm"
 import utils_fmt "exocomp/utils/fmt"
+import "exocomp/encoding/yaml"
 import _ "embed"
 import "encoding/json"
 import "io"
@@ -14,15 +15,15 @@ import "os"
 import "strings"
 
 type Config struct {
-	Name        string       `json:"name"`
-	Role        string       `json:"role"`
-	Model       string       `json:"model"`
-	Prompt      string       `json:"prompt"`
-	Temperature float64      `json:"temperature"`
-	Playground  string       `json:"playground"`
-	Sandbox     string       `json:"sandbox"`
-	URL         *net_url.URL `json:"url"`
-	Debug       bool         `json:"debug"`
+	Name        string       `json:"name" yaml:"name"`
+	Role        string       `json:"role" yaml:"role"`
+	Model       string       `json:"model" yaml:"model"`
+	Prompt      string       `json:"prompt" yaml:"prompt"`
+	Temperature float64      `json:"temperature" yaml:"temperature"`
+	Playground  string       `json:"playground" yaml:"playground"`
+	Sandbox     string       `json:"sandbox" yaml:"sandbox"`
+	URL         *net_url.URL `json:"url" yaml:"url"`
+	Debug       bool         `json:"debug" yaml:"debug"`
 }
 
 func NewConfig(name string, role string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, debug bool) *Config {
@@ -197,6 +198,79 @@ func (config *Config) UnmarshalJSON(data []byte) error {
 	}
 
 	err0 := json.Unmarshal(data, &tmp)
+
+	if err0 == nil {
+
+		config.Name        = tmp.Name
+		config.Role        = tmp.Role
+		config.Model       = tmp.Model
+		config.Prompt      = tmp.Prompt
+		config.Temperature = tmp.Temperature
+		config.Playground  = tmp.Playground
+		config.Sandbox     = tmp.Sandbox
+		config.Debug       = tmp.Debug
+
+		tmp_url, err1 := net_url.Parse(tmp.URL)
+
+		if err1 == nil {
+			config.URL = tmp_url
+		}
+
+		return nil
+
+	} else {
+		return err0
+	}
+
+}
+
+func (config *Config) MarshalYAML() ([]byte, error) {
+
+	url_str := ""
+
+	if config.URL != nil {
+		url_str = config.URL.String()
+	}
+
+	return yaml.Marshal(struct {
+		Name        string  `json:"name"`
+		Role        string  `json:"role"`
+		Model       string  `json:"model"`
+		Prompt      string  `json:"prompt"`
+		Temperature float64 `json:"temperature"`
+		Playground  string  `json:"playground"`
+		Sandbox     string  `json:"sandbox"`
+		URL         string  `json:"url"`
+		Debug       bool    `json:"debug"`
+	}{
+		Name:        config.Name,
+		Role:        config.Role,
+		Model:       config.Model,
+		Prompt:      config.Prompt,
+		Temperature: config.Temperature,
+		Playground:  config.Playground,
+		Sandbox:     config.Sandbox,
+		URL:         url_str,
+		Debug:       config.Debug,
+	})
+
+}
+
+func (config *Config) UnmarshalYAML(data []byte) error {
+
+	var tmp struct {
+		Name        string  `json:"name"`
+		Role        string  `json:"role"`
+		Model       string  `json:"model"`
+		Prompt      string  `json:"prompt"`
+		Temperature float64 `json:"temperature"`
+		Playground  string  `json:"playground"`
+		Sandbox     string  `json:"sandbox"`
+		URL         string  `json:"url"`
+		Debug       bool    `json:"debug"`
+	}
+
+	err0 := yaml.Unmarshal(data, &tmp)
 
 	if err0 == nil {
 

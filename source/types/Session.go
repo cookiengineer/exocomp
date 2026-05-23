@@ -112,7 +112,7 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 			session.mutex.Unlock()
 
 			if strings.HasPrefix(tool_message, "Error:") {
-				return fmt.Errorf(tool_message)
+				return fmt.Errorf("%s", tool_message)
 			} else {
 				return nil
 			}
@@ -155,7 +155,7 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 			session.mutex.Unlock()
 
 			if strings.HasPrefix(tool_message, "Error:") {
-				return fmt.Errorf(tool_message)
+				return fmt.Errorf("%s", tool_message)
 			} else {
 				return nil
 			}
@@ -180,7 +180,7 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 			session.mutex.Unlock()
 
 			if strings.HasPrefix(tool_message, "Error:") {
-				return fmt.Errorf(tool_message)
+				return fmt.Errorf("%s", tool_message)
 			} else {
 				return nil
 			}

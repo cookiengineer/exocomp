@@ -1,19 +1,28 @@
 
 # TODO
 
+# Exocomp Core
+
+- [ ] Preserve history of last sessions
+- [ ] Implement an `.exocomp/sessions/YYYY-MM-DD.json` folder
+
 ## Parsers
 
 - [ ] Redefine all `agents/...{go,txt}` in `agents/<name>.yml`
-- [ ] Implement a parser for yaml to `*types.Agent`
 - [ ] Allow custom agents to be defined inside the `{playground}/agents` folder
 
 ## Tools
 
-- [ ] Implement `tools/Symbols` which uses functions, classes, symbols.
-      Behind the scenes a code graph and "who calls what" would complement
-      the requirements tool.
-- [ ] Should have a Get(package name, symbol name) method
-- [ ] Should have a Search(package name, symbol name) method
+- [ ] Implement Tool Call Shrinking, probably best in types/Session.go
+
+- [ ] Implement `requirements.Trace(file, symbol)` to trace which methods
+      call or interact with the named symbol. Returns a list of symbols
+
+- [ ] Implement `files.ReadSymbol(file, symbol)`
+
+- [ ] Implement `websites.Summarize(url)`
+- [ ] Implement `websites.Download(url)`
+- [ ] Implement `websites.Search(keywords)`
 
 ## Agents
 
