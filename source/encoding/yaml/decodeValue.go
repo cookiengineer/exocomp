@@ -161,6 +161,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 			return err
 		}
 
+	case reflect.Map:
+
+		return decodeMap(node, target)
+
 	case reflect.Slice:
 
 		return decodeSlice(node, target)

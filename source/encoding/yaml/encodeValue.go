@@ -102,6 +102,10 @@ func encodeValue(value reflect.Value) (*Node, error) {
 			Value: fmt.Sprintf("%d", value.Uint()),
 		}, nil
 
+	case reflect.Map:
+
+		return encodeMap(value)
+
 	case reflect.Slice:
 
 		return encodeSlice(value)
