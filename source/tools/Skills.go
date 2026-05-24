@@ -36,7 +36,7 @@ func NewSkills(playground string, sandbox string, allowed_programs []string, all
 		processes:       make(map[string]*os.Process),
 	}
 
-	// NOTE: readSkills() only at bootup time in case Agent rewrites SKILL.md at runtime
+	// NOTE: readSkills() allowed only at bootup time
 	readSkills(skills)
 
 	return skills

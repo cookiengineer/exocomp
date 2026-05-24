@@ -6,10 +6,6 @@
 - [ ] Preserve history of last sessions
 - [ ] Implement an `.exocomp/sessions/YYYY-MM-DD.json` folder
 
-## Parsers
-
-- [ ] Allow custom agents to be defined inside the `{playground}/agents` folder
-
 ## Tools
 
 - [ ] Implement Tool Call Shrinking, probably best in types/Session.go

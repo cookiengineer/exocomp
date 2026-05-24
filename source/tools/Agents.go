@@ -43,6 +43,9 @@ func NewAgents(playground string, sandbox string, model string, url *net_url.URL
 		processes:  make(map[string]*os.Process),
 	}
 
+	// NOTE: readAgents() allowed only at bootup time
+	readAgents(agents)
+
 	return agents
 
 }
