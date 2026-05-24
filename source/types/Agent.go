@@ -6,6 +6,7 @@ import "encoding/json"
 
 type Agent struct {
 	Name            string             `json:"name" yaml:"name"`
+	Description     string             `json:"description" yaml:"description"`
 	Role            string             `json:"role" yaml:"role"`
 	Model           string             `json:"model" yaml:"model"`
 	Prompt          string             `json:"prompt" yaml:"prompt"`
@@ -13,8 +14,8 @@ type Agent struct {
 	Messages        []*schemas.Message `json:"messages" yaml:"messages"`
 	AllowedPrograms []string           `json:"allowed_programs" yaml:"allowed-programs"`
 	AllowedTools    []string           `json:"allowed_tools" yaml:"allowed-tools"`
-	Sandbox         string             `json:"sandbox" yaml:"sandbox"`
-	ContextUsage    ContextUsage       `json:"context-usage" yaml:"context-usage"`
+	Sandbox         string             `json:"sandbox" yaml:"-"`
+	ContextUsage    ContextUsage       `json:"context-usage" yaml:"-"`
 }
 
 func ParseAgent(data []byte) (*Agent, error) {

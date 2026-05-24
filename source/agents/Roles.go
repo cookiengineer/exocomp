@@ -1,20 +1,51 @@
 package agents
 
-var Roles map[string]string = map[string]string{
+import "exocomp/types"
+import "embed"
+import "io/fs"
+import "path/filepath"
 
-	// Development
-	"planner":    "writes with humans and plans projects phases",
-	"architect":  "defines software specifications",
-	"coder":      "implements specifications into Go code",
-	// TODO: "researcher": "reads websites and API documentation",
-	"summarizer": "reads long texts and summarizes them",
-	"tester":     "implements unit tests, writes bug reports",
+var Roles map[string]*types.Agent
 
-	// Pentesting
-	"exploiter":    "implements exploits in CGo code",
-	// TODO: "reverser":     "translates binaries into Go/C/CGo code",
-	// TODO: "threathunter": "discovers weaknesses and vulnerabilities in infrastructure",
-	"webscanner":   "discovers weaknesses and vulnerabilities in web applications",
+//go:embed *.yaml
+var filesystem embed.FS
+
+func init() {
+
+	Roles = make(map[string]*types.Agent)
+
+	entries, err0 := fs.ReadDir(filesystem, ".")
+
+	if err0 == nil {
+
+		for _, entry := range entries {
+
+			name := entry.Name()
+			ext  := filepath.Ext(name)
+
+			if ext == ".yaml" {
+
+				data, err1 := filesystem.ReadFile(name)
+
+				if err1 == nil {
+
+					agent, err := types.ParseAgent(data)
+
+					if err == nil {
+
+						if agent.Role != "" {
+							Roles[agent.Role] = agent
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+
+	}
 
 }
 

@@ -213,8 +213,8 @@ func (tool *Agents) Roles() (string, error) {
 
 	lines := make([]string, 0)
 
-	for role, description := range agents.Roles {
-		lines = append(lines, fmt.Sprintf("- Role: \"%s\", Description: %s", role, description))
+	for _, template := range agents.Roles {
+		lines = append(lines, fmt.Sprintf("- Role: \"%s\", Description: %s", template.Role, template.Description))
 	}
 
 	sort.Strings(lines)

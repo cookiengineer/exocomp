@@ -36,21 +36,25 @@ Ethical subroutines sold separately.
 
 Exocomp uses multiple [Agent Roles](./agents/Roles.go):
 
-| Role                                 | Lifecycle | Default Model     | Description                                                 |
-|:-------------------------------------|:---------:|:-----------------:|:------------------------------------------------------------|
-| [Planner](./agents/Planner.go)       | long      | `gemma4:31b`      | writes with humans and plans project phases                 |
-| [Architect](./agents/Architect.go)   | short     | `qwen3-coder:30b` | defines software specifications                             |
-| [Coder](./agents/Coder.go)           | short     | `qwen3-coder:30b` | implements specifications into code                         |
-| Researcher                           | short     | `qwen3-coder:30b` | reads websites and API documentation                        |
-| [Summarizer](./agents/Summarizer.go) | short     | `qwen3-coder:30b` | reads long texts and summarizes them                        |
-| [Tester](./agents/Tester.go)         | short     | `qwen3-coder:30b` | implements unit tests, writes bug reports                   |
+*Software Development*
 
-| Role                                 | Lifecycle | Default Model     | Description                                                 |
-|:-------------------------------------|:---------:|:-----------------:|:------------------------------------------------------------|
-| [Exploiter](./agents/Exploiter.go)   | short     | `qwen3-coder:30b` | implements exploits in CGo                                  |
-| Reverser                             | short     | `qwen3-coder:30b` | translates binaries or code into Go/CGo code                |
-| ThreatHunter                         | short     | `qwen3-coder:30b` | researches weaknesses and vulnerabilities in infrastructure |
-| [WebScanner](./agents/WebScanner.go) | short     | `qwen3-coder:30b` | discovers vulnerabilities in web applications               |
+| Role                                   | Lifecycle | Default Model     | Description                                                 |
+|:---------------------------------------|:---------:|:-----------------:|:------------------------------------------------------------|
+| [planner](./agents/planner.yaml)       | long      | `gemma4:31b`      | writes with humans and plans project phases                 |
+| [architect](./agents/architect.yaml)   | short     | `qwen3-coder:30b` | defines software specifications                             |
+| [coder](./agents/coder.yaml)           | short     | `qwen3-coder:30b` | implements specifications into code                         |
+| researcher                             | short     | `qwen3-coder:30b` | reads websites and API documentation                        |
+| [summarizer](./agents/summarizer.yaml) | short     | `qwen3-coder:30b` | reads long texts and summarizes them                        |
+| [tester](./agents/tester.yaml)         | short     | `qwen3-coder:30b` | implements unit tests, writes bug reports                   |
+
+*Pentesting*
+
+| Role                                   | Lifecycle | Default Model             | Description                                                 |
+|:---------------------------------------|:---------:|:-------------------------:|:------------------------------------------------------------|
+| [exploiter](./agents/exploiter.yaml)   | short     | `qwen3-coder-heretic:30b` | implements exploits in CGo                                  |
+| reverser                               | short     | `qwen3-coder-heretic:30b` | translates binaries or code into Go/CGo code                |
+| threathunter                           | short     | `qwen3-coder-heretic:30b` | researches weaknesses and vulnerabilities in infrastructure |
+| [webscanner](./agents/webscanner.yaml) | short     | `qwen3-coder-heretic:30b` | discovers vulnerabilities in web applications               |
 
 Exocomp uses Tools to interact with the sandbox. Check the implementations to
 see which tools are allowed for which Agent role.

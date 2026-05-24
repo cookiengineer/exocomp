@@ -8,7 +8,6 @@
 
 ## Parsers
 
-- [ ] Redefine all `agents/...{go,txt}` in `agents/<name>.yml`
 - [ ] Allow custom agents to be defined inside the `{playground}/agents` folder
 
 ## Tools

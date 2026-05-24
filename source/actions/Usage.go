@@ -22,6 +22,7 @@ func Usage(options_ui []string) {
 	options_model := []string{
 		strconv.Quote("gemma4:31b"),
 		strconv.Quote("qwen3-coder:30b"),
+		strconv.Quote("qwen3-coder-heretic:30b"),
 		strconv.Quote("qwen3.6:35b-heretic"),
 	}
 	options_temperature := []string{
