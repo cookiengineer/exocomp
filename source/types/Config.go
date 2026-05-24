@@ -88,6 +88,34 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 
 }
 
+func ParseConfig(data []byte) (*Config, error) {
+
+	if len(data) > 2 && data[0] == '{' && data[len(data)-1] == '}' {
+
+		config := Config{}
+		err    := json.Unmarshal(data, &config)
+
+		if err == nil {
+			return &config, nil
+		} else {
+			return nil, err
+		}
+
+	} else {
+
+		config := Config{}
+		err    := yaml.Unmarshal(data, &config)
+
+		if err == nil {
+			return &config, nil
+		} else {
+			return nil, err
+		}
+
+	}
+
+}
+
 func (config *Config) GetContextLength() int {
 
 	client := &http.Client{}

@@ -5,14 +5,14 @@ import "fmt"
 import "strings"
 
 type ToolCall struct {
-	ID       string           `json:"id,omitempty"`
-	Type     string           `json:"type"`
-	Function ToolCallFunction `json:"function"`
+	ID       string           `json:"id,omitempty" yaml:"id,omitempty"`
+	Type     string           `json:"type" yaml:"type"`
+	Function ToolCallFunction `json:"function" yaml:"function"`
 }
 
 type ToolCallFunction struct {
-	Name         string          `json:"name"`
-	ArgumentsRaw json.RawMessage `json:"arguments"` // some models return JSON string
+	Name         string          `json:"name" yaml:"name"`
+	ArgumentsRaw json.RawMessage `json:"arguments" yaml:"arguments"` // some models return JSON string
 	// Arguments map[string]interface{} `json:"arguments"`
 }
 

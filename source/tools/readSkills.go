@@ -1,6 +1,6 @@
 package tools
 
-import utils_skill "exocomp/utils/skill"
+import "exocomp/types"
 import "fmt"
 import "os"
 import "path/filepath"
@@ -38,18 +38,18 @@ func readSkills(tool *Skills) error {
 
 							if err2 == nil {
 
-								skill := utils_skill.ParseSkill(skill_bytes)
+								skill, err3 := types.ParseSkill(skill_bytes)
 
-								if skill != nil {
+								if err3 == nil {
 
 									scripts_path       := filepath.Join(tool.Playground, "skills", skill_name, "scripts")
-									scripts_stat, err3 := os.Stat(scripts_path)
+									scripts_stat, err4 := os.Stat(scripts_path)
 
-									if err3 == nil && scripts_stat.IsDir() {
+									if err4 == nil && scripts_stat.IsDir() {
 
-										scripts_entries, err4 := os.ReadDir(scripts_path)
+										scripts_entries, err5 := os.ReadDir(scripts_path)
 
-										if err4 == nil {
+										if err5 == nil {
 
 											for _, script_entry := range scripts_entries {
 

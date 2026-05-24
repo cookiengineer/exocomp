@@ -56,9 +56,9 @@ func NewArchitect(config *types.Config) *types.Agent {
 			"files.Stat",
 			// No files.Write
 			// No programs
+			"requirements.DefineInterface",
 			"requirements.DefineFunc",
 			"requirements.DefineStruct",
-			"requirements.DefineTest",
 			"requirements.List",
 			"requirements.Search",
 		},
