@@ -14,12 +14,12 @@ func FormatAgentRole(input string) string {
 			formatted = append(formatted, byte(chr))
 		} else if chr >= 'a' && chr <= 'z' {
 			formatted = append(formatted, byte(chr))
+		} else if chr == '-' {
+			formatted = append(formatted, byte(chr))
 		}
 
 	}
 
-	tmp1 := strings.TrimSpace(string(formatted))
-
-	return strings.ToLower(tmp1)
+	return strings.ToLower(string(formatted))
 
 }

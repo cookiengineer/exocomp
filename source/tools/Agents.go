@@ -5,6 +5,7 @@ import "exocomp/schemas"
 import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
 import utils_fmt "exocomp/utils/fmt"
+import utils_rand "exocomp/utils/rand"
 import "bufio"
 import "bytes"
 import "context"
@@ -62,21 +63,29 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 	} else if method == "Hire" {
 
-		name,    ok1 := arguments["name"].(string)
-		role,    ok2 := arguments["role"].(string)
-		sandbox, ok3 := arguments["sandbox"].(string)
-		prompt,  ok4 := arguments["prompt"].(string)
+		role,    ok1 := arguments["role"].(string)
+		prompt,  ok2 := arguments["prompt"].(string)
+
+		name,    ok3 := arguments["name"].(string)
+		sandbox, ok4 := arguments["sandbox"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
-			return tool.Hire(utils_fmt.FormatAgentName(name), utils_fmt.FormatAgentRole(role), sandbox, utils_fmt.FormatMultiLine(prompt))
+
+			return tool.Hire(
+				utils_fmt.FormatAgentRole(role),
+				utils_fmt.FormatMultiLine(prompt),
+				utils_fmt.FormatAgentName(name),
+				sandbox,
+			)
+
 		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
-		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"sandbox\" is not a string.")
-		} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
+		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
+		} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
+		} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" is not a string.")
 		} else {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameters.")
 		}
@@ -233,17 +242,21 @@ func (tool *Agents) Roles() (string, error) {
 
 }
 
-func (tool *Agents) Hire(name string, role string, sandbox string, prompt string) (string, error) {
+func (tool *Agents) Hire(role string, prompt string, name string, sandbox string) (string, error) {
+
+	if name == "" || name == "." {
+		name = utils_rand.AgentName(role)
+	}
+
+	if sandbox == "" || sandbox == "." || sandbox == "./" {
+		sandbox = tool.Sandbox
+	}
 
 	tool.Mutex.Lock()
 	_, ok := tool.contents[name]
 	tool.Mutex.Unlock()
 
 	if ok == false {
-
-		if sandbox == "" || sandbox == "." {
-			sandbox = tool.Sandbox
-		}
 
 		resolved, err0 := resolveSandboxPath(tool.Sandbox, sandbox)
 
@@ -440,9 +453,9 @@ func (tool *Agents) Hire(name string, role string, sandbox string, prompt string
 
 					}(name, tool, cmd)
 
+					sandbox_path, _ := sanitizeSandboxPath(resolved)
 
-
-					return fmt.Sprintf("agents.Hire: Agent \"%s\" got hired.", name), nil
+					return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work on \"%s\".", name, sandbox_path), nil
 
 				} else {
 					return "", fmt.Errorf("agents.Hire: %s", err3.Error())
@@ -478,7 +491,7 @@ func (tool *Agents) Fire(name string) (string, error) {
 			delete(tool.processes, name)
 			tool.Mutex.Unlock()
 
-			return fmt.Sprintf("agents.Fire: Agent \"%s\" got fired.", name), nil
+			return fmt.Sprintf("agents.Fire: Agent \"%s\" fired.", name), nil
 
 		} else {
 			return "", fmt.Errorf("agents.Fire: %s", err.Error())

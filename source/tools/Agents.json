@@ -27,29 +27,29 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Hire",
-			"description": "Hire a contractor agent with a unique name and a task prompt inside a sandbox.",
+			"description": "Hire a contractor agent with a task prompt inside a sandbox.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Contractor agent's unique pseudonym name"
+						"description": "Agent's unique name, leave empty to auto-generate a name"
 					},
 					"role": {
 						"type": "string",
-						"description": "Contractor agent's role",
+						"description": "Agent's role",
 						"enum": ["architect", "coder", "researcher", "summarizer", "tester"]
 					},
 					"sandbox": {
 						"type": "string",
-						"description": "Relative path to the folder, set to \".\" to use the same sandbox"
+						"description": "Relative path to the folder, leave empty to use the same sandbox"
 					},
 					"prompt": {
 						"type": "string",
 						"description": "Specific task instructions, agent will quit with a report after completion"
 					}
 				},
-				"required": ["name", "role", "sandbox", "prompt"]
+				"required": ["role", "sandbox", "prompt"]
 			}
 		}
 	},

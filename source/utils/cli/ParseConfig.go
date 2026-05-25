@@ -1,7 +1,7 @@
 package cli
 
 import "exocomp/types"
-import utils_agent "exocomp/utils/agent"
+import utils_agents "exocomp/utils/agents"
 import utils_fmt "exocomp/utils/fmt"
 import net_url "net/url"
 import "os"
@@ -39,13 +39,13 @@ func ParseConfig(arguments []string) *types.Config {
 				switch flag[0] {
 				case "name":
 
-					if utils_agent.IsName(flag[1]) {
+					if utils_agents.IsAgentName(flag[1]) {
 						name = utils_fmt.FormatAgentName(flag[1])
 					}
 
 				case "role":
 
-					if utils_agent.IsRole(flag[1]) {
+					if utils_agents.IsAgentRole(flag[1]) {
 						role = utils_fmt.FormatAgentRole(flag[1])
 					}
 
