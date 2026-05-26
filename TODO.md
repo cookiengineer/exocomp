@@ -1,10 +1,9 @@
 
 # TODO
 
-# Exocomp Core
+# Schemas
 
-- [ ] Preserve history of last sessions
-- [ ] Implement an `.exocomp/sessions/YYYY-MM-DD.json` folder
+- [ ] schemas.Message needs a timestamp that serializes to ISO8601/RFC3339 format `YYYY-MM-DD HH:ii:ss`
 
 ## Tools
 
@@ -54,6 +53,10 @@
 - [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `nav` element to avoid setting `innerHTML`
 - [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `main` element to avoid setting `innerHTML`
 
+- [ ] Workflow View
+- [ ] Show only inter-agent communications
+- [ ] Show only filesystem mutations
+- [ ] Show only failures (with work reports)
 
 ## Agent History Compression
 
