@@ -19,7 +19,16 @@ type Server struct {
 
 func NewServer(agent *types.Agent, config *types.Config) *Server {
 
-	session := types.NewSession(agent, config)
+	var session *types.Session = nil
+
+	recovery := types.NewRecovery(config.Playground)
+
+	if recovery.HasBackup() {
+		session = recovery.RestoreSession()
+	} else {
+		session = types.NewSession(agent, config)
+	}
+
 	url, _ := net_url.Parse("http://localhost:3000/")
 
 	if len(agent.AllowedTools) > 0 {
@@ -40,9 +49,65 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 
 	}
 
+	tool := session.GetTool("agents.List")
+
+	if tool != nil {
+
+		agent_tool, ok := tool.(*tools.Agents)
+
+		if ok == true {
+
+			agents := recovery.RestoreAgents()
+
+			if len(agents) > 0 {
+
+				for _, agent := range agents {
+					agent_tool.SetAgent(agent)
+				}
+
+			}
+
+		}
+
+	}
+
 	return &Server{
 		Session: session,
 		URL:     url,
+	}
+
+}
+
+func (server *Server) Destroy() {
+
+	if server.Session != nil {
+
+		server.Session.Recovery.BackupSession(server.Session)
+
+		tool := server.Session.GetTool("agents.List")
+
+		if tool != nil {
+
+			agent_tool, ok := tool.(*tools.Agents)
+
+			if ok == true {
+
+				agent_names := agent_tool.GetNames()
+
+				for _, name := range agent_names {
+
+					agent := agent_tool.GetAgent(name)
+
+					if agent != nil {
+						server.Session.Recovery.BackupAgent(agent)
+					}
+
+				}
+
+			}
+
+		}
+
 	}
 
 }

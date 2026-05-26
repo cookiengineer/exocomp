@@ -142,12 +142,12 @@ func (tool *Agents) Get(id string) (any, error) {
 
 }
 
-func (tool *Agents) GetAgent(id string) *types.Agent {
+func (tool *Agents) GetAgent(name string) *types.Agent {
 
-	name := utils_fmt.FormatAgentName(id)
+	sanitized_name := utils_fmt.FormatAgentName(name)
 
 	tool.Mutex.Lock()
-	agent, ok := tool.contents[name]
+	agent, ok := tool.contents[sanitized_name]
 	tool.Mutex.Unlock()
 
 	if ok == true {
@@ -639,6 +639,32 @@ func (tool *Agents) Quit(message string) (string, error) {
 		return fmt.Sprintf("agents.Quit: Agent quit with work report:\n%s", strings.TrimSpace(message)), nil
 
 	}
+
+}
+
+func (tool *Agents) SetAgent(agent *types.Agent) bool {
+
+	sanitized_name := utils_fmt.FormatAgentName(agent.Name)
+
+	if sanitized_name == agent.Name {
+
+		tool.Mutex.Lock()
+		_, ok := tool.contents[sanitized_name]
+		tool.Mutex.Unlock()
+
+		if ok == false {
+
+			tool.Mutex.Lock()
+			tool.contents[sanitized_name] = agent
+			tool.Mutex.Unlock()
+
+			return true
+
+		}
+
+	}
+
+	return false
 
 }
 

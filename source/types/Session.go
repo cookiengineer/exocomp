@@ -8,6 +8,7 @@ import "fmt"
 import "io"
 import "net/http"
 import "os"
+import "path/filepath"
 import "sort"
 import "strings"
 import "sync"
@@ -16,6 +17,7 @@ type Session struct {
 	Agent    *Agent          `json:"agent"`
 	Config   *Config         `json:"config"`
 	Console  *Console        `json:"console"`
+	Recovery *Recovery       `json:"-"`
 	Tools    []*schemas.Tool `json:"tools"`
 	Waiting  bool            `json:"waiting"`
 	client   *http.Client    `json:"-"`
@@ -26,24 +28,29 @@ type Session struct {
 func NewSession(agent *Agent, config *Config) *Session {
 
 	session := &Session{
-		Agent:   agent,
-		Config:  config,
-		Console: NewConsole(os.Stdout, os.Stderr, 0),
-		Tools:   make([]*schemas.Tool, 0),
-		Waiting: false,
-		client:  &http.Client{},
-		mutex:   &sync.RWMutex{},
-		tools:   make(map[string]Tool),
+		Agent:    agent,
+		Config:   config,
+		Console:  NewConsole(os.Stdout, os.Stderr, 0),
+		Recovery: NewRecovery(config.Playground),
+		Tools:    make([]*schemas.Tool, 0),
+		Waiting:  false,
+		client:   &http.Client{},
+		mutex:    &sync.RWMutex{},
+		tools:    make(map[string]Tool),
 	}
 
 	session.mutex.Lock()
 
-	if config != nil && config.GetPrompt() != "" {
+	if config != nil {
 
-		session.Agent.Messages = append(session.Agent.Messages, &schemas.Message{
-			Role:    "user",
-			Content: config.GetPrompt(),
-		})
+		if config.GetPrompt() != "" {
+
+			session.Agent.Messages = append(session.Agent.Messages, &schemas.Message{
+				Role:    "user",
+				Content: config.GetPrompt(),
+			})
+
+		}
 
 	}
 
@@ -52,6 +59,56 @@ func NewSession(agent *Agent, config *Config) *Session {
 	session.mutex.Unlock()
 
 	return session
+
+}
+
+func RestoreSession(playground string, backup Session) *Session {
+
+	session := &Session{
+		Agent:    backup.Agent,
+		Config:   backup.Config,
+		Console:  NewConsole(os.Stdout, os.Stderr, 0),
+		Recovery: NewRecovery(playground),
+		Tools:    make([]*schemas.Tool, 0),
+		Waiting:  false,
+		client:   &http.Client{},
+		mutex:    &sync.RWMutex{},
+		tools:    make(map[string]Tool),
+	}
+
+	if backup.Console != nil {
+		session.Console.Messages = backup.Console.Messages
+	}
+
+	if backup.Config != nil {
+
+		if backup.Config.Playground == backup.Config.Sandbox {
+
+			session.Config.Playground = playground
+			session.Config.Sandbox    = playground
+
+		} else {
+
+			relative_sandbox, err3 := filepath.Rel(backup.Config.Playground, backup.Config.Sandbox)
+
+			if err3 == nil {
+				session.Config.Playground = playground
+				session.Config.Sandbox    = filepath.Join(playground, relative_sandbox)
+			}
+
+		}
+
+	}
+
+	return session
+
+}
+
+func (session *Session) Destroy() {
+
+	if session.Recovery != nil {
+		session.Recovery.BackupSession(session)
+	}
 
 }
 
@@ -567,13 +624,7 @@ func (session *Session) infer_chat_completions() error {
 	}, "", "\t")
 
 	if session.Config.Debug == true {
-
-		var tmp1 interface{}
-		json.Unmarshal(request_payload, &tmp1)
-		tmp2, _ := json.MarshalIndent(tmp1, "", "\t")
-
-		os.WriteFile(session.Config.Sandbox + "/.exocomp-request.json", tmp2, 0666)
-
+		session.Recovery.SnapshotBytes("request", request_payload)
 	}
 
 	if err0 == nil {
@@ -591,13 +642,7 @@ func (session *Session) infer_chat_completions() error {
 			if err2 == nil {
 
 				if session.Config.Debug == true {
-
-					var tmp1 interface{}
-					json.Unmarshal(response_payload, &tmp1)
-					tmp2, _ := json.MarshalIndent(tmp1, "", "\t")
-
-					os.WriteFile(session.Config.Sandbox + "/.exocomp-response.json", tmp2, 0666)
-
+					session.Recovery.SnapshotBytes("response", response_payload)
 				}
 
 				var response schemas.ChatResponse

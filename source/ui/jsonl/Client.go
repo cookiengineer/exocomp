@@ -19,6 +19,8 @@ type Client struct {
 
 func NewClient(agent *types.Agent, config *types.Config) *Client {
 
+	// NOTE: jsonl.Client has no Recovery
+
 	session  := types.NewSession(agent, config)
 	renderer := NewRenderer(session)
 
@@ -44,6 +46,18 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 		Renderer: renderer,
 		Session:  session,
 		role:     "user",
+	}
+
+}
+
+func (client *Client) Destroy() {
+
+	if client.Session != nil {
+		client.Session.Destroy()
+	}
+
+	if client.Renderer != nil {
+		client.Renderer.Destroy()
 	}
 
 }
@@ -179,14 +193,6 @@ func (client *Client) ContextUsageLoop() {
 
 		}
 
-	}
-
-}
-
-func (client *Client) Destroy() {
-
-	if client.Renderer != nil {
-		client.Renderer.Destroy()
 	}
 
 }

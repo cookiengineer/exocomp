@@ -18,7 +18,16 @@ type Client struct {
 
 func NewClient(agent *types.Agent, config *types.Config) *Client {
 
-	session  := types.NewSession(agent, config)
+	var session *types.Session = nil
+
+	recovery := types.NewRecovery(config.Playground)
+
+	if recovery.HasBackup() {
+		session = recovery.RestoreSession()
+	} else {
+		session = types.NewSession(agent, config)
+	}
+
 	renderer := NewRenderer(session)
 
 	if len(agent.AllowedTools) > 0 {
@@ -39,6 +48,28 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	}
 
+	tool := session.GetTool("agents.List")
+
+	if tool != nil {
+
+		agent_tool, ok := tool.(*tools.Agents)
+
+		if ok == true {
+
+			agents := recovery.RestoreAgents()
+
+			if len(agents) > 0 {
+
+				for _, agent := range agents {
+					agent_tool.SetAgent(agent)
+				}
+
+			}
+
+		}
+
+	}
+
 	if config.GetPrompt() != "" {
 		session.Init()
 	}
@@ -52,6 +83,36 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 }
 
 func (client *Client) Destroy() {
+
+	if client.Session != nil {
+
+		client.Session.Recovery.BackupSession(client.Session)
+
+		tool := client.Session.GetTool("agents.List")
+
+		if tool != nil {
+
+			agent_tool, ok := tool.(*tools.Agents)
+
+			if ok == true {
+
+				agent_names := agent_tool.GetNames()
+
+				for _, name := range agent_names {
+
+					agent := agent_tool.GetAgent(name)
+
+					if agent != nil {
+						client.Session.Recovery.BackupAgent(agent)
+					}
+
+				}
+
+			}
+
+		}
+
+	}
 
 	if client.Renderer != nil {
 		client.Renderer.Destroy()

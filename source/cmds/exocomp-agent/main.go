@@ -4,7 +4,6 @@ import "exocomp/actions"
 import "exocomp/agents"
 import "exocomp/types"
 import "exocomp/utils/cli"
-import "encoding/json"
 import "fmt"
 import "os"
 import "strings"
@@ -44,11 +43,6 @@ func main() {
 		err0 := os.MkdirAll(config.Sandbox, 0755)
 
 		if err0 == nil {
-
-			if config.Debug == true {
-				tmp, _ := json.MarshalIndent(config, "", "\t")
-				os.WriteFile(config.Sandbox + "/.exocomp-config.json", tmp, 0666)
-			}
 
 			switch mode {
 			case "agent":
