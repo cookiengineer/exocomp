@@ -34,28 +34,28 @@ Ethical subroutines sold separately.
 
 ### Agents
 
-Exocomp uses multiple [Agent Roles](./agents/Roles.go):
+Exocomp uses multiple [Agent Roles](./source/agents/Roles.go):
 
 *Software Development*
 
-| Role                                   | Lifecycle | Default Model     | Description                                 |
-|:---------------------------------------|:---------:|:-----------------:|:--------------------------------------------|
-| [planner](./agents/planner.yaml)       | long      | `gemma4:31b`      | writes with humans and plans project phases |
-| [architect](./agents/architect.yaml)   | short     | `qwen3-coder:30b` | defines software specifications             |
-| archivar                               | short     | `qwen3-coder:30b` | reads git repositories and wikis            |
-| [coder](./agents/coder.yaml)           | short     | `qwen3-coder:30b` | implements specifications into code         |
-| researcher                             | short     | `qwen3-coder:30b` | reads websites and API documentation        |
-| [summarizer](./agents/summarizer.yaml) | short     | `qwen3-coder:30b` | reads long texts and summarizes them        |
-| [tester](./agents/tester.yaml)         | short     | `qwen3-coder:30b` | implements unit tests, writes bug reports   |
+| Role                                          | Lifecycle | Default Model     | Description                                 |
+|:----------------------------------------------|:---------:|:-----------------:|:--------------------------------------------|
+| [planner](./source/agents/planner.yaml)       | long      | `gemma4:31b`      | writes with humans and plans project phases |
+| [architect](./source/agents/architect.yaml)   | short     | `qwen3-coder:30b` | defines software specifications             |
+| archivar                                      | short     | `qwen3-coder:30b` | reads git repositories and wikis            |
+| [coder](./source/agents/coder.yaml)           | short     | `qwen3-coder:30b` | implements specifications into code         |
+| researcher                                    | short     | `qwen3-coder:30b` | reads websites and API documentation        |
+| [summarizer](./source/agents/summarizer.yaml) | short     | `qwen3-coder:30b` | reads long texts and summarizes them        |
+| [tester](./source/agents/tester.yaml)         | short     | `qwen3-coder:30b` | implements unit tests, writes bug reports   |
 
 *Pentesting*
 
-| Role                                   | Lifecycle | Default Model             | Description                                                 |
-|:---------------------------------------|:---------:|:-------------------------:|:------------------------------------------------------------|
-| [exploiter](./agents/exploiter.yaml)   | short     | `qwen3-coder-heretic:30b` | implements exploits in CGo                                  |
-| reverser                               | short     | `qwen3-coder-heretic:30b` | translates binaries or code into Go/CGo code                |
-| threathunter                           | short     | `qwen3-coder-heretic:30b` | researches weaknesses and vulnerabilities in infrastructure |
-| [webscanner](./agents/webscanner.yaml) | short     | `qwen3-coder-heretic:30b` | discovers vulnerabilities in web applications               |
+| Role                                          | Lifecycle | Default Model             | Description                                   |
+|:----------------------------------------------|:---------:|:-------------------------:|:----------------------------------------------|
+| [exploiter](./source/agents/exploiter.yaml)   | short     | `qwen3-coder-heretic:30b` | implements exploits in CGo                    |
+| reverser                                      | short     | `qwen3-coder-heretic:30b` | translates binaries or code into Go/CGo code  |
+| threathunter                                  | short     | `qwen3-coder-heretic:30b` | discovers vulnerabilities in infrastructure   |
+| [webscanner](./source/agents/webscanner.yaml) | short     | `qwen3-coder-heretic:30b` | discovers vulnerabilities in web applications |
 
 Exocomp uses Tools to interact with the sandbox. Check the implementations to
 see which tools are allowed for which Agent role.
@@ -72,21 +72,21 @@ to beat the context length and agent memory limitations of locally run models.
 
 Check the unit tests on whether the Tools can be relied on or not.
 
-| Tool                                    | Unit Tests?                         | Description                                         | Agent Roles                                             |
-|:----------------------------------------|:-----------------------------------:|:----------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./tools/Agents.go)             | [Yes](./tools/Agents_test.go) [1]   | Manages the lifecycle of contractor sub-agents.     | `planner`                                               |
-| [Bugs](./tools/Bugs.go)                 | [Yes](./tools/Bugs_test.go)         | Manages documentation of discovered bugs.           | `tester`                                                |
-| [Changelog](./tools/Changelog.go)       | [Yes](./tools/Changelog_test.go)    | Manages documentation of development changelog.     | `coder`                                                 |
-| Containers                              |                                     | Manages virtual containers.                         | `redteamer`, `blueteamer`                               |
-| Exploits                                |                                     | Manages PoCs for CVEs from local dataset.           | `pentester`, `reverser`                                 |
-| [Files](./tools/Files.go)               | [Yes](./tools/Files_test.go)        | Interacts with files and folders.                   | `planner`, `architect`, `coder`, `summarizer`, `tester` |
-| Findings                                |                                     | Reports findings of vulnerabilities and weaknesses. | `pentester`                                             |
-| [Programs](./tools/Programs.go)         | [Yes](./tools/Programs_test.go)     | Interacts with installed programs.                  | `coder`, `tester`                                       |
-| [Requirements](./tools/Requirements.go) | [Yes](./tools/Requirements_test.go) | Manages specifications of implementations.          | `architect`, `coder`, `tester`                          |
-| [Skills](./tools/Skills.go)             |                                     | Loads and Unloads Agent Skills. [2]                 | `planner`, `architect`, `coder`, `tester`               |
-| Kiwix                                   |                                     | Researches knowledge from offline web archives.     | `researcher`                                            |
-| Vulnerabilities                         |                                     | Manages vulnerabilities from local dataset.         | `pentester`, `threathunter`                             |
-| Websites                                |                                     | Researches knowledge from the web.                  | `pentester`, `researcher`                               |
+| Tool                                           | Unit Tests?                                | Description                                        | Agent Roles                                             |
+|:-----------------------------------------------|:------------------------------------------:|:---------------------------------------------------|:-------------------------------------------------------:|
+| [Agents](./source/tools/Agents.go)             | [Yes](./source/tools/Agents_test.go) [1]   | manages the lifecycle of contractor sub-agents     | `planner`                                               |
+| [Bugs](./source/tools/Bugs.go)                 | [Yes](./source/tools/Bugs_test.go)         | manages documentation of discovered bugs           | `tester`                                                |
+| [Changelog](./source/tools/Changelog.go)       | [Yes](./source/tools/Changelog_test.go)    | manages documentation of development changelog     | `coder`                                                 |
+| Containers                                     |                                            | manages virtual containers                         | `redteamer`, `blueteamer`                               |
+| Exploits                                       |                                            | manages PoCs for CVEs from local dataset           | `pentester`, `reverser`                                 |
+| [Files](./source/tools/Files.go)               | [Yes](./source/tools/Files_test.go)        | interacts with files and folders                   | `planner`, `architect`, `coder`, `summarizer`, `tester` |
+| Findings                                       |                                            | reports findings of vulnerabilities and weaknesses | `pentester`                                             |
+| [Programs](./source/tools/Programs.go)         | [Yes](./source/tools/Programs_test.go)     | interacts with installed programs                  | `coder`, `tester`                                       |
+| [Requirements](./source/tools/Requirements.go) | [Yes](./source/tools/Requirements_test.go) | manages specifications of implementations          | `architect`, `coder`, `tester`                          |
+| [Skills](./source/tools/Skills.go)             |                                            | loads and Unloads Agent Skills [2]                 | `planner`, `architect`, `coder`, `tester`               |
+| Kiwix                                          |                                            | researches knowledge from offline web archives     | `researcher`                                            |
+| Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `pentester`, `threathunter`                             |
+| Websites                                       |                                            | researches knowledge from the web                  | `pentester`, `researcher`                               |
 
 - [1] Requires `llama.cpp` with `qwen3-coder:30b` and `Q8_0` quantization and 48GB VRAM GPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).
