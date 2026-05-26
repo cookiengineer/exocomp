@@ -453,7 +453,7 @@ func (tool *Agents) Hire(role string, prompt string, name string, sandbox string
 
 					}(name, tool, cmd)
 
-					sandbox_path, _ := sanitizeSandboxPath(resolved)
+					sandbox_path, _ := sanitizeSandboxPath(tool.Sandbox, resolved)
 
 					return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work on \"%s\".", name, sandbox_path), nil
 

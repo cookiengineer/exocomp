@@ -2,7 +2,7 @@ package agents
 
 import "exocomp/agents"
 
-func IsAgentRole(raw string) bool {
+func IsAgentRole(search string) bool {
 
 	found := false
 

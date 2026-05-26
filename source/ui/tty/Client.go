@@ -3,7 +3,6 @@ package tty
 import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
-import utils_cli "exocomp/utils/cli"
 import "bufio"
 import "fmt"
 import "os"
@@ -128,15 +127,10 @@ func (client *Client) InputLoop() {
 
 				if strings.HasPrefix(prompt, "/") && strings.Contains(prompt, " ") && !strings.Contains(prompt, "\n") {
 
-					name := prompt[1:strings.Index(prompt, " ")]
+					command := types.ParseCommand(prompt)
 
-					if strings.Contains(name, ".") {
-
-						method    := name[strings.LastIndex(name, ".")+1:]
-						arguments := utils_cli.ParseParameters(strings.TrimSpace(prompt[1+len(name)+1:]))
-
-						client.Session.CallTool(name, method, arguments)
-
+					if command != nil {
+						client.Session.CallTool(command.Name, command.Method, command.Arguments)
 					}
 
 				} else {

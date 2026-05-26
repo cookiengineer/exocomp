@@ -2,7 +2,6 @@ package agents
 
 import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
-import "strings"
 
 func SetRole(role string, agent *types.Agent) bool {
 
