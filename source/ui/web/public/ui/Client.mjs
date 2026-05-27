@@ -1,6 +1,6 @@
 
 import { Agent           } from "../types/Agent.mjs";
-import { Renderer        } from "./Renderer.mjs";
+import { ChatRenderer    } from "./renderers/ChatRenderer.mjs";
 import { Session         } from "../types/Session.mjs";
 import { ParseParameters } from "../utils/cli/ParseParameters.mjs";
 
@@ -9,7 +9,7 @@ const time_Second = 1 * 1000;
 export const Client = function(config) {
 
 	this.Session  = new Session(config);
-	this.Renderer = new Renderer(this.Session);
+	this.Renderer = new ChatRenderer(this.Session);
 	this.role     = "user";
 
 	this.elements = {

@@ -2,9 +2,7 @@
 import { RenderMessage } from "./RenderMessage.mjs";
 import { Session       } from "/types/Session.mjs";
 
-
-
-export const Renderer = function(session) {
+export const ChatRenderer = function(session) {
 
 	session = session instanceof Session ? session : null;
 
@@ -25,7 +23,7 @@ export const Renderer = function(session) {
 
 };
 
-Renderer.prototype = {
+ChatRenderer.prototype = {
 
 	Clear: function() {
 

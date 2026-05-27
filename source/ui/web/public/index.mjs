@@ -2,7 +2,6 @@
 import { Client                       } from "./ui/Client.mjs";
 import { CallTool  as CallToolPopover } from "./ui/popovers/CallTool.mjs";
 import { HireAgent as HireAgentDialog } from "./ui/dialogs/HireAgent.mjs";
-import { RenderSelect                 } from "./utils/ui/RenderSelect.mjs";
 import { BootstrapConfig              } from "./types/Config.mjs";
 
 const getAgentName = () => {
@@ -33,6 +32,17 @@ async function main() {
 		const name   = getAgentName();
 		const config = await BootstrapConfig(name);
 		const client = new Client(config);
+
+		((button) => {
+
+			if (button !== null) {
+
+				button.onclick = () => window.location.assign("/schedule.html");
+				button.removeAttribute("disabled");
+
+			}
+
+		})(document.querySelector("header button[data-action=\"show-schedule\"]"));
 
 		((element, button) => {
 

@@ -3,7 +3,7 @@ body > aside {
 	position: fixed;
 	top: 50px;
 	right: auto;
-	bottom: 160px;
+	bottom: 0px;
 	left: 0px;
 	z-index: 20;
 }
