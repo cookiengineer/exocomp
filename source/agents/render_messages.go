@@ -9,6 +9,7 @@ func render_messages(prompt string) []*schemas.Message {
 	result = append(result, &schemas.Message{
 		Role:    "system",
 		Content: prompt,
+		Created: schemas.NewDatetime(),
 	})
 
 	return result
