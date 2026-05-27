@@ -89,3 +89,9 @@ aside nav ul li.active + li > a > label {
 	background: var(--aside-background);
 	border-radius: 0px 8px 0px 0px;
 }
+
+aside nav ul li.active ~ li > a > label {
+	color: var(--aside-color);
+	background: var(--aside-background);
+}
+
