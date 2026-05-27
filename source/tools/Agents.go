@@ -69,7 +69,11 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 		name,    ok3 := arguments["name"].(string)
 		sandbox, ok4 := arguments["sandbox"].(string)
 
-		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
+		if ok1 == true && role == "planner" {
+
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" can not be \"planner\".")
+
+		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
 
 			return tool.Hire(
 				utils_fmt.FormatAgentRole(role),
@@ -79,9 +83,32 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 			)
 
 		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"sandbox\" is not a string.")
+
+			return tool.Hire(
+				utils_fmt.FormatAgentRole(role),
+				utils_fmt.FormatMultiLine(prompt),
+				utils_fmt.FormatAgentName(name),
+				tool.Sandbox,
+			)
+
 		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
+
+			return tool.Hire(
+				utils_fmt.FormatAgentRole(role),
+				utils_fmt.FormatMultiLine(prompt),
+				"",
+				sandbox,
+			)
+
+		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == false {
+
+			return tool.Hire(
+				utils_fmt.FormatAgentRole(role),
+				utils_fmt.FormatMultiLine(prompt),
+				"",
+				tool.Sandbox,
+			)
+
 		} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
 		} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
@@ -226,7 +253,11 @@ func (tool *Agents) Roles() (string, error) {
 	lines := make([]string, 0)
 
 	for _, template := range agents.Roles {
-		lines = append(lines, fmt.Sprintf("- Role: \"%s\", Description: %s", template.Role, template.Description))
+
+		if template.Role != "planner" {
+			lines = append(lines, fmt.Sprintf("- Role: \"%s\", Description: %s", template.Role, template.Description))
+		}
+
 	}
 
 	sort.Strings(lines)
@@ -249,7 +280,7 @@ func (tool *Agents) Hire(role string, prompt string, name string, sandbox string
 	}
 
 	if sandbox == "" || sandbox == "." || sandbox == "./" {
-		sandbox = tool.Sandbox
+		sandbox = ""
 	}
 
 	tool.Mutex.Lock()

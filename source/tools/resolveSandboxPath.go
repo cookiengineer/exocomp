@@ -7,6 +7,10 @@ import "strings"
 
 func resolveSandboxPath(sandbox string, file_path string) (string, error) {
 
+	if file_path == "" || file_path == "." || file_path == "./" {
+		return sandbox, nil
+	}
+
 	if strings.HasPrefix(sandbox, string(os.PathSeparator)) && strings.HasPrefix(file_path, string(os.PathSeparator)) {
 
 		if len(file_path) > len(sandbox) && strings.HasPrefix(file_path, sandbox + string(os.PathSeparator)) {

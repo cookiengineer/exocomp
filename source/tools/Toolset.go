@@ -22,7 +22,11 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 				roles := make([]string, 0)
 
 				for role, _ := range agents.Roles {
-					roles = append(roles, role)
+
+					if role != "planner" {
+						roles = append(roles, role)
+					}
+
 				}
 
 				property, ok := schema.Function.Parameters.Properties["role"]
