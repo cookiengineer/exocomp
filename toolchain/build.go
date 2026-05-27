@@ -4,6 +4,7 @@ import "exocomp-toolchain/actions"
 import "exocomp-toolchain/utils"
 import "fmt"
 import "os"
+import "runtime"
 import "strings"
 
 func main() {
@@ -30,6 +31,22 @@ func main() {
 		case "windows":
 			build_linux  = false
 			build_darwin = false
+		case "--quick":
+
+			build_agent_programs = false
+			build_installer = false
+
+			if runtime.GOOS == "linux" {
+				build_darwin  = false
+				build_windows = false
+			} else if runtime.GOOS == "darwin" {
+				build_linux   = false
+				build_windows = false
+			} else if runtime.GOOS == "windows" {
+				build_linux  = false
+				build_darwin = false
+			}
+
 		}
 
 		if len(os.Args) >= 2 {
