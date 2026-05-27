@@ -40,7 +40,7 @@
 ## Tools
 
 - [ ] Implement unit tests for `tools/Agents`
-- [ ] Implement `tools/Containers` to be able to use `podman`
+- [ ] Implement `tools/Vulnerabilities` to be able to search CVE dataset
 - [ ] Implement `tools/Websites` to be able to use `zimdex`
 - [ ] Implement `tools/Skills` to parse `$PWD/skills` directory
 
