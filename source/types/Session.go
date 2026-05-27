@@ -48,6 +48,7 @@ func NewSession(agent *Agent, config *Config) *Session {
 			session.Agent.Messages = append(session.Agent.Messages, &schemas.Message{
 				Role:    "user",
 				Content: config.GetPrompt(),
+				Created: schemas.NewDatetime(),
 			})
 
 		}
@@ -160,12 +161,13 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 			}
 
 			session.mutex.Lock()
-			message := &schemas.Message{
+			tmp := &schemas.Message{
 				Role:     "tool",
 				Content:  tool_message,
 				ToolName: name,
+				Created:  schemas.NewDatetime(),
 			}
-			session.Agent.Messages = append(session.Agent.Messages, message)
+			session.Agent.Messages = append(session.Agent.Messages, tmp)
 			session.mutex.Unlock()
 
 			if strings.HasPrefix(tool_message, "Error:") {
@@ -203,12 +205,13 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 			}
 
 			session.mutex.Lock()
-			message := &schemas.Message{
+			tmp := &schemas.Message{
 				Role:     "tool",
 				Content:  tool_message,
 				ToolName: name,
+				Created:  schemas.NewDatetime(),
 			}
-			session.Agent.Messages = append(session.Agent.Messages, message)
+			session.Agent.Messages = append(session.Agent.Messages, tmp)
 			session.mutex.Unlock()
 
 			if strings.HasPrefix(tool_message, "Error:") {
@@ -228,12 +231,13 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 			}
 
 			session.mutex.Lock()
-			message := &schemas.Message{
+			tmp := &schemas.Message{
 				Role:     "tool",
 				Content:  tool_message,
 				ToolName: name,
+				Created:  schemas.NewDatetime(),
 			}
-			session.Agent.Messages = append(session.Agent.Messages, message)
+			session.Agent.Messages = append(session.Agent.Messages, tmp)
 			session.mutex.Unlock()
 
 			if strings.HasPrefix(tool_message, "Error:") {
@@ -256,7 +260,7 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 		})
 
 		session.mutex.Lock()
-		message := &schemas.Message{
+		tmp := &schemas.Message{
 			Role:     "tool",
 			Content:  strings.Join([]string{
 				fmt.Sprintf("Error: Tool \"%s\" doesn't exist.", name),
@@ -264,8 +268,9 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 				string(json_blob),
 			}, "\n"),
 			ToolName: name,
+			Created:  schemas.NewDatetime(),
 		}
-		session.Agent.Messages = append(session.Agent.Messages, message)
+		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
 
 		return fmt.Errorf("Error: Tool \"%s\" doesn't exist.", name)
@@ -450,6 +455,7 @@ func (session *Session) LoadSkill(name string, skill *Skill) error {
 			system_messages = append(system_messages, &schemas.Message{
 				Role:    "system",
 				Content: skill.Body,
+				Created: schemas.NewDatetime(),
 			})
 			session.Agent.Messages = append(system_messages, other_messages...)
 
@@ -472,7 +478,13 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 	if response.Role == "assistant" {
 
 		session.mutex.Lock()
-		tmp := &response
+		tmp := &schemas.Message{
+			Role:      response.Role,
+			Content:   response.Content,
+			ToolCalls: response.ToolCalls,
+			ToolName:  response.ToolName,
+			Created:   schemas.NewDatetime(),
+		}
 		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
 
@@ -499,7 +511,13 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 	} else {
 
 		session.mutex.Lock()
-		tmp := &response
+		tmp := &schemas.Message{
+			Role:      response.Role,
+			Content:   response.Content,
+			ToolCalls: response.ToolCalls,
+			ToolName:  response.ToolName,
+			Created:   schemas.NewDatetime(),
+		}
 		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
 
@@ -520,7 +538,14 @@ func (session *Session) SendChatRequest(request schemas.Message) error {
 	if is_waiting == false {
 
 		session.mutex.Lock()
-		session.Agent.Messages = append(session.Agent.Messages, &request)
+		tmp := &schemas.Message{
+			Role:      request.Role,
+			Content:   request.Content,
+			ToolCalls: request.ToolCalls,
+			ToolName:  request.ToolName,
+			Created:   schemas.NewDatetime(),
+		}
+		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.Waiting = true
 
 		session.mutex.Unlock()

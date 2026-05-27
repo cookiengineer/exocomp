@@ -5,5 +5,6 @@ type Message struct {
 	Content   string     `json:"content" yaml:"content"`                           // content
 	ToolCalls []ToolCall `json:"tool_calls,omitempty" yaml:"tool-calls,omitempty"` // empty if content present
 	ToolName  string     `json:"tool_name,omitempty" yaml:"tool-name,omitempty"`
+	Created   Datetime   `json:"created,omitempty" yaml:"created,omitempty"`
 }
 
