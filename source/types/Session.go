@@ -124,7 +124,7 @@ func (session *Session) Init() error {
 
 }
 
-func (session *Session) CallTool(name string, method string, arguments map[string]any) error {
+func (session *Session) CallTool(id string, name string, method string, arguments map[string]any) error {
 
 	tool := session.GetTool(name)
 
@@ -134,7 +134,7 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 
 		if name == "skills" && method == "Load" {
 
-			tool_message := ""
+			content := ""
 
 			if err0 == nil {
 
@@ -147,38 +147,39 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 					err2 := session.LoadSkill(skill_name, skill)
 
 					if err2 == nil {
-						tool_message = strings.TrimSpace(result)
+						content = strings.TrimSpace(result)
 					} else {
-						tool_message = fmt.Sprintf("Error: skills.Load: %s", err2.Error())
+						content = fmt.Sprintf("Error: skills.Load: %s", err2.Error())
 					}
 
 				} else {
-					tool_message = fmt.Sprintf("Error: skills.Load: %s", "Attempt to escape policies")
+					content = fmt.Sprintf("Error: skills.Load: %s", "Attempt to escape policies")
 				}
 
 			} else {
-				tool_message = fmt.Sprintf("Error: skills.Load: %s", strings.TrimSpace(err0.Error()))
+				content = fmt.Sprintf("Error: skills.Load: %s", strings.TrimSpace(err0.Error()))
 			}
 
 			session.mutex.Lock()
 			tmp := &schemas.Message{
-				Role:     "tool",
-				Content:  tool_message,
-				ToolName: name,
-				Created:  schemas.NewDatetime(),
+				Role:       "tool",
+				Content:    content,
+				ToolCallID: id,
+				ToolName:   name,
+				Created:    schemas.NewDatetime(),
 			}
 			session.Agent.Messages = append(session.Agent.Messages, tmp)
 			session.mutex.Unlock()
 
-			if strings.HasPrefix(tool_message, "Error:") {
-				return fmt.Errorf("%s", tool_message)
+			if strings.HasPrefix(content, "Error:") {
+				return fmt.Errorf("%s", content)
 			} else {
 				return nil
 			}
 
 		} else if name == "skills" && method == "Unload" {
 
-			tool_message := ""
+			content := ""
 
 			if err0 == nil {
 
@@ -191,57 +192,59 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 					err2 := session.UnloadSkill(skill_name, skill)
 
 					if err2 == nil {
-						tool_message = strings.TrimSpace(result)
+						content = strings.TrimSpace(result)
 					} else {
-						tool_message = fmt.Sprintf("Error: skills.Unload: %s", err2.Error())
+						content = fmt.Sprintf("Error: skills.Unload: %s", err2.Error())
 					}
 
 				} else {
-					tool_message = fmt.Sprintf("Error: skills.Unload: %s", "Attempt to escape policies")
+					content = fmt.Sprintf("Error: skills.Unload: %s", "Attempt to escape policies")
 				}
 
 			} else {
-				tool_message = fmt.Sprintf("Error: skills.Unload: %s", strings.TrimSpace(err0.Error()))
+				content = fmt.Sprintf("Error: skills.Unload: %s", strings.TrimSpace(err0.Error()))
 			}
 
 			session.mutex.Lock()
 			tmp := &schemas.Message{
-				Role:     "tool",
-				Content:  tool_message,
-				ToolName: name,
-				Created:  schemas.NewDatetime(),
+				Role:       "tool",
+				Content:    content,
+				ToolCallID: id,
+				ToolName:   name,
+				Created:    schemas.NewDatetime(),
 			}
 			session.Agent.Messages = append(session.Agent.Messages, tmp)
 			session.mutex.Unlock()
 
-			if strings.HasPrefix(tool_message, "Error:") {
-				return fmt.Errorf("%s", tool_message)
+			if strings.HasPrefix(content, "Error:") {
+				return fmt.Errorf("%s", content)
 			} else {
 				return nil
 			}
 
 		} else {
 
-			tool_message := ""
+			content := ""
 
 			if err0 == nil {
-				tool_message = strings.TrimSpace(result)
+				content = strings.TrimSpace(result)
 			} else {
-				tool_message = fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error()))
+				content = fmt.Sprintf("Error: %s", strings.TrimSpace(err0.Error()))
 			}
 
 			session.mutex.Lock()
 			tmp := &schemas.Message{
-				Role:     "tool",
-				Content:  tool_message,
-				ToolName: name,
-				Created:  schemas.NewDatetime(),
+				Role:       "tool",
+				Content:    content,
+				ToolCallID: id,
+				ToolName:   name,
+				Created:    schemas.NewDatetime(),
 			}
 			session.Agent.Messages = append(session.Agent.Messages, tmp)
 			session.mutex.Unlock()
 
-			if strings.HasPrefix(tool_message, "Error:") {
-				return fmt.Errorf("%s", tool_message)
+			if strings.HasPrefix(content, "Error:") {
+				return fmt.Errorf("%s", content)
 			} else {
 				return nil
 			}
@@ -261,14 +264,15 @@ func (session *Session) CallTool(name string, method string, arguments map[strin
 
 		session.mutex.Lock()
 		tmp := &schemas.Message{
-			Role:     "tool",
-			Content:  strings.Join([]string{
+			Role:       "tool",
+			Content:    strings.Join([]string{
 				fmt.Sprintf("Error: Tool \"%s\" doesn't exist.", name),
 				"",
 				string(json_blob),
 			}, "\n"),
-			ToolName: name,
-			Created:  schemas.NewDatetime(),
+			ToolCallID: id,
+			ToolName:   name,
+			Created:    schemas.NewDatetime(),
 		}
 		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
@@ -289,10 +293,23 @@ func (session *Session) GetConsoleMessages(from int) []ConsoleMessage {
 
 }
 
+func (session *Session) GetLastMessage() *schemas.Message {
+
+	session.mutex.RLock()
+	defer session.mutex.RUnlock()
+
+	if len(session.Agent.Messages) > 0 {
+		return session.Agent.Messages[len(session.Agent.Messages)-1]
+	}
+
+	return nil
+
+}
+
 func (session *Session) GetMessages(from int) []*schemas.Message {
 
-    session.mutex.RLock()
-    defer session.mutex.RUnlock()
+	session.mutex.RLock()
+	defer session.mutex.RUnlock()
 
 	result := make([]*schemas.Message, 0)
 
@@ -492,12 +509,13 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 			for _, tool_call := range response.ToolCalls {
 
-				name,      err0 := tool_call.Function.ToName()
-				method,    err1 := tool_call.Function.ToMethod()
-				arguments, err2 := tool_call.Function.ToArguments()
+				tool_id,        err0 := tool_call.ToolID()
+				tool_name,      err1 := tool_call.ToolName()
+				tool_method,    err2 := tool_call.ToolMethod()
+				tool_arguments, err3 := tool_call.ToolArguments()
 
-				if err0 == nil && err1 == nil && err2 == nil {
-					session.CallTool(name, method, arguments)
+				if err0 == nil && err1 == nil && err2 == nil && err3 == nil {
+					session.CallTool(tool_id, tool_name, tool_method, tool_arguments)
 				}
 
 			}

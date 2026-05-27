@@ -136,7 +136,7 @@ func (client *Client) InputLoop() {
 					command := types.ParseCommand(prompt)
 
 					if command != nil {
-						client.Session.CallTool(command.Name, command.Method, command.Arguments)
+						client.Session.CallTool("", command.Name, command.Method, command.Arguments)
 					}
 
 				} else if strings.HasPrefix(prompt, "{") && strings.HasSuffix(prompt, "}") {

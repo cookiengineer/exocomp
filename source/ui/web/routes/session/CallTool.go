@@ -25,9 +25,10 @@ func CallTool(session *types.Session, request *http.Request, response http.Respo
 
 				if err1 == nil {
 
-					name,      err2 := tool_call.Function.ToName()
-					method,    err3 := tool_call.Function.ToMethod()
-					arguments, err4 := tool_call.Function.ToArguments()
+					tool_id,        err2 := tool_call.ToolID()
+					tool_name,      err3 := tool_call.ToolName()
+					tool_method,    err4 := tool_call.ToolMethod()
+					tool_arguments, err5 := tool_call.ToolArguments()
 
 					if err2 == nil {
 
@@ -35,21 +36,26 @@ func CallTool(session *types.Session, request *http.Request, response http.Respo
 
 							if err4 == nil {
 
-								err5 := session.CallTool(name, method, arguments)
-
 								if err5 == nil {
 
-									response_payload, _ := json.MarshalIndent(map[string]string{
-										"status": "OK",
-									}, "", "\t")
+									err6 := session.CallTool(tool_id, tool_name, tool_method, tool_arguments)
 
-									response.Header().Set("Content-Type", "application/json")
-									response.Header().Set("Content-Length", strconv.Itoa(len(response_payload)))
-									response.WriteHeader(http.StatusOK)
-									response.Write(response_payload)
+									if err6 == nil {
+
+										message             := session.GetLastMessage()
+										response_payload, _ := json.MarshalIndent(message, "", "\t")
+
+										response.Header().Set("Content-Type", "application/json")
+										response.Header().Set("Content-Length", strconv.Itoa(len(response_payload)))
+										response.WriteHeader(http.StatusOK)
+										response.Write(response_payload)
+
+									} else {
+										handlers.Unauthorized(session, err6, request, response)
+									}
 
 								} else {
-									handlers.Unauthorized(session, err5, request, response)
+									handlers.BadRequest(session, err5, request, response)
 								}
 
 							} else {

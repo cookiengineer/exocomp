@@ -16,11 +16,15 @@ type ToolCallFunction struct {
 	// Arguments map[string]interface{} `json:"arguments"`
 }
 
-func (function *ToolCallFunction) ToName() (string, error) {
+func (toolcall *ToolCall) ToolID() (string, error) {
+	return strings.TrimSpace(toolcall.ID), nil
+}
 
-	if strings.Contains(function.Name, ".") {
+func (toolcall *ToolCall) ToolName() (string, error) {
 
-		tmp := strings.Split(function.Name, ".")
+	if strings.Contains(toolcall.Function.Name, ".") {
+
+		tmp := strings.Split(toolcall.Function.Name, ".")
 
 		if len(tmp) == 2 && len(tmp[0]) > 0 && len(tmp[1]) >= 2 {
 
@@ -30,24 +34,24 @@ func (function *ToolCallFunction) ToName() (string, error) {
 			if tool != "" && method != "" {
 				return tool + "." + method, nil
 			} else {
-				return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", function.Name)
+				return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", toolcall.Function.Name)
 			}
 
 		} else {
-			return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", function.Name)
+			return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", toolcall.Function.Name)
 		}
 
 	} else {
-		return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", function.Name)
+		return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", toolcall.Function.Name)
 	}
 
 }
 
-func (function *ToolCallFunction) ToMethod() (string, error) {
+func (toolcall *ToolCall) ToolMethod() (string, error) {
 
-	if strings.Contains(function.Name, ".") {
+	if strings.Contains(toolcall.Function.Name, ".") {
 
-		tmp := strings.Split(function.Name, ".")
+		tmp := strings.Split(toolcall.Function.Name, ".")
 
 		if len(tmp) == 2 && len(tmp[0]) > 0 && len(tmp[1]) >= 2 {
 
@@ -56,23 +60,23 @@ func (function *ToolCallFunction) ToMethod() (string, error) {
 			if method != "" {
 				return method, nil
 			} else {
-				return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", function.Name)
+				return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", toolcall.Function.Name)
 			}
 
 		} else {
-			return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", function.Name)
+			return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", toolcall.Function.Name)
 		}
 
 	} else {
-		return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", function.Name)
+		return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", toolcall.Function.Name)
 	}
 
 }
 
-func (function *ToolCallFunction) ToArguments() (map[string]any, error) {
+func (toolcall *ToolCall) ToolArguments() (map[string]any, error) {
 
 	result := make(map[string]any)
-	err0   := json.Unmarshal(function.ArgumentsRaw, &result)
+	err0   := json.Unmarshal(toolcall.Function.ArgumentsRaw, &result)
 
 	if err0 == nil {
 
@@ -83,7 +87,7 @@ func (function *ToolCallFunction) ToArguments() (map[string]any, error) {
 
 		// Arguments was a JSON string
 		encoded := ""
-		err1    := json.Unmarshal(function.ArgumentsRaw, &encoded)
+		err1    := json.Unmarshal(toolcall.Function.ArgumentsRaw, &encoded)
 
 		if err1 == nil {
 
