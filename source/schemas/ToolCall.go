@@ -4,6 +4,23 @@ import "encoding/json"
 import "fmt"
 import "strings"
 
+func toUpperCase(raw string) string {
+
+	check := strings.ToLower(raw)
+
+	// NOTE: Dirty Hack for stupid LLMs
+	if strings.HasPrefix(check, "define") {
+
+		tmp2 := strings.TrimSpace(raw[6:])
+
+		return "Define" + strings.ToUpper(tmp2[0:1]) + strings.ToLower(tmp2[1:])
+
+	} else {
+		return strings.ToUpper(raw[0:1]) + strings.ToLower(raw[1:])
+	}
+
+}
+
 type ToolCall struct {
 	ID       string           `json:"id,omitempty" yaml:"id,omitempty"`
 	Type     string           `json:"type" yaml:"type"`
@@ -29,7 +46,7 @@ func (toolcall *ToolCall) ToolName() (string, error) {
 		if len(tmp) == 2 && len(tmp[0]) > 0 && len(tmp[1]) >= 2 {
 
 			tool   := strings.TrimSpace(strings.ToLower(tmp[0]))
-			method := strings.TrimSpace(strings.ToUpper(tmp[1][0:1]) + strings.ToLower(tmp[1][1:]))
+			method := strings.TrimSpace(toUpperCase(tmp[1]))
 
 			if tool != "" && method != "" {
 				return tool + "." + method, nil
@@ -55,7 +72,7 @@ func (toolcall *ToolCall) ToolMethod() (string, error) {
 
 		if len(tmp) == 2 && len(tmp[0]) > 0 && len(tmp[1]) >= 2 {
 
-			method := strings.TrimSpace(strings.ToUpper(tmp[1][0:1]) + strings.ToLower(tmp[1][1:]))
+			method := strings.TrimSpace(toUpperCase(tmp[1]))
 
 			if method != "" {
 				return method, nil
