@@ -2,6 +2,23 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "agents.Await",
+			"description": "Wait for a contractor agent's work report.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Agent's unique name"
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "agents.List",
 			"description": "List all contractor agents.",
 			"parameters": {
@@ -31,22 +48,18 @@
 			"parameters": {
 				"type": "object",
 				"properties": {
-					"name": {
-						"type": "string",
-						"description": "Agent's unique name, leave empty to auto-generate a name"
-					},
 					"role": {
 						"type": "string",
 						"description": "Agent's role",
 						"enum": ["architect", "coder", "researcher", "summarizer", "tester"]
 					},
-					"sandbox": {
-						"type": "string",
-						"description": "Relative path to the folder, leave empty to use the same sandbox"
-					},
 					"prompt": {
 						"type": "string",
 						"description": "Specific task instructions, agent will quit with a report after completion"
+					},
+					"sandbox": {
+						"type": "string",
+						"description": "Relative path to the folder, leave empty to use the same sandbox"
 					}
 				},
 				"required": ["role", "prompt"]

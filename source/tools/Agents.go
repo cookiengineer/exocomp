@@ -53,7 +53,17 @@ func NewAgents(playground string, sandbox string, model string, url *net_url.URL
 
 func (tool *Agents) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "List" {
+	if method == "Await" {
+
+		name, ok1 := arguments["name"].(string)
+
+		if ok1 == true {
+			return tool.Await(utils_fmt.FormatAgentName(name))
+		} else {
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
+		}
+
+	} else if method == "List" {
 
 		return tool.List()
 
@@ -65,56 +75,34 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 		role,    ok1 := arguments["role"].(string)
 		prompt,  ok2 := arguments["prompt"].(string)
-
-		name,    ok3 := arguments["name"].(string)
-		sandbox, ok4 := arguments["sandbox"].(string)
+		sandbox, ok3 := arguments["sandbox"].(string)
 
 		if ok1 == true && role == "planner" {
 
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" can not be \"planner\".")
 
-		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
+		} else if ok1 == true && ok2 == true && ok3 == true {
 
 			return tool.Hire(
 				utils_fmt.FormatAgentRole(role),
 				utils_fmt.FormatMultiLine(prompt),
-				utils_fmt.FormatAgentName(name),
 				sandbox,
 			)
 
-		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
+		} else if ok1 == true && ok2 == true && ok3 == false {
 
 			return tool.Hire(
 				utils_fmt.FormatAgentRole(role),
 				utils_fmt.FormatMultiLine(prompt),
-				utils_fmt.FormatAgentName(name),
-				tool.Sandbox,
+				".",
 			)
 
-		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
-
-			return tool.Hire(
-				utils_fmt.FormatAgentRole(role),
-				utils_fmt.FormatMultiLine(prompt),
-				"",
-				sandbox,
-			)
-
-		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == false {
-
-			return tool.Hire(
-				utils_fmt.FormatAgentRole(role),
-				utils_fmt.FormatMultiLine(prompt),
-				"",
-				tool.Sandbox,
-			)
-
-		} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
+		} else if ok1 == true && ok2 == false && ok3 == true {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
+		} else if ok1 == false && ok2 == true && ok3 == true {
 			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" is not a string.")
 		} else {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameters.")
+			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameters \"role\" is not a string and \"prompt\" is not a string.")
 		}
 
 	} else if method == "Fire" {
@@ -149,6 +137,52 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 	} else {
 		return "", fmt.Errorf("agents.%s: Invalid method.", method)
+	}
+
+}
+
+func (tool *Agents) Await(name string) (string, error) {
+
+	tool.Mutex.Lock()
+	_, ok := tool.processes[name]
+	tool.Mutex.Unlock()
+
+	if ok == true {
+
+		// NOTE: This is used in types.Session to dynamically re-call this method
+		return "", fmt.Errorf("agents.Await: Agent \"%s\" is still working ...", name)
+
+	} else {
+
+		work_report := ""
+
+		tool.Mutex.Lock()
+
+		agent, ok := tool.contents[name]
+
+		if ok == true {
+
+			for m := len(agent.Messages) - 1; m >= 0; m-- {
+
+				message := agent.Messages[m]
+
+				if message.Role == "tool" && strings.HasPrefix(message.Content, "agents.Quit: Work Report\n") {
+					work_report = strings.TrimSpace(message.Content[25:])
+					break
+				}
+
+			}
+
+		}
+
+		tool.Mutex.Unlock()
+
+		if work_report != "" {
+			return fmt.Sprintf("agents.Await: Agent \"%s\"'s Work Report\n===%s\n===", name, work_report), nil
+		} else {
+			return "", fmt.Errorf("agents.Await: Agent \"%s\" never finished with a work report!", name)
+		}
+
 	}
 
 }
@@ -273,15 +307,9 @@ func (tool *Agents) Roles() (string, error) {
 
 }
 
-func (tool *Agents) Hire(role string, prompt string, name string, sandbox string) (string, error) {
+func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, error) {
 
-	if name == "" || name == "." {
-		name = utils_rand.AgentName(role)
-	}
-
-	if sandbox == "" || sandbox == "." || sandbox == "./" {
-		sandbox = ""
-	}
+	name := utils_rand.AgentName(role)
 
 	tool.Mutex.Lock()
 	_, ok := tool.contents[name]
@@ -657,7 +685,7 @@ func (tool *Agents) Quit(message string) (string, error) {
 			os.Exit(0)
 		}()
 
-		return fmt.Sprintf("agents.Quit: Agent quit with work report:\n%s", strings.TrimSpace(message)), nil
+		return fmt.Sprintf("agents.Quit: Work Report\n%s", strings.TrimSpace(message)), nil
 
 	} else {
 
@@ -667,7 +695,7 @@ func (tool *Agents) Quit(message string) (string, error) {
 			os.Exit(1)
 		}()
 
-		return fmt.Sprintf("agents.Quit: Agent quit with work report:\n%s", strings.TrimSpace(message)), nil
+		return fmt.Sprintf("agents.Quit: Work Report\n%s", strings.TrimSpace(message)), nil
 
 	}
 
