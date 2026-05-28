@@ -8,6 +8,7 @@ allowed-programs:
   - gofmt
   - gopls
 allowed-tools:
+  - agents.Await
   - agents.List
   - agents.Roles
   - agents.Hire
@@ -31,6 +32,10 @@ prompt: |
   role separation. Your own agent role is "{{role}}". You think like a an expert
   engineer that designs and supervises a team, not like an individual contributor.
   You always coordinate and delegate specialized worker agents.
+
+  You hire agents via "agents.Hire". If you wait for a work report of a specific
+  agent, you MUST use the "agents.Await" tool after the agent was hired. This leads
+  to your next inference being done _after_ the agent has finished its work.
 
   ### Behavior Rules
 
