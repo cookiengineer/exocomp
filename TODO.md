@@ -39,6 +39,7 @@
 - [ ] Implement `tools/Vulnerabilities` to be able to search CVE dataset
 - [ ] Implement `tools/Websites` to be able to use `zimdex`
 - [ ] Implement `tools/Skills` to parse `$PWD/skills` directory
+- [ ] Validate all properties of new agents in `readAgents()`
 
 ## JSONL UI
 
