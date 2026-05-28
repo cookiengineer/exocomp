@@ -1,10 +1,6 @@
 
 # TODO
 
-# Schemas
-
-- [ ] schemas.Message needs a timestamp that serializes to ISO8601/RFC3339 format `YYYY-MM-DD HH:ii:ss`
-
 ## Tools
 
 - [ ] Implement Tool Call Shrinking, probably best in types/Session.go

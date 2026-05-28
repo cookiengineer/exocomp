@@ -204,6 +204,12 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 		if err2 == nil {
 
+			declaration = strings.TrimSpace(declaration)
+
+			if strings.HasPrefix(declaration, "func(") || strings.HasPrefix(declaration, "func (") {
+				declaration = "func " + symbol + " " + strings.TrimSpace(declaration[4:])
+			}
+
 			fileset    := token.NewFileSet()
 			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
 				"package dummy",
@@ -292,11 +298,19 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 					}
 
 				} else {
-					return "", fmt.Errorf("requirements.DefineFunc: Invalid syntax, function symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
+
+					err_example := fmt.Errorf(strings.Join([]string{
+						fmt.Sprintf("requirements.DefineFunc: Invalid Go syntax, function symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
+						fmt.Sprintf("Declaration was: \"%s\"", declaration),
+						fmt.Sprintf("Declaration should be: \"func %s (a bool, b int, c string) (string, error)\"", symbol),
+					}, "\n"))
+
+					return "", err_example
+
 				}
 
 			} else {
-				return "", fmt.Errorf("requirements.DefineFunc: %s", err3.Error())
+				return "", fmt.Errorf("requirements.DefineFunc: Invalid Go syntax: \"%s\" threw parser error \"%s\"", declaration, err3.Error())
 			}
 
 		} else {
@@ -318,6 +332,12 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
 		if err2 == nil {
+
+			declaration = strings.TrimSpace(declaration)
+
+			if strings.HasPrefix(declaration, "interface{") || strings.HasPrefix(declaration, "interface {") {
+				declaration = "type " + symbol + " interface " + strings.TrimSpace(declaration[9:])
+			}
 
 			fileset    := token.NewFileSet()
 			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
@@ -404,11 +424,19 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 					}
 
 				} else {
-					return "", fmt.Errorf("requirements.DefineInterface: Invalid syntax, interface symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
+
+					err_example := fmt.Errorf(strings.Join([]string{
+						fmt.Sprintf("requirements.DefineInterface: Invalid Go syntax, interface symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
+						fmt.Sprintf("Declaration was: \"%s\"", declaration),
+						fmt.Sprintf("Declaration should be: \"type %s interface { ... }\"", symbol),
+					}, "\n"))
+
+					return "", err_example
+
 				}
 
 			} else {
-				return "", fmt.Errorf("requirements.DefineInterface: %s", err3.Error())
+				return "", fmt.Errorf("requirements.DefineInterface: Invalid Go syntax: \"%s\" threw parser error \"%s\"", declaration, err3.Error())
 			}
 
 		} else {
@@ -430,6 +458,12 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
 
 		if err2 == nil {
+
+			declaration = strings.TrimSpace(declaration)
+
+			if strings.HasPrefix(declaration, "struct{") || strings.HasPrefix(declaration, "struct {") {
+				declaration = "type " + symbol + " struct " + strings.TrimSpace(declaration[6:])
+			}
 
 			fileset    := token.NewFileSet()
 			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
@@ -516,11 +550,19 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 					}
 
 				} else {
-					return "", fmt.Errorf("requirements.DefineStruct: Invalid syntax, struct symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol)
+
+					err_example := fmt.Errorf(strings.Join([]string{
+						fmt.Sprintf("requirements.DefineStruct: Invalid Go syntax, struct symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
+						fmt.Sprintf("Declaration was: \"%s\"", declaration),
+						fmt.Sprintf("Declaration should be: \"type %s struct { ... }\"", symbol),
+					}, "\n"))
+
+					return "", err_example
+
 				}
 
 			} else {
-				return "", fmt.Errorf("requirements.DefineStruct: %s", err3.Error())
+				return "", fmt.Errorf("requirements.DefineStruct: Invalid Go syntax: \"%s\" threw parser error \"%s\"", declaration, err3.Error())
 			}
 
 		} else {
