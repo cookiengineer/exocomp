@@ -9,6 +9,24 @@ func sanitizeSandboxPath(sandbox string, file_path string) (string, error) {
 
 	if file_path == "" || file_path == "." || file_path == "./" {
 		return ".", nil
+	} else if file_path == sandbox {
+		return ".", nil
+	}
+
+	if strings.Contains(file_path, "/") && string(os.PathSeparator) == "\\" {
+		file_path = strings.ReplaceAll(file_path, "/", "\\")
+	}
+
+	if strings.Contains(sandbox, "/") && string(os.PathSeparator) == "\\" {
+		sandbox = strings.ReplaceAll(sandbox, "/", "\\")
+	}
+
+	if strings.Contains(file_path, "\\") && string(os.PathSeparator) == "/" {
+		file_path = strings.ReplaceAll(file_path, "\\", "/")
+	}
+
+	if strings.Contains(sandbox, "\\") && string(os.PathSeparator) == "/" {
+		sandbox = strings.ReplaceAll(sandbox, "\\", "/")
 	}
 
 	if strings.HasPrefix(sandbox, string(os.PathSeparator)) && strings.HasPrefix(file_path, string(os.PathSeparator)) {
@@ -21,13 +39,6 @@ func sanitizeSandboxPath(sandbox string, file_path string) (string, error) {
 
 	}
 
-	if strings.Contains(file_path, "/") && string(os.PathSeparator) == "\\" {
-		return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", file_path)
-	}
-
-	if strings.Contains(file_path, "\\") && string(os.PathSeparator) == "/" {
-		return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", file_path)
-	}
 
 	tmp1 := filepath.Join(sandbox, file_path)
 	resolved_path, err0 := filepath.Abs(tmp1)
