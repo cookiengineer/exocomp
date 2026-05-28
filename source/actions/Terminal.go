@@ -22,12 +22,6 @@ func Terminal(agent *types.Agent, config *types.Config, role string) {
 		client.SetRole(role)
 	}
 
-	result := client.Init()
-
-	if result == true {
-		os.Exit(0)
-	} else {
-		os.Exit(1)
-	}
+	client.Init()
 
 }

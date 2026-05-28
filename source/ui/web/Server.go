@@ -5,9 +5,14 @@ import "exocomp/types"
 import routes_parameters "exocomp/ui/web/routes/parameters"
 import routes_session "exocomp/ui/web/routes/session"
 import "embed"
+import "fmt"
 import "net/http"
 import "io/fs"
 import net_url "net/url"
+import "os"
+import "os/signal"
+import "syscall"
+import "time"
 
 //go:embed public/*
 var embed_fs embed.FS
@@ -24,7 +29,13 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 	recovery := types.NewRecovery(config.Playground)
 
 	if recovery.HasBackup() {
+
 		session = recovery.RestoreSession()
+
+		if session == nil {
+			session = types.NewSession(agent, config)
+		}
+
 	} else {
 		session = types.NewSession(agent, config)
 	}
@@ -112,7 +123,72 @@ func (server *Server) Destroy() {
 
 }
 
-func (server *Server) Init() bool {
+func (server *Server) Init() {
+
+	signals := make(chan os.Signal, 1)
+
+	signal.Notify(
+		signals,
+		syscall.SIGABRT,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+
+	go func() {
+
+		err := server.Listen()
+
+		if err != nil {
+			signals<-syscall.SIGABRT
+		} else {
+			signals<-syscall.SIGTERM
+		}
+
+	}()
+
+	select {
+	case sig := <-signals:
+
+		switch sig {
+		case syscall.SIGABRT:
+
+			server.Destroy()
+			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGABRT")
+
+			time.Sleep(1 * time.Second)
+			os.Exit(1)
+
+		case syscall.SIGINT:
+
+			server.Destroy()
+			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGINT")
+
+			time.Sleep(1 * time.Second)
+			os.Exit(0)
+
+		case syscall.SIGTERM:
+
+			server.Destroy()
+			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGTERM")
+
+			time.Sleep(1 * time.Second)
+			os.Exit(0)
+
+		default:
+
+			server.Destroy()
+			fmt.Printf("Received signal: %s\n", sig.String())
+
+			time.Sleep(1 * time.Second)
+			os.Exit(0)
+
+		}
+
+	}
+
+}
+
+func (server *Server) Listen() error {
 
 	fsys, err0 := fs.Sub(embed_fs, "public")
 
@@ -168,12 +244,6 @@ func (server *Server) Init() bool {
 	})
 
 
-	err := http.ListenAndServe(":" + server.URL.Port(), nil)
-
-	if err == nil {
-		return true
-	}
-
-	return false
+	return http.ListenAndServe(":" + server.URL.Port(), nil)
 
 }

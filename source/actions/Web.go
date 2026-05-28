@@ -19,12 +19,6 @@ func Web(agent *types.Agent, config *types.Config) {
 	fmt.Fprintf(os.Stdout, "\n")
 	os.Stdout.Sync()
 
-	result := server.Init()
-
-	if result == true {
-		os.Exit(0)
-	} else {
-		os.Exit(1)
-	}
+	server.Init()
 
 }

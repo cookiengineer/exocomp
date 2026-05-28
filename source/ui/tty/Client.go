@@ -9,6 +9,7 @@ import "os"
 import "os/signal"
 import "strings"
 import "syscall"
+import "time"
 
 type Client struct {
 	Renderer *Renderer
@@ -23,7 +24,13 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 	recovery := types.NewRecovery(config.Playground)
 
 	if recovery.HasBackup() {
+
 		session = recovery.RestoreSession()
+
+		if session == nil {
+			session = types.NewSession(agent, config)
+		}
+
 	} else {
 		session = types.NewSession(agent, config)
 	}
@@ -120,7 +127,7 @@ func (client *Client) Destroy() {
 
 }
 
-func (client *Client) Init() bool {
+func (client *Client) Init() {
 
 	signals := make(chan os.Signal, 1)
 
@@ -151,25 +158,29 @@ func (client *Client) Init() bool {
 
 			client.Destroy()
 			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGINT")
+
+			time.Sleep(1 * time.Second)
 			os.Exit(0)
 
 		case syscall.SIGTERM:
 
 			client.Destroy()
 			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGTERM")
+
+			time.Sleep(1 * time.Second)
 			os.Exit(0)
 
 		default:
 
 			client.Destroy()
 			fmt.Printf("Received signal: %s\n", sig.String())
+
+			time.Sleep(1 * time.Second)
 			os.Exit(0)
 
 		}
 
 	}
-
-	return true
 
 }
 

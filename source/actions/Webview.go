@@ -22,12 +22,6 @@ func Webview(agent *types.Agent, config *types.Config) {
 
 	go client.Init()
 
-	result := server.Init()
-
-	if result == true {
-		os.Exit(0)
-	} else {
-		os.Exit(1)
-	}
+	server.Init()
 
 }
