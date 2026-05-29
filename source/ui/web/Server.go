@@ -11,6 +11,7 @@ import "io/fs"
 import net_url "net/url"
 import "os"
 import "os/signal"
+import "strings"
 import "syscall"
 import "time"
 
@@ -190,14 +191,33 @@ func (server *Server) Init() {
 
 func (server *Server) Listen() error {
 
-	fsys, err0 := fs.Sub(embed_fs, "public")
+	cwd, _ := os.Getwd()
 
-	if err0 == nil {
-		fsrv := http.FileServer(http.FS(fsys))
-		http.Handle("/", fsrv)
+	if strings.HasSuffix(cwd, "exocomp/source") {
+
+		dir_fs     := os.DirFS("ui/web")
+		fsys, err0 := fs.Sub(dir_fs, "public")
+
+		if err0 == nil {
+			fsrv := http.FileServer(http.FS(fsys))
+			http.Handle("/", fsrv)
+		} else {
+			panic(err0)
+		}
+
 	} else {
-		panic(err0)
+
+		fsys, err0 := fs.Sub(embed_fs, "public")
+
+		if err0 == nil {
+			fsrv := http.FileServer(http.FS(fsys))
+			http.Handle("/", fsrv)
+		} else {
+			panic(err0)
+		}
+
 	}
+
 
 	// CLI Parameters
 	http.HandleFunc("/api/parameters/roles", func(response http.ResponseWriter, request *http.Request) {
