@@ -281,7 +281,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 		tmp := &schemas.Message{
 			Role:       "tool",
 			Content:    strings.Join([]string{
-				fmt.Sprintf("Error: Tool \"%s\" doesn't exist.", name),
+				fmt.Sprintf("Error: %s: Tool doesn't exist.", name),
 				"",
 				string(json_blob),
 			}, "\n"),
@@ -292,7 +292,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
 
-		return fmt.Errorf("Error: Tool \"%s\" doesn't exist.", name)
+		return fmt.Errorf("Error: %s: Tool doesn't exist.", name)
 
 	}
 

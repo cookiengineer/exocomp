@@ -1,5 +1,6 @@
 
-import { RenderAgentTimeline } from "/utils/svg/RenderAgentTimeline.mjs";
+import { MeasureAgentTimeline } from "/utils/svg/MeasureAgentTimeline.mjs";
+import { RenderAgentTimeline  } from "/utils/svg/RenderAgentTimeline.mjs";
 
 export const ScheduleRenderer = function(session) {
 
@@ -70,7 +71,7 @@ ScheduleRenderer.prototype = {
 			if (agent.Messages.length > cached.length) {
 
 				this.rendered[agent.Name] = {
-					element: RenderAgentTimeline(agent, start, end),
+					element: RenderAgentTimeline(agent, index, start, end),
 					length:  agent.Messages.length
 				};
 
@@ -81,18 +82,13 @@ ScheduleRenderer.prototype = {
 		} else {
 
 			this.rendered[agent.Name] = {
-				element: RenderAgentTimeline(agent, start, end),
+				element: RenderAgentTimeline(agent, index, start, end),
 				length:  agent.Messages.length
 			};
 
 			this.elements["svg"].appendChild(this.rendered[agent.Name].element);
 
 		}
-
-		let offset_x = 0;
-		let offset_y = (32 + (index * 96));
-
-		this.rendered[agent.Name].element.setAttribute("transform", "translate(" + offset_x.toString() + " " + offset_y.toString() + ")");
 
 	},
 
@@ -117,36 +113,26 @@ ScheduleRenderer.prototype = {
 
 			if (planner !== null) {
 
+				let width = MeasureAgentTimeline(planner);
 				let start = planner.Messages[0].Created;
 				let end   = new Date("0001-01-01T00:00:01Z");
 
-				planner.Messages.forEach((message) => {
-
-					if (message.Created > end) {
-						end = message.Created;
-					}
-
-				});
-
 				contractors.forEach((agent) => {
 
-					agent.Messages.forEach((message) => {
-
-						if (message.Created > end) {
-							end = message.Created;
-						}
-
-					});
+					let tmp = MeasureAgentTimeline(agent);
+					if (tmp > width) {
+						width = tmp;
+					}
 
 				})
 
 				this.RenderAgent(planner, null, 0);
 
-				let width  = ((end - start) / 1000) | 0;
+				// let width  = ((end - start) / 1000) | 0;
 				let height = 32 + 96 + 96 * contractors.length;
 
-				this.elements["svg"].setAttribute("width",  width  + 8);
-				this.elements["svg"].setAttribute("height", height + 8);
+				this.elements["svg"].setAttribute("width",  width);
+				this.elements["svg"].setAttribute("height", height);
 
 			}
 
@@ -156,8 +142,13 @@ ScheduleRenderer.prototype = {
 					this.RenderAgent(agent, planner, a + 1);
 				});
 
+				// TODO: Structure a better RenderLoop() for SVG
+				// This endless redrawing doesn't make sense here?
+				this.running = false;
+
 			}
 
+			// TODO: Don't use requestAnimationFrame
 			requestAnimationFrame(() => {
 				this.RenderLoop();
 			});
