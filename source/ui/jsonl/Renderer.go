@@ -70,6 +70,7 @@ func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 		dummy := schemas.Message{
 			Role:    message.Role,
 			Content: message.Content,
+			Created: message.Created,
 		}
 
 		bytes, err := json.Marshal(dummy)
