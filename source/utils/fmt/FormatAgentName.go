@@ -31,7 +31,13 @@ func FormatAgentName(input string) string {
 		return prename + " " + surname
 
 	} else {
-		return strings.ToUpper(tmp1[0:1]) + strings.ToLower(tmp1[1:])
+
+		if len(tmp1) > 0 {
+			return strings.ToUpper(tmp1[0:1]) + strings.ToLower(tmp1[1:])
+		} else {
+			return ""
+		}
+
 	}
 
 }
