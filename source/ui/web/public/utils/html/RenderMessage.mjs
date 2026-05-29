@@ -7,14 +7,14 @@ export const RenderMessage = (message, with_empty_content) => {
 
 	with_empty_content = typeof with_empty_content === "boolean" ? with_empty_content : false;
 
-	if (message["role"] === "assistant") {
+	if (message.Role === "assistant") {
 
-		if (message["content"] !== "") {
+		if (message.Content !== "") {
 
 			let article = document.createElement("article");
 
 			article.setAttribute("data-role", "assistant");
-			article.innerHTML = marked.parse(message["content"]);
+			article.innerHTML = marked.parse(message.Content);
 
 			return article;
 
@@ -31,14 +31,14 @@ export const RenderMessage = (message, with_empty_content) => {
 			return null;
 		}
 
-	} else if (message["role"] === "system") {
+	} else if (message.Role === "system") {
 
-		if (message["content"] !== "") {
+		if (message.Content !== "") {
 
 			let article = document.createElement("article");
 
 			article.setAttribute("data-role", "system");
-			article.innerHTML = marked.parse(message["content"]);
+			article.innerHTML = marked.parse(message.Content);
 
 			return article;
 
@@ -55,13 +55,13 @@ export const RenderMessage = (message, with_empty_content) => {
 			return null;
 		}
 
-	} else if (message["role"] === "tool") {
+	} else if (message.Role === "tool") {
 
 		let article = document.createElement("article");
 
 		article.setAttribute("data-role", "tool");
 
-		let tmp = (message["content"] || "").split("\n");
+		let tmp = message.Content.split("\n");
 		if (tmp.length == 1) {
 
 			article.innerHTML = [
@@ -85,14 +85,14 @@ export const RenderMessage = (message, with_empty_content) => {
 
 		return article;
 
-	} else if (message["role"] === "user") {
+	} else if (message.Role === "user") {
 
-		if (message["content"] !== "") {
+		if (message.Content !== "") {
 
 			let article = document.createElement("article");
 
 			article.setAttribute("data-role", "user");
-			article.innerHTML = marked.parse(message["content"]);
+			article.innerHTML = marked.parse(message.Content);
 
 			return article;
 

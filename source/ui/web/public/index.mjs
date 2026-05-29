@@ -72,6 +72,18 @@ async function main() {
 				button.onclick = () => dialog.Show();
 				button.removeAttribute("disabled");
 
+				document.addEventListener("keyup", (event) => {
+
+					if (event.key === "Escape") {
+
+						if (dialog.IsVisible() === true) {
+							dialog.Hide();
+						}
+
+					}
+
+				});
+
 			}
 
 		})(document.querySelector("dialog#hire-agent"), document.querySelector("header button[data-action=\"hire-agent\"]"));
@@ -92,17 +104,6 @@ async function main() {
 		window.CLIENT = client;
 		window.CLIENT.Init();
 
-		document.addEventListener("keyup", (event) => {
-
-			if (event.key === "Escape") {
-
-				if (dialog.IsVisible() === true) {
-					dialog.Hide();
-				}
-
-			}
-
-		});
 
 	} catch (err) {
 		console.error(err);

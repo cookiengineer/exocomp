@@ -1,0 +1,23 @@
+
+main > svg[data-name="schedule"] {
+	display: block;
+	margin: 32px;
+	padding: 0px;
+}
+
+svg[data-name="schedule"] > g > rect                        { fill: rgba(0,0,0,0.25);         }
+svg[data-name="schedule"] > g > rect[data-role="system"]    { fill: var(--message-system);    }
+svg[data-name="schedule"] > g > rect[data-role="assistant"] { fill: var(--message-assistant); }
+svg[data-name="schedule"] > g > rect[data-role="tool"]      { fill: var(--message-tool);      }
+svg[data-name="schedule"] > g > rect[data-role="user"]      { fill: var(--message-user);      }
+
+svg[data-name="schedule"] > g > rect[data-role] {
+	stroke: #ffffff;
+	stroke-width: 1px;
+}
+
+svg[data-name="schedule"] > g > text {
+	font-family: "crumble";
+	font-size: 18px;
+	fill: #ffffff;
+}

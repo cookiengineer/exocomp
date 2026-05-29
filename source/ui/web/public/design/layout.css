@@ -17,6 +17,19 @@ body > header > div:nth-of-type(1) {
 	text-align: center;
 }
 
+body > header > div:nth-of-type(1):empty {
+	width: 0px;
+}
+
+body > header > div:nth-of-type(3) {
+	width: calc(200px - 32px);
+	text-align: center;
+}
+
+body > header > div:nth-of-type(3):empty {
+	width: 0px;
+}
+
 body > main {
 	display: block;
 	position: fixed;

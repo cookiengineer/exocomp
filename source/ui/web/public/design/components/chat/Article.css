@@ -49,8 +49,8 @@ main > article[data-role="user"]::after {
 }
 
 main > article[data-role="system"] {
-	border-left: 24px solid #c19d01;
-	border-color: #c19d01;
+	border-left: 24px solid var(--message-system);
+	border-color: var(--message-system);
 }
 
 main > article[data-role="system"]::before {
@@ -58,8 +58,8 @@ main > article[data-role="system"]::before {
 }
 
 main > article[data-role="assistant"] {
-	border-left: 24px solid #3465a4;
-	border-color: #3465a4;
+	border-left: 24px solid var(--message-assistant);
+	border-color: var(--message-assistant);
 }
 
 main > article[data-role="assistant"]::before {
@@ -68,8 +68,8 @@ main > article[data-role="assistant"]::before {
 
 main > article[data-role="tool"] {
 	background: #303030;
-	border-right: 24px solid #c80101;
-	border-color: #c80101;
+	border-right: 24px solid var(--message-tool);
+	border-color: var(--message-tool);
 }
 
 main > article[data-role="tool"] > pre,
@@ -115,8 +115,8 @@ main > article[data-role="tool"]::after {
 }
 
 main > article[data-role="user"] {
-	border-right: 24px solid #4e9906;
-	border-color: #4e9906;
+	border-right: 24px solid var(--message-user);
+	border-color: var(--message-user);
 }
 
 main > article[data-role="user"]::after {

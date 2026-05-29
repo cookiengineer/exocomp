@@ -1,3 +1,4 @@
+import { Message } from "./Message.mjs";
 
 export const Agent = function() {
 
@@ -26,7 +27,6 @@ Agent.from = (data) => {
 	agent.Model       = data["model"]       || "";
 	agent.Prompt      = data["prompt"]      || "";
 	agent.Temperature = data["temperature"] || 0.0;
-	agent.Messages    = data["messages"]    || [];
 	agent.Programs    = data["programs"]    || [];
 	agent.Tools       = data["tools"]       || [];
 	agent.Sandbox     = data["sandbox"]     || "";
@@ -34,6 +34,14 @@ Agent.from = (data) => {
 	if (Object.prototype.toString.call(data["context-usage"]) === "[object Object]") {
 		agent.ContextUsage.Length = data["context-usage"]["length"] || 0;
 		agent.ContextUsage.Tokens = data["context-usage"]["tokens"] || 0;
+	}
+
+	if (Object.prototype.toString.call(data["messages"]) === "[object Array]") {
+
+		agent.Messages = data["messages"].map((message) => {
+			return Message.from(message);
+		});
+
 	}
 
 	return agent;

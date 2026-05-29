@@ -1,5 +1,5 @@
 
-import { RenderMessage } from "./RenderMessage.mjs";
+import { RenderMessage } from "/utils/html/RenderMessage.mjs";
 import { Session       } from "/types/Session.mjs";
 
 export const ChatRenderer = function(session) {

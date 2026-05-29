@@ -9,7 +9,11 @@ export const Schedule = function(config) {
 	this.Agent    = "";
 	this.Agents   = {};
 	this.Config   = config;
-	this.Renderer = new ScheduleRenderer();
+	this.Renderer = new ScheduleRenderer({
+		Agent:  this.Agent,
+		Agents: this.Agents,
+		Config: this.Config,
+	});
 
 	this.elements = {
 		"schedule": document.querySelector("body > main > canvas[data-name=\"schedule\"]")
