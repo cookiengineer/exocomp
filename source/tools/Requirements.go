@@ -302,7 +302,7 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 					err_example := fmt.Errorf(strings.Join([]string{
 						fmt.Sprintf("requirements.DefineFunc: Invalid Go syntax, function symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
 						fmt.Sprintf("Declaration was: \"%s\"", declaration),
-						fmt.Sprintf("Declaration should be: \"func %s (a bool, b int, c string) (string, error)\"", symbol),
+						fmt.Sprintf("Declaration should be: \"func %s (...) (...)\"", symbol),
 					}, "\n"))
 
 					return "", err_example

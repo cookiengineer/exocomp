@@ -17,10 +17,8 @@ allowed-tools:
   - bugs.Search
   - changelog.List
   - changelog.Search
-  - files.Copy
   - files.List
   - files.Read
-  - files.Stat
   - requirements.List
   - requirements.Search
 prompt: |

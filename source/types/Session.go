@@ -20,7 +20,7 @@ func isWaitingForAgent(message string) bool {
 		message = strings.TrimSpace(message[7:])
 	}
 
-	if strings.HasPrefix(message, "agents.Await: Agent") && strings.HasSuffix(message, "is still working...") {
+	if strings.HasPrefix(message, "agents.Await: Agent") && strings.HasSuffix(message, "is still working ...") {
 		return true
 	}
 
