@@ -1,9 +1,10 @@
 package web
 
-import "exocomp/tools"
-import "exocomp/types"
 import routes_parameters "exocomp/ui/web/routes/parameters"
 import routes_session "exocomp/ui/web/routes/session"
+import "exocomp/tools"
+import "exocomp/types"
+import utils_http "exocomp/utils/http"
 import "embed"
 import "fmt"
 import "net/http"
@@ -19,8 +20,9 @@ import "time"
 var embed_fs embed.FS
 
 type Server struct {
-	Session  *types.Session
-	URL      *net_url.URL
+	Session *types.Session
+	URL     *net_url.URL
+	handler *utils_http.Handler
 }
 
 func NewServer(agent *types.Agent, config *types.Config) *Server {
@@ -86,6 +88,9 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 	return &Server{
 		Session: session,
 		URL:     url,
+		handler: utils_http.NewHandler(
+			http.NotFoundHandler(),
+		),
 	}
 
 }
@@ -124,7 +129,32 @@ func (server *Server) Destroy() {
 
 }
 
+func (server *Server) EnableHotReload() error {
+
+	dir_fs     := os.DirFS("ui/web")
+	fsys, err0 := fs.Sub(dir_fs, "public")
+
+	if err0 == nil {
+
+		server.handler.Set(http.FileServer(http.FS(fsys)))
+
+		return nil
+
+	} else {
+		return err0
+	}
+
+}
+
 func (server *Server) Init() {
+
+	fsys, err0 := fs.Sub(embed_fs, "public")
+
+	if err0 == nil {
+		server.handler.Set(http.FileServer(http.FS(fsys)))
+	} else {
+		panic(err0)
+	}
 
 	signals := make(chan os.Signal, 1)
 
@@ -194,30 +224,11 @@ func (server *Server) Listen() error {
 	cwd, _ := os.Getwd()
 
 	if strings.HasSuffix(cwd, "exocomp/source") {
-
-		dir_fs     := os.DirFS("ui/web")
-		fsys, err0 := fs.Sub(dir_fs, "public")
-
-		if err0 == nil {
-			fsrv := http.FileServer(http.FS(fsys))
-			http.Handle("/", fsrv)
-		} else {
-			panic(err0)
-		}
-
-	} else {
-
-		fsys, err0 := fs.Sub(embed_fs, "public")
-
-		if err0 == nil {
-			fsrv := http.FileServer(http.FS(fsys))
-			http.Handle("/", fsrv)
-		} else {
-			panic(err0)
-		}
-
+		server.EnableHotReload()
 	}
 
+	// NOTE: handler is an atomic value
+	http.Handle("/", server.handler)
 
 	// CLI Parameters
 	http.HandleFunc("/api/parameters/roles", func(response http.ResponseWriter, request *http.Request) {
@@ -267,3 +278,4 @@ func (server *Server) Listen() error {
 	return http.ListenAndServe(":" + server.URL.Port(), nil)
 
 }
+
