@@ -78,6 +78,25 @@ func NewSession(agent *Agent, config *Config) *Session {
 
 }
 
+func ParseSession(data []byte) (*Session, error) {
+
+	if len(data) > 2 && data[0] == '{' && data[len(data)-1] == '}' {
+
+		session := Session{}
+		err     := json.Unmarshal(data, &session)
+
+		if err == nil {
+			return &session, nil
+		} else {
+			return nil, err
+		}
+
+	} else {
+		return nil, fmt.Errorf("Unsupported data format")
+	}
+
+}
+
 func RestoreSession(playground string, backup Session) *Session {
 
 	session := &Session{
