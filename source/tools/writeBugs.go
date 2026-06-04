@@ -8,7 +8,7 @@ func writeBugs(tool *Bugs) error {
 
 	if tool.Playground != "" {
 
-		resolved, err0 := resolveSandboxPath(tool.Playground, "./exocomp-bugs.json")
+		resolved, err0 := resolveSandboxPath(tool.Playground, ".exocomp", "bugs.json")
 
 		if err0 == nil {
 
