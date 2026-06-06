@@ -3,12 +3,13 @@ package tools
 import "encoding/json"
 import "fmt"
 import "os"
+import "path/filepath"
 
 func writeRequirements(tool *Requirements) error {
 
 	if tool.Playground != "" {
 
-		resolved, err0 := resolveSandboxPath(tool.Playground, ".exocomp", "requirements.json")
+		resolved, err0 := resolveSandboxPath(tool.Playground, filepath.Join(".exocomp", "requirements.json"))
 
 		if err0 == nil {
 
