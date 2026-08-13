@@ -588,6 +588,10 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 			}
 
+			if session.Recovery != nil {
+				session.Recovery.BackupSession(session)
+			}
+
 			return session.infer_chat_completions()
 
 		} else {

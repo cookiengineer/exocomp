@@ -32,6 +32,8 @@ func NewRequirements(playground string, sandbox string) *Requirements {
 		contents:   make(map[string]map[string]requirement_specification),
 	}
 
+	readRequirements(tool)
+
 	return tool
 
 }
