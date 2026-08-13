@@ -42,7 +42,7 @@ func readAgents(tool *Agents) error {
 
 								if err3 == nil {
 
-									if agent.Role != "" {
+									if agent.IsValid() == true {
 										agents.SetRole(agent.Role, agent)
 									}
 

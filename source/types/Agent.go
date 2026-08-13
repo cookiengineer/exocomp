@@ -2,6 +2,7 @@ package types
 
 import "exocomp/schemas"
 import "exocomp/encoding/yaml"
+import utils_fmt "exocomp/utils/fmt"
 import "encoding/json"
 
 type Agent struct {
@@ -43,5 +44,27 @@ func ParseAgent(data []byte) (*Agent, error) {
 		}
 
 	}
+
+}
+
+func (agent *Agent) IsValid() bool {
+
+	tmp_name        := utils_fmt.FormatAgentName(agent.Name)
+	tmp_description := utils_fmt.FormatASCII(agent.Description)
+	tmp_role        := utils_fmt.FormatAgentRole(agent.Role)
+	tmp_model       := utils_fmt.FormatAgentModel(agent.Model)
+	tmp_prompt      := utils_fmt.FormatASCII(agent.Prompt)
+	tmp_sandbox     := utils_fmt.FormatFilePath(agent.Sandbox)
+
+	if tmp_name == agent.Name &&
+	   tmp_description == agent.Description &&
+	   tmp_role == agent.Role &&
+	   tmp_model == agent.Model &&
+	   tmp_prompt == agent.Prompt &&
+	   tmp_sandbox == agent.Sandbox {
+		return true
+	}
+
+	return false
 
 }

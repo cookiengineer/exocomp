@@ -19,7 +19,7 @@ type Skill struct {
 	AllowedPrograms []string        `json:"allowed-programs" yaml:"allowed-programs"`
 
 	// body
-	Body          string            `json:"body" yaml:"-"`
+	Body string `json:"body" yaml:"-"`
 
 	// Internal Properties
 	Scripts map[string]string `json:"-" yaml:"-"` // map[script]runtime

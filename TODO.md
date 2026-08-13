@@ -50,10 +50,18 @@
 - [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `nav` element to avoid setting `innerHTML`
 - [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `main` element to avoid setting `innerHTML`
 
+- [ ] Chat View (default)
+- [ ] Show chats with agents
+
 - [ ] Workflow View
 - [ ] Show only inter-agent communications
 - [ ] Show only filesystem mutations
 - [ ] Show only failures (with work reports)
+
+- [ ] Tools View
+- [ ] Show tool errors
+- [ ] Show tool interactions with files (filesystem tree?)
+- [ ] Show tool interactions with programs (program and arguments tree?)
 
 ## Agent History Compression
 
