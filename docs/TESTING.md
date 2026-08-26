@@ -3,11 +3,11 @@
 
 ### Requirements
 
-Testing the `agents` tool requires a [llama.cpp](https://github.com/ggml-org/llama.cpp)
+Testing the live `agents` tool requires a [llama.cpp](https://github.com/ggml-org/llama.cpp)
 `llama-server` instance running with a `qwen3-coder:30b` model and `Q8_0`
-quantization.
+quantization. All other tests run without a server.
 
-For all tests, use the [unsloth Qwen3 Coder A3B Instruct](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF)
+For all live tests, use the [unsloth Qwen3 Coder A3B Instruct](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF)
 `Q8_0` (8-bit) quantization of the Qwen3 Coder model.
 
 ```bash
@@ -32,30 +32,33 @@ llama-server \
 	--port 11434;
 ```
 
-
 ### Unit Tests
 
 ```bash
-cd /path/to/exocomp;
+cd /path/to/exocomp/source;
 
-# Test everything
+# Test everything (no LLM required)
 go test -v ./...;
 ```
 
+This includes the deterministic agent lifecycle tests, which build a fake agent
+binary ([testdata/fakeagent](../source/tools/testdata/fakeagent/main.go)) and
+inject it via the `EXOCOMP_AGENT` environment variable, so the parent-side
+`agents.Hire` / `agents.Await` / `agents.Fire` lifecycle is exercised without a
+live LLM.
 
-### Agents Tool
+### Live Agents Tool
 
-Testing the `agents` tool comes with certain limitations because of how the
+Testing the live `agents` tool comes with certain limitations because of how the
 `go test` workflow is designed. The `tools/Agents_main_test.go` builds a
 standalone binary of `cmds/exocomp/main.go` that is injected into `tools/Agents.go`
 via environment variable. This is unavoidable due to otherwise cyclic
 dependencies.
 
 ```bash
-# Run multi-agent unit tests
-cd /path/to/exocomp/tools;
+# Run multi-agent unit tests against a live llama-server
+cd /path/to/exocomp/source/tools;
 
 go clean -testcache;
 go test -tags=agents -v ./
 ```
-

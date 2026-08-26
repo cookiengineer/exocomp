@@ -102,8 +102,11 @@ Lifecycle is owned by the [Agents tool](../source/tools/Agents.go):
    reliably observes it.
 
 A liveness watchdog cancels a child that stops producing output for longer than
-`IdleTimeout` and a hard `Timeout` bounds the total lifetime. Both are fields on
-`Agents` with defaults set in `NewAgents`.
+`IdleTimeout` (default `5m`) and a hard `Timeout` (default `30m`) bounds the
+total lifetime. Both are fields on `Agents` with defaults set in `NewAgents`.
+
+In addition to `Status`, `types.Agent` carries `StartedAt`/`FinishedAt`
+timestamps so the schedule view can show how long each agent ran.
 
 ## Tool Lifecycle
 
@@ -121,6 +124,21 @@ first `.`).
 - Sandbox-bound tools (files, programs, requirements, bugs, changelog) resolve
   all paths through `resolveSandboxPath`/`sanitizeSandboxPath` so a contractor
   cannot escape its sandbox.
+
+Each tool's LLM-facing contract lives in its embedded JSON schema
+(`tools/*.json`), with precise parameter descriptions and syntax examples.
+
+### Symbols
+
+A `symbol` is the unique identifier for a struct, function, method or interface
+within a file. `requirements.DefineFunc` accepts two forms:
+
+- Free function: `symbol` is the function name, e.g. `"Parse"`.
+- Method on a struct: `symbol` is `"ReceiverType.MethodName"`, e.g.
+  `"structs.Data.Parse"` for `func (data *structs.Data) Parse(...)`.
+
+The receiver type is parsed from the declaration via `go/parser` and used as the
+symbol owner, so a struct and its methods do not collide.
 
 Role separation is enforced by *capability*, not by the prompt alone: an
 architect has `files.Read` but not `files.Write` and must record its output

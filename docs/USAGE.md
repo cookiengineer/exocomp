@@ -10,10 +10,17 @@ There are several User Interfaces implemented in Exocomp:
 - `exocomp web` spawns the [web/Server](../source/ui/web/Server.go) on port `3000` that serves the [Web UI](../source/ui/web/public/).
 - `exocomp webview` spawns a [web/Server](../source/ui/web/Server.go) on port `3000` and opens a [webview/Client](../source/ui/webview/Client.go) window.
 
+Common flags: `--name`, `--role`, `--model`, `--temperature`, `--prompt`,
+`--sandbox`, `--url`, `--debug`. Examples:
+
+```bash
+exocomp terminal --role=architect --model="qwen3-coder:30b" --temperature=0.5;
+exocomp web --role=planner --model="codestral:22b" --temperature=0.7;
+```
 
 ### Multi-Agent Usage
 
-The defaulted `planner` agent is allowed to hire contracting sub-agents with the
+The default `planner` agent is allowed to hire contracting sub-agents with the
 [Agents](../source/tools/Agents.go) tool.
 
 Multi agent communication works with a sub process hierarchy, where each process
@@ -22,7 +29,6 @@ system/user prompts.
 
 Cross-agent communication works with a strict process hierarchy, each contracted
 sub-agent's `playground` is set to the parent process's `sandbox`.
-
 
 #### Example Process Hierarchy
 
@@ -42,22 +48,21 @@ This is what the Human interacts with:
 
 ```bash
 cd /path/to/project;
-exocomp web planner;
+exocomp web --role=planner;
 ```
 
 This is what the Planner agent spawns behind the scenes as sub processes:
 
 ```bash
 # cd /path/to/project;
-# exocomp agent --agent=architect --prompt="Implement a utils package and specify the CalculateFibonacci method signature.";
+# exocomp agent --role=architect --prompt="Implement a utils package and specify the CalculateFibonacci method signature.";
 
 # cd /path/to/project/utils;
-# exocomp agent --agent=coder --prompt="Implement a public method called CalculateFibonacci(step int) int that calculates the fibonacci numbers.";
+# exocomp agent --role=coder --prompt="Implement a public method called CalculateFibonacci(step int) int that calculates the fibonacci numbers.";
 
 # cd /path/to/project/utils;
-# exocomp agent --agent=tester --prompt="Implement the unit tests for the CalculateFibonacci method.";
+# exocomp agent --role=tester --prompt="Implement the unit tests for the CalculateFibonacci method.";
 
 # cd /path/to/project/cmds/fibonacci;
-# exocomp agent --agent=coder --prompt="Implement a main.go that calculates fibonacci numbers. Use the first CLI parameter as the step or sequence argument.";
+# exocomp agent --role=coder --prompt="Implement a main.go that calculates fibonacci numbers. Use the first CLI parameter as the step or sequence argument.";
 ```
-
