@@ -58,6 +58,9 @@ Schedule.prototype = {
 
 		if (agent !== null) {
 
+			// TODO: Implement agent hash cache
+			// TODO: If agent changed, then call Renderer.RenderAgent(agent)
+
 			this.Agents[agent.Name] = agent;
 
 			if (this.Agent === "" && agent.Name === this.Config.Name) {

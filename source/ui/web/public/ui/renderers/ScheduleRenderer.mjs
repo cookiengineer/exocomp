@@ -2,6 +2,12 @@
 import { MeasureAgentTimeline } from "/utils/svg/MeasureAgentTimeline.mjs";
 import { RenderAgentTimeline  } from "/utils/svg/RenderAgentTimeline.mjs";
 
+const render_hash = function(agent) {
+
+
+
+};
+
 export const ScheduleRenderer = function(session) {
 
 	this.Session  = session;
