@@ -86,7 +86,7 @@ Check the unit tests on whether the Tools can be relied on or not.
 | [Skills](./source/tools/Skills.go)             |                                            | loads and Unloads Agent Skills [2]                 | `planner`, `architect`, `coder`, `tester`               |
 | Kiwix                                          |                                            | researches knowledge from offline web archives     | `researcher`                                            |
 | Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `pentester`, `threathunter`                             |
-| Websites                                       |                                            | researches knowledge from the web                  | `pentester`, `researcher`                               |
+| [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode with browser impersonation | `webscanner`, `exploiter`                             |
 
 - [1] Requires `llama.cpp` with `qwen3-coder:30b` and `Q8_0` quantization and 48GB VRAM GPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).
@@ -98,7 +98,7 @@ The `exocomp` project comes in several variants. All programs support `CGO_ENABL
 so they can be used without any dynamically linked dependencies.
 
 - [agimus](./source/cmds/agimus/main.go) which is used for testing `assistant` sandboxes.
-- [exocomp](./source/cmds/exocomp-web/main.go) which supports all UIs.
+- [exocomp](./source/cmds/exocomp/main.go) which supports all UIs.
 - [exocomp-agent](./source/cmds/exocomp-agent/main.go) which supports only the `agent` and `terminal` UI.
 - [exocomp-web](./source/cmds/exocomp-web/main.go) which supports only the `agent` and `web` UI.
 - [exocomp-installer](./installer/cmds/exocomp-installer/main.go) that bundles all exocomp builds and required agent programs.
@@ -117,10 +117,10 @@ cd /path/to/exocomp/build;
 
 ### Testing
 
-Testing requires a [llama.cpp](https://github.com/ggml-org/llama.cpp)
-`llama-server` instance running with a `qwen3-coder:30b` model and `Q8_0`
-quantization. Take a look at the [TESTING.md](./docs/TESTING.md) for more
-details.
+Most unit tests run without any server. Only the live `agents` tool tests
+require a [llama.cpp](https://github.com/ggml-org/llama.cpp) `llama-server`
+instance running with a `qwen3-coder:30b` model and `Q8_0` quantization. Take a
+look at the [TESTING.md](./docs/TESTING.md) for more details.
 
 
 ### Usage
@@ -136,7 +136,7 @@ other agents working for the agent you're talking with.
 cd /path/to/project-root;
 
 # Agent type planner is defaulted
-exocomp webview planner;
+exocomp webview --role=planner;
 ```
 
 Take a look at the [USAGE.md](./docs/USAGE.md) for more details.

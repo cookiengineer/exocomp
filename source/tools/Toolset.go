@@ -188,6 +188,28 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 
 	}
 
+	for _, schema := range WebsitesSchema {
+
+		if slices.Contains(allowed_tools, schema.Function.Name) {
+
+			_, ok1 := result_schemas["websites"]
+
+			if ok1 == false {
+				result_schemas["websites"] = make([]schemas.Tool, 0)
+			}
+
+			result_schemas["websites"] = append(result_schemas["websites"], schema)
+
+			_, ok2 := result_tools["websites"]
+
+			if ok2 == false {
+				result_tools["websites"] = NewWebsites(playground, sandbox)
+			}
+
+		}
+
+	}
+
 	return result_schemas, result_tools
 
 }

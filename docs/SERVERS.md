@@ -34,7 +34,7 @@ ollama pull gemma4:31b;
 cd /path/to/exocomp;
 
 # Run exocomp with external server
-go run ./cmds/exocomp/main.go web planner --url="http://ollama_server_ip:11434/v1";
+go run ./cmds/exocomp/main.go web --role=planner --url="http://ollama_server_ip:11434/v1";
 ```
 
 ## llama.cpp Usage
@@ -53,7 +53,7 @@ cd /path/to/exocomp;
 bash install-deps.sh;
 
 # Run exocomp with internal server
-go run -tags=with_llamacpp ./cmds/exocomp/main.go web planner;
+go run ./cmds/exocomp/main.go web --role=planner;
 ```
 
 Full llama.cpp server parameters:

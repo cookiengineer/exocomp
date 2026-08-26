@@ -1,6 +1,6 @@
 module exocomp-toolchain
 
-go 1.26.2
+go 1.27
 
 require exocomp v0.0.0
 

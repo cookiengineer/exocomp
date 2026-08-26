@@ -1,0 +1,61 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "websites.Fetch",
+			"description": "Fetch a website URL and return its main content in Reader Mode: \"markdown\" or \"text\" strip navigation, sidebars, footers, scripts and ads and return only the article. \"html\" returns the raw source. Impersonates a real browser with User-Agent and Client Hint headers so scraping is not blocked.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string",
+						"description": "The full http or https URL to fetch, e.g. \"https://example.com/page\""
+					},
+					"user_agent": {
+						"type": "string",
+						"description": "Optional User-Agent preset name from websites.List, e.g. \"chrome-windows\", \"firefox-linux\", \"safari-macos\". Defaults to \"chrome-windows\"."
+					},
+					"format": {
+						"type": "string",
+						"description": "Optional output format: \"markdown\" (default, Reader Mode), \"text\" (Reader Mode plain text), or \"html\" (raw source).",
+						"enum": ["markdown", "text", "html"]
+					}
+				},
+				"required": ["url"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "websites.List",
+			"description": "List all available User-Agent presets with their platform and whether they are mobile.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "websites.Stat",
+			"description": "Return the HTTP status and response headers of a website URL without fetching its body.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string",
+						"description": "The full http or https URL to inspect, e.g. \"https://example.com\""
+					},
+					"user_agent": {
+						"type": "string",
+						"description": "Optional User-Agent preset name from websites.List, e.g. \"chrome-windows\". Defaults to \"chrome-windows\"."
+					}
+				},
+				"required": ["url"]
+			}
+		}
+	}
+]
