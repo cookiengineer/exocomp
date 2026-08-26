@@ -17,6 +17,9 @@ type Agent struct {
 	AllowedTools    []string           `json:"allowed_tools" yaml:"allowed-tools"`
 	Sandbox         string             `json:"sandbox" yaml:"-"`
 	ContextUsage    ContextUsage       `json:"context-usage" yaml:"-"`
+	Status          string             `json:"status,omitempty" yaml:"-"`
+	StartedAt       schemas.Datetime   `json:"started-at,omitempty" yaml:"-"`
+	FinishedAt      schemas.Datetime   `json:"finished-at,omitempty" yaml:"-"`
 }
 
 func ParseAgent(data []byte) (*Agent, error) {

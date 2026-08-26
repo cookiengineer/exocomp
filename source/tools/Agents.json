@@ -3,13 +3,13 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Await",
-			"description": "Wait for a contractor agent's work report.",
+			"description": "Block until a previously hired agent finishes, then return its work report. Use after agents.Hire. If the agent already finished, its last work report is returned immediately.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Agent's unique name"
+						"description": "The agent's unique name, exactly as returned by agents.Hire or listed by agents.List, e.g. \"Zorb Florb\"."
 					}
 				},
 				"required": ["name"]
@@ -20,7 +20,7 @@
 		"type": "function",
 		"function": {
 			"name": "agents.List",
-			"description": "List all contractor agents.",
+			"description": "List all hired agents with their role and current status (working, finished, failed or fired).",
 			"parameters": {
 				"type": "object",
 				"properties": {},
@@ -32,7 +32,7 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Roles",
-			"description": "List all available agent roles.",
+			"description": "List all available contractor agent roles (e.g. architect, coder, tester) with a short description of each.",
 			"parameters": {
 				"type": "object",
 				"properties": {},
@@ -44,22 +44,22 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Hire",
-			"description": "Hire a contractor agent with a task prompt inside a sandbox.",
+			"description": "Spawn a new contractor agent subprocess that works on a task inside a sandbox. Returns the new agent's unique name, which is required for agents.Await, agents.Fire and agents.Inquire.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"role": {
 						"type": "string",
-						"description": "Agent's role",
-						"enum": ["architect", "coder", "researcher", "summarizer", "tester"]
+						"description": "The agent role, one of agents.Roles, e.g. \"architect\", \"coder\" or \"tester\".",
+						"enum": ["architect", "coder", "exploiter", "summarizer", "tester", "webscanner"]
 					},
 					"prompt": {
 						"type": "string",
-						"description": "Specific task instructions, agent will quit with a report after completion"
+						"description": "The complete task instructions. Be explicit about which files and symbols to create or change, and instruct the agent to call agents.Quit when done."
 					},
 					"sandbox": {
 						"type": "string",
-						"description": "Relative path to the folder, leave empty to use the same sandbox"
+						"description": "Relative folder path the agent may read and write, e.g. \"./utils\". Omit or use \".\" for the current sandbox."
 					}
 				},
 				"required": ["role", "prompt"]
@@ -70,13 +70,13 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Fire",
-			"description": "Fire a contractor agent with a unique name.",
+			"description": "Kill a currently running agent and mark it as fired. Use on agents that are stuck or no longer needed.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Contractor agent's unique name"
+						"description": "The agent's unique name, exactly as returned by agents.Hire or listed by agents.List."
 					}
 				},
 				"required": ["name"]
@@ -87,13 +87,13 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Inquire",
-			"description": "Inquire a status report of the contractor agent with a unique name.",
+			"description": "Summarize a hired agent's current work report without waiting for it to finish.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Contractor agent's unique name"
+						"description": "The agent's unique name, exactly as returned by agents.Hire or listed by agents.List."
 					}
 				},
 				"required": ["name"]
@@ -104,13 +104,13 @@
 		"type": "function",
 		"function": {
 			"name": "agents.Quit",
-			"description": "Finish your own work with a work report to the hiring agent.",
+			"description": "Finish your own work and report back to the agent that hired you. Include the phrase \"my work is done\" in the message to exit with success.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"message": {
 						"type": "string",
-						"description": "The work report. If it contains \"my work is done\" the current process exits with a success."
+						"description": "The final work report. If it contains the phrase \"my work is done\", the process exits successfully; otherwise it exits with an error."
 					}
 				},
 				"required": ["message"]

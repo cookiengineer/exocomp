@@ -106,9 +106,7 @@ func TestAgents_Hire(t *testing.T) {
 	if tool != nil {
 
 		result0, err0 := tool.Hire(
-			"Fibonacci Worker",
 			"coder",
-			"./fibonacci",
 			strings.Join([]string{
 				"Can you write a main.go for me that implements the fibonacci sequence?",
 				"The first parameter should be the sequence/step parameter.",
@@ -122,15 +120,22 @@ func TestAgents_Hire(t *testing.T) {
 				"",
 				"You MUST write the final result to the filesystem before you're finished.",
 			}, "\n"),
+			"./fibonacci",
 		)
 
-		if result0 != "agents.Hire: Agent \"Fibonacci Worker\" got hired." {
-			t.Errorf("Expected agent \"%s\" toe get hired", "Fibonacci Worker")
+		if !strings.HasPrefix(result0, "agents.Hire: Agent \"") {
+			t.Errorf("Expected an agent to get hired, got %s", result0)
 		}
 
 		if err0 == nil {
 
-			finished0 := waitForAgent(tool, "Fibonacci Worker")
+			names := tool.GetNames()
+
+			if len(names) != 1 {
+				t.Fatalf("Expected 1 hired agent, got %d", len(names))
+			}
+
+			finished0 := waitForAgent(tool, names[0])
 
 			if finished0 == true {
 
@@ -190,7 +195,7 @@ func TestAgents_Hire(t *testing.T) {
 				}
 
 			} else {
-				t.Errorf("Expected agent \"%s\" to call agents.Quit", "Fibonacci Worker")
+				t.Errorf("Expected agent to call agents.Quit")
 			}
 
 		} else {

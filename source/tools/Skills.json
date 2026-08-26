@@ -3,7 +3,7 @@
 		"type": "function",
 		"function": {
 			"name": "skills.List",
-			"description": "List all available Agent Skills for this sandbox.",
+			"description": "List all Agent Skills available in this sandbox with their status, description, tools and scripts.",
 			"parameters": {
 				"type": "object",
 				"properties": {},
@@ -15,13 +15,13 @@
 		"type": "function",
 		"function": {
 			"name": "skills.Load",
-			"description": "Load a temporary Agent Skill with a unique name.",
+			"description": "Load an available Agent Skill by name so its scripts become executable.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Agent Skill name"
+						"description": "The skill name, exactly as listed by skills.List."
 					}
 				},
 				"required": ["name"]
@@ -32,13 +32,13 @@
 		"type": "function",
 		"function": {
 			"name": "skills.Unload",
-			"description": "Unload a temporary Agent Skill with a unique name.",
+			"description": "Unload a previously loaded Agent Skill by name.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Agent Skill name"
+						"description": "The loaded skill name, exactly as listed by skills.List."
 					}
 				},
 				"required": ["name"]
@@ -49,28 +49,28 @@
 		"type": "function",
 		"function": {
 			"name": "skills.Execute",
-			"description": "Execute a script with given arguments.",
+			"description": "Execute a script of a loaded Agent Skill with arguments and return its output.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "Agent Skill name"
+						"description": "The loaded skill name, exactly as listed by skills.List."
 					},
 					"script": {
 						"type": "string",
-						"description": "The script file name, e.g. \"my-script.py\""
+						"description": "The script file name of the skill, e.g. \"scan.py\". Must be one of the scripts listed by skills.List for that skill."
 					},
 					"arguments": {
 						"type": "array",
-						"description": "The script arguments, e.g. [\"test\", \"./...\"]",
+						"description": "Optional array of string arguments passed to the script, e.g. [\"https://example.com\"]. Omit it or use [] when no arguments are needed.",
 						"items": {
 							"type": "string"
 						},
 						"default": []
 					}
 				},
-				"required": ["name", "script", "arguments"]
+				"required": ["name", "script"]
 			}
 		}
 	}

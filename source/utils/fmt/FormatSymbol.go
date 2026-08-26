@@ -18,6 +18,8 @@ func FormatSymbol(input string) string {
 			formatted = append(formatted, byte(chr))
 		} else if chr == '_' {
 			formatted = append(formatted, byte(chr))
+		} else if chr == '.' {
+			formatted = append(formatted, byte(chr))
 		}
 
 	}

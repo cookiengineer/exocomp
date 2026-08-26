@@ -3,21 +3,21 @@
 		"type": "function",
 		"function": {
 			"name": "changelog.Add",
-			"description": "Create changelog entry for an Addition",
+			"description": "Log that a new symbol (function, struct or interface) was added to a file.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to the changed file, e.g. \"./utils/Parse.go\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "The added symbol, e.g. \"Parse\" or \"structs.Data.Parse\"."
 					},
 					"description": {
 						"type": "string",
-						"description": "Single-line concise change description"
+						"description": "One-line description of what was added."
 					}
 				},
 				"required": ["path", "symbol", "description"]
@@ -28,21 +28,21 @@
 		"type": "function",
 		"function": {
 			"name": "changelog.Change",
-			"description": "Create changelog entry for a Change",
+			"description": "Log that an existing symbol (function, struct or interface) was changed.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to the changed file, e.g. \"./utils/Parse.go\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "The changed symbol, e.g. \"Parse\" or \"structs.Data.Parse\"."
 					},
 					"description": {
 						"type": "string",
-						"description": "Single-line concise change description"
+						"description": "One-line description of what changed."
 					}
 				},
 				"required": ["path", "symbol", "description"]
@@ -53,21 +53,21 @@
 		"type": "function",
 		"function": {
 			"name": "changelog.Deprecate",
-			"description": "Create changelog entry for a Deprecation",
+			"description": "Log that an existing symbol (function, struct or interface) was deprecated.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to the changed file, e.g. \"./utils/Parse.go\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "The deprecated symbol, e.g. \"Parse\" or \"structs.Data.Parse\"."
 					},
 					"description": {
 						"type": "string",
-						"description": "Single-line concise change description"
+						"description": "One-line description of why the symbol is deprecated and what replaces it."
 					}
 				},
 				"required": ["path", "symbol", "description"]
@@ -78,21 +78,21 @@
 		"type": "function",
 		"function": {
 			"name": "changelog.Fix",
-			"description": "Create changelog entry for a Fix",
+			"description": "Log that an existing symbol (function, struct or interface) was fixed.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to the changed file, e.g. \"./utils/Parse.go\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "The fixed symbol, e.g. \"Parse\" or \"structs.Data.Parse\"."
 					},
 					"description": {
 						"type": "string",
-						"description": "Single-line concise change description"
+						"description": "One-line description of the fix."
 					}
 				},
 				"required": ["path", "symbol", "description"]
@@ -103,21 +103,21 @@
 		"type": "function",
 		"function": {
 			"name": "changelog.Remove",
-			"description": "Create changelog entry for a Removal",
+			"description": "Log that an existing symbol (function, struct or interface) was removed.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to the changed file, e.g. \"./utils/Parse.go\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "The removed symbol, e.g. \"Parse\" or \"structs.Data.Parse\"."
 					},
 					"description": {
 						"type": "string",
-						"description": "Single-line concise change description"
+						"description": "One-line description of why the symbol was removed."
 					}
 				},
 				"required": ["path", "symbol", "description"]
@@ -127,18 +127,30 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "changelog.List",
+			"description": "List all changelog entries ordered by date with type, file, symbol and description.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "changelog.Search",
-			"description": "Search for changelog entries of a specific file and an optional symbol.",
+			"description": "Search changelog entries by file path and an optional symbol. Omit symbol to list every entry for the file.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to a file or folder, e.g. \"./utils/Parse.go\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "Optional symbol filter, e.g. \"Parse\". Omit to list all symbols."
 					}
 				},
 				"required": ["path"]

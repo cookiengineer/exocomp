@@ -190,7 +190,6 @@ func TestPrograms_ExecuteWithoutPermission(t *testing.T) {
 }
 
 func TestPrograms_ExecuteWithoutProgram(t *testing.T) {
-
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox       := filepath.Join(playground, "programs")
 	tool          := NewPrograms(playground, sandbox, []string{"doesntexist"})
@@ -236,3 +235,69 @@ func TestPrograms_ExecuteWithoutProgram(t *testing.T) {
 
 }
 
+
+func TestPrograms_Call_OptionalArguments(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
+	sandbox       := filepath.Join(playground, "programs")
+	tool          := NewPrograms(playground, sandbox, []string{"pwd"})
+
+	err0 := os.MkdirAll(sandbox, 0755)
+
+	if err0 != nil {
+		t.Errorf("Expected %v to be nil", err0)
+	}
+
+	if tool != nil {
+
+		result1, err1 := tool.Call("Execute", map[string]interface{}{
+			"program": "pwd",
+		})
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if !strings.HasPrefix(result1, "programs.Execute: pwd") {
+			t.Errorf("Expected pwd to be executed without arguments, got %s", result1)
+		}
+
+		result2, err2 := tool.Call("Execute", map[string]interface{}{
+			"program":   "pwd",
+			"arguments": []interface{}{},
+		})
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if !strings.HasPrefix(result2, "programs.Execute: pwd") {
+			t.Errorf("Expected pwd to be executed with empty arguments, got %s", result2)
+		}
+
+		_, err3 := tool.Call("Execute", map[string]interface{}{
+			"program":   "pwd",
+			"arguments": "not-an-array",
+		})
+
+		if err3 == nil {
+			t.Errorf("Expected a non-nil error")
+		} else if strings.Contains(err3.Error(), "not an array of strings") == false {
+			t.Errorf("Expected array error, got %v", err3)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}

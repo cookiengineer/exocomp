@@ -28,6 +28,19 @@ func (renderer *Renderer) Destroy() {
 
 }
 
+func (renderer *Renderer) Flushed() bool {
+
+	renderer.mutex.RLock()
+	defer renderer.mutex.RUnlock()
+
+	if renderer.Session != nil && renderer.Session.Agent != nil {
+		return renderer.rendered >= len(renderer.Session.Agent.Messages)
+	}
+
+	return true
+
+}
+
 func (renderer *Renderer) RenderLoop() {
 
 	os.Stdout.Sync()

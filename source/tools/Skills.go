@@ -71,31 +71,44 @@ func (tool *Skills) Call(method string, arguments map[string]interface{}) (strin
 
 	} else if method == "Execute" {
 
-		name,     ok1 := arguments["name"].(string)
-		script,   ok2 := arguments["script"].(string)
-		raw_args, ok3 := arguments["arguments"].([]interface{})
+		name,   ok1 := arguments["name"].(string)
+		script, ok2 := arguments["script"].(string)
 
-		if ok1 == true && ok2 == true && ok3 == true {
+		if ok1 == true && ok2 == true {
 
-			args := make([]string, len(raw_args))
+			args := make([]string, 0)
 
-			for a, value := range raw_args {
+			raw, ok3 := arguments["arguments"]
 
-				tmp, ok := value.(string)
+			if ok3 == true {
 
-				if ok == true {
-					args[a] = tmp
+				raw_args, ok4 := raw.([]interface{})
+
+				if ok4 == true {
+
+					args = make([]string, len(raw_args))
+
+					for a, value := range raw_args {
+
+						tmp, ok := value.(string)
+
+						if ok == true {
+							args[a] = tmp
+						}
+
+					}
+
+				} else {
+					return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"arguments\" is not an array of strings.")
 				}
 
 			}
 
 			return tool.Execute(utils_fmt.FormatSkillName(name), script, args)
 
-		} else if ok1 == true && ok2 == true && ok3 == false {
-			return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"arguments\" is not an array of strings.")
-		} else if ok1 == true && ok2 == false && ok3 == true {
+		} else if ok1 == true && ok2 == false {
 			return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"script\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true {
+		} else if ok1 == false && ok2 == true {
 			return "", fmt.Errorf("skills.%s: %s", method, "Invalid parameter \"name\" is not a string.")
 		} else {
 			return "", fmt.Errorf("skills.%s: Invalid parameters.", method)

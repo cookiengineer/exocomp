@@ -94,7 +94,7 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 		behavior,    ok4 := arguments["behavior"].(string)
 
 		if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
-			return tool.DefineFunc(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatMultiLine(declaration), utils_fmt.FormatSingleLine(behavior))
+			return tool.DefineStruct(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatMultiLine(declaration), utils_fmt.FormatSingleLine(behavior))
 		} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
 			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"behavior\" is not a string.")
 		} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
@@ -208,10 +208,6 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 			declaration = strings.TrimSpace(declaration)
 
-			if strings.HasPrefix(declaration, "func(") || strings.HasPrefix(declaration, "func (") {
-				declaration = "func " + symbol + " " + strings.TrimSpace(declaration[4:])
-			}
-
 			fileset    := token.NewFileSet()
 			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
 				"package dummy",
@@ -233,29 +229,13 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 							if declaration.Recv != nil && len(declaration.Recv.List) > 0 {
 
+								// NOTE: Method on a struct. The receiver
+								// type is the symbol owner, so the
+								// symbol is "ReceiverType.MethodName".
 								recv_type := declaration.Recv.List[0].Type
-								type_name := ""
+								type_name := getReceiverTypeName(recv_type)
 
-								switch typ := recv_type.(type) {
-
-								case *ast.Ident:
-									type_name = typ.Name
-
-								case *ast.StarExpr:
-
-									ident, ok := typ.X.(*ast.Ident)
-
-									if ok == true {
-										type_name = ident.Name
-									}
-
-								}
-
-								if type_name != "" {
-									declaration_symbol = type_name + "." + declaration.Name.Name
-								} else {
-									declaration_symbol = declaration.Name.Name
-								}
+								declaration_symbol = type_name + "." + declaration.Name.Name
 
 							} else {
 								declaration_symbol = declaration.Name.Name
@@ -301,7 +281,7 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 				} else {
 
-					err_example := fmt.Errorf(strings.Join([]string{
+					err_example := fmt.Errorf("%s", strings.Join([]string{
 						fmt.Sprintf("requirements.DefineFunc: Invalid Go syntax, function symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
 						fmt.Sprintf("Declaration was: \"%s\"", declaration),
 						fmt.Sprintf("Declaration should be: \"func %s (...) (...)\"", symbol),
@@ -427,7 +407,7 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 
 				} else {
 
-					err_example := fmt.Errorf(strings.Join([]string{
+					err_example := fmt.Errorf("%s", strings.Join([]string{
 						fmt.Sprintf("requirements.DefineInterface: Invalid Go syntax, interface symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
 						fmt.Sprintf("Declaration was: \"%s\"", declaration),
 						fmt.Sprintf("Declaration should be: \"type %s interface { ... }\"", symbol),
@@ -553,7 +533,7 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 
 				} else {
 
-					err_example := fmt.Errorf(strings.Join([]string{
+					err_example := fmt.Errorf("%s", strings.Join([]string{
 						fmt.Sprintf("requirements.DefineStruct: Invalid Go syntax, struct symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
 						fmt.Sprintf("Declaration was: \"%s\"", declaration),
 						fmt.Sprintf("Declaration should be: \"type %s struct { ... }\"", symbol),
@@ -578,7 +558,6 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 }
 
 func (tool *Requirements) Search(path string, symbol string) (string, error) {
-
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err1 == nil {
@@ -652,3 +631,4 @@ func (tool *Requirements) Search(path string, symbol string) (string, error) {
 	}
 
 }
+

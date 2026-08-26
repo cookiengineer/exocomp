@@ -5,6 +5,7 @@ package tools
 import "bufio"
 import "context"
 import "fmt"
+import "io"
 import "os"
 import "os/exec"
 import "path/filepath"
@@ -25,7 +26,7 @@ func getToolsPath() string {
 
 }
 
-func watchServerOutput(pipe Pipe, ready chan bool, errors chan error) {
+func watchServerOutput(pipe io.Reader, ready chan bool, errors chan error) {
 
 	scanner := bufio.NewScanner(pipe)
 

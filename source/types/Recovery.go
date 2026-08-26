@@ -218,7 +218,7 @@ func (recovery *Recovery) Snapshot(name string, raw any) error {
 		}
 
 	} else {
-		return fmt.Errorf("invalid name \"%s\"")
+		return fmt.Errorf("invalid name \"%s\"", name)
 	}
 
 }
@@ -263,7 +263,7 @@ func (recovery *Recovery) SnapshotBytes(name string, raw []byte) error {
 		}
 
 	} else {
-		return fmt.Errorf("invalid name \"%s\"")
+		return fmt.Errorf("invalid name \"%s\"", name)
 	}
 
 }

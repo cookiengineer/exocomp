@@ -10,6 +10,7 @@ import "os"
 import "os/signal"
 import "strings"
 import "syscall"
+import "time"
 
 type Client struct {
 	Renderer *Renderer
@@ -42,10 +43,48 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	}
 
-	return &Client{
+	client := &Client{
 		Renderer: renderer,
 		Session:  session,
 		role:     "user",
+	}
+
+	agent_tool := session.GetTool("agents.List")
+
+	if agent_tool != nil {
+
+		agents_tool, ok := agent_tool.(*tools.Agents)
+
+		if ok == true {
+			agents_tool.OnQuit = client.QuitHook
+		}
+
+	}
+
+	return client
+
+}
+
+func (client *Client) QuitHook(report string, success bool) {
+
+	deadline := time.Now().Add(5 * time.Second)
+
+	for time.Now().Before(deadline) {
+
+		if client.Renderer.Flushed() == true {
+			break
+		}
+
+		time.Sleep(20 * time.Millisecond)
+
+	}
+
+	os.Stdout.Sync()
+
+	if success == true {
+		os.Exit(0)
+	} else {
+		os.Exit(1)
 	}
 
 }
@@ -176,22 +215,42 @@ func (client *Client) InputLoop() {
 func (client *Client) ContextUsageLoop() {
 
 	last_tokens := 0
+	heartbeat   := time.NewTicker(15 * time.Second)
+	defer heartbeat.Stop()
 
 	for {
 
-		if last_tokens != client.Session.Agent.ContextUsage.Tokens {
+		select {
 
-			bytes, err := json.Marshal(client.Session.Agent.ContextUsage)
+		case <-heartbeat.C:
 
-			if err == nil {
+			client.RenderContextUsage()
 
-				last_tokens = client.Session.Agent.ContextUsage.Tokens
-				fmt.Fprintf(os.Stdout, "types.ContextUsage:%s\n", string(bytes))
-				os.Stderr.Sync()
+		default:
 
+			tokens := client.Session.Agent.ContextUsage.Tokens
+
+			if last_tokens != tokens {
+				last_tokens = tokens
+				client.RenderContextUsage()
 			}
 
+			time.Sleep(100 * time.Millisecond)
+
 		}
+
+	}
+
+}
+
+func (client *Client) RenderContextUsage() {
+
+	bytes, err := json.Marshal(client.Session.Agent.ContextUsage)
+
+	if err == nil {
+
+		fmt.Fprintf(os.Stdout, "types.ContextUsage:%s\n", string(bytes))
+		os.Stdout.Sync()
 
 	}
 

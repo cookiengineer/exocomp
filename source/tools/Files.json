@@ -3,17 +3,17 @@
 		"type": "function",
 		"function": {
 			"name": "files.Copy",
-			"description": "Copy files and folders. Hidden files are excluded.",
+			"description": "Copy a file or folder to another location inside the sandbox. Hidden files and folders are excluded.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"from_path": {
 						"type": "string",
-						"description": "Relative path to file or folder, e.g. \"./path/to/File.go\""
+						"description": "Relative source path to a file or folder, e.g. \"./utils/Parse.go\""
 					},
 					"to_path": {
 						"type": "string",
-						"description": "Relative path to file or folder, e.g. \"./path/to/File.go\""
+						"description": "Relative destination path to a file or folder, e.g. \"./copy/Parse.go\""
 					}
 				},
 				"required": ["from_path", "to_path"]
@@ -24,13 +24,13 @@
 		"type": "function",
 		"function": {
 			"name": "files.List",
-			"description": "List files and folders in a directory. Hidden files are excluded.",
+			"description": "List the files and folders directly inside a directory. Hidden files and folders are excluded.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to folder, e.g. \"./path/to/folder\""
+						"description": "Relative path to a folder, e.g. \"./utils\". Use \".\" or \"/\" for the sandbox root."
 					}
 				},
 				"required": ["path"]
@@ -41,13 +41,13 @@
 		"type": "function",
 		"function": {
 			"name": "files.Read",
-			"description": "Read the contents of a file",
+			"description": "Read and return the complete text content of a file.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to file, e.g. \"./path/to/File.go\""
+						"description": "Relative path to a file, e.g. \"./utils/Parse.go\""
 					}
 				},
 				"required": ["path"]
@@ -58,13 +58,13 @@
 		"type": "function",
 		"function": {
 			"name": "files.Stat",
-			"description": "Stat the metadata of a file",
+			"description": "Return the metadata of a file or folder: type, name, size, mode and last modified time.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to file or folder, e.g. \"./path/to/File.go\""
+						"description": "Relative path to a file or folder, e.g. \"./utils/Parse.go\""
 					}
 				},
 				"required": ["path"]
@@ -75,17 +75,17 @@
 		"type": "function",
 		"function": {
 			"name": "files.Write",
-			"description": "Write content to a file. Creates or overwrites the file.",
+			"description": "Write text content to a file. Creates the file if missing, otherwise overwrites it. Parent folders must already exist.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to file, e.g. \"./path/to/File.go\""
+						"description": "Relative path to a file, e.g. \"./utils/Parse.go\""
 					},
 					"content": {
 						"type": "string",
-						"description": "File content"
+						"description": "The complete file content as a single string. Use \\n for line breaks."
 					}
 				},
 				"required": ["path", "content"]

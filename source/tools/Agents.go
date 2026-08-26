@@ -20,28 +20,41 @@ import "strings"
 import "sync"
 import "time"
 
+type agentProcess struct {
+	cmd       *exec.Cmd
+	cancel    context.CancelFunc
+	done      chan struct{}
+	lastWrite time.Time
+}
+
 type Agents struct {
-	Playground string
-	Sandbox    string
-	Model      string
-	URL        *net_url.URL
-	Debug      bool
-	Mutex      *sync.Mutex
-	contents   map[string]*types.Agent
-	processes  map[string]*os.Process
+	Playground  string
+	Sandbox     string
+	Model       string
+	URL         *net_url.URL
+	Debug       bool
+	Timeout     time.Duration
+	IdleTimeout time.Duration
+	OnQuit      func(report string, success bool)
+	Mutex       *sync.Mutex
+	contents    map[string]*types.Agent
+	processes   map[string]*agentProcess
 }
 
 func NewAgents(playground string, sandbox string, model string, url *net_url.URL, debug bool) *Agents {
 
 	agents := &Agents{
-		Playground: playground,
-		Sandbox:    sandbox,
-		Model:      model,
-		URL:        url,
-		Debug:      debug,
-		Mutex:      &sync.Mutex{},
-		contents:   make(map[string]*types.Agent),
-		processes:  make(map[string]*os.Process),
+		Playground:  playground,
+		Sandbox:     sandbox,
+		Model:       model,
+		URL:         url,
+		Debug:       debug,
+		Timeout:     30 * time.Minute,
+		IdleTimeout: 5 * time.Minute,
+		OnQuit:      nil,
+		Mutex:       &sync.Mutex{},
+		contents:    make(map[string]*types.Agent),
+		processes:   make(map[string]*agentProcess),
 	}
 
 	// NOTE: readAgents() allowed only at bootup time
@@ -141,48 +154,45 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 }
 
+// NOTE: Await blocks until the hired agent finished its work. This is
+// deliberate: the planner model would otherwise poll in a hot loop and
+// blow up its limited context window with identical "still working" tool
+// messages. The lifecycle guarantees the done channel always closes
+// (reader EOF -> cmd.Wait() -> finalize, forced by the liveness watchdog).
 func (tool *Agents) Await(name string) (string, error) {
 
 	tool.Mutex.Lock()
-	_, ok := tool.processes[name]
+	proc, running := tool.processes[name]
 	tool.Mutex.Unlock()
 
+	if running == true {
+		<-proc.done
+	}
+
+	tool.Mutex.Lock()
+	agent, ok := tool.contents[name]
+	report := ""
+	status := ""
+
 	if ok == true {
+		report = workReport(agent)
+		status = agent.Status
+	}
 
-		// NOTE: This is used in types.Session to dynamically re-call this method
-		return "", fmt.Errorf("agents.Await: Agent \"%s\" is still working ...", name)
+	tool.Mutex.Unlock()
 
+	if ok == false {
+		return "", fmt.Errorf("agents.Await: Agent \"%s\" didn't work for us!", name)
+	}
+
+	if report != "" {
+		return fmt.Sprintf("agents.Await: Agent \"%s\"'s Work Report\n===%s\n===", name, report), nil
+	}
+
+	if status == "fired" {
+		return "", fmt.Errorf("agents.Await: Agent \"%s\" was fired!", name)
 	} else {
-
-		work_report := ""
-
-		tool.Mutex.Lock()
-
-		agent, ok := tool.contents[name]
-
-		if ok == true {
-
-			for m := len(agent.Messages) - 1; m >= 0; m-- {
-
-				message := agent.Messages[m]
-
-				if message.Role == "tool" && strings.HasPrefix(message.Content, "agents.Quit: Work Report\n") {
-					work_report = strings.TrimSpace(message.Content[25:])
-					break
-				}
-
-			}
-
-		}
-
-		tool.Mutex.Unlock()
-
-		if work_report != "" {
-			return fmt.Sprintf("agents.Await: Agent \"%s\"'s Work Report\n===%s\n===", name, work_report), nil
-		} else {
-			return "", fmt.Errorf("agents.Await: Agent \"%s\" never finished with a work report!", name)
-		}
-
+		return "", fmt.Errorf("agents.Await: Agent \"%s\" never finished with a work report!", name)
 	}
 
 }
@@ -251,16 +261,13 @@ func (tool *Agents) List() (string, error) {
 		tool.Mutex.Lock()
 		for name, agent := range tool.contents {
 
-			_, ok  := tool.processes[name]
-			status := "unknown"
+			status := agent.Status
 
-			if ok == true {
-				status = "working"
-			} else {
-				status = "finished"
+			if status == "" {
+				status = "unknown"
 			}
 
-			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: %s", agent.Name, agent.Role, status))
+			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: %s", name, agent.Role, status))
 
 		}
 		tool.Mutex.Unlock()
@@ -315,221 +322,247 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 	_, ok := tool.contents[name]
 	tool.Mutex.Unlock()
 
-	if ok == false {
+	if ok == true {
+		return "", fmt.Errorf("agents.Hire: Agent \"%s\" was already hired in the past. Pick a different name.", name)
+	}
+
+	resolved, err0 := resolveSandboxPath(tool.Sandbox, sandbox)
+
+	if err0 != nil {
+		return "", fmt.Errorf("agents.Hire: %s", err0.Error())
+	}
+
+	stat, err1 := os.Stat(resolved)
+
+	if err1 == nil && stat.IsDir() == true {
+		// Do Nothing
+	} else {
+		os.MkdirAll(resolved, 0755)
+	}
+
+	debug_flag := ""
+
+	if tool.Debug == true {
+		debug_flag = "--debug"
+	}
+
+	exe, _ := os.Executable()
+
+	if os.Getenv("EXOCOMP_AGENT") != "" {
+		exe = os.Getenv("EXOCOMP_AGENT")
+	}
+
+	timeout := tool.Timeout
+
+	if timeout <= 0 {
+		timeout = 30 * time.Minute
+	}
+
+	// NOTE: child's playground is parent's sandbox
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	cmd := exec.CommandContext(
+		ctx,
+		exe,
+		"agent",
+		fmt.Sprintf("--name=\"%s\"", name),
+		fmt.Sprintf("--role=\"%s\"", role),
+		fmt.Sprintf("--model=\"%s\"", tool.Model),
+		fmt.Sprintf("--prompt=\"%s\"", prompt),
+		// --temperature set by agent role
+		fmt.Sprintf("--playground=\"%s\"", tool.Sandbox),
+		fmt.Sprintf("--sandbox=\"%s\"", resolved),
+		fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
+		debug_flag,
+	)
+	cmd.Dir = resolved
+
+	cmd.Stdin = strings.NewReader("")
+
+	// XXX: Use this for debugging
+	// cmd.Stderr = os.Stderr
+
+	stdout_pipe, err2 := cmd.StdoutPipe()
+
+	if err2 != nil {
+		cancel()
+		return "", fmt.Errorf("agents.Hire: %s", err2.Error())
+	}
+
+	err3 := cmd.Start()
+
+	if err3 != nil {
+		cancel()
+		return "", fmt.Errorf("agents.Hire: %s", err3.Error())
+	}
+
+	agent := agents.NewAgent(types.NewConfig(
+		name,
+		role,
+		tool.Model,
+		prompt,
+		0.0, // Don't change temperature
+		tool.Sandbox,
+		resolved,
+		tool.URL,
+		false,
+	))
+	agent.Status    = "working"
+	agent.StartedAt = schemas.NewDatetime()
+
+	if debug_flag != "" {
+		// XXX: "exocomp agent" prints first system message
+		agent.Messages = make([]*schemas.Message, 0)
+	}
+
+	proc := &agentProcess{
+		cmd:       cmd,
+		cancel:    cancel,
+		done:      make(chan struct{}),
+		lastWrite: time.Now(),
+	}
+
+	tool.Mutex.Lock()
+	tool.contents[name]  = agent
+	tool.processes[name] = proc
+	tool.Mutex.Unlock()
 
-		resolved, err0 := resolveSandboxPath(tool.Sandbox, sandbox)
+	// NOTE: Single reader goroutine owns the child stdout lifecycle. It
+	// reads unbounded lines, appends messages, and on EOF reaps the
+	// process and finalizes the agent status.
+	go tool.readProcess(name, proc, stdout_pipe)
 
-		if err0 == nil {
+	// NOTE: Liveness watchdog kills a child that stops producing output.
+	go tool.watchProcess(proc)
 
-			stat, err1 := os.Stat(resolved)
+	sandbox_path, _ := sanitizeSandboxPath(tool.Sandbox, resolved)
 
-			if err1 == nil && stat.IsDir() == true {
-				// Do Nothing
-			} else {
-				os.MkdirAll(resolved, 0755)
-			}
+	return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work on \"%s\".", name, sandbox_path), nil
 
-			debug_flag := ""
+}
 
-			if tool.Debug == true {
-				debug_flag = "--debug"
-			}
+func (tool *Agents) readProcess(name string, proc *agentProcess, stdout_pipe io.ReadCloser) {
 
-			exe, _ := os.Executable()
+	reader := bufio.NewReader(stdout_pipe)
 
-			if os.Getenv("EXOCOMP_AGENT") != "" {
-				exe = os.Getenv("EXOCOMP_AGENT")
-			}
+	for {
 
-			// NOTE: child's playground is parent's sandbox
-			ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Minute)
-			cmd := exec.CommandContext(
-				ctx,
-				exe,
-				"agent",
-				fmt.Sprintf("--name=\"%s\"", name),
-				fmt.Sprintf("--role=\"%s\"", role),
-				fmt.Sprintf("--model=\"%s\"", tool.Model),
-				fmt.Sprintf("--prompt=\"%s\"", prompt),
-				// --temperature set by agent role
-				fmt.Sprintf("--playground=\"%s\"", tool.Sandbox),
-				fmt.Sprintf("--sandbox=\"%s\"", resolved),
-				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
-				debug_flag,
-			)
-			cmd.Dir = resolved
+		line, err := reader.ReadBytes('\n')
 
-			cmd.Stdin = strings.NewReader("")
-
-			// XXX: Use this for debugging
-			// cmd.Stderr = os.Stderr
-
-			stdout_pipe, err2 := cmd.StdoutPipe()
-
-			if err2 == nil {
-
-				err3 := cmd.Start()
-
-				if err3 == nil {
-
-					tool.Mutex.Lock()
-					tool.contents[name] = agents.NewAgent(types.NewConfig(
-						name,
-						role,
-						tool.Model,
-						prompt,
-						0.0, // Don't change temperature
-						tool.Sandbox,
-						resolved,
-						tool.URL,
-						false,
-					))
-
-					if debug_flag != "" {
-						// XXX: "exocomp agent" prints first system message
-						tool.contents[name].Messages = make([]*schemas.Message, 0)
-					}
-
-					tool.processes[name] = cmd.Process
-					tool.Mutex.Unlock()
-
-
-
-					// Background Reaper
-					go func(name string, tool *Agents, stdout_pipe io.ReadCloser) {
-
-						scanner := bufio.NewScanner(stdout_pipe)
-
-						for scanner.Scan() {
-
-							line := scanner.Text()
-
-							if strings.HasPrefix(line, "schemas.Message:") {
-
-								buffer  := []byte(line[16:])
-								message := schemas.Message{}
-
-								err3 := json.Unmarshal(buffer, &message)
-
-								if err3 == nil {
-
-									tool.Mutex.Lock()
-
-									agent, ok1 := tool.contents[name]
-
-									if ok1 == true {
-										agent.Messages = append(agent.Messages, &message)
-									}
-
-									tool.Mutex.Unlock()
-
-								}
-
-							} else if strings.HasPrefix(line, "types.ContextUsage:") {
-
-								buffer   := []byte(line[19:])
-								usage    := types.ContextUsage{}
-
-								err3 := json.Unmarshal(buffer, &usage)
-
-								if err3 == nil {
-
-									tool.Mutex.Lock()
-
-									agent, ok1 := tool.contents[name]
-
-									if ok1 == true {
-										agent.ContextUsage.Length = usage.Length
-										agent.ContextUsage.Tokens = usage.Tokens
-									}
-
-									tool.Mutex.Unlock()
-
-								}
-
-							}
-
-						}
-
-						stdout_pipe.Close()
-
-					}(name, tool, stdout_pipe)
-
-					// Background Reaper
-					go func(name string, tool *Agents, ctx context.Context, cancel context.CancelFunc) {
-
-						tool.Mutex.Lock()
-						last_length := len(tool.contents[name].Messages)
-						tool.Mutex.Unlock()
-
-						last_time := time.Now()
-						ticker    := time.NewTicker(10 * time.Second)
-
-						BackgroundLoop:
-						for {
-
-							select {
-							case <-ctx.Done():
-
-								break BackgroundLoop
-
-							case <-ticker.C:
-
-								if time.Since(last_time) > 1 * time.Minute {
-
-									cancel()
-									break BackgroundLoop
-
-								} else {
-
-									tool.Mutex.Lock()
-									length := len(tool.contents[name].Messages)
-									tool.Mutex.Unlock()
-
-									if length > last_length {
-										last_length = length
-										last_time   = time.Now()
-									}
-
-								}
-
-							}
-
-						}
-
-						ticker.Stop()
-
-					}(name, tool, ctx, cancel)
-
-					// Background Reaper
-					go func(name string, tool *Agents, cmd *exec.Cmd) {
-
-						cmd.Wait()
-
-						tool.Mutex.Lock()
-						delete(tool.processes, name)
-						tool.Mutex.Unlock()
-
-					}(name, tool, cmd)
-
-					sandbox_path, _ := sanitizeSandboxPath(tool.Sandbox, resolved)
-
-					return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work on \"%s\".", name, sandbox_path), nil
-
-				} else {
-					return "", fmt.Errorf("agents.Hire: %s", err3.Error())
-				}
-
-			} else {
-				return "", fmt.Errorf("agents.Hire: %s", err2.Error())
-			}
-
-		} else {
-			return "", fmt.Errorf("agents.Hire: %s", err0.Error())
+		if len(line) > 0 {
+			tool.handleLine(name, line)
 		}
 
-	} else {
-		return "", fmt.Errorf("agents.Hire: Agent \"%s\" was already hired in the past. Pick a different name.", name)
+		if err != nil {
+			break
+		}
+
+	}
+
+	stdout_pipe.Close()
+
+	proc.cmd.Wait()
+
+	tool.Mutex.Lock()
+
+	agent, ok := tool.contents[name]
+
+	if ok == true && agent.Status == "working" {
+
+		if workReport(agent) != "" {
+			agent.Status = "finished"
+		} else {
+			agent.Status = "failed"
+		}
+
+		agent.FinishedAt = schemas.NewDatetime()
+
+	}
+
+	delete(tool.processes, name)
+
+	tool.Mutex.Unlock()
+
+	close(proc.done)
+
+}
+
+func (tool *Agents) handleLine(name string, line []byte) {
+
+	tool.Mutex.Lock()
+	defer tool.Mutex.Unlock()
+
+	proc, ok := tool.processes[name]
+
+	if ok == true {
+		proc.lastWrite = time.Now()
+	}
+
+	text := strings.TrimRight(string(line), "\n")
+
+	if strings.HasPrefix(text, "schemas.Message:") {
+
+		buffer  := []byte(text[16:])
+		message := schemas.Message{}
+
+		err := json.Unmarshal(buffer, &message)
+
+		if err == nil {
+
+			agent, ok1 := tool.contents[name]
+
+			if ok1 == true {
+				agent.Messages = append(agent.Messages, &message)
+			}
+
+		}
+
+	} else if strings.HasPrefix(text, "types.ContextUsage:") {
+
+		buffer := []byte(text[19:])
+		usage  := types.ContextUsage{}
+
+		err := json.Unmarshal(buffer, &usage)
+
+		if err == nil {
+
+			agent, ok1 := tool.contents[name]
+
+			if ok1 == true {
+				agent.ContextUsage.Length = usage.Length
+				agent.ContextUsage.Tokens = usage.Tokens
+			}
+
+		}
+
+	}
+
+}
+
+func (tool *Agents) watchProcess(proc *agentProcess) {
+
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	for {
+
+		select {
+
+		case <-proc.done:
+			return
+
+		case <-ticker.C:
+
+			tool.Mutex.Lock()
+			stale := tool.IdleTimeout > 0 && time.Since(proc.lastWrite) > tool.IdleTimeout
+			tool.Mutex.Unlock()
+
+			if stale == true {
+				proc.cancel()
+				return
+			}
+
+		}
+
 	}
 
 }
@@ -537,24 +570,21 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 func (tool *Agents) Fire(name string) (string, error) {
 
 	tool.Mutex.Lock()
-	process, ok := tool.processes[name]
+	proc, running := tool.processes[name]
+	agent, ok     := tool.contents[name]
+
+	if ok == true && running == true {
+		agent.Status = "fired"
+	}
+
 	tool.Mutex.Unlock()
 
-	if ok == true {
+	if running == true {
 
-		err := process.Kill()
+		proc.cancel()
+		<-proc.done
 
-		if err == nil {
-
-			tool.Mutex.Lock()
-			delete(tool.processes, name)
-			tool.Mutex.Unlock()
-
-			return fmt.Sprintf("agents.Fire: Agent \"%s\" fired.", name), nil
-
-		} else {
-			return "", fmt.Errorf("agents.Fire: %s", err.Error())
-		}
+		return fmt.Sprintf("agents.Fire: Agent \"%s\" fired.", name), nil
 
 	} else {
 		return "", fmt.Errorf("agents.Fire: Agent \"%s\" already quit!", name)
@@ -596,10 +626,20 @@ func (tool *Agents) Inquire(name string) (string, error) {
 				exe = os.Getenv("EXOCOMP_AGENT")
 			}
 
-			cmd := exec.Command(
+			timeout := tool.Timeout
+
+			if timeout <= 0 {
+				timeout = 30 * time.Minute
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
+			defer cancel()
+
+			cmd := exec.CommandContext(
+				ctx,
 				exe,
 				"agent",
-				fmt.Sprintf("--name=\"%s\"", "Summarizer"),
+				fmt.Sprintf("--name=\"%s\"", utils_rand.AgentName("summarizer")),
 				fmt.Sprintf("--role=\"%s\"", "summarizer"),
 				fmt.Sprintf("--model=\"%s\"", tool.Model),
 				fmt.Sprintf("--prompt=\"%s\"", prompt),
@@ -677,25 +717,23 @@ func (tool *Agents) Inquire(name string) (string, error) {
 
 func (tool *Agents) Quit(message string) (string, error) {
 
+	report := fmt.Sprintf("agents.Quit: Work Report\n%s", strings.TrimSpace(message))
+
 	if strings.Contains(strings.ToLower(message), "my work is done") {
 
-		go func() {
-			// Give Renderer time to catch up
-			time.Sleep(200 * time.Millisecond)
-			os.Exit(0)
-		}()
+		if tool.OnQuit != nil {
+			go tool.OnQuit(strings.TrimSpace(message), true)
+		}
 
-		return fmt.Sprintf("agents.Quit: Work Report\n%s", strings.TrimSpace(message)), nil
+		return report, nil
 
 	} else {
 
-		go func() {
-			// Give Renderer time to catch up
-			time.Sleep(200 * time.Millisecond)
-			os.Exit(1)
-		}()
+		if tool.OnQuit != nil {
+			go tool.OnQuit(strings.TrimSpace(message), false)
+		}
 
-		return fmt.Sprintf("agents.Quit: Work Report\n%s", strings.TrimSpace(message)), nil
+		return report, nil
 
 	}
 
@@ -727,3 +765,22 @@ func (tool *Agents) SetAgent(agent *types.Agent) bool {
 
 }
 
+func workReport(agent *types.Agent) string {
+
+	if agent != nil {
+
+		for m := len(agent.Messages) - 1; m >= 0; m-- {
+
+			message := agent.Messages[m]
+
+			if message.Role == "tool" && strings.HasPrefix(message.Content, "agents.Quit: Work Report\n") {
+				return strings.TrimSpace(strings.TrimPrefix(message.Content, "agents.Quit: Work Report\n"))
+			}
+
+		}
+
+	}
+
+	return ""
+
+}

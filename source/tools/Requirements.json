@@ -3,25 +3,25 @@
 		"type": "function",
 		"function": {
 			"name": "requirements.DefineFunc",
-			"description": "Specify a path and symbol with a Go function declaration.",
+			"description": "Define a Go function or method contract. For a free function, symbol is the function name. For a method on a struct, symbol is \"ReceiverType.MethodName\".",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to the Go file that will contain the function, e.g. \"./utils/parse/Parse.go\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "The linkable symbol. Free function: the function name, e.g. \"Parse\". Method: \"ReceiverType.MethodName\", e.g. \"structs.Data.Parse\". Must match the parsed declaration exactly."
 					},
 					"declaration": {
 						"type": "string",
-						"description": "Single-line function signature declaration using Go syntax"
+						"description": "Single-line Go function signature, e.g. \"func Parse(input string) (string, error)\" or \"func (data *structs.Data) Parse(specification *schemas.Input)\""
 					},
 					"behavior": {
 						"type": "string",
-						"description": "Behavior implementation notes"
+						"description": "One-line note describing what the function must do."
 					}
 				},
 				"required": ["path", "symbol", "declaration", "behavior"]
@@ -32,25 +32,25 @@
 		"type": "function",
 		"function": {
 			"name": "requirements.DefineInterface",
-			"description": "Specify a path and symbol with a Go interface declaration.",
+			"description": "Define a Go interface contract. The symbol is the interface type name.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to the Go file that will contain the interface, e.g. \"./utils/parse/Parser.go\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "The interface type name, e.g. \"Parser\". Must match the parsed declaration exactly."
 					},
 					"declaration": {
 						"type": "string",
-						"description": "Multi-line interface declaration using Go syntax"
+						"description": "Multi-line Go interface declaration using Go syntax, e.g. \"type Parser interface {\n\tParse(input string) (string, error)\n}\""
 					},
 					"behavior": {
 						"type": "string",
-						"description": "Behavior implementation notes"
+						"description": "One-line note describing what implementations of this interface must do."
 					}
 				},
 				"required": ["path", "symbol", "declaration", "behavior"]
@@ -61,25 +61,25 @@
 		"type": "function",
 		"function": {
 			"name": "requirements.DefineStruct",
-			"description": "Specify a path and symbol with a Go struct declaration.",
+			"description": "Define a Go struct contract. The symbol is the struct type name.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to the Go file that will contain the struct, e.g. \"./structs/Data.go\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "The struct type name, e.g. \"Data\". Must match the parsed declaration exactly."
 					},
 					"declaration": {
 						"type": "string",
-						"description": "Multi-line struct declaration using Go syntax"
+						"description": "Multi-line Go struct declaration using Go syntax, e.g. \"type Data struct {\n\tName string `json:\\\"name\\\"`\n\tAge int `json:\\\"age\\\"`\n}\""
 					},
 					"behavior": {
 						"type": "string",
-						"description": "Behavior implementation notes"
+						"description": "One-line note describing what the struct represents and how it must be used."
 					}
 				},
 				"required": ["path", "symbol", "declaration", "behavior"]
@@ -90,7 +90,7 @@
 		"type": "function",
 		"function": {
 			"name": "requirements.List",
-			"description": "List all specification requirements.",
+			"description": "List all previously defined requirements (functions, interfaces and structs) with their file, symbol, declaration and behavior.",
 			"parameters": {
 				"type": "object",
 				"properties": {},
@@ -102,17 +102,17 @@
 		"type": "function",
 		"function": {
 			"name": "requirements.Search",
-			"description": "Search for specification requirements of a specific file and an optional symbol.",
+			"description": "Search defined requirements by file path and an optional symbol. Omit symbol to list every requirement in the file.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Relative path to the file"
+						"description": "Relative path to a file or folder, e.g. \"./structs/Data.go\" or \"./structs\""
 					},
 					"symbol": {
 						"type": "string",
-						"description": "Linkable symbol, method, function, or variable name"
+						"description": "Optional symbol filter, e.g. \"Parse\" or \"structs.Data.Parse\". Omit to list all symbols."
 					}
 				},
 				"required": ["path"]

@@ -3,7 +3,7 @@
 		"type": "function",
 		"function": {
 			"name": "programs.List",
-			"description": "List all allowed programs.",
+			"description": "List the program binaries this agent is allowed to execute, e.g. go, gofmt, gopls.",
 			"parameters": {
 				"type": "object",
 				"properties": {},
@@ -15,24 +15,24 @@
 		"type": "function",
 		"function": {
 			"name": "programs.Execute",
-			"description": "Execute a program with given arguments.",
+			"description": "Execute an allowed program with arguments inside the sandbox and return its stdout and stderr output.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"program": {
 						"type": "string",
-						"description": "The program binary name, e.g. \"go\""
+						"description": "The program binary name. Must be listed by programs.List, e.g. \"go\" or \"gofmt\"."
 					},
 					"arguments": {
 						"type": "array",
-						"description": "The program arguments, e.g. [\"test\", \"./...\"]",
+						"description": "Optional array of string arguments passed to the program, e.g. [\"test\", \"./...\"]. Omit it or use [] when no arguments are needed.",
 						"items": {
 							"type": "string"
 						},
 						"default": []
 					}
 				},
-				"required": ["program", "arguments"]
+				"required": ["program"]
 			}
 		}
 	}

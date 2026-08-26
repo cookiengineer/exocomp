@@ -12,21 +12,6 @@ import "path/filepath"
 import "sort"
 import "strings"
 import "sync"
-import "time"
-
-func isWaitingForAgent(message string) bool {
-
-	if strings.HasPrefix(message, "Error: ") {
-		message = strings.TrimSpace(message[7:])
-	}
-
-	if strings.HasPrefix(message, "agents.Await: Agent") && strings.HasSuffix(message, "is still working ...") {
-		return true
-	}
-
-	return false
-
-}
 
 type Session struct {
 	Agent    *Agent          `json:"agent"`
@@ -374,7 +359,13 @@ func (session *Session) GetTool(name string) Tool {
 
 	if allowed == true {
 
-		namespace := strings.TrimSpace(name[0:strings.Index(name, ".")])
+		index := strings.Index(name, ".")
+
+		if index == -1 {
+			return nil
+		}
+
+		namespace := strings.TrimSpace(name[0:index])
 		tool, ok  := session.tools[namespace]
 
 		if ok == true {
@@ -550,39 +541,11 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 				if err0 == nil && err1 == nil && err2 == nil && err3 == nil {
 
-					err := session.CallTool(tool_id, tool_name, tool_method, tool_arguments)
-
-					if tool_name == "agents" && tool_method == "Await" && err != nil {
-
-						is_waiting_for_agent := isWaitingForAgent(err.Error())
-
-						for is_waiting_for_agent == true {
-
-							time.Sleep(1 * time.Second)
-
-							session.mutex.Lock()
-							last_message := session.Agent.Messages[len(session.Agent.Messages)-1]
-
-							if last_message.Role == "tool" && isWaitingForAgent(last_message.Content) {
-								session.Agent.Messages = session.Agent.Messages[0:len(session.Agent.Messages)-1]
-							}
-
-							session.mutex.Unlock()
-
-							err = session.CallTool(tool_id, tool_name, tool_method, tool_arguments)
-
-							if err != nil {
-
-								is_waiting_for_agent = isWaitingForAgent(err.Error())
-								continue
-
-							} else {
-								break
-							}
-
-						}
-
-					}
+					// NOTE: agents.Await blocks until the hired agent
+					// finished. Tool results (including errors) are
+					// appended as tool messages inside CallTool, so the
+					// loop simply executes every requested tool call once.
+					session.CallTool(tool_id, tool_name, tool_method, tool_arguments)
 
 				}
 

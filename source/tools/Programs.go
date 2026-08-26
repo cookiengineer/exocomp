@@ -34,31 +34,42 @@ func (tool *Programs) Call(method string, arguments map[string]interface{}) (str
 
 	} else if method == "Execute" {
 
-		program,  ok1 := arguments["program"].(string)
-		raw_args, ok2 := arguments["arguments"].([]interface{})
+		program, ok1 := arguments["program"].(string)
 
-		if ok1 == true && ok2 == true {
+		if ok1 == true {
 
-			args := make([]string, len(raw_args))
+			args := make([]string, 0)
 
-			for a, value := range raw_args {
+			raw, ok2 := arguments["arguments"]
 
-				tmp, ok := value.(string)
+			if ok2 == true {
 
-				if ok == true {
-					args[a] = tmp
+				raw_args, ok3 := raw.([]interface{})
+
+				if ok3 == true {
+
+					args = make([]string, len(raw_args))
+
+					for a, value := range raw_args {
+
+						tmp, ok := value.(string)
+
+						if ok == true {
+							args[a] = tmp
+						}
+
+					}
+
+				} else {
+					return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"arguments\" is not an array of strings.")
 				}
 
 			}
 
 			return tool.Execute(program, args)
 
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"arguments\" is not an array of strings.")
-		} else if ok1 == false && ok2 == true {
-			return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"program\" is not a string.")
 		} else {
-			return "", fmt.Errorf("programs.%s: Invalid parameters.", method)
+			return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"program\" is not a string.")
 		}
 
 	} else {
