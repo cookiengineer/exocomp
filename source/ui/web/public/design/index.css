@@ -30,6 +30,12 @@ body {
 	background: var(--main-background);
 }
 
+header ul li a[data-view="chat"]:before         { content: "\e809"; }
+header ul li a[data-view="agents"]:before       { content: "\e802"; }
+header ul li a[data-view="bugs"]:before         { content: "\f188"; }
+header ul li a[data-view="changelog"]:before    { content: "\e819"; }
+header ul li a[data-view="requirements"]:before { content: "\e80e"; }
+
 ::selection {
 	color: #ffffff;
 	background: #0f99cb;

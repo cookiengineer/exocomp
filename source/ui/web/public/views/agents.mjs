@@ -1,6 +1,7 @@
 
-import { Schedule        } from "./ui/Schedule.mjs";
-import { BootstrapConfig } from "./types/Config.mjs";
+import { Init as InitHeader } from "../ui/components/layout/Header.mjs";
+import { Schedule           } from "../ui/Schedule.mjs";
+import { BootstrapConfig    } from "../types/Config.mjs";
 
 async function main() {
 
@@ -8,6 +9,8 @@ async function main() {
 
 		const config   = await BootstrapConfig("");
 		const schedule = new Schedule(config);
+
+		InitHeader();
 
 		window.SCHEDULE = schedule;
 		window.SCHEDULE.Init();

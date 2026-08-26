@@ -1,48 +1,18 @@
 
-import { Client                       } from "./ui/Client.mjs";
-import { CallTool  as CallToolPopover } from "./ui/popovers/CallTool.mjs";
-import { HireAgent as HireAgentDialog } from "./ui/dialogs/HireAgent.mjs";
-import { BootstrapConfig              } from "./types/Config.mjs";
-
-const getAgentName = () => {
-
-	let result = "";
-
-	if (window.location.pathname === "/agent.html") {
-
-		if (window.location.search.startsWith("?name=") === true) {
-
-			let name = decodeURIComponent((window.location.search || "").substr(6).split("&").shift()).trim();
-			if (name !== "") {
-				result = name;
-			}
-
-		}
-
-	}
-
-	return result;
-
-};
+import { Client                       } from "../ui/Client.mjs";
+import { Init      as InitHeader      } from "../ui/components/layout/Header.mjs";
+import { CallTool  as CallToolPopover } from "../ui/popovers/CallTool.mjs";
+import { HireAgent as HireAgentDialog } from "../ui/dialogs/HireAgent.mjs";
+import { BootstrapConfig              } from "../types/Config.mjs";
 
 async function main() {
 
 	try {
 
-		const name   = getAgentName();
 		const config = await BootstrapConfig(name);
 		const client = new Client(config);
 
-		((button) => {
-
-			if (button !== null) {
-
-				button.onclick = () => window.location.assign("/schedule.html");
-				button.removeAttribute("disabled");
-
-			}
-
-		})(document.querySelector("header button[data-action=\"show-schedule\"]"));
+		InitHeader();
 
 		((element, button) => {
 
@@ -103,7 +73,6 @@ async function main() {
 
 		window.CLIENT = client;
 		window.CLIENT.Init();
-
 
 	} catch (err) {
 		console.error(err);

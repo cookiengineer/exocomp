@@ -6,13 +6,9 @@
 - [ ] Implement Tool Call Shrinking, probably best in types/Session.go
 
 - [ ] Implement `requirements.Trace(file, symbol)` to trace which methods
-      call or interact with the named symbol. Returns a list of symbols
+      call or interact with the named symbol. Returns a list of relative package/file.go paths and symbols
 
 - [ ] Implement `files.ReadSymbol(file, symbol)`
-
-- [ ] Implement `websites.Summarize(url)`
-- [ ] Implement `websites.Download(url)`
-- [ ] Implement `websites.Search(keywords)`
 
 ## Agents
 
@@ -41,35 +37,43 @@
 - [ ] Implement `tools/Skills` to parse `$PWD/skills` directory
 - [ ] Validate all properties of new agents in `readAgents()`
 
-## JSONL UI
-
-- [ ] Implement `agents` unit tests
-
 ## Web UI
 
 - [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `nav` element to avoid setting `innerHTML`
 - [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `main` element to avoid setting `innerHTML`
 
-- [ ] Chat View (default)
-- [ ] Show chats with agents
+### Chat View
 
-- [ ] Workflow View
-- [ ] Show only inter-agent communications
-- [ ] Show only filesystem mutations
-- [ ] Show only failures (with work reports)
+- [x] Show chats with agents
 
-- [ ] Tools View
-- [ ] Show tool errors
-- [ ] Show tool interactions with files (filesystem tree?)
-- [ ] Show tool interactions with programs (program and arguments tree?)
+### Agents View
 
-## Agent History Compression
+- [ ] Render Schedule View of agents and their gantt-like workchart
+- [ ] Show inter-agent communications
+- [ ] Show filesystem mutations
+- [ ] Show failures (with work reports)
 
-- [ ] Implement a compression between LLM agents to communicate more efficient
-- [ ] Might be optimum use case for summarizer inventing its own language
-- [ ] https://github.com/LLM-Coding/Semantic-Anchors
-- [ ] https://github.com/LLM-Coding/Semantic-Anchors/blob/main/docs/spec-driven-workflow.adoc
-- [ ] https://github.com/juliusbrussee/caveman
-- [ ] https://github.com/mrsimpson/responsible-vibe-mcp/blob/main/packages/core/src/plan-manager.ts
+### Bugs View
 
+- [ ] Show Packages sorted alphabetically in a grid
+- [ ] Each grid tile shows the list of bugs for that package
+- [ ] Show/Hide toggle button for showing packages with no bugs
+- [ ] Create button in Footer
+- [ ] Create Bug Report dialog
+
+### Changelog View
+
+- [ ] Show Packages sorted alphabetically in a grid
+- [ ] Each grid tile shows the list of changelog entries for that package
+- [ ] Show/Hide toggle button for showing packages with no changelog entries
+- [ ] Create button in Footer
+- [ ] Create Bug Report dialog
+
+### Requirements View
+
+- [ ] Show packages map of the codebase
+- [ ] Show symbols and how they interact with each other
+- [ ] Draw dependency lines between packages, based on imports of that package
+- [ ] If possible make this map so that links between methods and "what they're calling" can be shown, too.
+- [ ] Show/Hide toggle button for showing stdlib packages?
 

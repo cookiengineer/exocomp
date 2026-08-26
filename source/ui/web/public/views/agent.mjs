@@ -1,6 +1,6 @@
 
-import { Client          } from "./ui/Client.mjs";
-import { BootstrapConfig } from "./types/Config.mjs";
+import { Client          } from "../ui/Client.mjs";
+import { BootstrapConfig } from "../types/Config.mjs";
 
 const getAgentName = () => {
 

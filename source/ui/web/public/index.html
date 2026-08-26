@@ -13,13 +13,21 @@
 		<!-- design -->
 		<link rel="stylesheet" href="/design/index.css">
 		<link rel="stylesheet" href="/ui/index.css">
-		<script type="module" src="/index.mjs" defer></script>
+		<script type="module" src="/views/chat.mjs" defer></script>
 	</head>
 	<body>
 		<header>
 			<div><button data-action="hire-agent" disabled>Hire Agent</button></div>
-			<div><label></label></div>
-			<div><button data-action="show-schedule" disabled>Show Schedule</button></div>
+			<div>
+				<ul>
+					<li><a data-view="chat" href="/index.html">Chat</a></li>
+					<li><a data-view="agents" href="/agents.html">Agents</a></li>
+					<li><a data-view="bugs" href="/bugs.html">Bugs</a></li>
+					<li><a data-view="changelog" href="/changelog.html">Changelog</a></li>
+					<li><a data-view="requirements" href="/requirements.html">Requirements</a></li>
+				</ul>
+			</div>
+			<div></div>
 		</header>
 		<aside>
 			<nav aria-label="agents"></nav>

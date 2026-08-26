@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Exocomp Agent Schedule</title>
+		<title>Exocomp Agents</title>
 
 		<!-- favicon -->
 		<link rel="icon" type="image/png" href="/design/favicon-96x96.png" sizes="96x96" />
@@ -13,12 +13,20 @@
 		<!-- design -->
 		<link rel="stylesheet" href="/design/index.css">
 		<link rel="stylesheet" href="/ui/index.css">
-		<script type="module" src="/schedule.mjs" defer></script>
+		<script type="module" src="/views/agents.mjs" defer></script>
 	</head>
 	<body>
 		<header>
-			<div></div>
-			<div><label>Agent Schedule</label></div>
+			<div><label>Agents</label></div>
+			<div>
+				<ul>
+					<li><a data-view="chat" href="/index.html">Chat</a></li>
+					<li><a data-view="agents" href="/agents.html">Agents</a></li>
+					<li><a data-view="bugs" href="/bugs.html">Bugs</a></li>
+					<li><a data-view="changelog" href="/changelog.html">Changelog</a></li>
+					<li><a data-view="requirements" href="/requirements.html">Requirements</a></li>
+				</ul>
+			</div>
 			<div></div>
 		</header>
 		<main>
