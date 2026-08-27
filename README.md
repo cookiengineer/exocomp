@@ -165,6 +165,25 @@ that supports the OpenAI compatible endpoints. Take a look at the
 [SERVERS.md](./docs/SERVERS.md) for more details.
 
 
+### Supported Models
+
+Due to the nature of pentesting and cyber security related tasks, it is heavily
+recommended to use `deepseek-v4-pro:cloud` as the model for the `planner` agent
+and to use the following models for the hired short-lived contractor agents.
+
+Either one is probably fine, but `Qwen3.6-abliterated` is tested and verified to
+work with typical malware reverse engineering and exploit related development tasks.
+
+Qwen3.6:
+
+- [Qwen3.6-abliterated on ollama](https://ollama.com/huihui_ai/Qwen3.6-abliterated)
+- [Qwen3.6-abliterated on huggingface](https://huggingface.co/collections/huihui-ai/qwen36-abliterated)
+
+Qwen3.8:
+
+- [Qwen3.8-abliterated on ollama](https://ollama.com/huihui_ai/Qwen3.8-abliterated)
+- [Qwen3.8-abliterated on huggingface](https://huggingface.co/collections/huihui-ai/qwen38-abliterated)
+
 ### License
 
 Dual Licensed. AGPL3 for private usage. EULA for commercial usage available.
