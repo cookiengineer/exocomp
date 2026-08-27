@@ -256,6 +256,18 @@ func (server *Server) Listen() error {
 		routes_session.Agents(server.Session, request, response)
 	})
 
+	http.HandleFunc("/api/session/bugs", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Bugs(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/session/changelog", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Changelog(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/session/requirements", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Requirements(server.Session, request, response)
+	})
+
 	http.HandleFunc("/api/session/console", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.Console(server.Session, request, response)
 	})

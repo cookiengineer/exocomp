@@ -1,27 +1,23 @@
 package tools
 
 import utils_fmt "exocomp/utils/fmt"
+import utils_ast "exocomp/utils/ast"
+import "exocomp/types"
 import "go/ast"
 import "go/parser"
 import "go/printer"
 import "go/token"
 import "bytes"
+import "encoding/json"
 import "fmt"
+import "os"
 import "sort"
 import "strings"
-
-type requirement_specification struct {
-	Type        string `json:"type"`
-	File        string `json:"file"`
-	Symbol      string `json:"symbol"`
-	Declaration string `json:"declaration"`
-	Behavior    string `json:"behavior"`
-}
 
 type Requirements struct {
 	Playground string
 	Sandbox    string
-	contents   map[string]map[string]requirement_specification // map[resolved][symbol]
+	contents   map[string]map[string]types.Requirement // map[resolved][symbol]
 }
 
 func NewRequirements(playground string, sandbox string) *Requirements {
@@ -29,7 +25,7 @@ func NewRequirements(playground string, sandbox string) *Requirements {
 	tool := &Requirements{
 		Playground: playground,
 		Sandbox:    sandbox,
-		contents:   make(map[string]map[string]requirement_specification),
+		contents:   make(map[string]map[string]types.Requirement),
 	}
 
 	readRequirements(tool)
@@ -122,6 +118,21 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameters.")
 		}
 
+	} else if method == "Signoff" {
+
+		path,   ok1 := arguments["path"].(string)
+		symbol, ok2 := arguments["symbol"].(string)
+
+		if ok1 == true && ok2 == true {
+			return tool.Signoff(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
+		} else if ok1 == true && ok2 == false {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+		} else if ok1 == false && ok2 == true {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+		} else {
+			return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameters.")
+		}
+
 	} else {
 		return "", fmt.Errorf("requirements.%s: Invalid method.", method)
 	}
@@ -196,6 +207,81 @@ func (tool *Requirements) List() (string, error) {
 
 }
 
+func (tool *Requirements) MarshalJSON() ([]byte, error) {
+
+	err := readRequirements(tool)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(tool.contents)
+
+}
+
+func (tool *Requirements) Signoff(path string, symbol string) (string, error) {
+
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			readRequirements(tool)
+
+			specification, ok1 := tool.contents[internal_path][symbol]
+
+			if ok1 == true {
+
+				resolved_path, err3 := resolveSandboxPath(tool.Playground, specification.File)
+
+				if err3 == nil {
+
+					source, err4 := os.ReadFile(resolved_path)
+
+					if err4 == nil {
+
+						if utils_ast.HasSymbol(source, specification.Symbol, specification.Type) == true {
+
+							specification.IsImplemented = true
+							tool.contents[internal_path][symbol] = specification
+
+							err5 := writeRequirements(tool)
+
+							if err5 == nil {
+								return fmt.Sprintf("requirements.Signoff: %s#%s marked as implemented.", path, symbol), nil
+							} else {
+								return "", fmt.Errorf("requirements.Signoff: %s", err5.Error())
+							}
+
+						} else {
+							return "", fmt.Errorf("requirements.Signoff: Symbol \"%s\" is not implemented in \"%s\" yet.", symbol, path)
+						}
+
+					} else {
+						return "", fmt.Errorf("requirements.Signoff: %s", err4.Error())
+					}
+
+				} else {
+					return "", fmt.Errorf("requirements.Signoff: %s", err3.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("requirements.Signoff: No specification available for path \"%s\" and symbol \"%s\"", path, symbol)
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.Signoff: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.Signoff: %s", err1.Error())
+	}
+
+}
+
 func (tool *Requirements) DefineFunc(path string, symbol string, declaration string, behavior string) (string, error) {
 
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
@@ -260,10 +346,10 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 					_, ok1 := tool.contents[internal_path]
 
 					if ok1 == false {
-						tool.contents[internal_path] = make(map[string]requirement_specification)
+						tool.contents[internal_path] = make(map[string]types.Requirement)
 					}
 
-					tool.contents[internal_path][symbol] = requirement_specification{
+					tool.contents[internal_path][symbol] = types.Requirement{
 						File:        internal_path,
 						Type:        "func",
 						Declaration: declaration_code,
@@ -386,10 +472,10 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 					_, ok3 := tool.contents[internal_path]
 
 					if ok3 == false {
-						tool.contents[internal_path] = make(map[string]requirement_specification)
+						tool.contents[internal_path] = make(map[string]types.Requirement)
 					}
 
-					tool.contents[internal_path][symbol] = requirement_specification{
+					tool.contents[internal_path][symbol] = types.Requirement{
 						File:        internal_path,
 						Type:        "interface",
 						Declaration: declaration_code,
@@ -512,10 +598,10 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 					_, ok3 := tool.contents[internal_path]
 
 					if ok3 == false {
-						tool.contents[internal_path] = make(map[string]requirement_specification)
+						tool.contents[internal_path] = make(map[string]types.Requirement)
 					}
 
-					tool.contents[internal_path][symbol] = requirement_specification{
+					tool.contents[internal_path][symbol] = types.Requirement{
 						File:        internal_path,
 						Type:        "struct",
 						Declaration: declaration_code,

@@ -17,6 +17,9 @@ serve the planner's [Session](../source/types/Session.go) state.
 |:------:|:-----------------------------|:-----------------|:-----------------------------------------------------|
 | `GET`  | `/api/session/agent`         |                  | [types.Agent](../source/types/Agent.go)              |
 | `GET`  | `/api/session/agents`        |                  | `[]*types.Agent` (planner + hired agents)            |
+| `GET`  | `/api/session/bugs`          |                  | `[]`[types.Bug](../source/types/Bug.go) (sorted by file, then symbol)            |
+| `GET`  | `/api/session/changelog`     |                  | `[]`[types.ChangelogEntry](../source/types/ChangelogEntry.go) (sorted by file, symbol, date) |
+| `GET`  | `/api/session/requirements`  |                  | `[]`[types.Requirement](../source/types/Requirement.go) (sorted by file, then symbol) |
 | `GET`  | `/api/session/config`        |                  | [types.Config](../source/types/Config.go)            |
 | `GET`  | `/api/session/config/{name}` |                  | [types.Config](../source/types/Config.go)            |
 | `GET`  | `/api/session/console`       |                  | `[]types.ConsoleMessage`                             |

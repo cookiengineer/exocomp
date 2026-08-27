@@ -4,7 +4,10 @@
 @import url("./components/layout/Footer.css");
 @import url("./components/layout/Dialog.css");
 
+@import url("./components/bugs/Bugs.css");
+@import url("./components/changelog/Changelog.css");
 @import url("./components/chat/Article.css");
+@import url("./components/requirements/Requirements.css");
 @import url("./components/schedule/Schedule.css");
 
 @import url("./components/ui/Button.css");

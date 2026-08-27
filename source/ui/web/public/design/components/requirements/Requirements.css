@@ -1,0 +1,70 @@
+
+main > div[data-name="requirements"] {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 16px;
+	margin: 32px;
+	padding: 0px;
+}
+
+main > div[data-name="requirements"] > article.requirements-package {
+	display: block;
+	margin: 0px;
+	padding: 16px;
+	color: var(--article-color);
+	background: var(--button-default-background);
+	border: 1px solid var(--article-border);
+	border-radius: 6px;
+	box-sizing: border-box;
+}
+
+main > div[data-name="requirements"] > article.requirements-package > h3 {
+	display: block;
+	margin: 0px 0px 8px 0px;
+	padding: 0px;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-weight: bold;
+	line-height: 24px;
+	word-break: break-all;
+}
+
+main > div[data-name="requirements"] > article.requirements-package > ul {
+	display: block;
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+}
+
+main > div[data-name="requirements"] > article.requirements-package > ul > li {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	margin: 0px 0px 8px 0px;
+	padding: 0px;
+	font-family: "vera-mono";
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 20px;
+	text-align: left;
+}
+
+main > div[data-name="requirements"] > article.requirements-package > ul > li:last-child {
+	margin-bottom: 0px;
+}
+
+main > div[data-name="requirements"] > article.requirements-package > ul > li > input[type="checkbox"] {
+	flex: 0 0 auto;
+	margin: 0px 8px 0px 0px;
+}
+
+main > div[data-name="requirements"] > article.requirements-package > ul > li > input[type="checkbox"][disabled]:checked {
+	background: var(--input-active-background);
+	cursor: not-allowed;
+}
+
+main > div[data-name="requirements"] > article.requirements-package > ul > li > span {
+	flex: 1 1 auto;
+	word-break: break-all;
+	white-space: pre-wrap;
+}

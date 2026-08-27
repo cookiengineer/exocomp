@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/types"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -17,7 +18,7 @@ func readBugs(tool *Bugs) error {
 
 			if err1 == nil {
 
-				contents := make(map[string]map[string]bug_specification)
+				contents := make(map[string]map[string]types.Bug)
 				err2     := json.Unmarshal(bytes, &contents)
 
 				if err2 == nil {
@@ -35,6 +36,11 @@ func readBugs(tool *Bugs) error {
 				} else {
 					return fmt.Errorf("readBugs: %s", err2.Error())
 				}
+
+			} else if os.IsNotExist(err1) {
+
+				tool.contents = make(map[string]map[string]types.Bug)
+				return nil
 
 			} else {
 				return fmt.Errorf("readBugs: %s", err1.Error())

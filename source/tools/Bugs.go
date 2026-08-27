@@ -1,21 +1,16 @@
 package tools
 
 import utils_fmt "exocomp/utils/fmt"
+import "exocomp/types"
+import "encoding/json"
 import "fmt"
 import "sort"
 import "strings"
 
-type bug_specification struct {
-	IsFixed     bool   `json:"is_fixed"`
-	File        string `json:"file"`
-	Symbol      string `json:"symbol"`
-	Description string `json:"description"`
-}
-
 type Bugs struct {
 	Playground string
 	Sandbox    string
-	contents   map[string]map[string]bug_specification // map[path][symbol]
+	contents   map[string]map[string]types.Bug // map[path][symbol]
 }
 
 func NewBugs(playground string, sandbox string) *Bugs {
@@ -23,7 +18,7 @@ func NewBugs(playground string, sandbox string) *Bugs {
 	tool := &Bugs{
 		Playground: playground,
 		Sandbox:    sandbox,
-		contents:   make(map[string]map[string]bug_specification),
+		contents:   make(map[string]map[string]types.Bug),
 	}
 
 	return tool
@@ -134,14 +129,14 @@ func (tool *Bugs) Add(path string, symbol string, description string) (string, e
 			_, ok1 := tool.contents[internal_path]
 
 			if ok1 == false {
-				tool.contents[internal_path] = make(map[string]bug_specification)
+				tool.contents[internal_path] = make(map[string]types.Bug)
 			}
 
 			_, ok2 := tool.contents[internal_path][symbol]
 
 			if ok2 == false {
 
-				tool.contents[internal_path][symbol] = bug_specification{
+				tool.contents[internal_path][symbol] = types.Bug{
 					IsFixed:     false,
 					File:        internal_path,
 					Symbol:      symbol,
@@ -272,6 +267,18 @@ func (tool *Bugs) List() (string, error) {
 	}
 
 	return strings.Join(result, "\n"), nil
+
+}
+
+func (tool *Bugs) MarshalJSON() ([]byte, error) {
+
+	err := readBugs(tool)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(tool.contents)
 
 }
 

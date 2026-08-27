@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/types"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -17,7 +18,7 @@ func readChangelog(tool *Changelog) error {
 
 			if err1 == nil {
 
-				contents := make(map[string]map[string][]changelog_entry)
+				contents := make(map[string]map[string][]types.ChangelogEntry)
 				err2     := json.Unmarshal(bytes, &contents)
 
 				if err2 == nil {
@@ -35,6 +36,11 @@ func readChangelog(tool *Changelog) error {
 				} else {
 					return fmt.Errorf("readChangelog: %s", err2.Error())
 				}
+
+			} else if os.IsNotExist(err1) {
+
+				tool.contents = make(map[string]map[string][]types.ChangelogEntry)
+				return nil
 
 			} else {
 				return fmt.Errorf("readChangelog: %s", err1.Error())

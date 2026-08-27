@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/types"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -17,7 +18,7 @@ func readRequirements(tool *Requirements) error {
 
 			if err1 == nil {
 
-				contents := make(map[string]map[string]requirement_specification)
+				contents := make(map[string]map[string]types.Requirement)
 				err2     := json.Unmarshal(bytes, &contents)
 
 				if err2 == nil {
@@ -35,6 +36,11 @@ func readRequirements(tool *Requirements) error {
 				} else {
 					return fmt.Errorf("readRequirements: %s", err2.Error())
 				}
+
+			} else if os.IsNotExist(err1) {
+
+				tool.contents = make(map[string]map[string]types.Requirement)
+				return nil
 
 			} else {
 				return fmt.Errorf("readRequirements: %s", err1.Error())

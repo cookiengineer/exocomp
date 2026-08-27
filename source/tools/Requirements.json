@@ -101,6 +101,27 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "requirements.Signoff",
+			"description": "Mark a previously defined requirement as implemented, after verifying that its symbol is present in the file. Only the planner agent may sign off requirements.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the file that contains the requirement, e.g. \"./utils/Parse.go\""
+					},
+					"symbol": {
+						"type": "string",
+						"description": "The requirement's symbol, e.g. \"Parse\" or \"structs.Data.Parse\"."
+					}
+				},
+				"required": ["path", "symbol"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "requirements.Search",
 			"description": "Search defined requirements by file path and an optional symbol. Omit symbol to list every requirement in the file.",
 			"parameters": {

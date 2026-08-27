@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Exocomp Changelog</title>
+
+		<!-- favicon -->
+		<link rel="icon" type="image/png" href="/design/favicon-96x96.png" sizes="96x96" />
+		<link rel="shortcut icon" href="/design/favicon.ico" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/design/apple-touch-icon.png" />
+		<meta name="apple-mobile-web-app-title" content="Exocomp" />
+		<link rel="manifest" href="/design/site.webmanifest" />
+
+		<!-- design -->
+		<link rel="stylesheet" href="/design/index.css">
+		<link rel="stylesheet" href="/ui/index.css">
+		<script type="module" src="/views/changelog.mjs" defer></script>
+	</head>
+	<body>
+		<header>
+			<div><button data-action="toggle-collapse">Collapse Packages</button></div>
+			<div>
+				<ul>
+					<li><a data-view="chat" href="/index.html">Chat</a></li>
+					<li><a data-view="agents" href="/agents.html">Agents</a></li>
+					<li><a data-view="bugs" href="/bugs.html">Bugs</a></li>
+					<li><a data-view="changelog" href="/changelog.html">Changelog</a></li>
+					<li><a data-view="requirements" href="/requirements.html">Requirements</a></li>
+				</ul>
+			</div>
+			<div></div>
+		</header>
+		<main>
+			<div data-name="changelog"></div>
+		</main>
+	</body>
+</html>

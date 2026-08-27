@@ -1,23 +1,17 @@
 package tools
 
 import utils_fmt "exocomp/utils/fmt"
+import "exocomp/types"
+import "encoding/json"
 import "fmt"
 import "sort"
 import "strings"
 import "time"
 
-type changelog_entry struct {
-	Date        time.Time `json:"date"`
-	Type        string    `json:"type"`
-	File        string    `json:"file"`
-	Symbol      string    `json:"symbol"`
-	Description string    `json:"description"`
-}
-
 type Changelog struct {
 	Sandbox    string
 	Playground string
-	contents   map[string]map[string][]changelog_entry // map[path][symbol]
+	contents   map[string]map[string][]types.ChangelogEntry // map[path][symbol]
 }
 
 func NewChangelog(playground string, sandbox string) *Changelog {
@@ -25,7 +19,7 @@ func NewChangelog(playground string, sandbox string) *Changelog {
 	tool := &Changelog{
 		Playground: playground,
 		Sandbox:    sandbox,
-		contents:   make(map[string]map[string][]changelog_entry, 0),
+		contents:   make(map[string]map[string][]types.ChangelogEntry, 0),
 	}
 
 	return tool
@@ -411,16 +405,16 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 			_, ok1 := tool.contents[internal_path]
 
 			if ok1 == false {
-				tool.contents[internal_path] = make(map[string][]changelog_entry, 0)
+				tool.contents[internal_path] = make(map[string][]types.ChangelogEntry, 0)
 			}
 
 			_, ok2 := tool.contents[internal_path][symbol]
 
 			if ok2 == false {
-				tool.contents[internal_path][symbol] = make([]changelog_entry, 0)
+				tool.contents[internal_path][symbol] = make([]types.ChangelogEntry, 0)
 			}
 
-			var found *changelog_entry = nil
+			var found *types.ChangelogEntry = nil
 
 			for _, entry := range tool.contents[internal_path][symbol] {
 
@@ -436,7 +430,7 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 				now   := time.Now()
 				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-				tool.contents[internal_path][symbol] = append(tool.contents[internal_path][symbol], changelog_entry{
+				tool.contents[internal_path][symbol] = append(tool.contents[internal_path][symbol], types.ChangelogEntry{
 					Date:        today,
 					Type:        method,
 					File:        internal_path,
@@ -465,3 +459,18 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 	}
 
 }
+
+
+
+func (tool *Changelog) MarshalJSON() ([]byte, error) {
+
+	err := readChangelog(tool)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(tool.contents)
+
+}
+

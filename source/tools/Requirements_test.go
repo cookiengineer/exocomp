@@ -1,9 +1,12 @@
 package tools
 
+import "encoding/json"
 import "os"
 import "path/filepath"
 import "strings"
 import "testing"
+
+import "exocomp/types"
 
 func TestRequirements_DefineFunc(t *testing.T) {
 
@@ -390,6 +393,96 @@ func TestRequirements_Call(t *testing.T) {
 
 		if !strings.HasPrefix(result2, "requirements.DefineStruct: Data defined as type Data struct {") {
 			t.Errorf("Expected the struct to be defined, got %s", result2)
+		}
+
+	} else {
+		t.Errorf("Expected %v to be not nil", tool)
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
+func TestRequirements_Signoff(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
+	sandbox       := filepath.Join(playground, "requirements")
+	tool          := NewRequirements(playground, sandbox)
+
+	if tool != nil {
+
+		_, err1 := tool.DefineFunc("./core/FirstFunction.go", "FirstFunction", "func FirstFunction(current int64, added int64) (string, error)", "The method needs to implement a fibonacci sequence.")
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		source := strings.Join([]string{
+			"package core",
+			"",
+			"func FirstFunction(current int64, added int64) (string, error) {",
+			"\treturn \"\", nil",
+			"}",
+		}, "\n")
+
+		file_path := filepath.Join(sandbox, "core", "FirstFunction.go")
+		err2      := os.MkdirAll(filepath.Dir(file_path), 0755)
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		err3 := os.WriteFile(file_path, []byte(source), 0666)
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		result, err4 := tool.Signoff("./core/FirstFunction.go", "FirstFunction")
+
+		if err4 != nil {
+			t.Errorf("Expected %v to be nil", err4)
+		}
+
+		if result != "requirements.Signoff: ./core/FirstFunction.go#FirstFunction marked as implemented." {
+			t.Errorf("Expected signoff to be successful:\n%s", result)
+		}
+
+		reports, err5 := json.Marshal(tool)
+
+		if err5 != nil {
+			t.Errorf("Expected %v to be nil", err5)
+		}
+
+		contents := make(map[string]map[string]types.Requirement)
+		err6     := json.Unmarshal(reports, &contents)
+
+		if err6 != nil {
+			t.Errorf("Expected %v to be nil", err6)
+		}
+
+		reports_count := 0
+		reports_implemented := false
+
+		for _, specifications := range contents {
+			for _, specification := range specifications {
+				reports_count++
+				reports_implemented = specification.IsImplemented
+			}
+		}
+
+		if reports_count != 1 {
+			t.Errorf("Expected 1 report, got %d", reports_count)
+		} else if reports_implemented != true {
+			t.Errorf("Expected report to be implemented")
 		}
 
 	} else {

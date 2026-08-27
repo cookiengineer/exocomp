@@ -42,8 +42,9 @@ source/
     html/        HTML to markdown/text conversion
     markdown/    Markdown parser for the website frontend
   tools/         Tool implementations and JSON schemas
-  types/         Basic types
+  types/         Shared types (Agent, Config, Bug, ChangelogEntry, Requirement, ...)
   schemas/       Wire types (Message, ToolCall, ChatRequest/Response, ...)
+  utils/         Shared helpers (ast, chat, cli, fmt, fs, http, api adapters, ...)
   ui/
     jsonl/       Child-process frontend with JSONL over stdin/stdout
     tty/         Interactive terminal frontend (the human's planner)
