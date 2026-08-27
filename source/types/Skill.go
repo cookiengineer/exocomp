@@ -1,6 +1,6 @@
 package types
 
-import "exocomp/encoding/yaml"
+import "exocomp/parsers/yaml"
 import "encoding/json"
 import "errors"
 import "strings"

@@ -1,6 +1,6 @@
 package types
 
-import "exocomp/encoding/yaml"
+import "exocomp/parsers/yaml"
 import "strings"
 import "testing"
 

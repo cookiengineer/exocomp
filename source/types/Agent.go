@@ -1,7 +1,7 @@
 package types
 
 import "exocomp/schemas"
-import "exocomp/encoding/yaml"
+import "exocomp/parsers/yaml"
 import utils_fmt "exocomp/utils/fmt"
 import "encoding/json"
 

@@ -206,12 +206,21 @@ func (parser *Parser) Root() (*Node, error) {
 
 func (parser *Parser) SplitKeyValue(line string) (string, string, bool) {
 
-	colon_index := strings.Index(line, ":")
+	index := strings.Index(line, ":")
+	check := strings.Index(line, ": ")
 
-	if colon_index != -1 {
+	if index != -1 && check != -1 {
 
-		key   := strings.TrimSpace(line[:colon_index])
-		value := strings.TrimSpace(line[colon_index+1:])
+		if check > index {
+			index = check
+		}
+
+	}
+
+	if index != -1 {
+
+		key   := strings.TrimSpace(line[:index])
+		value := strings.TrimSpace(line[index+1:])
 
 		if value != "" {
 			return key, value, true
