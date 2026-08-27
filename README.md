@@ -88,7 +88,7 @@ Check the unit tests on whether the Tools can be relied on or not.
 | Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `pentester`, `threathunter`                             |
 | [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode                    | `webscanner`, `exploiter`                               |
 
-- [1] Requires `llama.cpp` with `qwen3-coder:30b` and `Q8_0` quantization and 48GB VRAM GPU with `vulkan` support.
+- [1] Requires `llama.cpp` with `huihui_ai/Qwen3.6-abliterated:35b` at `Q8_0` quantization and 48GB VRAM GPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).
 
 
