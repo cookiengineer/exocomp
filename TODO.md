@@ -23,11 +23,8 @@
 ## Models
 
 - [ ] ollama has 32k context length limit, even though model supports 256k
-- [ ] `env OLLAMA_CONTEXT_LENGTH=256k ollama serve` doesn't change shit
+- [ ] `env OLLAMA_CONTEXT_LENGTH=256k ollama serve` doesn't change anything, needs a fix for that
 - [ ] Use `https://github.com/dianlight/gollama.cpp` bindings
-- [ ] Implement correct llama.cpp templates for `qwen3-coder:30b` (tool calls don't work)
-- [ ] Implement correct llama.cpp templates for `gemma4:31b` (tool calls don't work)
-- [ ] Implement correct llama.cpp templates for `qwen3.6:35b-heretic` (tool calls don't work)
 
 ## Tools
 

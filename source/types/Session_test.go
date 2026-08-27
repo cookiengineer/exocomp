@@ -14,7 +14,7 @@ import "testing"
 func newTestSession() *Session {
 
 	url, _ := net_url.Parse("http://localhost:11434/v1")
-	config := NewConfig("Test Agent", "planner", "qwen3-coder:30b", "", 0.5, "/tmp/exocomp-test", "/tmp/exocomp-test", url, false)
+	config := NewConfig("Test Agent", "planner", "", "", 0.0, "/tmp/exocomp-test", "/tmp/exocomp-test", url, false)
 
 	return &Session{
 		Agent:    &Agent{Messages: make([]*schemas.Message, 0)},

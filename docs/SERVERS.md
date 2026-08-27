@@ -26,8 +26,9 @@ Known limitations:
 ollama serve;
 
 # Pull models
-ollama pull qwen3-coder:30b;
-ollama pull gemma4:31b;
+ollama pull deepseek-v4-pro:cloud;
+ollama pull huihui_ai/Qwen3.8-abliterated:27b;
+ollama pull huihui_ai/Qwen3.6-abliterated:35b;
 ```
 
 ```bash

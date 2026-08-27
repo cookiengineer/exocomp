@@ -9,7 +9,7 @@ func TestUnmarshal_Agent(t *testing.T) {
 	file := `
 name:   "Peanut Hamper"
 role:   pentester
-model:  qwen3-coder:30b
+model:  deepseek-v4-pro:cloud
 prompt: |
   You are a C and C++ Pentest Expert
   running within an Agentic Environment
@@ -43,8 +43,8 @@ allowed-tools:
 		t.Errorf("Expected agent.Role \"%s\" to be \"%s\"", agent.Role, "pentester")
 	}
 
-	if agent.Model != "qwen3-coder:30b" {
-		t.Errorf("Expected agent.Model \"%s\" to be \"%s\"", agent.Model, "qwen3-coder:30b")
+	if agent.Model != "deepseek-v4-pro:cloud" {
+		t.Errorf("Expected agent.Model \"%s\" to be \"%s\"", agent.Model, "deepseek-v4-pro:cloud")
 	}
 
 	if !strings.HasPrefix(agent.Prompt, "You are a C and C++ Pentest Expert") || !strings.HasSuffix(agent.Prompt, "C, CGo and Go.") {

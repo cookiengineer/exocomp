@@ -14,7 +14,7 @@ Common flags: `--name`, `--role`, `--model`, `--temperature`, `--prompt`,
 `--sandbox`, `--url`, `--debug`. Examples:
 
 ```bash
-exocomp terminal --role=architect --model="qwen3-coder:30b" --temperature=0.5;
+exocomp terminal --role=architect --model="codestral:22b" --temperature=0.5;
 exocomp web --role=planner --model="codestral:22b" --temperature=0.7;
 ```
 

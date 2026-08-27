@@ -4,11 +4,7 @@
 ### Requirements
 
 Testing the live `agents` tool requires a [llama.cpp](https://github.com/ggml-org/llama.cpp)
-`llama-server` instance running with a `qwen3-coder:30b` model and `Q8_0`
-quantization. All other tests run without a server.
-
-For all live tests, use the [unsloth Qwen3 Coder A3B Instruct](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF)
-`Q8_0` (8-bit) quantization of the Qwen3 Coder model.
+`llama-server` instance running. All other tests run without a server.
 
 ```bash
 # For 48GB of VRAM use
@@ -16,8 +12,8 @@ For all live tests, use the [unsloth Qwen3 Coder A3B Instruct](https://huggingfa
 
 # Start llama.cpp server
 llama-server \
-	--model "./models/qwen3-coder-30b-a3b-instruct-q8_0.gguf" \
-	--alias "qwen3-coder:30b" \
+	--model "Huihui-CyberStrike-OffSec-35B-abliterated-Q8_0.gguf" \
+	--alias "huihui_ai/Qwen3.6-abliterated:35b" \
 	--gpu-layers all \
 	--ctx-size 32768 \
 	--batch-size 512 \

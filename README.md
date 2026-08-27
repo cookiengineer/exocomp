@@ -135,8 +135,7 @@ tokens:
 
 Most unit tests run without any server. Only the live `agents` tool tests
 require a [llama.cpp](https://github.com/ggml-org/llama.cpp) `llama-server`
-instance running with a `qwen3-coder:30b` model and `Q8_0` quantization. Take a
-look at the [TESTING.md](./docs/TESTING.md) for more details.
+running. Take a look at the [TESTING.md](./docs/TESTING.md) for more details.
 
 
 ### Usage

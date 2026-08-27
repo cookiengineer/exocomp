@@ -62,7 +62,7 @@ func newTestAgents(t *testing.T, scenario string) *Agents {
 	t.Setenv("EXOCOMP_AGENT", buildFakeAgent(t))
 	t.Setenv("EXOCOMP_FAKE_SCENARIO", scenario)
 
-	return NewAgents(playground, sandbox, "qwen3-coder:30b", url, false)
+	return NewAgents(playground, sandbox, "huihui_ai/Qwen3.6-abliterated:35b", url, false)
 
 }
 
