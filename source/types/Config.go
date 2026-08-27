@@ -29,6 +29,34 @@ type Config struct {
 
 func NewConfig(name string, role string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, debug bool) *Config {
 
+	if role == "planner" && global_config != nil {
+
+		if name == "" {
+			name = global_config.Name
+		}
+
+		if model == "" {
+			model = global_config.Model
+		}
+
+		if prompt == "" {
+			prompt = global_config.Prompt
+		}
+
+		if temperature == 0.0 {
+			temperature = global_config.Temperature
+		}
+
+		if url == nil {
+			url = global_config.URL
+		}
+
+		if debug == false {
+			debug = global_config.Debug
+		}
+
+	}
+
 	name   = strings.TrimSpace(name)
 	role   = strings.TrimSpace(role)
 	model  = strings.TrimSpace(model)
@@ -38,6 +66,10 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 		temperature = 0.0
 	} else if temperature > 1.0 {
 		temperature = 1.0
+	}
+
+	if role == "" {
+		role = "planner"
 	}
 
 	if playground == "" {
@@ -75,6 +107,28 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 
 	}
 
+	tokens := make(map[string]string)
+
+	if global_config != nil {
+
+		if role == "planner" {
+
+			for key, value := range global_config.Tokens {
+				tokens[key] = value
+			}
+
+		} else if model != "" {
+
+			token, ok := global_config.Tokens[model]
+
+			if ok == true {
+				tokens[model] = token
+			}
+
+		}
+
+	}
+
 	return &Config{
 		Name:        name,
 		Role:        role,
@@ -85,7 +139,7 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 		Sandbox:     sandbox,
 		URL:         url,
 		Debug:       debug,
-		Tokens:      make(map[string]string),
+		Tokens:      tokens,
 	}
 
 }
