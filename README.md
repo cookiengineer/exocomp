@@ -115,6 +115,22 @@ cd /path/to/exocomp/build;
 ```
 
 
+### Configuring
+
+It's possible to provide a global default configuration inside the file `~/.config/exocomp/config.yaml`,
+which is inherited by the `planner` mode agent. Tokens are delegated to sub-agents if they have any model
+configured with a token in the global configuration.
+
+```yaml
+name: Peanut Hamper
+role: planner
+model: deepseek-v4-pro:cloud
+tokens:
+  deepseek-v4-pro:cloud: "sk-1234567890abcdef"
+  kimi-k3:cloud: "abc-1234567890abcdef"
+```
+
+
 ### Testing
 
 Most unit tests run without any server. Only the live `agents` tool tests
