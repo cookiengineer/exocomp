@@ -13,7 +13,7 @@ func ParseConfig(arguments []string) *types.Config {
 	name          := ""
 	role          := "planner"
 	debug         := false
-	model         := "qwen3-coder:30b"
+	model         := ""
 	playground, _ := os.Getwd()
 	prompt        := ""
 	sandbox, _    := os.Getwd()

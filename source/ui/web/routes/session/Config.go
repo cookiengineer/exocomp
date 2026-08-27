@@ -12,7 +12,7 @@ func Config(session *types.Session, request *http.Request, response http.Respons
 
 		if session.Config != nil {
 
-			response_payload, err0 := json.MarshalIndent(session.Config, "", "\t")
+			response_payload, err0 := json.MarshalIndent(session.Config.Public(), "", "\t")
 
 			if err0 == nil {
 

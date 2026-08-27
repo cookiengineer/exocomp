@@ -38,24 +38,24 @@ Exocomp uses multiple [Agent Roles](./source/agents/Roles.go):
 
 *Software Development*
 
-| Role                                          | Lifecycle | Default Model     | Description                                 |
-|:----------------------------------------------|:---------:|:-----------------:|:--------------------------------------------|
-| [planner](./source/agents/planner.yaml)       | long      | `gemma4:31b`      | writes with humans and plans project phases |
-| [architect](./source/agents/architect.yaml)   | short     | `qwen3-coder:30b` | defines software specifications             |
-| archivar                                      | short     | `qwen3-coder:30b` | reads git repositories and wikis            |
-| [coder](./source/agents/coder.yaml)           | short     | `qwen3-coder:30b` | implements specifications into code         |
-| researcher                                    | short     | `qwen3-coder:30b` | reads websites and API documentation        |
-| [summarizer](./source/agents/summarizer.yaml) | short     | `qwen3-coder:30b` | reads long texts and summarizes them        |
-| [tester](./source/agents/tester.yaml)         | short     | `qwen3-coder:30b` | implements unit tests, writes bug reports   |
+| Role                                          | Lifecycle | Default Model                       | Description                                 |
+|:----------------------------------------------|:---------:|:-----------------------------------:|:--------------------------------------------|
+| [planner](./source/agents/planner.yaml)       | long      | `deepseek-v4-pro:cloud`             | writes with humans and plans project phases |
+| [architect](./source/agents/architect.yaml)   | short     | `huihui_ai/Qwen3.6-abliterated:35b` | defines software specifications             |
+| archivar                                      | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads git repositories and wikis            |
+| [coder](./source/agents/coder.yaml)           | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements specifications into code         |
+| researcher                                    | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads websites and API documentation        |
+| [summarizer](./source/agents/summarizer.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads long texts and summarizes them        |
+| [tester](./source/agents/tester.yaml)         | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements unit tests, writes bug reports   |
 
 *Pentesting*
 
-| Role                                          | Lifecycle | Default Model             | Description                                   |
-|:----------------------------------------------|:---------:|:-------------------------:|:----------------------------------------------|
-| [exploiter](./source/agents/exploiter.yaml)   | short     | `qwen3-coder-heretic:30b` | implements exploits in CGo                    |
-| reverser                                      | short     | `qwen3-coder-heretic:30b` | translates binaries or code into Go/CGo code  |
-| threathunter                                  | short     | `qwen3-coder-heretic:30b` | discovers vulnerabilities in infrastructure   |
-| [webscanner](./source/agents/webscanner.yaml) | short     | `qwen3-coder-heretic:30b` | discovers vulnerabilities in web applications |
+| Role                                          | Lifecycle | Default Model                       | Description                                   |
+|:----------------------------------------------|:---------:|:-----------------------------------:|:----------------------------------------------|
+| [exploiter](./source/agents/exploiter.yaml)   | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements exploits in CGo                    |
+| reverser                                      | short     | `huihui_ai/Qwen3.6-abliterated:35b` | translates binaries or code into Go/CGo code  |
+| threathunter                                  | short     | `huihui_ai/Qwen3.6-abliterated:35b` | discovers vulnerabilities in infrastructure   |
+| [webscanner](./source/agents/webscanner.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | discovers vulnerabilities in web applications |
 
 Exocomp uses Tools to interact with the sandbox. Check the implementations to
 see which tools are allowed for which Agent role.
@@ -86,7 +86,7 @@ Check the unit tests on whether the Tools can be relied on or not.
 | [Skills](./source/tools/Skills.go)             |                                            | loads and Unloads Agent Skills [2]                 | `planner`, `architect`, `coder`, `tester`               |
 | Kiwix                                          |                                            | researches knowledge from offline web archives     | `researcher`                                            |
 | Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `pentester`, `threathunter`                             |
-| [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode with browser impersonation | `webscanner`, `exploiter`                             |
+| [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode                    | `webscanner`, `exploiter`                               |
 
 - [1] Requires `llama.cpp` with `qwen3-coder:30b` and `Q8_0` quantization and 48GB VRAM GPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).

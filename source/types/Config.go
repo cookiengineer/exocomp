@@ -15,15 +15,16 @@ import "os"
 import "strings"
 
 type Config struct {
-	Name        string       `json:"name" yaml:"name"`
-	Role        string       `json:"role" yaml:"role"`
-	Model       string       `json:"model" yaml:"model"`
-	Prompt      string       `json:"prompt" yaml:"prompt"`
-	Temperature float64      `json:"temperature" yaml:"temperature"`
-	Playground  string       `json:"playground" yaml:"playground"`
-	Sandbox     string       `json:"sandbox" yaml:"sandbox"`
-	URL         *net_url.URL `json:"url" yaml:"url"`
-	Debug       bool         `json:"debug" yaml:"debug"`
+	Name        string            `json:"name" yaml:"name"`
+	Role        string            `json:"role" yaml:"role"`
+	Model       string            `json:"model" yaml:"model"`
+	Prompt      string            `json:"prompt" yaml:"prompt"`
+	Temperature float64           `json:"temperature" yaml:"temperature"`
+	Playground  string            `json:"playground" yaml:"playground"`
+	Sandbox     string            `json:"sandbox" yaml:"sandbox"`
+	URL         *net_url.URL      `json:"url" yaml:"url"`
+	Debug       bool              `json:"debug" yaml:"debug"`
+	Tokens      map[string]string `json:"tokens" yaml:"tokens"`
 }
 
 func NewConfig(name string, role string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, debug bool) *Config {
@@ -84,6 +85,7 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 		Sandbox:     sandbox,
 		URL:         url,
 		Debug:       debug,
+		Tokens:      make(map[string]string),
 	}
 
 }
@@ -169,6 +171,25 @@ func (config *Config) GetPrompt() string {
 	return strings.TrimSpace(config.Prompt)
 }
 
+func (config *Config) GetToken(model string) string {
+
+	if config.Tokens != nil {
+		return strings.TrimSpace(config.Tokens[model])
+	}
+
+	return ""
+
+}
+
+func (config *Config) Public() *Config {
+
+	clone := *config
+	clone.Tokens = nil
+
+	return &clone
+
+}
+
 func (config *Config) ResolveAPI(path string) *net_url.URL {
 
 	endpoint := config.URL.ResolveReference(&net_url.URL{
@@ -188,15 +209,16 @@ func (config *Config) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(struct {
-		Name        string  `json:"name"`
-		Role        string  `json:"role"`
-		Model       string  `json:"model"`
-		Prompt      string  `json:"prompt"`
-		Temperature float64 `json:"temperature"`
-		Playground  string  `json:"playground"`
-		Sandbox     string  `json:"sandbox"`
-		URL         string  `json:"url"`
-		Debug       bool    `json:"debug"`
+		Name        string            `json:"name"`
+		Role        string            `json:"role"`
+		Model       string            `json:"model"`
+		Prompt      string            `json:"prompt"`
+		Temperature float64           `json:"temperature"`
+		Playground  string            `json:"playground"`
+		Sandbox     string            `json:"sandbox"`
+		URL         string            `json:"url"`
+		Debug       bool              `json:"debug"`
+		Tokens      map[string]string `json:"tokens,omitempty"`
 	}{
 		Name:        config.Name,
 		Role:        config.Role,
@@ -207,6 +229,7 @@ func (config *Config) MarshalJSON() ([]byte, error) {
 		Sandbox:     config.Sandbox,
 		URL:         url_str,
 		Debug:       config.Debug,
+		Tokens:      config.Tokens,
 	})
 
 }
@@ -214,15 +237,16 @@ func (config *Config) MarshalJSON() ([]byte, error) {
 func (config *Config) UnmarshalJSON(data []byte) error {
 
 	var tmp struct {
-		Name        string  `json:"name"`
-		Role        string  `json:"role"`
-		Model       string  `json:"model"`
-		Prompt      string  `json:"prompt"`
-		Temperature float64 `json:"temperature"`
-		Playground  string  `json:"playground"`
-		Sandbox     string  `json:"sandbox"`
-		URL         string  `json:"url"`
-		Debug       bool    `json:"debug"`
+		Name        string            `json:"name"`
+		Role        string            `json:"role"`
+		Model       string            `json:"model"`
+		Prompt      string            `json:"prompt"`
+		Temperature float64           `json:"temperature"`
+		Playground  string            `json:"playground"`
+		Sandbox     string            `json:"sandbox"`
+		URL         string            `json:"url"`
+		Debug       bool              `json:"debug"`
+		Tokens      map[string]string `json:"tokens"`
 	}
 
 	err0 := json.Unmarshal(data, &tmp)
@@ -237,6 +261,7 @@ func (config *Config) UnmarshalJSON(data []byte) error {
 		config.Playground  = tmp.Playground
 		config.Sandbox     = tmp.Sandbox
 		config.Debug       = tmp.Debug
+		config.Tokens      = tmp.Tokens
 
 		tmp_url, err1 := net_url.Parse(tmp.URL)
 
@@ -261,15 +286,16 @@ func (config *Config) MarshalYAML() ([]byte, error) {
 	}
 
 	return yaml.Marshal(struct {
-		Name        string  `json:"name"`
-		Role        string  `json:"role"`
-		Model       string  `json:"model"`
-		Prompt      string  `json:"prompt"`
-		Temperature float64 `json:"temperature"`
-		Playground  string  `json:"playground"`
-		Sandbox     string  `json:"sandbox"`
-		URL         string  `json:"url"`
-		Debug       bool    `json:"debug"`
+		Name        string            `json:"name"`
+		Role        string            `json:"role"`
+		Model       string            `json:"model"`
+		Prompt      string            `json:"prompt"`
+		Temperature float64           `json:"temperature"`
+		Playground  string            `json:"playground"`
+		Sandbox     string            `json:"sandbox"`
+		URL         string            `json:"url"`
+		Debug       bool              `json:"debug"`
+		Tokens      map[string]string `json:"tokens"`
 	}{
 		Name:        config.Name,
 		Role:        config.Role,
@@ -280,6 +306,7 @@ func (config *Config) MarshalYAML() ([]byte, error) {
 		Sandbox:     config.Sandbox,
 		URL:         url_str,
 		Debug:       config.Debug,
+		Tokens:      config.Tokens,
 	})
 
 }
@@ -287,15 +314,16 @@ func (config *Config) MarshalYAML() ([]byte, error) {
 func (config *Config) UnmarshalYAML(data []byte) error {
 
 	var tmp struct {
-		Name        string  `json:"name"`
-		Role        string  `json:"role"`
-		Model       string  `json:"model"`
-		Prompt      string  `json:"prompt"`
-		Temperature float64 `json:"temperature"`
-		Playground  string  `json:"playground"`
-		Sandbox     string  `json:"sandbox"`
-		URL         string  `json:"url"`
-		Debug       bool    `json:"debug"`
+		Name        string            `json:"name"`
+		Role        string            `json:"role"`
+		Model       string            `json:"model"`
+		Prompt      string            `json:"prompt"`
+		Temperature float64           `json:"temperature"`
+		Playground  string            `json:"playground"`
+		Sandbox     string            `json:"sandbox"`
+		URL         string            `json:"url"`
+		Debug       bool              `json:"debug"`
+		Tokens      map[string]string `json:"tokens"`
 	}
 
 	err0 := yaml.Unmarshal(data, &tmp)
@@ -310,6 +338,7 @@ func (config *Config) UnmarshalYAML(data []byte) error {
 		config.Playground  = tmp.Playground
 		config.Sandbox     = tmp.Sandbox
 		config.Debug       = tmp.Debug
+		config.Tokens      = tmp.Tokens
 
 		tmp_url, err1 := net_url.Parse(tmp.URL)
 

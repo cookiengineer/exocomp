@@ -1,7 +1,7 @@
 name: Peanut Tester
 role: tester
 description: implements unit tests, writes bug reports
-model: qwen3-coder:30b
+model: huihui_ai/Qwen3.6-abliterated:35b
 temperature: 0.3
 allowed-programs:
   - go

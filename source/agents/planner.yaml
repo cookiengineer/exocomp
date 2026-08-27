@@ -1,7 +1,7 @@
 name: Peanut Hamper
 role: planner
 description: writes with human and plans project phases
-model: qwen3-coder:30b
+model: deepseek-v4-pro:cloud
 temperature: 0.7
 allowed-programs:
   - go

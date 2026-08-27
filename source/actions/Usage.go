@@ -12,7 +12,7 @@ func Usage(options_ui []string) {
 	default_ui          := "unset"
 	default_name        := strconv.Quote("Peanut Hamper")
 	default_role        := strconv.Quote("planner")
-	default_model       := strconv.Quote("qwen3-coder:30b")
+	default_model       := strconv.Quote("deepseek-v4-pro:cloud")
 	default_prompt      := "unset"
 	default_temperature := "unset"
 	default_sandbox     := "current working directory"
@@ -20,10 +20,8 @@ func Usage(options_ui []string) {
 
 	options_role  := make([]string, 0)
 	options_model := []string{
-		strconv.Quote("gemma4:31b"),
-		strconv.Quote("qwen3-coder:30b"),
-		strconv.Quote("qwen3-coder-heretic:30b"),
-		strconv.Quote("qwen3.6:35b-heretic"),
+		strconv.Quote("deepseek-v4-pro:cloud"),
+		strconv.Quote("huihui_ai/Qwen3.6-abliterated:35b"),
 	}
 	options_temperature := []string{
 		strconv.FormatFloat(0.1, 'f', 1, 64),
@@ -76,11 +74,11 @@ func Usage(options_ui []string) {
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  # single-agent mode\n")
 	fmt.Fprint(os.Stdout, "  exocomp terminal --role=architect;\n")
-	fmt.Fprint(os.Stdout, "  exocomp web --role=architect --model=\"qwen3-coder:30b\" --temperature=\"0.5\";\n")
+	fmt.Fprint(os.Stdout, "  exocomp web --role=architect --model=\"huihui_ai/Qwen3.6-abliterated:35b\" --temperature=\"0.5\";\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  # multi-agent mode\n")
 	fmt.Fprint(os.Stdout, "  exocomp terminal --role=planner;\n")
-	fmt.Fprint(os.Stdout, "  exocomp web --role=planner --model=\"codestral:22b\" --temperature=\"0.7\";\n")
+	fmt.Fprint(os.Stdout, "  exocomp web --role=planner --model=\"deepseek-v4-pro:cloud\" --temperature=\"0.7\";\n")
 	fmt.Fprint(os.Stdout, "\n")
 
 	os.Exit(1)

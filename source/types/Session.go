@@ -707,50 +707,71 @@ func (session *Session) infer_chat_completions() error {
 
 	if err0 == nil {
 
-		response, err1 := session.client.Post(
+		request, err1 := http.NewRequest(
+			http.MethodPost,
 			session.Config.ResolveAPI("/v1/chat/completions").String(),
-			"application/json",
 			bytes.NewReader(request_payload),
 		)
 
-		if err1 == nil && response.StatusCode == 200 {
+		if err1 == nil {
 
-			response_payload, err2 := io.ReadAll(response.Body)
+			request.Header.Set("Content-Type", "application/json")
+			request.Header.Set("Accept", "application/json")
 
-			if err2 == nil {
+			if session.Config != nil {
 
-				if session.Config.Debug == true {
-					session.Recovery.SnapshotBytes("response", response_payload)
+				token := session.Config.GetToken(session.Agent.Model)
+
+				if token != "" {
+					request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 				}
 
-				var response schemas.ChatResponse
+			}
 
-				err3 := json.Unmarshal(response_payload, &response)
+			response, err2 := session.client.Do(request)
+
+			if err2 == nil && response.StatusCode == 200 {
+
+				response_payload, err3 := io.ReadAll(response.Body)
 
 				if err3 == nil {
 
-					if response.Usage != nil && response.Usage.PromptTokens != 0 {
-						session.Agent.ContextUsage.Tokens = response.Usage.PromptTokens
-					} else {
-						session.Agent.ContextUsage.Tokens = utils_chat.CalculateTokens(session.Agent.Messages)
+					if session.Config.Debug == true {
+						session.Recovery.SnapshotBytes("response", response_payload)
 					}
 
-					if len(response.Choices) > 0 {
-						return session.ReceiveChatResponse(response.Choices[0].Message)
+					var response schemas.ChatResponse
+
+					err4 := json.Unmarshal(response_payload, &response)
+
+					if err4 == nil {
+
+						if response.Usage != nil && response.Usage.PromptTokens != 0 {
+							session.Agent.ContextUsage.Tokens = response.Usage.PromptTokens
+						} else {
+							session.Agent.ContextUsage.Tokens = utils_chat.CalculateTokens(session.Agent.Messages)
+						}
+
+						if len(response.Choices) > 0 {
+							return session.ReceiveChatResponse(response.Choices[0].Message)
+						} else {
+							return fmt.Errorf("Empty choices, maybe incompatible API?")
+						}
+
 					} else {
-						return fmt.Errorf("Empty choices, maybe incompatible API?")
+						return err4
 					}
 
 				} else {
 					return err3
 				}
 
+			} else if err2 == nil && response.StatusCode == 404 {
+				return fmt.Errorf("Model %s not found", session.Config.Model)
 			} else {
 				return err2
 			}
 
-		} else if err1 == nil && response.StatusCode == 404 {
-			return fmt.Errorf("Model %s not found", session.Config.Model)
 		} else {
 			return err1
 		}
