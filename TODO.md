@@ -1,14 +1,21 @@
 
 # TODO
 
+## Questions Tool
+
+- [ ] Implement a Question tool with `question string`, `options []string`, `multiple bool` parameters that
+      shows UI elements to confirm/select options and that allows to type your own answer.
+
+## Files Tool
+
+- [ ] Implement `files.ReadSymbol(file, symbol)`
+
 ## Tools
 
 - [ ] Implement Tool Call Shrinking, probably best in types/Session.go
 
 - [ ] Implement `requirements.Trace(file, symbol)` to trace which methods
       call or interact with the named symbol. Returns a list of relative package/file.go paths and symbols
-
-- [ ] Implement `files.ReadSymbol(file, symbol)`
 
 ## Agents
 
