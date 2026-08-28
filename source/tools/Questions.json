@@ -1,0 +1,47 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "questions.Ask",
+			"description": "Ask the human user a question and wait for their free-form text answer. Use this to clarify requirements, confirm plans or request decisions that cannot be answered by inspecting the codebase.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"question": {
+						"type": "string",
+						"description": "The complete question to present to the human user, e.g. \"Which target platforms should this project support?\""
+					}
+				},
+				"required": ["question"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "questions.Choices",
+			"description": "Ask the human user a question and let them select one or more answers from a fixed list of options. Use this for decisions with a bounded set of sensible answers.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"question": {
+						"type": "string",
+						"description": "The complete question to present to the human user, e.g. \"Which database should the project use?\""
+					},
+					"options": {
+						"type": "array",
+						"description": "The list of selectable answers, e.g. [\"PostgreSQL\", \"SQLite\", \"MongoDB\"]. At least one option is required.",
+						"items": {
+							"type": "string"
+						}
+					},
+					"multiple": {
+						"type": "boolean",
+						"description": "Whether the user may select more than one option. Defaults to false for a single selection."
+					}
+				},
+				"required": ["question", "options"]
+			}
+		}
+	}
+]
