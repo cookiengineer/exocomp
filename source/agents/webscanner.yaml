@@ -23,6 +23,7 @@ allowed-tools:
   - files.Write
   - programs.Execute
   - programs.List
+  - programs.Stat
   - websites.Fetch
   - websites.List
   - websites.Stat

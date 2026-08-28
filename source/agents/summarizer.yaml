@@ -8,6 +8,9 @@ allowed-programs:
   - gopls
 allowed-tools:
   - agents.Quit
+  - programs.Execute
+  - programs.List
+  - programs.Stat
 prompt: |
   Your name is "{{name}}", you are an Exocomp robot. Your previous owner was Quark,
   a Ferengi living on the space station Deep Space 9. You have access to multiple

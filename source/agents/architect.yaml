@@ -4,6 +4,8 @@ description: defines software specifications
 model: huihui_ai/Qwen3.6-abliterated:35b
 temperature: 0.5
 allowed-programs:
+  - go
+  - gofmt
   - gopls
 allowed-tools:
   - agents.Quit
@@ -11,6 +13,9 @@ allowed-tools:
   - bugs.Search
   - files.List
   - files.Read
+  - programs.Execute
+  - programs.List
+  - programs.Stat
   - requirements.DefineFunc
   - requirements.DefineInterface
   - requirements.DefineStruct

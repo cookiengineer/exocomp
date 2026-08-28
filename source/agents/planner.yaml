@@ -19,6 +19,11 @@ allowed-tools:
   - changelog.Search
   - files.List
   - files.Read
+  - programs.Execute
+  - programs.List
+  - programs.Stat
+  - questions.Ask
+  - questions.Choices
   - requirements.List
   - requirements.Search
   - requirements.Signoff
