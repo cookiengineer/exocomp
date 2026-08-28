@@ -158,7 +158,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 			if err0 == nil {
 
 				skill_name,    ok1  := arguments["name"].(string)
-				skill_content, err1 := tool.Get(skill_name)
+				skill_content, err1 := tool.GetContent(skill_name)
 				skill,         ok2  := skill_content.(*Skill)
 
 				if ok1 == true && err1 == nil && ok2 == true {
@@ -203,7 +203,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 			if err0 == nil {
 
 				skill_name,    ok1  := arguments["name"].(string)
-				skill_content, err1 := tool.Get(skill_name)
+				skill_content, err1 := tool.GetContent(skill_name)
 				skill,         ok2  := skill_content.(*Skill)
 
 				if ok1 == true && err1 == nil && ok2 == true {

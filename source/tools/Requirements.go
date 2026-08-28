@@ -139,7 +139,7 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 }
 
-func (tool *Requirements) Get(id string) (any, error) {
+func (tool *Requirements) GetContent(id string) (any, error) {
 
 	path       := utils_fmt.FormatFilePath(id)
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
@@ -155,15 +155,15 @@ func (tool *Requirements) Get(id string) (any, error) {
 			if ok == true {
 				return content, nil
 			} else {
-				return nil, fmt.Errorf("requirements.Get: No specification defined for path \"%s\".", path)
+				return nil, fmt.Errorf("requirements.GetContent: No specification defined for path \"%s\".", path)
 			}
 
 		} else {
-			return "", fmt.Errorf("requirements.Get: %s", err2.Error())
+			return "", fmt.Errorf("requirements.GetContent: %s", err2.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("requirements.Get: %s", err1.Error())
+		return "", fmt.Errorf("requirements.GetContent: %s", err1.Error())
 	}
 
 }

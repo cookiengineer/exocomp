@@ -197,7 +197,7 @@ func (tool *Agents) Await(name string) (string, error) {
 
 }
 
-func (tool *Agents) Get(id string) (any, error) {
+func (tool *Agents) GetContent(id string) (any, error) {
 
 	name := utils_fmt.FormatAgentName(id)
 

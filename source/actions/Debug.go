@@ -20,7 +20,7 @@ func Debug(agent *types.Agent, config *types.Config) {
 	fmt.Fprintf(os.Stderr, "| Temperature: %.2f\n", config.Temperature)
 	fmt.Fprintf(os.Stderr, "| Sandbox:     %s\n", config.Sandbox)
 	fmt.Fprintf(os.Stderr, "| URL:         %s\n", config.URL.String())
-	fmt.Fprintf(os.Stderr, "| Debug:       %v\n", config.Debug)
+	fmt.Fprintf(os.Stderr, "| Debug:       %t\n", config.Debug)
 	fmt.Fprintf(os.Stderr, "| Tokens:\n")
 
 	for model, token := range config.Tokens {

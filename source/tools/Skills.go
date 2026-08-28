@@ -120,7 +120,7 @@ func (tool *Skills) Call(method string, arguments map[string]interface{}) (strin
 
 }
 
-func (tool *Skills) Get(id string) (any, error) {
+func (tool *Skills) GetContent(id string) (any, error) {
 
 	name        := utils_fmt.FormatSkillName(id)
 	content, ok := tool.contents[name]

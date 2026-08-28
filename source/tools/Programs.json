@@ -35,5 +35,22 @@
 				"required": ["program"]
 			}
 		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "programs.Stat",
+			"description": "Checks an allowed program for whether it is allowed, installed, and executable. Returns the installation path.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"program": {
+						"type": "string",
+						"description": "The program binary name. Must be listed by programs.List, e.g. \"go\" or \"gofmt\"."
+					}
+				},
+				"required": ["program"]
+			}
+		}
 	}
 ]

@@ -72,6 +72,16 @@ func (tool *Programs) Call(method string, arguments map[string]interface{}) (str
 			return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"program\" is not a string.")
 		}
 
+	} else if method == "Stat" {
+
+		program, ok1 := arguments["program"].(string)
+
+		if ok1 == true {
+			return tool.Stat(program)
+		} else {
+			return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"program\" is not a string.")
+		}
+
 	} else {
 		return "", fmt.Errorf("programs.%s: Invalid method.", method)
 	}
@@ -191,41 +201,8 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 }
 
-func (tool *Programs) Get(id string) (any, error) {
-
-	found := false
-
-	for _, name := range tool.AllowedPrograms {
-
-		if name == id {
-			found = true
-			break
-		}
-
-	}
-
-	if found == true {
-
-		path, err1 := exec.LookPath(id)
-
-		if err1 == nil {
-
-			real_path, err2 := filepath.EvalSymlinks(path)
-
-			if err2 == nil {
-				return real_path, nil
-			} else {
-				return nil, fmt.Errorf("programs.Get: %s", err2.Error())
-			}
-
-		} else {
-			return nil, fmt.Errorf("programs.Get: %s", err1.Error())
-		}
-
-	} else {
-		return nil, fmt.Errorf("programs.Get: Invalid program \"%s\": Attempt to execute unallowed program", id)
-	}
-
+func (tool *Programs) GetContent(id string) (any, error) {
+	return nil, nil
 }
 
 func (tool *Programs) List() (string, error) {
@@ -246,6 +223,43 @@ func (tool *Programs) List() (string, error) {
 	}
 
 	return strings.Join(result, "\n"), nil
+
+}
+
+func (tool *Programs) Stat(program string) (string, error) {
+
+	found := false
+
+	for _, name := range tool.AllowedPrograms {
+
+		if name == program {
+			found = true
+			break
+		}
+
+	}
+
+	if found == true {
+
+		path, err1 := exec.LookPath(program)
+
+		if err1 == nil {
+
+			real_path, err2 := filepath.EvalSymlinks(path)
+
+			if err2 == nil {
+				return real_path, nil
+			} else {
+				return "", fmt.Errorf("programs.Stat: Invalid program \"%s\": Program doesn't exist.", program)
+			}
+
+		} else {
+			return "", fmt.Errorf("programs.Stat: Invalid program \"%s\": Program doesn't exist.", program)
+		}
+
+	} else {
+		return "", fmt.Errorf("programs.Stat: Invalid program \"%s\": Attempt to lookup unallowed program", program)
+	}
 
 }
 

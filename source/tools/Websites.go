@@ -96,7 +96,7 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 		return "", err0
 	}
 
-	useragent, err1 := tool.resolveUserAgent(user_agent)
+	useragent, err1 := getWebsiteUserAgent(user_agent)
 
 	if err1 != nil {
 		return "", err1
@@ -156,16 +156,8 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 
 }
 
-func (tool *Websites) Get(id string) (any, error) {
-
-	useragent := types.GetUserAgent(id)
-
-	if useragent != nil {
-		return useragent, nil
-	}
-
-	return nil, fmt.Errorf("websites.Get: User-Agent \"%s\" does not exist?", id)
-
+func (tool *Websites) GetContent(id string) (any, error) {
+	return nil, nil
 }
 
 func (tool *Websites) List() (string, error) {
@@ -203,7 +195,7 @@ func (tool *Websites) Stat(url_str string, user_agent string) (string, error) {
 		return "", err0
 	}
 
-	useragent, err1 := tool.resolveUserAgent(user_agent)
+	useragent, err1 := getWebsiteUserAgent(user_agent)
 
 	if err1 != nil {
 		return "", err1
@@ -264,22 +256,6 @@ func (tool *Websites) Stat(url_str string, user_agent string) (string, error) {
 	}
 
 	return strings.Join(lines, "\n"), nil
-
-}
-
-func (tool *Websites) resolveUserAgent(user_agent string) (*types.UserAgent, error) {
-
-	if strings.TrimSpace(user_agent) == "" {
-		user_agent = "chrome-windows"
-	}
-
-	useragent := types.GetUserAgent(user_agent)
-
-	if useragent == nil {
-		return nil, fmt.Errorf("websites: Invalid User-Agent \"%s\"", user_agent)
-	}
-
-	return useragent, nil
 
 }
 

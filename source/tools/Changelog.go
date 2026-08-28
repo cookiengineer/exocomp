@@ -159,7 +159,7 @@ func (tool *Changelog) Fix(path string, symbol string, description string) (stri
 	return tool.createEntry("Fix", path, symbol, description)
 }
 
-func (tool *Changelog) Get(id string) (any, error) {
+func (tool *Changelog) GetContent(id string) (any, error) {
 
 	path       := utils_fmt.FormatFilePath(id)
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
@@ -175,15 +175,15 @@ func (tool *Changelog) Get(id string) (any, error) {
 			if ok == true {
 				return content, nil
 			} else {
-				return nil, fmt.Errorf("changelog.Get: No changelog entry available for path \"%s\".", path)
+				return nil, fmt.Errorf("changelog.GetContent: No changelog entry available for path \"%s\".", path)
 			}
 
 		} else {
-			return "", fmt.Errorf("changelog.Get: %s", err2.Error())
+			return "", fmt.Errorf("changelog.GetContent: %s", err2.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("changelog.Get: %s", err1.Error())
+		return "", fmt.Errorf("changelog.GetContent: %s", err1.Error())
 	}
 
 }
@@ -459,8 +459,6 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 	}
 
 }
-
-
 
 func (tool *Changelog) MarshalJSON() ([]byte, error) {
 

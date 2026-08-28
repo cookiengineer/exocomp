@@ -144,6 +144,28 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 
 	}
 
+	for _, schema := range QuestionsSchema {
+
+		if slices.Contains(allowed_tools, schema.Function.Name) {
+
+			_, ok1 := result_schemas["questions"]
+
+			if ok1 == false {
+				result_schemas["questions"] = make([]schemas.Tool, 0)
+			}
+
+			result_schemas["questions"] = append(result_schemas["questions"], schema)
+
+			_, ok2 := result_tools["questions"]
+
+			if ok2 == false {
+				result_tools["questions"] = NewQuestions()
+			}
+
+		}
+
+	}
+
 	for _, schema := range RequirementsSchema {
 
 		if slices.Contains(allowed_tools, schema.Function.Name) {

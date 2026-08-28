@@ -145,18 +145,3 @@ func TestWebsites_Stat(t *testing.T) {
 
 }
 
-func TestWebsites_Get(t *testing.T) {
-
-	tool := NewWebsites("/tmp", "/tmp")
-
-	content, err0 := tool.Get("chrome-windows")
-
-	if err0 != nil {
-		t.Errorf("Expected %v to be nil", err0)
-	}
-
-	if content == nil {
-		t.Errorf("Expected a User-Agent, got nil")
-	}
-
-}
