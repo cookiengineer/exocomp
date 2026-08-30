@@ -6,7 +6,13 @@ import "net/http"
 
 func Unauthorized(session *types.Session, err error, request *http.Request, response http.ResponseWriter) {
 
-	session.Console.Error(fmt.Sprintf("> %s %s: %d", request.Method, request.URL.Path, http.StatusUnauthorized))
+	err_message := err.Error()
+
+	if err_message != "" {
+		session.Console.Error(fmt.Sprintf("> %s %s %d: \"%s\"", request.Method, request.URL.Path, http.StatusUnauthorized, err_message))
+	} else {
+		session.Console.Error(fmt.Sprintf("> %s %s %d", request.Method, request.URL.Path, http.StatusUnauthorized))
+	}
 
 	content_type := ""
 	payload      := []byte{}

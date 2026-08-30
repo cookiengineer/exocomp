@@ -46,8 +46,8 @@ func (tool *stubAgentsTool) Call(method string, arguments map[string]interface{}
 
 }
 
-func (tool *stubAgentsTool) Get(id string) (any, error) {
-	return nil, fmt.Errorf("stubAgentsTool.Get: nope")
+func (tool *stubAgentsTool) GetContent(id string) (any, error) {
+	return nil, fmt.Errorf("stubAgentsTool.GetContent: nope")
 }
 
 type mockTransport struct {

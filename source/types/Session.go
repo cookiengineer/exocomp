@@ -765,10 +765,43 @@ func (session *Session) infer_chat_completions() error {
 					return err3
 				}
 
+			} else if err2 == nil && response.StatusCode == 400 {
+
+				return fmt.Errorf("Server %s incompatible with OpenAPI /v1 schema", session.Config.URL.String())
+
+			} else if err2 == nil && response.StatusCode == 401 {
+
+				return fmt.Errorf("Model %s has invalid authentication token", session.Config.Model)
+
+			} else if err2 == nil && response.StatusCode == 402 {
+
+				return fmt.Errorf("Model %s requires a subscription", session.Config.Model)
+
+			} else if err2 == nil && response.StatusCode == 403 {
+
+				return fmt.Errorf("Model %s requires a valid authentication token", session.Config.Model)
+
 			} else if err2 == nil && response.StatusCode == 404 {
+
 				return fmt.Errorf("Model %s not found", session.Config.Model)
+
+			} else if err2 == nil && response.StatusCode == 429 {
+
+				return fmt.Errorf("Server %s and Model %s usage quota exceeded", session.Config.URL.String(), session.Config.Model)
+
 			} else {
-				return err2
+
+				var api_error schemas.Error
+
+				response_payload, _ := io.ReadAll(response.Body)
+				json.Unmarshal(response_payload, &api_error)
+
+				if api_error.Error() != "" {
+					return fmt.Errorf("Server %s returned unexpected HTTP error %d with message %s", session.Config.URL.String(), response.StatusCode, api_error.Error())
+				} else {
+					return fmt.Errorf("Server %s returned unexpected HTTP error %d", session.Config.URL.String(), response.StatusCode)
+				}
+
 			}
 
 		} else {

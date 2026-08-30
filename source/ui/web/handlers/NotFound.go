@@ -6,7 +6,7 @@ import "net/http"
 
 func NotFound(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
-	session.Console.Error(fmt.Sprintf("> %s %s: %d", request.Method, request.URL.Path, http.StatusNotFound))
+	session.Console.Error(fmt.Sprintf("> %s %s %d", request.Method, request.URL.Path, http.StatusNotFound))
 
 	content_type, payload := format_error(request, "Not Found")
 

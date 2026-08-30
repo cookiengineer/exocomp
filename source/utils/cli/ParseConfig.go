@@ -37,6 +37,12 @@ func ParseConfig(arguments []string) *types.Config {
 				}
 
 				switch flag[0] {
+				case "debug":
+
+					if flag[1] == "true" {
+						debug = true
+					}
+
 				case "name":
 
 					if utils_agents.IsAgentName(flag[1]) {

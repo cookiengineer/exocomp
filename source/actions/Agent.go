@@ -13,6 +13,7 @@ func Agent(agent *types.Agent, config *types.Config) {
 	fmt.Fprintf(os.Stderr, "| Tools:   %s\n", strings.Join(agent.AllowedTools, ", "))
 	fmt.Fprintf(os.Stderr, "| Sandbox: %s\n", config.Sandbox)
 	fmt.Fprintf(os.Stderr, "| URL:     %s\n", config.URL.String())
+	fmt.Fprintf(os.Stderr, "| Debug:   %t\n", config.Debug)
 	fmt.Fprintf(os.Stderr, "\n")
 
 	os.Stdout.Sync()

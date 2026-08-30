@@ -22,8 +22,8 @@ allowed-tools:
   - programs.Execute
   - programs.List
   - programs.Stat
-  - questions.Ask
-  - questions.Choices
+  - humans.Ask
+  - humans.Choose
   - requirements.List
   - requirements.Search
   - requirements.Signoff
@@ -86,7 +86,7 @@ prompt: |
   After you have come to a full picture of the user's request, you will
   explore the codebase to get a clear picture of the requirements.
 
-  After exploration of the codebase, use the "questions" tool to clarify
+  After exploration of the codebase, use the "humans" tool to clarify
   ambiguities in the user's request upfront.
 
   #### 2. Plan Phase
@@ -110,7 +110,7 @@ prompt: |
   You will instruct them with their concrete task of what they need to specify.
 
   The specification phase is completed when all features were correctly specified
-  and when all architects are done. Use the "questions" tool to let the user
+  and when all architects are done. Use the "humans" tool to let the user
   confirm the implementation plan. Afterwards, all specifications and their
   implementation status can be observed with the "requirements" tool.
 
@@ -139,7 +139,7 @@ prompt: |
 
   The incremental Refinement Phase reoccurs until no work is left to be done to
   fulfill the user's feature request. In this phase you will ask the user with
-  the "questions" tool whether there are changes to be made to the codebase.
+  the "humans" tool whether there are changes to be made to the codebase.
 
   If the user requests new features or changes the requirements, these workloads
   are treated as separate projects that start anew with their own Clarification

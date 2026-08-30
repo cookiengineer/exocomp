@@ -6,7 +6,7 @@ import "net/http"
 
 func MethodNotAllowed(session *types.Session, request *http.Request, response http.ResponseWriter) {
 
-	session.Console.Error(fmt.Sprintf("> %s %s: %d", request.Method, request.URL.Path, http.StatusMethodNotAllowed))
+	session.Console.Error(fmt.Sprintf("> %s %s %d", request.Method, request.URL.Path, http.StatusMethodNotAllowed))
 
 	content_type, payload := format_error(request, "Method Not Allowed")
 
