@@ -20,11 +20,139 @@ import "strings"
 import "sync"
 import "time"
 
-type agentProcess struct {
-	cmd       *exec.Cmd
-	cancel    context.CancelFunc
-	done      chan struct{}
-	lastWrite time.Time
+func handle_process_json_line(tool *Agents, name string, line []byte) {
+
+	tool.Mutex.Lock()
+	defer tool.Mutex.Unlock()
+
+	process, ok := tool.processes[name]
+
+	if ok == true {
+		process.last_write = time.Now()
+	}
+
+	text := strings.TrimRight(string(line), "\n")
+
+	if strings.HasPrefix(text, "schemas.Message:") {
+
+		buffer  := []byte(text[16:])
+		message := schemas.Message{}
+
+		err := json.Unmarshal(buffer, &message)
+
+		if err == nil {
+
+			agent, ok1 := tool.contents[name]
+
+			if ok1 == true {
+				agent.Messages = append(agent.Messages, &message)
+			}
+
+		}
+
+	} else if strings.HasPrefix(text, "types.ContextUsage:") {
+
+		buffer := []byte(text[19:])
+		usage  := types.ContextUsage{}
+
+		err := json.Unmarshal(buffer, &usage)
+
+		if err == nil {
+
+			agent, ok1 := tool.contents[name]
+
+			if ok1 == true {
+				agent.ContextUsage.Length = usage.Length
+				agent.ContextUsage.Tokens = usage.Tokens
+			}
+
+		}
+
+	}
+
+}
+
+func read_process(tool *Agents, name string, process *agent_process, stdout_pipe io.ReadCloser) {
+
+	reader := bufio.NewReader(stdout_pipe)
+
+	for {
+
+		line, err := reader.ReadBytes('\n')
+
+		if len(line) > 0 {
+			handle_process_json_line(tool, name, line)
+		}
+
+		if err != nil {
+			break
+		}
+
+	}
+
+	stdout_pipe.Close()
+
+	process.cmd.Wait()
+
+	tool.Mutex.Lock()
+
+	agent, ok := tool.contents[name]
+
+	if ok == true && agent.Status == "working" {
+
+		if getAgentWorkReport(agent) != "" {
+			agent.Status = "finished"
+		} else {
+			agent.Status = "failed"
+		}
+
+		agent.FinishedAt = schemas.NewDatetime()
+
+	}
+
+	delete(tool.processes, name)
+
+	tool.Mutex.Unlock()
+
+	close(process.done)
+
+}
+
+func watch_process(tool *Agents, process *agent_process) {
+
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	for {
+
+		select {
+
+		case <-process.done:
+			return
+
+		case <-ticker.C:
+
+			tool.Mutex.Lock()
+			stale := tool.IdleTimeout > 0 && time.Since(process.last_write) > tool.IdleTimeout
+			tool.Mutex.Unlock()
+
+			if stale == true {
+				process.cancel()
+				return
+			}
+
+		}
+
+	}
+
+}
+
+
+type agent_process struct {
+	cmd        *exec.Cmd
+	cancel     context.CancelFunc
+	done       chan struct{}
+	last_write time.Time
 }
 
 type Agents struct {
@@ -38,7 +166,7 @@ type Agents struct {
 	OnQuit      func(report string, success bool)
 	Mutex       *sync.Mutex
 	contents    map[string]*types.Agent
-	processes   map[string]*agentProcess
+	processes   map[string]*agent_process
 }
 
 func NewAgents(playground string, sandbox string, model string, url *net_url.URL, debug bool) *Agents {
@@ -54,7 +182,7 @@ func NewAgents(playground string, sandbox string, model string, url *net_url.URL
 		OnQuit:      nil,
 		Mutex:       &sync.Mutex{},
 		contents:    make(map[string]*types.Agent),
-		processes:   make(map[string]*agentProcess),
+		processes:   make(map[string]*agent_process),
 	}
 
 	// NOTE: readAgents() allowed only at bootup time
@@ -162,11 +290,11 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 func (tool *Agents) Await(name string) (string, error) {
 
 	tool.Mutex.Lock()
-	proc, running := tool.processes[name]
+	process, running := tool.processes[name]
 	tool.Mutex.Unlock()
 
 	if running == true {
-		<-proc.done
+		<-process.done
 	}
 
 	tool.Mutex.Lock()
@@ -175,7 +303,7 @@ func (tool *Agents) Await(name string) (string, error) {
 	status := ""
 
 	if ok == true {
-		report = workReport(agent)
+		report = getAgentWorkReport(agent)
 		status = agent.Status
 	}
 
@@ -414,25 +542,25 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 		agent.Messages = make([]*schemas.Message, 0)
 	}
 
-	proc := &agentProcess{
-		cmd:       cmd,
-		cancel:    cancel,
-		done:      make(chan struct{}),
-		lastWrite: time.Now(),
+	process := &agent_process{
+		cmd:        cmd,
+		cancel:     cancel,
+		done:       make(chan struct{}),
+		last_write: time.Now(),
 	}
 
 	tool.Mutex.Lock()
 	tool.contents[name]  = agent
-	tool.processes[name] = proc
+	tool.processes[name] = process
 	tool.Mutex.Unlock()
 
 	// NOTE: Single reader goroutine owns the child stdout lifecycle. It
 	// reads unbounded lines, appends messages, and on EOF reaps the
 	// process and finalizes the agent status.
-	go tool.readProcess(name, proc, stdout_pipe)
+	go read_process(tool, name, process, stdout_pipe)
 
 	// NOTE: Liveness watchdog kills a child that stops producing output.
-	go tool.watchProcess(proc)
+	go watch_process(tool, process)
 
 	sandbox_path, _ := sanitizeSandboxPath(tool.Sandbox, resolved)
 
@@ -440,137 +568,10 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 
 }
 
-func (tool *Agents) readProcess(name string, proc *agentProcess, stdout_pipe io.ReadCloser) {
-
-	reader := bufio.NewReader(stdout_pipe)
-
-	for {
-
-		line, err := reader.ReadBytes('\n')
-
-		if len(line) > 0 {
-			tool.handleLine(name, line)
-		}
-
-		if err != nil {
-			break
-		}
-
-	}
-
-	stdout_pipe.Close()
-
-	proc.cmd.Wait()
-
-	tool.Mutex.Lock()
-
-	agent, ok := tool.contents[name]
-
-	if ok == true && agent.Status == "working" {
-
-		if workReport(agent) != "" {
-			agent.Status = "finished"
-		} else {
-			agent.Status = "failed"
-		}
-
-		agent.FinishedAt = schemas.NewDatetime()
-
-	}
-
-	delete(tool.processes, name)
-
-	tool.Mutex.Unlock()
-
-	close(proc.done)
-
-}
-
-func (tool *Agents) handleLine(name string, line []byte) {
-
-	tool.Mutex.Lock()
-	defer tool.Mutex.Unlock()
-
-	proc, ok := tool.processes[name]
-
-	if ok == true {
-		proc.lastWrite = time.Now()
-	}
-
-	text := strings.TrimRight(string(line), "\n")
-
-	if strings.HasPrefix(text, "schemas.Message:") {
-
-		buffer  := []byte(text[16:])
-		message := schemas.Message{}
-
-		err := json.Unmarshal(buffer, &message)
-
-		if err == nil {
-
-			agent, ok1 := tool.contents[name]
-
-			if ok1 == true {
-				agent.Messages = append(agent.Messages, &message)
-			}
-
-		}
-
-	} else if strings.HasPrefix(text, "types.ContextUsage:") {
-
-		buffer := []byte(text[19:])
-		usage  := types.ContextUsage{}
-
-		err := json.Unmarshal(buffer, &usage)
-
-		if err == nil {
-
-			agent, ok1 := tool.contents[name]
-
-			if ok1 == true {
-				agent.ContextUsage.Length = usage.Length
-				agent.ContextUsage.Tokens = usage.Tokens
-			}
-
-		}
-
-	}
-
-}
-
-func (tool *Agents) watchProcess(proc *agentProcess) {
-
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	for {
-
-		select {
-
-		case <-proc.done:
-			return
-
-		case <-ticker.C:
-
-			tool.Mutex.Lock()
-			stale := tool.IdleTimeout > 0 && time.Since(proc.lastWrite) > tool.IdleTimeout
-			tool.Mutex.Unlock()
-
-			if stale == true {
-				proc.cancel()
-				return
-			}
-
-		}
-
-	}
-
-}
-
 func (tool *Agents) Fire(name string) (string, error) {
 
 	tool.Mutex.Lock()
-	proc, running := tool.processes[name]
+	process, running := tool.processes[name]
 	agent, ok     := tool.contents[name]
 
 	if ok == true && running == true {
@@ -581,8 +582,8 @@ func (tool *Agents) Fire(name string) (string, error) {
 
 	if running == true {
 
-		proc.cancel()
-		<-proc.done
+		process.cancel()
+		<-process.done
 
 		return fmt.Sprintf("agents.Fire: Agent \"%s\" fired.", name), nil
 
@@ -765,22 +766,3 @@ func (tool *Agents) SetAgent(agent *types.Agent) bool {
 
 }
 
-func workReport(agent *types.Agent) string {
-
-	if agent != nil {
-
-		for m := len(agent.Messages) - 1; m >= 0; m-- {
-
-			message := agent.Messages[m]
-
-			if message.Role == "tool" && strings.HasPrefix(message.Content, "agents.Quit: Work Report\n") {
-				return strings.TrimSpace(strings.TrimPrefix(message.Content, "agents.Quit: Work Report\n"))
-			}
-
-		}
-
-	}
-
-	return ""
-
-}
