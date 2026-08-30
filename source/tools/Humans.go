@@ -4,7 +4,6 @@ import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
 import "encoding/json"
 import "fmt"
-import "strings"
 import "sync"
 
 var question_unique_id int64 = 0
@@ -20,7 +19,7 @@ type Humans struct {
 	mutex    *sync.Mutex
 }
 
-func NewHumans() *humans {
+func NewHumans() *Humans {
 
 	humans := &Humans{
 		contents: make(map[string]*types.Question),
@@ -197,7 +196,7 @@ func (tool *Humans) Await(id string) (string, error) {
 		}
 
 	} else {
-		return "", fmt.Sprintf("humans.Await: Question \"%s\" was never asked!", id)
+		return "", fmt.Errorf("humans.Await: Question \"%s\" was never asked!", id)
 	}
 
 }

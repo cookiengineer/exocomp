@@ -11,15 +11,15 @@ func Questions(session *types.Session, request *http.Request, response http.Resp
 
 	if request.Method == http.MethodGet {
 
-		tool := session.GetTool("questions.Ask")
+		tool := session.GetTool("humans.Ask")
 
 		if tool != nil {
 
-			questions_tool, ok := tool.(*tools.Questions)
+			humans_tool, ok := tool.(*tools.Humans)
 
 			if ok == true {
 
-				response_payload, err0 := json.MarshalIndent(questions_tool, "", "\t")
+				response_payload, err0 := json.MarshalIndent(humans_tool, "", "\t")
 
 				if err0 == nil {
 

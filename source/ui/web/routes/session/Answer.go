@@ -29,19 +29,19 @@ func Answer(session *types.Session, request *http.Request, response http.Respons
 
 				if err1 == nil {
 
-					tool := session.GetTool("questions.Ask")
+					tool := session.GetTool("humans.Answer")
 
 					if tool != nil {
 
-						questions_tool, ok := tool.(*tools.Questions)
+						humans_tool, ok := tool.(*tools.Humans)
 
 						if ok == true {
 
-							err2 := questions_tool.Answer(answer.ID, answer.Answer)
+							err2 := humans_tool.Answer(answer.ID, answer.Answer)
 
 							if err2 == nil {
 
-								content, _ := question_tool.GetContent(answer.ID)
+								content, _ := humans_tool.GetContent(answer.ID)
 								response_payload, _ := json.MarshalIndent(content, "", "\t")
 
 								response.Header().Set("Content-Type", "application/json")
