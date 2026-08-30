@@ -20,6 +20,13 @@ import "strings"
 import "sync"
 import "time"
 
+type agent_process struct {
+	cmd        *exec.Cmd
+	cancel     context.CancelFunc
+	done       chan struct{}
+	last_write time.Time
+}
+
 func handle_process_json_line(tool *Agents, name string, line []byte) {
 
 	tool.Mutex.Lock()
@@ -145,14 +152,6 @@ func watch_process(tool *Agents, process *agent_process) {
 
 	}
 
-}
-
-
-type agent_process struct {
-	cmd        *exec.Cmd
-	cancel     context.CancelFunc
-	done       chan struct{}
-	last_write time.Time
 }
 
 type Agents struct {

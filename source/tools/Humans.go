@@ -2,18 +2,38 @@ package tools
 
 import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
+import "context"
 import "encoding/json"
 import "fmt"
 import "sync"
+import "time"
 
 var question_unique_id int64 = 0
 
 type question_state struct {
+	ctx    context.Context
 	cancel context.CancelFunc
 	done   chan struct{}
 }
 
+func watch_question(tool *Humans, id string, state *question_state) {
+
+	<-state.ctx.Done()
+
+	tool.mutex.Lock()
+	defer tool.mutex.Unlock()
+
+	_, still_waiting := tool.states[id]
+
+	if still_waiting == true {
+		delete(tool.states, id)
+		close(state.done)
+	}
+
+}
+
 type Humans struct {
+	Timeout  time.Duration
 	contents map[string]*types.Question
 	states   map[string]*question_state
 	mutex    *sync.Mutex
@@ -22,6 +42,7 @@ type Humans struct {
 func NewHumans() *Humans {
 
 	humans := &Humans{
+		Timeout:  15 * time.Minute,
 		contents: make(map[string]*types.Question),
 		states:   make(map[string]*question_state),
 		mutex:    &sync.Mutex{},
@@ -96,15 +117,23 @@ func (tool *Humans) Answer(id string, answer string) error {
 
 	question, ok := tool.contents[id]
 
-	if ok == true {
-
-		question.Answer = answer
-
-		return nil
-
-	} else {
+	if ok == false {
 		return fmt.Errorf("humans.Answer: Invalid question id.")
 	}
+
+	question.Answer = answer
+
+	state, waiting := tool.states[id]
+
+	if waiting == true {
+
+		delete(tool.states, id)
+		state.cancel()
+		close(state.done)
+
+	}
+
+	return nil
 
 }
 
@@ -121,16 +150,19 @@ func (tool *Humans) Ask(text string) (string, error) {
 		Answer:   "",
 	}
 
-	// TODO: How to create cancel context?
+	ctx, cancel := context.WithTimeout(context.Background(), tool.Timeout)
 	state := &question_state{
+		ctx:    ctx,
 		cancel: cancel,
 		done:   make(chan struct{}),
 	}
 
+	tool.mutex.Lock()
 	tool.contents[question.ID] = question
-	tool.states[question.ID] = state
+	tool.states[question.ID]  = state
+	tool.mutex.Unlock()
 
-	// TODO: go watch_answer(tool, state) ??? like in agents?
+	go watch_question(tool, question.ID, state)
 
 	return tool.Await(question.ID)
 
@@ -144,21 +176,24 @@ func (tool *Humans) Choice(text string, options []string, multiple bool) (string
 		ID:       fmt.Sprintf("question-%d", question_unique_id),
 		Type:     "Choice",
 		Question: text,
-		Options:  []string{},
-		Multiple: false,
+		Options:  options,
+		Multiple: multiple,
 		Answer:   "",
 	}
 
-	// TODO: How to create cancel context?
+	ctx, cancel := context.WithTimeout(context.Background(), tool.Timeout)
 	state := &question_state{
+		ctx:    ctx,
 		cancel: cancel,
 		done:   make(chan struct{}),
 	}
 
+	tool.mutex.Lock()
 	tool.contents[question.ID] = question
-	tool.states[question.ID] = state
+	tool.states[question.ID]  = state
+	tool.mutex.Unlock()
 
-	// TODO: go watch_answer(tool, state) ??? like in agents?
+	go watch_question(tool, question.ID, state)
 
 	return tool.Await(question.ID)
 
@@ -166,37 +201,61 @@ func (tool *Humans) Choice(text string, options []string, multiple bool) (string
 
 func (tool *Humans) GetContent(id string) (any, error) {
 
+	tool.mutex.Lock()
 	content, ok := tool.contents[id]
+	tool.mutex.Unlock()
 
 	if ok == true {
 		return content, nil
 	} else {
-		return nil, fmt.Errorf("requirements.GetContent: No question asked for id \"%s\".", id)
+		return nil, fmt.Errorf("humans.GetContent: No question asked for id \"%s\".", id)
 	}
 
 }
 
 func (tool *Humans) MarshalJSON() ([]byte, error) {
+
+	tool.mutex.Lock()
+	defer tool.mutex.Unlock()
+
 	return json.Marshal(tool.contents)
+
 }
 
+// NOTE: Await blocks until the human answered the question. This mirrors
+// agents.Await deliberately: the planner model would otherwise poll in a hot
+// loop and blow up its limited context window with identical "still waiting"
+// tool messages. The lifecycle guarantees the done channel always closes
+// (answer received -> Answer() -> close, or timeout -> watch_question ->
+// close), so Await never blocks forever.
 func (tool *Humans) Await(id string) (string, error) {
 
-	question, ok := tool.contents[id]
+	tool.mutex.Lock()
+	state, waiting := tool.states[id]
+	tool.mutex.Unlock()
 
-	// TODO: What needs to happen is now a blocking channel
-	// which is marked as done when the answer was written
+	if waiting == true {
+		<-state.done
+	}
+
+	tool.mutex.Lock()
+	question, ok := tool.contents[id]
+	answer := ""
 
 	if ok == true {
+		answer = question.Answer
+	}
 
-		if question.Answer != "" {
-			return fmt.Sprintf("humans.Await: Question \"%s\" was answered.", id), nil
-		} else {
-			return fmt.Sprintf("humans.Await: Question \"%s\" wasn't answered.", id), nil
-		}
+	tool.mutex.Unlock()
 
-	} else {
+	if ok == false {
 		return "", fmt.Errorf("humans.Await: Question \"%s\" was never asked!", id)
+	}
+
+	if answer != "" {
+		return fmt.Sprintf("humans.Await: Answer for question \"%s\"\n===%s\n===", id, answer), nil
+	} else {
+		return "", fmt.Errorf("humans.Await: Question \"%s\" was never answered!", id)
 	}
 
 }

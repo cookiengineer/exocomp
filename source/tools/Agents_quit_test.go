@@ -1,6 +1,7 @@
 package tools
 
 import net_url "net/url"
+import "path/filepath"
 import "strings"
 import "testing"
 import "time"
@@ -8,6 +9,7 @@ import "time"
 func TestAgents_Quit_CallsHook(t *testing.T) {
 
 	playground := t.TempDir()
+	sandbox    := filepath.Join(playground, "work")
 	url, _     := net_url.Parse("http://localhost:11434/v1")
 	tool       := NewAgents(playground, sandbox, "huihui_ai/Qwen3.6-abliterated:35b", url, false)
 
@@ -52,6 +54,7 @@ func TestAgents_Quit_CallsHook(t *testing.T) {
 func TestAgents_Quit_FailureHook(t *testing.T) {
 
 	playground := t.TempDir()
+	sandbox    := filepath.Join(playground, "work")
 	url, _     := net_url.Parse("http://localhost:11434/v1")
 	tool       := NewAgents(playground, sandbox, "huihui_ai/Qwen3.6-abliterated:35b", url, false)
 
