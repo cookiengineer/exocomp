@@ -541,10 +541,9 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 				if err0 == nil && err1 == nil && err2 == nil && err3 == nil {
 
-					// NOTE: agents.Await blocks until the hired agent
-					// finished. Tool results (including errors) are
-					// appended as tool messages inside CallTool, so the
-					// loop simply executes every requested tool call once.
+					// NOTE: agents.Await blocks until the hired agent is finished.
+					// NOTE: questions.Ask blocks until the question is answered.
+					// NOTE: questions.Choice blocks until the question is answered.
 					session.CallTool(tool_id, tool_name, tool_method, tool_arguments)
 
 				}

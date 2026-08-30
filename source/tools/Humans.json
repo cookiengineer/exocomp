@@ -2,7 +2,7 @@
 	{
 		"type": "function",
 		"function": {
-			"name": "questions.Ask",
+			"name": "humans.Ask",
 			"description": "Ask the human user a question and wait for their free-form text answer. Use this to clarify requirements, confirm plans or request decisions that cannot be answered by inspecting the codebase.",
 			"parameters": {
 				"type": "object",
@@ -19,7 +19,7 @@
 	{
 		"type": "function",
 		"function": {
-			"name": "questions.Choices",
+			"name": "humans.Choose",
 			"description": "Ask the human user a question and let them select one or more answers from a fixed list of options. Use this for decisions with a bounded set of sensible answers.",
 			"parameters": {
 				"type": "object",

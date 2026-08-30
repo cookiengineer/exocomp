@@ -144,22 +144,22 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 
 	}
 
-	for _, schema := range QuestionsSchema {
+	for _, schema := range HumansSchema {
 
 		if slices.Contains(allowed_tools, schema.Function.Name) {
 
-			_, ok1 := result_schemas["questions"]
+			_, ok1 := result_schemas["humans"]
 
 			if ok1 == false {
-				result_schemas["questions"] = make([]schemas.Tool, 0)
+				result_schemas["humans"] = make([]schemas.Tool, 0)
 			}
 
-			result_schemas["questions"] = append(result_schemas["questions"], schema)
+			result_schemas["humans"] = append(result_schemas["humans"], schema)
 
-			_, ok2 := result_tools["questions"]
+			_, ok2 := result_tools["humans"]
 
 			if ok2 == false {
-				result_tools["questions"] = NewQuestions()
+				result_tools["humans"] = NewHumans()
 			}
 
 		}

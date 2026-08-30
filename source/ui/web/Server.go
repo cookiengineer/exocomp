@@ -278,8 +278,16 @@ func (server *Server) Listen() error {
 
 
 	// Session Interaction
+	http.HandleFunc("/api/session/answer", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Answer(server.Session, request, response)
+	})
+
 	http.HandleFunc("/api/session/calltool", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.CallTool(server.Session, request, response)
+	})
+
+	http.HandleFunc("/api/session/questions", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Questions(server.Session, request, response)
 	})
 
 	http.HandleFunc("/api/session/sendchatrequest", func(response http.ResponseWriter, request *http.Request) {

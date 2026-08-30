@@ -1,0 +1,74 @@
+
+
+dialog#question article {
+	min-width: 512px;
+	max-width: 80vw;
+}
+
+dialog#question article p[data-name="question"] {
+	display: block;
+	margin: 16px 16px 8px 16px;
+	padding: 0px;
+	font-family: 'cantarell';
+	font-size: 16px;
+	font-weight: bold;
+	text-align: center;
+	user-select: none;
+}
+
+dialog#question article div[data-name="answers"] {
+	display: grid;
+	grid-template-columns: 1fr;
+	row-gap: 8px;
+	margin: 8px 16px 16px 16px;
+	padding: 0px;
+}
+
+dialog#question article div[data-name="answers"] label {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+	width: auto;
+	margin: 0px;
+	padding: 4px 8px;
+	font-family: 'vera-mono';
+	font-size: 16px;
+	color: var(--article-color);
+	border: 1px solid transparent;
+	border-radius: 4px;
+	cursor: pointer;
+	user-select: none;
+}
+
+dialog#question article div[data-name="answers"] label:hover {
+	border: 1px solid var(--article-border);
+}
+
+dialog#question article div[data-name="answers"] label input {
+	flex: 0 0 auto;
+}
+
+dialog#question article div[data-name="answers"] label span {
+	flex: 1 1 auto;
+}
+
+dialog#question article div[data-name="answers"] textarea {
+	width: 100%;
+	min-height: 10em;
+	box-sizing: border-box;
+}
+
+dialog#question article div[data-name="errors"] b {
+	display: block;
+	margin: 8px 16px;
+	padding: 2px 4px;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-style: normal;
+	font-weight: normal;
+	color: #ff3333;
+	background: #303030;
+	border: 1px solid #ff3333;
+	border-radius: 4px;
+}
