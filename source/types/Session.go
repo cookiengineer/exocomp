@@ -13,6 +13,21 @@ import "sort"
 import "strings"
 import "sync"
 
+func log_response_error(console *Console, response *net_http.Response) {
+
+	var api_error schemas.Error
+
+	response_payload, _ := io.ReadAll(response.Body)
+	err1 := json.Unmarshal(response_payload, &api_error)
+
+	if err1 == nil {
+		console.Error(fmt.Sprintf("> API Error: %s", api_error.Error()))
+	} else {
+		console.Error(fmt.Sprintf("> Unknown Error: \n%s\n", string(response_payload)))
+	}
+
+}
+
 type Session struct {
 	Agent    *Agent           `json:"agent"`
 	Config   *Config          `json:"config"`
@@ -766,27 +781,35 @@ func (session *Session) infer_chat_completions() error {
 
 			} else if err2 == nil && response.StatusCode == 400 {
 
-				return fmt.Errorf("Server %s incompatible with OpenAPI /v1 schema", session.Config.URL.String())
+				log_response_error(session.Console, response)
+
+				return fmt.Errorf("Server %s for Model %s is incompatible with OpenAPI /v1 schema", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 401 {
 
-				return fmt.Errorf("Model %s has invalid authentication token", session.Config.Model)
+				log_response_error(session.Console, response)
+
+				return fmt.Errorf("Server %s for Model %s has invalid authentication token", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 402 {
 
-				return fmt.Errorf("Model %s requires a subscription", session.Config.Model)
+				log_response_error(session.Console, response)
+
+				return fmt.Errorf("Server %s for Model %s requires a subscription", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 403 {
 
-				return fmt.Errorf("Model %s requires a valid authentication token", session.Config.Model)
+				log_response_error(session.Console, response)
+
+				return fmt.Errorf("Server %s for Model %s requires a valid authentication token", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 404 {
 
-				return fmt.Errorf("Model %s not found", session.Config.Model)
+				return fmt.Errorf("Server %s for Model %s doesn't recognize the model name", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 429 {
 
-				return fmt.Errorf("Server %s and Model %s usage quota exceeded", session.Config.URL.String(), session.Config.Model)
+				return fmt.Errorf("Server %s for Model %s usage quota exceeded", resolved_url.String(), resolved_model)
 
 			} else {
 
@@ -796,9 +819,9 @@ func (session *Session) infer_chat_completions() error {
 				json.Unmarshal(response_payload, &api_error)
 
 				if api_error.Error() != "" {
-					return fmt.Errorf("Server %s returned unexpected HTTP error %d with message %s", session.Config.URL.String(), response.StatusCode, api_error.Error())
+					return fmt.Errorf("Server %s returned unexpected HTTP error %d with message %s", resolved_url.String(), response.StatusCode, api_error.Error())
 				} else {
-					return fmt.Errorf("Server %s returned unexpected HTTP error %d", session.Config.URL.String(), response.StatusCode)
+					return fmt.Errorf("Server %s returned unexpected HTTP error %d", resolved_url.String(), response.StatusCode)
 				}
 
 			}

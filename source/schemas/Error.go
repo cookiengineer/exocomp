@@ -1,7 +1,7 @@
 package schemas
 
 type Error struct {
-	err struct {
+	Wrapped struct {
 		Message string  `json:"message"`
 		Type    string  `json:"type"`
 		Param   any     `json:"param"`
@@ -10,5 +10,5 @@ type Error struct {
 }
 
 func (err Error) Error() string {
-	return err.err.Message
+	return err.Wrapped.Message
 }
