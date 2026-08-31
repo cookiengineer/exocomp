@@ -121,13 +121,22 @@ It's possible to provide a global default configuration inside the file `~/.conf
 which is inherited by the `planner` mode agent. Tokens are delegated to sub-agents if they have any model
 configured with a token in the global configuration.
 
+The idea is here to preserve the internal ollama-compatible naming scheme, so that aliases can be
+maintained in a provider-specific manner.
+
 ```yaml
 name: Peanut Hamper
 role: planner
-model: deepseek-v4-pro:cloud
+model: "deepseek-v4-pro:cloud"
 tokens:
-  deepseek-v4-pro:cloud: "sk-1234567890abcdef"
-  kimi-k3:cloud: "abc-1234567890abcdef"
+  deepseek-v4-pro:cloud:
+    url: "https://api.deepseek.com"
+    alias: "deepseek-v4-pro"
+    token: "sk-1234567890abcdef"
+  kimi-k3:cloud:
+    url: "https://api.moonshot.ai/v1"
+    alias: "kimi-k3"
+    token: "abc-1234567890abcdef"
 ```
 
 
