@@ -162,7 +162,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 	tool := session.GetTool(name)
 
-	if tool != nil {
+	if tool != nil && tool.HasMethod(method) == true {
 
 		result, err0 := tool.Call(method, arguments)
 
@@ -300,7 +300,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 		tmp := &schemas.Message{
 			Role:       "tool",
 			Content:    strings.Join([]string{
-				fmt.Sprintf("Error: %s: Tool doesn't exist.", name),
+				fmt.Sprintf("Error: %s.%s: Tool does not exist or is not allowed.", name, method),
 				"",
 				string(json_blob),
 			}, "\n"),
@@ -311,9 +311,34 @@ func (session *Session) CallTool(id string, name string, method string, argument
 		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
 
-		return fmt.Errorf("Error: %s: Tool doesn't exist.", name)
+		return fmt.Errorf("Error: %s.%s: Tool does not exist or is not allowed.", name, method)
 
 	}
+
+}
+
+func (session *Session) GetAdapter(search string) types.Adapter {
+
+	name        := strings.ToLower(search)
+	adapter, ok := session.adapters[name]
+
+	if ok == true {
+		return adapter
+	}
+
+	return nil
+
+}
+
+func (session *Session) GetAdapters() []types.Adapter {
+
+	result := make([]types.Adapter, 0)
+
+	for _, adapter := range session.adapters {
+		result = append(result, adapter)
+	}
+
+	return result
 
 }
 
@@ -391,6 +416,18 @@ func (session *Session) GetTool(search string) types.Tool {
 	}
 
 	return nil
+
+}
+
+func (session *Session) GetTools() []types.Tool {
+
+	result := make([]types.Tool, 0)
+
+	for _, tool := range session.tools {
+		result = append(result, tool)
+	}
+
+	return result
 
 }
 
@@ -696,10 +733,7 @@ func (session *Session) infer_chat_completions() error {
 	resolved_model := session.Config.ResolveModel(session.Agent.Model)
 	resolved_token := session.Config.ResolveToken(session.Agent.Model)
 
-	// TODO: if len(session.adapters) > 0 ... use adapter.TransformRequest
-	// TODO: if session.adapters then use adapter.TransformResponse
-
-	request_payload, err0 := json.MarshalIndent(schemas.ChatRequest{
+	chat_request := schemas.ChatRequest{
 		Model:       resolved_model,
 		Temperature: session.Agent.Temperature,
 		Messages:    session.Agent.Messages,
@@ -711,7 +745,14 @@ func (session *Session) infer_chat_completions() error {
 		// 	NumContext: 262144,
 		// 	NumPredict: 8192,
 		// },
-	}, "", "\t")
+	}
+
+	// NOTE: Transform Requests via provider-specific Adapters
+	for _, adapter := range session.GetAdapters() {
+		chat_request = adapter.TransformRequest(chat_request)
+	}
+
+	request_payload, err0 := json.MarshalIndent(chat_request, "", "\t")
 
 	if session.Config.Debug == true {
 		session.Recovery.SnapshotBytes("request", request_payload)
@@ -746,20 +787,25 @@ func (session *Session) infer_chat_completions() error {
 						session.Recovery.SnapshotBytes("response", response_payload)
 					}
 
-					var response schemas.ChatResponse
+					var chat_response schemas.ChatResponse
 
-					err4 := json.Unmarshal(response_payload, &response)
+					err4 := json.Unmarshal(response_payload, &chat_response)
+
+					// NOTE: Transform Responses via provider-specific Adapters
+					for _, adapter := range session.GetAdapters() {
+						chat_response = adapter.TransformResponse(chat_response)
+					}
 
 					if err4 == nil {
 
-						if response.Usage != nil && response.Usage.PromptTokens != 0 {
-							session.Agent.ContextUsage.Tokens = response.Usage.PromptTokens
+						if chat_response.Usage != nil && chat_response.Usage.PromptTokens != 0 {
+							session.Agent.ContextUsage.Tokens = chat_response.Usage.PromptTokens
 						} else {
 							session.Agent.ContextUsage.Tokens = utils_chat.CalculateTokens(session.Agent.Messages)
 						}
 
-						if len(response.Choices) > 0 {
-							return session.ReceiveChatResponse(response.Choices[0].Message)
+						if len(chat_response.Choices) > 0 {
+							return session.ReceiveChatResponse(chat_response.Choices[0].Message)
 						} else {
 							return fmt.Errorf("Empty choices, maybe incompatible API?")
 						}
@@ -798,7 +844,7 @@ func (session *Session) infer_chat_completions() error {
 
 			} else if err2 == nil && response.StatusCode == 404 {
 
-				return fmt.Errorf("Server %s for Model %s doesn't recognize the model name", resolved_url.String(), resolved_model)
+				return fmt.Errorf("Server %s for Model %s does not recognize the model name", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 429 {
 

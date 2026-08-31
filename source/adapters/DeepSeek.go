@@ -2,6 +2,7 @@ package adapters
 
 import "exocomp/schemas"
 import net_url "net/url"
+import "strings"
 
 type DeepSeek struct {
 }
@@ -40,7 +41,29 @@ func (adapter *DeepSeek) Detect(url *net_url.URL, alias string) bool {
 
 func (adapter *DeepSeek) TransformRequest(request schemas.ChatRequest) schemas.ChatRequest {
 
-	// TODO: Modify tools to be what_Ever instead of what.Ever
+	for m, message := range request.Messages {
+
+		message.ToolName = strings.ReplaceAll(message.ToolName, ".", "_")
+
+		for t, toolcall := range message.ToolCalls {
+
+			toolcall.Function.Name = strings.ReplaceAll(toolcall.Function.Name, ".", "_")
+
+			message.ToolCalls[t] = toolcall
+
+		}
+
+		request.Messages[m] = message
+
+	}
+
+	for t, tool := range request.Tools {
+
+		tool.Function.Name = strings.ReplaceAll(tool.Function.Name, ".", "_")
+
+		request.Tools[t] = tool
+
+	}
 
 	return request
 
@@ -48,7 +71,21 @@ func (adapter *DeepSeek) TransformRequest(request schemas.ChatRequest) schemas.C
 
 func (adapter *DeepSeek) TransformResponse(response schemas.ChatResponse) schemas.ChatResponse {
 
-	// TODO: Modify tools to be what.Ever instead of what_Ever
+	for c, choice := range response.Choices {
+
+		choice.Message.ToolName = strings.ReplaceAll(choice.Message.ToolName, "_", ".")
+
+		for t, toolcall := range choice.Message.ToolCalls {
+
+			toolcall.Function.Name = strings.ReplaceAll(toolcall.Function.Name, "_", ".")
+
+			choice.Message.ToolCalls[t] = toolcall
+
+		}
+
+		response.Choices[c] = choice
+
+	}
 
 	return response
 

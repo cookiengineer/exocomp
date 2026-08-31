@@ -1,39 +1,11 @@
 
 # TODO
 
-## types/Config
-
-- [ ] Rewrite Config properties, Tokens should be something like "Models" struct
-
-```json
-{
-    "providers": {
-        "deepseek-v4-pro:cloud": {
-            "url": "https://api.deepseek.com",
-            "alias": "deepseek-v4-pro",
-            "token": "sk-1231231232"
-        },
-        "huihui_ai/Qwen3.6-abliterated:35b": {
-            "url": "http://localhost:11434/v1",
-            "token": ""
-        }
-    }
-```
-
-## types/Session API Problems
-
-- [ ] Session should handle transformations and mappings of internal "requirements.Read" syntax vs API expected "requirements_Read" syntax.
-- [ ] No idea how to do this, because we don't want to change the Agents or YAML format or anything else, so it MUST be handled by the Session itself.
-
-```
-API Error: Invalid 'tools[0].function.name': string does not match pattern. Expected a string that matches the pattern '^[a-zA-Z0-9_-]+$'.
-```
-
 ## types/Session DEBUGGING
 
 - [ ] Add better debugging messages when Session is recovered successfully
 - [ ] Reprint the correct config after Recovery and Backup calls
-- [ ] Write debug messages that it was backed up to "./relative/path/to/exocomp/*.json"
+- [ ] Write debug messages that it was backed up to `./.exocomp/debug/*.json`
 
 ## Questions Tool
 
