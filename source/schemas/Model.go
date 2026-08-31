@@ -10,7 +10,7 @@ type Model struct {
 	Created utils_time.UnixTime `json:"created"`
 	OwnedBy string              `json:"owned_by"`
 
-	// XXX: llama.cpp only
+	// NOTE: llama.cpp only
 	Meta    map[string]any      `json:"meta"`
 
 }

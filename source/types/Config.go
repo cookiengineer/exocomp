@@ -8,6 +8,7 @@ import utils_fmt "exocomp/utils/fmt"
 import "exocomp/parsers/yaml"
 import _ "embed"
 import "encoding/json"
+import "fmt"
 import "io"
 import net_url "net/url"
 import "net/http"
@@ -15,44 +16,44 @@ import "os"
 import "strings"
 
 type Config struct {
-	Name        string            `json:"name" yaml:"name"`
-	Role        string            `json:"role" yaml:"role"`
-	Model       string            `json:"model" yaml:"model"`
-	Prompt      string            `json:"prompt" yaml:"prompt"`
-	Temperature float64           `json:"temperature" yaml:"temperature"`
-	Playground  string            `json:"playground" yaml:"playground"`
-	Sandbox     string            `json:"sandbox" yaml:"sandbox"`
-	URL         *net_url.URL      `json:"url" yaml:"url"`
-	Debug       bool              `json:"debug" yaml:"debug"`
-	Tokens      map[string]string `json:"tokens" yaml:"tokens"`
+	Name        string              `json:"name" yaml:"name"`
+	Role        string              `json:"role" yaml:"role"`
+	Model       string              `json:"model" yaml:"model"`
+	Prompt      string              `json:"prompt" yaml:"prompt"`
+	Temperature float64             `json:"temperature" yaml:"temperature"`
+	Playground  string              `json:"playground" yaml:"playground"`
+	Sandbox     string              `json:"sandbox" yaml:"sandbox"`
+	URL         *net_url.URL        `json:"url" yaml:"url"`
+	Debug       bool                `json:"debug" yaml:"debug"`
+	Providers   map[string]Provider `json:"providers" yaml:"providers"`
 }
 
 func NewConfig(name string, role string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, debug bool) *Config {
 
-	if role == "planner" && global_config != nil {
+	if role == "planner" && GlobalConfig != nil {
 
 		if name == "" {
-			name = global_config.Name
+			name = GlobalConfig.Name
 		}
 
 		if model == "" {
-			model = global_config.Model
+			model = GlobalConfig.Model
 		}
 
 		if prompt == "" {
-			prompt = global_config.Prompt
+			prompt = GlobalConfig.Prompt
 		}
 
 		if temperature == 0.0 {
-			temperature = global_config.Temperature
+			temperature = GlobalConfig.Temperature
 		}
 
 		if url == nil {
-			url = global_config.URL
+			url = GlobalConfig.URL
 		}
 
 		if debug == false {
-			debug = global_config.Debug
+			debug = GlobalConfig.Debug
 		}
 
 	}
@@ -107,22 +108,22 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 
 	}
 
-	tokens := make(map[string]string)
+	providers := make(map[string]Provider)
 
-	if global_config != nil {
+	if GlobalConfig != nil {
 
 		if role == "planner" {
 
-			for key, value := range global_config.Tokens {
-				tokens[key] = value
+			for model, provider := range GlobalConfig.Providers {
+				providers[model] = provider
 			}
 
 		} else if model != "" {
 
-			token, ok := global_config.Tokens[model]
+			provider, ok := GlobalConfig.Providers[model]
 
 			if ok == true {
-				tokens[model] = token
+				providers[model] = provider
 			}
 
 		}
@@ -139,7 +140,7 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 		Sandbox:     sandbox,
 		URL:         url,
 		Debug:       debug,
-		Tokens:      tokens,
+		Providers:   providers,
 	}
 
 }
@@ -172,11 +173,12 @@ func ParseConfig(data []byte) (*Config, error) {
 
 }
 
-func (config *Config) GetContextLength() int {
+func (config *Config) GetContextLength(model string) int {
 
-	client := &http.Client{}
+	client       := &http.Client{}
+	resolved_url := config.ResolveURL(model, "/models")
 
-	request, err1 := http.NewRequest(http.MethodGet, config.ResolveAPI("/v1/models").String(), nil)
+	request, err1 := http.NewRequest(http.MethodGet, resolved_url.String(), nil)
 
 	if err1 == nil {
 
@@ -225,32 +227,88 @@ func (config *Config) GetPrompt() string {
 	return strings.TrimSpace(config.Prompt)
 }
 
-func (config *Config) GetToken(model string) string {
+func (config *Config) ResolveToken(model string) string {
 
-	if config.Tokens != nil {
-		return strings.TrimSpace(config.Tokens[model])
+	provider, ok := config.Providers[model]
+
+	if ok == true {
+		return strings.TrimSpace(provider.Token)
+	} else {
+		return ""
 	}
 
-	return ""
+}
+
+func (config *Config) ResolveModel(model string) string {
+
+	provider, ok := config.Providers[model]
+
+	if ok == true {
+
+		if provider.Alias != "" {
+			return provider.Alias
+		} else {
+			return model
+		}
+
+	} else {
+		return model
+	}
+
+}
+
+func (config *Config) ResolveURL(model string, path string) *net_url.URL {
+
+	base_url := config.URL
+	api_path := ""
+
+	provider, ok := config.Providers[model]
+
+	if ok == true {
+		base_url, _ = net_url.Parse(provider.URL.String())
+	}
+
+	if strings.HasPrefix(base_url.Path, "/") && len(base_url.Path) > 1 {
+
+		// "/v1" or "/v1/"
+		tmp_base := base_url.Path
+
+		if strings.HasSuffix(tmp_base, "/") {
+			tmp_base = strings.TrimSpace(tmp_base[0:len(tmp_base)-1])
+		}
+
+		// "/chat/completions"
+		tmp_path := path
+
+		if strings.HasPrefix(tmp_path, "/") {
+			tmp_path = strings.TrimSpace(tmp_path[1:])
+		}
+
+		// "/v1/chat/completions"
+		api_path = fmt.Sprintf("%s/%s", tmp_base, tmp_path)
+
+	} else if strings.HasPrefix(path, "/") {
+		api_path = strings.TrimSpace(path)
+	}
+
+	if api_path != "" {
+
+		return base_url.ResolveReference(&net_url.URL{
+			Path: api_path,
+		})
+
+	} else {
+		return base_url
+	}
 
 }
 
 func (config *Config) Public() *Config {
 
 	clone := *config
-	clone.Tokens = nil
+	clone.Providers = make(map[string]Provider)
 
 	return &clone
-
-}
-
-func (config *Config) ResolveAPI(path string) *net_url.URL {
-
-	endpoint := config.URL.ResolveReference(&net_url.URL{
-		Path: path,
-	})
-
-	return endpoint
 
 }
 
@@ -263,16 +321,16 @@ func (config *Config) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(struct {
-		Name        string            `json:"name"`
-		Role        string            `json:"role"`
-		Model       string            `json:"model"`
-		Prompt      string            `json:"prompt"`
-		Temperature float64           `json:"temperature"`
-		Playground  string            `json:"playground"`
-		Sandbox     string            `json:"sandbox"`
-		URL         string            `json:"url"`
-		Debug       bool              `json:"debug"`
-		Tokens      map[string]string `json:"tokens,omitempty"`
+		Name        string              `json:"name"`
+		Role        string              `json:"role"`
+		Model       string              `json:"model"`
+		Prompt      string              `json:"prompt"`
+		Temperature float64             `json:"temperature"`
+		Playground  string              `json:"playground"`
+		Sandbox     string              `json:"sandbox"`
+		URL         string              `json:"url"`
+		Debug       bool                `json:"debug"`
+		Providers   map[string]Provider `json:"providers,omitempty"`
 	}{
 		Name:        config.Name,
 		Role:        config.Role,
@@ -283,7 +341,7 @@ func (config *Config) MarshalJSON() ([]byte, error) {
 		Sandbox:     config.Sandbox,
 		URL:         url_str,
 		Debug:       config.Debug,
-		Tokens:      config.Tokens,
+		Providers:   config.Providers,
 	})
 
 }
@@ -291,16 +349,16 @@ func (config *Config) MarshalJSON() ([]byte, error) {
 func (config *Config) UnmarshalJSON(data []byte) error {
 
 	var tmp struct {
-		Name        string            `json:"name"`
-		Role        string            `json:"role"`
-		Model       string            `json:"model"`
-		Prompt      string            `json:"prompt"`
-		Temperature float64           `json:"temperature"`
-		Playground  string            `json:"playground"`
-		Sandbox     string            `json:"sandbox"`
-		URL         string            `json:"url"`
-		Debug       bool              `json:"debug"`
-		Tokens      map[string]string `json:"tokens"`
+		Name        string              `json:"name"`
+		Role        string              `json:"role"`
+		Model       string              `json:"model"`
+		Prompt      string              `json:"prompt"`
+		Temperature float64             `json:"temperature"`
+		Playground  string              `json:"playground"`
+		Sandbox     string              `json:"sandbox"`
+		URL         string              `json:"url"`
+		Debug       bool                `json:"debug"`
+		Providers   map[string]Provider `json:"providers"`
 	}
 
 	err0 := json.Unmarshal(data, &tmp)
@@ -315,7 +373,7 @@ func (config *Config) UnmarshalJSON(data []byte) error {
 		config.Playground  = tmp.Playground
 		config.Sandbox     = tmp.Sandbox
 		config.Debug       = tmp.Debug
-		config.Tokens      = tmp.Tokens
+		config.Providers   = tmp.Providers
 
 		tmp_url, err1 := net_url.Parse(tmp.URL)
 
@@ -340,16 +398,16 @@ func (config *Config) MarshalYAML() ([]byte, error) {
 	}
 
 	return yaml.Marshal(struct {
-		Name        string            `json:"name"`
-		Role        string            `json:"role"`
-		Model       string            `json:"model"`
-		Prompt      string            `json:"prompt"`
-		Temperature float64           `json:"temperature"`
-		Playground  string            `json:"playground"`
-		Sandbox     string            `json:"sandbox"`
-		URL         string            `json:"url"`
-		Debug       bool              `json:"debug"`
-		Tokens      map[string]string `json:"tokens"`
+		Name        string              `yaml:"name"`
+		Role        string              `yaml:"role"`
+		Model       string              `yaml:"model"`
+		Prompt      string              `yaml:"prompt"`
+		Temperature float64             `yaml:"temperature"`
+		Playground  string              `yaml:"playground"`
+		Sandbox     string              `yaml:"sandbox"`
+		URL         string              `yaml:"url"`
+		Debug       bool                `yaml:"debug"`
+		Providers   map[string]Provider `yaml:"providers"`
 	}{
 		Name:        config.Name,
 		Role:        config.Role,
@@ -360,7 +418,7 @@ func (config *Config) MarshalYAML() ([]byte, error) {
 		Sandbox:     config.Sandbox,
 		URL:         url_str,
 		Debug:       config.Debug,
-		Tokens:      config.Tokens,
+		Providers:   config.Providers,
 	})
 
 }
@@ -368,16 +426,16 @@ func (config *Config) MarshalYAML() ([]byte, error) {
 func (config *Config) UnmarshalYAML(data []byte) error {
 
 	var tmp struct {
-		Name        string            `json:"name"`
-		Role        string            `json:"role"`
-		Model       string            `json:"model"`
-		Prompt      string            `json:"prompt"`
-		Temperature float64           `json:"temperature"`
-		Playground  string            `json:"playground"`
-		Sandbox     string            `json:"sandbox"`
-		URL         string            `json:"url"`
-		Debug       bool              `json:"debug"`
-		Tokens      map[string]string `json:"tokens"`
+		Name        string              `yaml:"name"`
+		Role        string              `yaml:"role"`
+		Model       string              `yaml:"model"`
+		Prompt      string              `yaml:"prompt"`
+		Temperature float64             `yaml:"temperature"`
+		Playground  string              `yaml:"playground"`
+		Sandbox     string              `yaml:"sandbox"`
+		URL         string              `yaml:"url"`
+		Debug       bool                `yaml:"debug"`
+		Providers   map[string]Provider `yaml:"providers"`
 	}
 
 	err0 := yaml.Unmarshal(data, &tmp)
@@ -392,7 +450,7 @@ func (config *Config) UnmarshalYAML(data []byte) error {
 		config.Playground  = tmp.Playground
 		config.Sandbox     = tmp.Sandbox
 		config.Debug       = tmp.Debug
-		config.Tokens      = tmp.Tokens
+		config.Providers   = tmp.Providers
 
 		tmp_url, err1 := net_url.Parse(tmp.URL)
 

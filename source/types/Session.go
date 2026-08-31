@@ -6,7 +6,7 @@ import "bytes"
 import "encoding/json"
 import "fmt"
 import "io"
-import "net/http"
+import net_http "net/http"
 import "os"
 import "path/filepath"
 import "sort"
@@ -14,15 +14,15 @@ import "strings"
 import "sync"
 
 type Session struct {
-	Agent    *Agent          `json:"agent"`
-	Config   *Config         `json:"config"`
-	Console  *Console        `json:"console"`
-	Recovery *Recovery       `json:"-"`
-	Tools    []*schemas.Tool `json:"tools"`
-	Waiting  bool            `json:"waiting"`
-	client   *http.Client    `json:"-"`
-	mutex    *sync.RWMutex   `json:"-"`
-	tools    map[string]Tool `json:"-"`
+	Agent    *Agent           `json:"agent"`
+	Config   *Config          `json:"config"`
+	Console  *Console         `json:"console"`
+	Recovery *Recovery        `json:"-"`
+	Tools    []*schemas.Tool  `json:"tools"`
+	Waiting  bool             `json:"waiting"`
+	client   *net_http.Client `json:"-"`
+	mutex    *sync.RWMutex    `json:"-"`
+	tools    map[string]Tool  `json:"-"`
 }
 
 func NewSession(agent *Agent, config *Config) *Session {
@@ -34,7 +34,7 @@ func NewSession(agent *Agent, config *Config) *Session {
 		Recovery: NewRecovery(config.Playground),
 		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
-		client:   &http.Client{},
+		client:   &net_http.Client{},
 		mutex:    &sync.RWMutex{},
 		tools:    make(map[string]Tool),
 	}
@@ -55,7 +55,7 @@ func NewSession(agent *Agent, config *Config) *Session {
 
 	}
 
-	session.Agent.ContextUsage.Length = session.Config.GetContextLength()
+	session.Agent.ContextUsage.Length = session.Config.GetContextLength(session.Agent.Model)
 
 	session.mutex.Unlock()
 
@@ -91,7 +91,7 @@ func RestoreSession(playground string, backup Session) *Session {
 		Recovery: NewRecovery(playground),
 		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
-		client:   &http.Client{},
+		client:   &net_http.Client{},
 		mutex:    &sync.RWMutex{},
 		tools:    make(map[string]Tool),
 	}
@@ -686,8 +686,13 @@ func (session *Session) UnloadSkill(name string, skill *Skill) error {
 
 func (session *Session) infer_chat_completions() error {
 
+	// NOTE: Resolve provider-specific URLs, model aliases and tokens
+	resolved_url   := session.Config.ResolveURL(session.Agent.Model, "/chat/completions")
+	resolved_model := session.Config.ResolveModel(session.Agent.Model)
+	resolved_token := session.Config.ResolveToken(session.Agent.Model)
+
 	request_payload, err0 := json.MarshalIndent(schemas.ChatRequest{
-		Model:       session.Agent.Model,
+		Model:       resolved_model,
 		Temperature: session.Agent.Temperature,
 		Messages:    session.Agent.Messages,
 		Stream:      false,
@@ -706,9 +711,9 @@ func (session *Session) infer_chat_completions() error {
 
 	if err0 == nil {
 
-		request, err1 := http.NewRequest(
-			http.MethodPost,
-			session.Config.ResolveAPI("/v1/chat/completions").String(),
+		request, err1 := net_http.NewRequest(
+			net_http.MethodPost,
+			resolved_url.String(),
 			bytes.NewReader(request_payload),
 		)
 
@@ -717,14 +722,8 @@ func (session *Session) infer_chat_completions() error {
 			request.Header.Set("Content-Type", "application/json")
 			request.Header.Set("Accept", "application/json")
 
-			if session.Config != nil {
-
-				token := session.Config.GetToken(session.Agent.Model)
-
-				if token != "" {
-					request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-				}
-
+			if resolved_token != "" {
+				request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", resolved_token))
 			}
 
 			response, err2 := session.client.Do(request)

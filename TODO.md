@@ -1,6 +1,31 @@
 
 # TODO
 
+## types/Config
+
+- [ ] Rewrite Config properties, Tokens should be something like "Models" struct
+
+```json
+{
+    "providers": {
+        "deepseek-v4-pro:cloud": {
+            "url": "https://api.deepseek.com",
+            "alias": "deepseek-v4-pro",
+            "token": "sk-1231231232"
+        },
+        "huihui_ai/Qwen3.6-abliterated:35b": {
+            "url": "http://localhost:11434/v1",
+            "token": ""
+        }
+    }
+```
+
+## types/Session DEBUGGING
+
+- [ ] Add better debugging messages when Session is recovered successfully
+- [ ] Reprint the correct config after Recovery and Backup calls
+- [ ] Write debug messages that it was backed up to "./relative/path/to/exocomp/*.json"
+
 ## Questions Tool
 
 - [ ] Implement a Question tool with `question string`, `options []string`, `multiple bool` parameters that
