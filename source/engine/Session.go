@@ -108,6 +108,7 @@ func RestoreSession(playground string, backup Session) *Session {
 		Waiting:  false,
 		client:   &net_http.Client{},
 		mutex:    &sync.RWMutex{},
+		adapters: make(map[string]types.Adapter),
 		tools:    make(map[string]types.Tool),
 	}
 
