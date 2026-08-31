@@ -1,7 +1,9 @@
 package main
 
 import "exocomp/actions"
+import "exocomp/adapters"
 import "exocomp/agents"
+import "exocomp/engine"
 import "exocomp/tools"
 import "exocomp/types"
 import utils_cli "exocomp/utils/cli"
@@ -68,20 +70,20 @@ func restore_agents(folder string) ([]*types.Agent, error) {
 
 }
 
-func restore_session(folder string) (*types.Session, error) {
+func restore_session(folder string) (*engine.Session, error) {
 
 	bytes, err1 := os.ReadFile(filepath.Join(folder, "session.json"))
 
 	if err1 == nil {
 
-		backup, err2 := types.ParseSession(bytes)
+		backup, err2 := engine.ParseSession(bytes)
 
 		if err2 == nil {
 
 			cwd, err3 := os.Getwd()
 
 			if err3 == nil {
-				return types.RestoreSession(cwd, *backup), nil
+				return engine.RestoreSession(cwd, *backup), nil
 			} else {
 				return nil, err3
 			}
@@ -254,9 +256,9 @@ func main() {
 				// Override default recovery
 				server.Session = session
 
-				if len(session.Agent.AllowedTools) > 0 {
+				if session.Agent.HasTools() {
 
-					tool_schemas, tools := tools.Toolset(
+					toolset := tools.Toolset(
 						session.Config.Playground,
 						session.Config.Sandbox,
 						session.Config.Model,
@@ -266,8 +268,29 @@ func main() {
 						session.Agent.AllowedTools,
 					)
 
-					for name, tool := range tools {
-						server.Session.SetTool(name, tool, tool_schemas[name])
+					if len(toolset) > 0 {
+
+						for _, tool := range toolset {
+							server.Session.SetTool(tool)
+						}
+
+					}
+
+				}
+
+				if session.Config.HasProvider(session.Agent.Model) {
+
+					adapterset := adapters.Adapterset(
+						session.Config.ResolveURL(session.Agent.Model, ""),
+						session.Config.ResolveModel(session.Agent.Model),
+					)
+
+					if len(adapterset) > 0 {
+
+						for _, adapter := range adapterset {
+							server.Session.SetAdapter(adapter)
+						}
+
 					}
 
 				}
