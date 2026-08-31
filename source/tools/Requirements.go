@@ -44,7 +44,7 @@ func (tool *Requirements) Name() string {
 
 func (tool *Requirements) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if slices.Contains(tool.Methods, method) == true {
+	if tool.HasMethod(method) == true {
 
 		if method == "List" {
 
@@ -180,6 +180,10 @@ func (tool *Requirements) GetContent(id string) (any, error) {
 		return "", fmt.Errorf("requirements.GetContent: %s", err1.Error())
 	}
 
+}
+
+func (tool *Requirements) HasMethod(method string) bool {
+	return slices.Contains(tool.Methods, method) == true
 }
 
 func (tool *Requirements) List() (string, error) {

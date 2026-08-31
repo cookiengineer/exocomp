@@ -35,7 +35,7 @@ func (tool *Programs) Name() string {
 
 func (tool *Programs) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if slices.Contains(tool.Methods, method) == true {
+	if tool.HasMethod(method) == true {
 
 		if method == "List" {
 
@@ -216,6 +216,10 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 func (tool *Programs) GetContent(id string) (any, error) {
 	return nil, nil
+}
+
+func (tool *Programs) HasMethod(method string) bool {
+	return slices.Contains(tool.Methods, method) == true
 }
 
 func (tool *Programs) List() (string, error) {

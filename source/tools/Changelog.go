@@ -36,7 +36,7 @@ func (tool *Changelog) Name() string {
 
 func (tool *Changelog) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if slices.Contains(tool.Methods, method) == true {
+	if tool.HasMethod(method) == true {
 
 		if method == "Add" {
 
@@ -200,6 +200,10 @@ func (tool *Changelog) GetContent(id string) (any, error) {
 		return "", fmt.Errorf("changelog.GetContent: %s", err1.Error())
 	}
 
+}
+
+func (tool *Changelog) HasMethod(method string) bool {
+	return slices.Contains(tool.Methods, method) == true
 }
 
 func (tool *Changelog) List() (string, error) {

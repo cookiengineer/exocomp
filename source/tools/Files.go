@@ -31,7 +31,7 @@ func (tool *Files) Name() string {
 
 func (tool *Files) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if slices.Contains(tool.Methods, method) == true {
+	if tool.HasMethod(method) == true {
 
 		if method == "Copy" {
 
@@ -155,6 +155,10 @@ func (tool *Files) Copy(from_path string, to_path string) (string, error) {
 
 func (tool *Files) GetContent(id string) (any, error) {
 	return nil, nil
+}
+
+func (tool *Files) HasMethod(method string) bool {
+	return slices.Contains(tool.Methods, method) == true
 }
 
 func (tool *Files) List(path string) (string, error) {

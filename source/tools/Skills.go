@@ -53,7 +53,7 @@ func (tool *Skills) Name() string {
 
 func (tool *Skills) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if slices.Contains(tool.Methods, method) == true {
+	if tool.HasMethod(method) == true {
 
 		if method == "List" {
 
@@ -145,6 +145,10 @@ func (tool *Skills) GetContent(id string) (any, error) {
 		return nil, fmt.Errorf("skills.Get: No skill found with the name \"%s\".", name)
 	}
 
+}
+
+func (tool *Skills) HasMethod(method string) bool {
+	return slices.Contains(tool.Methods, method) == true
 }
 
 func (tool *Skills) List() (string, error) {

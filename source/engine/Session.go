@@ -30,15 +30,15 @@ func log_response_error(console *types.Console, response *net_http.Response) {
 }
 
 type Session struct {
-	Agent    *types.Agent          `json:"agent"`
-	Config   *types.Config         `json:"config"`
-	Console  *types.Console        `json:"console"`
-	Recovery *Recovery             `json:"-"`
-	Tools    []*schemas.Tool       `json:"tools"`
-	Waiting  bool                  `json:"waiting"`
-	client   *net_http.Client      `json:"-"`
-	mutex    *sync.RWMutex         `json:"-"`
-	tools    map[string]types.Tool `json:"-"`
+	Agent    *types.Agent             `json:"agent"`
+	Config   *types.Config            `json:"config"`
+	Console  *types.Console           `json:"console"`
+	Recovery *Recovery                `json:"-"`
+	Waiting  bool                     `json:"waiting"`
+	client   *net_http.Client         `json:"-"`
+	mutex    *sync.RWMutex            `json:"-"`
+	adapters map[string]types.Adapter `json:"-"`
+	tools    map[string]types.Tool    `json:"-"`
 }
 
 func NewSession(agent *types.Agent, config *types.Config) *Session {
@@ -48,10 +48,10 @@ func NewSession(agent *types.Agent, config *types.Config) *Session {
 		Config:   config,
 		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
 		Recovery: NewRecovery(config.Playground),
-		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
 		client:   &net_http.Client{},
 		mutex:    &sync.RWMutex{},
+		adapters: make(map[string]types.Adapter),
 		tools:    make(map[string]types.Tool),
 	}
 
@@ -105,7 +105,6 @@ func RestoreSession(playground string, backup Session) *Session {
 		Config:   backup.Config,
 		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
 		Recovery: NewRecovery(playground),
-		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
 		client:   &net_http.Client{},
 		mutex:    &sync.RWMutex{},
@@ -360,70 +359,58 @@ func (session *Session) GetMessages(from int) []*schemas.Message {
 
 }
 
-func (session *Session) GetTool(name string) types.Tool {
+func (session *Session) GetTool(search string) types.Tool {
 
-	allowed := false
+	if strings.Contains(search, ".") == true {
 
-	for _, tool := range session.Tools {
+		tmp1 := strings.TrimSpace(search[0:strings.Index(search, ".")])
+		tmp2 := strings.TrimSpace(search[strings.Index(search, ".")+1:])
 
-		if tool.Function.Name == name {
-			allowed = true
-			break
-		}
+		name   := strings.ToLower(tmp1)
+		method := strings.ToUpper(tmp2[0:1]) + strings.ToLower(tmp2[1:])
 
-	}
-
-	if allowed == true {
-
-		index := strings.Index(name, ".")
-
-		if index == -1 {
-			return nil
-		}
-
-		namespace := strings.TrimSpace(name[0:index])
-		tool, ok  := session.tools[namespace]
+		tool, ok := session.tools[name]
 
 		if ok == true {
-			return tool
-		} else {
-			return nil
+
+			if tool.HasMethod(method) == true {
+				return tool
+			}
+
 		}
 
 	} else {
-		return nil
-	}
 
-}
+		name     := strings.ToLower(search)
+		tool, ok := session.tools[name]
 
-func (session *Session) GetToolNames() []string {
-
-	result := make([]string, 0)
-
-	for _, tool := range session.Tools {
-		result = append(result, tool.Function.Name)
-	}
-
-	sort.Strings(result)
-
-	return result
-
-}
-
-func (session *Session) GetToolSchema(name string) *schemas.Tool {
-
-	var found *schemas.Tool = nil
-
-	for _, tool := range session.Tools {
-
-		if tool.Function.Name == name {
-			found = tool
-			break
+		if ok == true {
+			return tool
 		}
 
 	}
 
-	return found
+	return nil
+
+}
+
+func (session *Session) GetToolSchemas() []schemas.Tool {
+
+	result := make([]schemas.Tool, 0)
+
+	for _, tool := range session.tools {
+
+		for _, schema := range tool.Schemas() {
+			result = append(result, schema)
+		}
+
+	}
+
+	sort.Slice(result, func(a int, b int) bool {
+		return result[a].Function.Name < result[b].Function.Name
+	})
+
+	return result
 
 }
 
@@ -636,24 +623,18 @@ func (session *Session) SendChatRequest(request schemas.Message) error {
 
 }
 
-func (session *Session) SetAdapter(identifier string, adapter types.Adapter) {
+func (session *Session) SetAdapter(adapter types.Adapter) {
 
-	if identifier != "" && adapter != nil {
-		session.adapters[identifier] = adapter
+	if adapter != nil {
+		session.adapters[adapter.Name()] = adapter
 	}
 
 }
 
-func (session *Session) SetTool(identifier string, tool types.Tool, schemas []schemas.Tool) {
+func (session *Session) SetTool(tool types.Tool) {
 
-	if identifier != "" && len(schemas) > 0 && tool != nil {
-
-		session.tools[identifier] = tool
-
-		for _, schema := range schemas {
-			session.Tools = append(session.Tools, &schema)
-		}
-
+	if tool != nil {
+		session.tools[tool.Name()] = tool
 	}
 
 }
@@ -723,7 +704,7 @@ func (session *Session) infer_chat_completions() error {
 		Temperature: session.Agent.Temperature,
 		Messages:    session.Agent.Messages,
 		Stream:      false,
-		Tools:       session.Tools,
+		Tools:       session.GetToolSchemas(),
 		ToolChoice:  "auto",
 		Options:     nil,
 		// Options:     &schemas.Options{

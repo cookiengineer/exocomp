@@ -62,7 +62,7 @@ func (tool *Humans) Name() string {
 
 func (tool *Humans) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if slices.Contains(tool.Methods, method) == true {
+	if tool.HasMethod(method) == true {
 
 		if method == "Ask" {
 
@@ -225,6 +225,10 @@ func (tool *Humans) GetContent(id string) (any, error) {
 		return nil, fmt.Errorf("humans.GetContent: No question asked for id \"%s\".", id)
 	}
 
+}
+
+func (tool *Humans) HasMethod(method string) bool {
+	return slices.Contains(tool.Methods, method) == true
 }
 
 func (tool *Humans) MarshalJSON() ([]byte, error) {

@@ -39,7 +39,7 @@ func (tool *Websites) Name() string {
 
 func (tool *Websites) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if slices.Contains(tool.Methods, method) == true {
+	if tool.HasMethod(method) == true {
 
 		if method == "Fetch" {
 
@@ -172,6 +172,10 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 
 func (tool *Websites) GetContent(id string) (any, error) {
 	return nil, nil
+}
+
+func (tool *Websites) HasMethod(method string) bool {
+	return slices.Contains(tool.Methods, method) == true
 }
 
 func (tool *Websites) List() (string, error) {

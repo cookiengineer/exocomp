@@ -200,7 +200,7 @@ func (tool *Agents) Name() string {
 
 func (tool *Agents) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if slices.Contains(tool.Methods, method) == true {
+	if tool.HasMethod(method) == true {
 
 		if method == "Await" {
 
@@ -383,6 +383,10 @@ func (tool *Agents) GetNames() []string {
 
 	return result
 
+}
+
+func (tool *Agents) HasMethod(method string) bool {
+	return slices.Contains(tool.Methods, method) == true
 }
 
 func (tool *Agents) List() (string, error) {

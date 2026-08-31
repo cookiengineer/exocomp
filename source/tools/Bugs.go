@@ -35,7 +35,7 @@ func (tool *Bugs) Name() string {
 
 func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if slices.Contains(tool.Methods, method) == true {
+	if tool.HasMethod(method) == true {
 
 		if method == "List" {
 
@@ -239,6 +239,10 @@ func (tool *Bugs) GetContent(id string) (any, error) {
 		return "", fmt.Errorf("bugs.GetContent: %s", err1.Error())
 	}
 
+}
+
+func (tool *Bugs) HasMethod(method string) bool {
+	return slices.Contains(tool.Methods, method) == true
 }
 
 func (tool *Bugs) List() (string, error) {
