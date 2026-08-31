@@ -118,17 +118,19 @@ cd /path/to/exocomp/build;
 ### Configuring
 
 It's possible to provide a global default configuration inside the file `~/.config/exocomp/config.yaml`,
-which is inherited by the `planner` mode agent. Tokens are delegated to sub-agents if they have any model
-configured with a token in the global configuration.
+which is inherited by the `planner` mode agent.
 
-The idea is here to preserve the internal ollama-compatible naming scheme, so that aliases can be
-maintained in a provider-specific manner.
+Provider-specific configurations are delegated to sub-agents if they have a model
+configured with provider which is setup in the global configuration file.
+
+The idea is here to preserve the internal ollama-compatible naming scheme, so that
+aliases can be maintained in a provider-specific manner.
 
 ```yaml
 name: Peanut Hamper
 role: planner
 model: "deepseek-v4-pro:cloud"
-tokens:
+providers:
   deepseek-v4-pro:cloud:
     url: "https://api.deepseek.com"
     alias: "deepseek-v4-pro"
