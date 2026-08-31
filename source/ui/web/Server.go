@@ -2,6 +2,7 @@ package web
 
 import routes_parameters "exocomp/ui/web/routes/parameters"
 import routes_session "exocomp/ui/web/routes/session"
+import "exocomp/engine"
 import "exocomp/tools"
 import "exocomp/types"
 import utils_http "exocomp/utils/http"
@@ -20,27 +21,30 @@ import "time"
 var embed_fs embed.FS
 
 type Server struct {
-	Session *types.Session
+	Session *engine.Session
 	URL     *net_url.URL
 	handler *utils_http.Handler
 }
 
 func NewServer(agent *types.Agent, config *types.Config) *Server {
 
-	var session *types.Session = nil
+	var session *engine.Session = nil
 
-	recovery := types.NewRecovery(config.Playground)
+	recovery := engine.NewRecovery(config.Playground)
 
 	if recovery.HasBackup() {
 
 		session = recovery.RestoreSession()
 
-		if session == nil {
-			session = types.NewSession(agent, config)
+		if session != nil {
+			session.Console.Info("Restored Session from Backup")
+		} else {
+			session = engine.NewSession(agent, config)
+			session.Console.Warn("Could not restore Session from Backup")
 		}
 
 	} else {
-		session = types.NewSession(agent, config)
+		session = engine.NewSession(agent, config)
 	}
 
 	url, _ := net_url.Parse("http://localhost:3000/")

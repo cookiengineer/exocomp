@@ -1,13 +1,13 @@
 package session
 
-import "exocomp/ui/web/handlers"
+import "exocomp/engine"
 import "exocomp/tools"
-import "exocomp/types"
+import "exocomp/ui/web/handlers"
 import "encoding/json"
 import "net/http"
 import "strconv"
 
-func Questions(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Questions(session *engine.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 

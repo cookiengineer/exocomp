@@ -1,14 +1,14 @@
 package session
 
-import "exocomp/ui/web/handlers"
+import "exocomp/engine"
 import "exocomp/tools"
-import "exocomp/types"
+import "exocomp/ui/web/handlers"
 import "encoding/json"
 import "io"
 import "net/http"
 import "strconv"
 
-func Answer(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Answer(session *engine.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodPost {
 
@@ -29,7 +29,7 @@ func Answer(session *types.Session, request *http.Request, response http.Respons
 
 				if err1 == nil {
 
-					tool := session.GetTool("humans.Answer")
+					tool := session.GetTool("humans.Ask")
 
 					if tool != nil {
 

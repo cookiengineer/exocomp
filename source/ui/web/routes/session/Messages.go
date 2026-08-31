@@ -1,12 +1,12 @@
 package session
 
+import "exocomp/engine"
 import "exocomp/ui/web/handlers"
-import "exocomp/types"
 import "encoding/json"
 import "net/http"
 import "strconv"
 
-func Messages(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Messages(session *engine.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 

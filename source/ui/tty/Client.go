@@ -1,5 +1,6 @@
 package tty
 
+import "exocomp/engine"
 import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
@@ -13,26 +14,26 @@ import "time"
 
 type Client struct {
 	Renderer *Renderer
-	Session  *types.Session
+	Session  *engine.Session
 	Role     string
 }
 
 func NewClient(agent *types.Agent, config *types.Config) *Client {
 
-	var session *types.Session = nil
+	var session *engine.Session = nil
 
-	recovery := types.NewRecovery(config.Playground)
+	recovery := engine.NewRecovery(config.Playground)
 
 	if recovery.HasBackup() {
 
 		session = recovery.RestoreSession()
 
 		if session == nil {
-			session = types.NewSession(agent, config)
+			session = engine.NewSession(agent, config)
 		}
 
 	} else {
-		session = types.NewSession(agent, config)
+		session = engine.NewSession(agent, config)
 	}
 
 	renderer := NewRenderer(session)

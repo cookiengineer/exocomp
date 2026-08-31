@@ -1,14 +1,14 @@
 package session
 
-import "exocomp/ui/web/handlers"
+import "exocomp/engine"
 import "exocomp/schemas"
-import "exocomp/types"
+import "exocomp/ui/web/handlers"
 import "encoding/json"
 import "io"
 import "net/http"
 import "strconv"
 
-func SendChatRequest(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func SendChatRequest(session *engine.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodPost {
 

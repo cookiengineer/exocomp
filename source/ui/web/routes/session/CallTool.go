@@ -1,14 +1,14 @@
 package session
 
-import "exocomp/ui/web/handlers"
+import "exocomp/engine"
 import "exocomp/schemas"
-import "exocomp/types"
+import "exocomp/ui/web/handlers"
 import "encoding/json"
 import "net/http"
 import "io"
 import "strconv"
 
-func CallTool(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func CallTool(session *engine.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodPost {
 

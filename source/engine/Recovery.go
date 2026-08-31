@@ -1,5 +1,6 @@
-package types
+package engine
 
+import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
 import "encoding/json"
 import "fmt"
@@ -19,7 +20,7 @@ func NewRecovery(playground string) *Recovery {
 
 }
 
-func (recovery *Recovery) BackupAgent(agent *Agent) error {
+func (recovery *Recovery) BackupAgent(agent *types.Agent) error {
 
 	sanitized_name := utils_fmt.FormatAgentName(agent.Name)
 
@@ -98,9 +99,9 @@ func (recovery *Recovery) HasBackup() bool {
 
 }
 
-func (recovery *Recovery) RestoreAgents() []*Agent {
+func (recovery *Recovery) RestoreAgents() []*types.Agent {
 
-	result := make([]*Agent, 0)
+	result := make([]*types.Agent, 0)
 
 	path          := filepath.Join(recovery.Playground, ".exocomp", "agents")
 	entries, err1 := os.ReadDir(path)
@@ -136,7 +137,7 @@ func (recovery *Recovery) RestoreAgents() []*Agent {
 
 }
 
-func (recovery *Recovery) RestoreAgent(name string) *Agent {
+func (recovery *Recovery) RestoreAgent(name string) *types.Agent {
 
 	sanitized_name := utils_fmt.FormatAgentName(name)
 
@@ -147,7 +148,7 @@ func (recovery *Recovery) RestoreAgent(name string) *Agent {
 
 		if err1 == nil {
 
-			agent := Agent{}
+			agent := types.Agent{}
 			err2  := json.Unmarshal(bytes, &agent)
 
 			if err2 == nil {

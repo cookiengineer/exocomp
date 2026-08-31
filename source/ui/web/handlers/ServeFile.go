@@ -1,6 +1,6 @@
 package handlers
 
-import "exocomp/types"
+import "exocomp/engine"
 import "bytes"
 import "compress/gzip"
 import "net/http"
@@ -9,7 +9,7 @@ import "path"
 import "strconv"
 import "strings"
 
-func ServeFile(session *types.Session, request *http.Request, response http.ResponseWriter, data []byte) {
+func ServeFile(session *engine.Session, request *http.Request, response http.ResponseWriter, data []byte) {
 
 	if request.Method == http.MethodGet {
 

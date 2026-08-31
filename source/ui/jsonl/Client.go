@@ -1,5 +1,6 @@
 package jsonl
 
+import "exocomp/engine"
 import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
@@ -14,7 +15,7 @@ import "time"
 
 type Client struct {
 	Renderer *Renderer
-	Session  *types.Session
+	Session  *engine.Session
 	role     string
 }
 
@@ -22,7 +23,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	// NOTE: jsonl.Client has no Recovery
 
-	session  := types.NewSession(agent, config)
+	session  := engine.NewSession(agent, config)
 	renderer := NewRenderer(session)
 
 	if len(agent.AllowedTools) > 0 {

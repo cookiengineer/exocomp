@@ -1,6 +1,7 @@
-package types
+package engine
 
 import "exocomp/schemas"
+import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
 import "bytes"
 import "encoding/json"
@@ -13,7 +14,7 @@ import "sort"
 import "strings"
 import "sync"
 
-func log_response_error(console *Console, response *net_http.Response) {
+func log_response_error(console *types.Console, response *net_http.Response) {
 
 	var api_error schemas.Error
 
@@ -29,29 +30,29 @@ func log_response_error(console *Console, response *net_http.Response) {
 }
 
 type Session struct {
-	Agent    *Agent           `json:"agent"`
-	Config   *Config          `json:"config"`
-	Console  *Console         `json:"console"`
-	Recovery *Recovery        `json:"-"`
-	Tools    []*schemas.Tool  `json:"tools"`
-	Waiting  bool             `json:"waiting"`
-	client   *net_http.Client `json:"-"`
-	mutex    *sync.RWMutex    `json:"-"`
-	tools    map[string]Tool  `json:"-"`
+	Agent    *types.Agent          `json:"agent"`
+	Config   *types.Config         `json:"config"`
+	Console  *types.Console        `json:"console"`
+	Recovery *Recovery             `json:"-"`
+	Tools    []*schemas.Tool       `json:"tools"`
+	Waiting  bool                  `json:"waiting"`
+	client   *net_http.Client      `json:"-"`
+	mutex    *sync.RWMutex         `json:"-"`
+	tools    map[string]types.Tool `json:"-"`
 }
 
-func NewSession(agent *Agent, config *Config) *Session {
+func NewSession(agent *types.Agent, config *types.Config) *Session {
 
 	session := &Session{
 		Agent:    agent,
 		Config:   config,
-		Console:  NewConsole(os.Stdout, os.Stderr, 0),
+		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
 		Recovery: NewRecovery(config.Playground),
 		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
 		client:   &net_http.Client{},
 		mutex:    &sync.RWMutex{},
-		tools:    make(map[string]Tool),
+		tools:    make(map[string]types.Tool),
 	}
 
 	session.mutex.Lock()
@@ -102,13 +103,13 @@ func RestoreSession(playground string, backup Session) *Session {
 	session := &Session{
 		Agent:    backup.Agent,
 		Config:   backup.Config,
-		Console:  NewConsole(os.Stdout, os.Stderr, 0),
+		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
 		Recovery: NewRecovery(playground),
 		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
 		client:   &net_http.Client{},
 		mutex:    &sync.RWMutex{},
-		tools:    make(map[string]Tool),
+		tools:    make(map[string]types.Tool),
 	}
 
 	if backup.Console != nil {
@@ -174,7 +175,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 				skill_name,    ok1  := arguments["name"].(string)
 				skill_content, err1 := tool.GetContent(skill_name)
-				skill,         ok2  := skill_content.(*Skill)
+				skill,         ok2  := skill_content.(*types.Skill)
 
 				if ok1 == true && err1 == nil && ok2 == true {
 
@@ -219,7 +220,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 				skill_name,    ok1  := arguments["name"].(string)
 				skill_content, err1 := tool.GetContent(skill_name)
-				skill,         ok2  := skill_content.(*Skill)
+				skill,         ok2  := skill_content.(*types.Skill)
 
 				if ok1 == true && err1 == nil && ok2 == true {
 
@@ -317,12 +318,12 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 }
 
-func (session *Session) GetConsoleMessages(from int) []ConsoleMessage {
+func (session *Session) GetConsoleMessages(from int) []types.ConsoleMessage {
 
 	if session.Console != nil {
 		return session.Console.GetMessages(from)
 	} else {
-		return []ConsoleMessage{}
+		return []types.ConsoleMessage{}
 	}
 
 }
@@ -359,7 +360,7 @@ func (session *Session) GetMessages(from int) []*schemas.Message {
 
 }
 
-func (session *Session) GetTool(name string) Tool {
+func (session *Session) GetTool(name string) types.Tool {
 
 	allowed := false
 
@@ -426,7 +427,7 @@ func (session *Session) GetToolSchema(name string) *schemas.Tool {
 
 }
 
-func (session *Session) LoadSkill(name string, skill *Skill) error {
+func (session *Session) LoadSkill(name string, skill *types.Skill) error {
 
 	index            := int(-1)
 	missing_programs := make([]string, 0)
@@ -635,7 +636,7 @@ func (session *Session) SendChatRequest(request schemas.Message) error {
 
 }
 
-func (session *Session) SetTool(identifier string, tool Tool, schemas []schemas.Tool) {
+func (session *Session) SetTool(identifier string, tool types.Tool, schemas []schemas.Tool) {
 
 	if identifier != "" && len(schemas) > 0 && tool != nil {
 
@@ -649,7 +650,7 @@ func (session *Session) SetTool(identifier string, tool Tool, schemas []schemas.
 
 }
 
-func (session *Session) UnloadSkill(name string, skill *Skill) error {
+func (session *Session) UnloadSkill(name string, skill *types.Skill) error {
 
 	index := int(-1)
 

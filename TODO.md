@@ -25,6 +25,10 @@
 - [ ] Session should handle transformations and mappings of internal "requirements.Read" syntax vs API expected "requirements_Read" syntax.
 - [ ] No idea how to do this, because we don't want to change the Agents or YAML format or anything else, so it MUST be handled by the Session itself.
 
+```
+API Error: Invalid 'tools[0].function.name': string does not match pattern. Expected a string that matches the pattern '^[a-zA-Z0-9_-]+$'.
+```
+
 ## types/Session DEBUGGING
 
 - [ ] Add better debugging messages when Session is recovered successfully

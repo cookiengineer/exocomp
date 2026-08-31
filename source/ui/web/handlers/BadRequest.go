@@ -1,10 +1,10 @@
 package handlers
 
-import "exocomp/types"
+import "exocomp/engine"
 import "fmt"
 import "net/http"
 
-func BadRequest(session *types.Session, err error, request *http.Request, response http.ResponseWriter) {
+func BadRequest(session *engine.Session, err error, request *http.Request, response http.ResponseWriter) {
 
 	err_message := err.Error()
 

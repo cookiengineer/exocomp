@@ -1,10 +1,10 @@
 package handlers
 
-import "exocomp/types"
+import "exocomp/engine"
 import "fmt"
 import "net/http"
 
-func Unauthorized(session *types.Session, err error, request *http.Request, response http.ResponseWriter) {
+func Unauthorized(session *engine.Session, err error, request *http.Request, response http.ResponseWriter) {
 
 	err_message := err.Error()
 

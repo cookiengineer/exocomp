@@ -1,7 +1,7 @@
 package jsonl
 
+import "exocomp/engine"
 import "exocomp/schemas"
-import "exocomp/types"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -9,12 +9,12 @@ import "sync"
 import "time"
 
 type Renderer struct {
-	Session   *types.Session
+	Session   *engine.Session
 	mutex     *sync.RWMutex
 	rendered  int
 }
 
-func NewRenderer(session *types.Session) *Renderer {
+func NewRenderer(session *engine.Session) *Renderer {
 
 	return &Renderer{
 		Session:  session,

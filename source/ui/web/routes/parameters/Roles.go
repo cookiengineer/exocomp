@@ -1,14 +1,14 @@
 package parameters
 
 import "exocomp/agents"
-import "exocomp/types"
+import "exocomp/engine"
 import "exocomp/ui/web/handlers"
 import "encoding/json"
 import "net/http"
 import "sort"
 import "strconv"
 
-func Roles(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Roles(session *engine.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 

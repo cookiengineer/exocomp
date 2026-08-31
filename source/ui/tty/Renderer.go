@@ -1,7 +1,7 @@
 package tty
 
+import "exocomp/engine"
 import "exocomp/schemas"
-import "exocomp/types"
 import "fmt"
 import "os"
 import "sync"
@@ -9,13 +9,13 @@ import "sync"
 type Renderer struct {
 	Prompt    string
 	Role      string
-	Session   *types.Session
+	Session   *engine.Session
 	mutex     *sync.RWMutex
 	rendered  int
 	resetline string
 }
 
-func NewRenderer(session *types.Session) *Renderer {
+func NewRenderer(session *engine.Session) *Renderer {
 
 	resetline := ""
 

@@ -1,5 +1,6 @@
 package parameters
 
+import "exocomp/engine"
 import "exocomp/schemas"
 import "exocomp/types"
 import "exocomp/ui/web/handlers"
@@ -99,7 +100,7 @@ func update_models(config *types.Config) {
 
 }
 
-func Models(session *types.Session, request *http.Request, response http.ResponseWriter) {
+func Models(session *engine.Session, request *http.Request, response http.ResponseWriter) {
 
 	if request.Method == http.MethodGet {
 
