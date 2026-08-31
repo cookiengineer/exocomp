@@ -1,23 +1,27 @@
 package tools
 
-import "exocomp/types"
+import "exocomp/schemas"
 import utils_fmt "exocomp/utils/fmt"
+import "exocomp/types"
 import "fmt"
 import "io"
 import net_http "net/http"
+import "slices"
 import "sort"
 import "strings"
 import "time"
 
 type Websites struct {
+	Methods    []string
 	Playground string
 	Sandbox    string
 	client     *net_http.Client
 }
 
-func NewWebsites(playground string, sandbox string) *Websites {
+func NewWebsites(methods []string, playground string, sandbox string) *Websites {
 
 	websites := &Websites{
+		Methods:    methods,
 		Playground: playground,
 		Sandbox:    sandbox,
 		client:     &net_http.Client{
@@ -29,53 +33,63 @@ func NewWebsites(playground string, sandbox string) *Websites {
 
 }
 
+func (tool *Websites) Name() string {
+	return "websites"
+}
+
 func (tool *Websites) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "Fetch" {
+	if slices.Contains(tool.Methods, method) == true {
 
-		url,        ok1 := arguments["url"].(string)
-		user_agent, ok2 := arguments["user_agent"].(string)
-		format,     ok3 := arguments["format"].(string)
+		if method == "Fetch" {
 
-		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Fetch(url, user_agent, utils_fmt.FormatSingleLine(format))
-		} else if ok1 == true && ok2 == true && ok3 == false {
-			return tool.Fetch(url, user_agent, "markdown")
-		} else if ok1 == true && ok2 == false && ok3 == true {
-			return tool.Fetch(url, "", utils_fmt.FormatSingleLine(format))
-		} else if ok1 == true && ok2 == false && ok3 == false {
-			return tool.Fetch(url, "", "markdown")
-		} else if ok1 == false && ok2 == true && ok3 == true {
-			return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == false {
-			return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
-		} else if ok1 == false && ok2 == false && ok3 == true {
-			return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
+			url,        ok1 := arguments["url"].(string)
+			user_agent, ok2 := arguments["user_agent"].(string)
+			format,     ok3 := arguments["format"].(string)
+
+			if ok1 == true && ok2 == true && ok3 == true {
+				return tool.Fetch(url, user_agent, utils_fmt.FormatSingleLine(format))
+			} else if ok1 == true && ok2 == true && ok3 == false {
+				return tool.Fetch(url, user_agent, "markdown")
+			} else if ok1 == true && ok2 == false && ok3 == true {
+				return tool.Fetch(url, "", utils_fmt.FormatSingleLine(format))
+			} else if ok1 == true && ok2 == false && ok3 == false {
+				return tool.Fetch(url, "", "markdown")
+			} else if ok1 == false && ok2 == true && ok3 == true {
+				return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == false {
+				return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
+			} else if ok1 == false && ok2 == false && ok3 == true {
+				return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
+			} else {
+				return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
+			}
+
+		} else if method == "List" {
+
+			return tool.List()
+
+		} else if method == "Stat" {
+
+			url,        ok1 := arguments["url"].(string)
+			user_agent, ok2 := arguments["user_agent"].(string)
+
+			if ok1 == true && ok2 == true {
+				return tool.Stat(url, user_agent)
+			} else if ok1 == true && ok2 == false {
+				return tool.Stat(url, "")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
+			} else {
+				return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
+			}
+
 		} else {
-			return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
-		}
-
-	} else if method == "List" {
-
-		return tool.List()
-
-	} else if method == "Stat" {
-
-		url,        ok1 := arguments["url"].(string)
-		user_agent, ok2 := arguments["user_agent"].(string)
-
-		if ok1 == true && ok2 == true {
-			return tool.Stat(url, user_agent)
-		} else if ok1 == true && ok2 == false {
-			return tool.Stat(url, "")
-		} else if ok1 == false && ok2 == true {
-			return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
-		} else {
-			return "", fmt.Errorf("websites.%s: %s", method, "Invalid parameter \"url\" is not a string.")
+			return "", fmt.Errorf("websites.%s: Invalid method.", method)
 		}
 
 	} else {
-		return "", fmt.Errorf("websites.%s: Invalid method.", method)
+		return "", fmt.Errorf("websites.%s: Method not allowed.", method)
 	}
 
 }
@@ -184,6 +198,26 @@ func (tool *Websites) List() (string, error) {
 	}
 
 	return strings.Join(lines, "\n"), nil
+
+}
+
+func (tool *Websites) Schemas() []schemas.Tool {
+
+	result := make([]schemas.Tool, 0)
+
+	for _, method := range tool.Methods {
+
+		for _, schema := range WebsitesSchema {
+
+			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), method) {
+				result = append(result, schema)
+			}
+
+		}
+
+	}
+
+	return result
 
 }
 

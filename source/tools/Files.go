@@ -1,90 +1,104 @@
 package tools
 
+import "exocomp/schemas"
 import utils_fmt "exocomp/utils/fmt"
 import utils_fs "exocomp/utils/fs"
 import "errors"
 import "fmt"
 import "io/fs"
 import "os"
+import "slices"
 import "sort"
 import "strings"
 
 type Files struct {
+	Methods []string
 	Sandbox string
 }
 
-func NewFiles(playground string, sandbox string) *Files {
+func NewFiles(methods []string, playground string, sandbox string) *Files {
 
 	return &Files{
+		Methods: methods,
 		Sandbox: sandbox,
 	}
 
 }
 
+func (tool *Files) Name() string {
+	return "files"
+}
+
 func (tool *Files) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "Copy" {
+	if slices.Contains(tool.Methods, method) == true {
 
-		from_path, ok1 := arguments["from_path"].(string)
-		to_path,   ok2 := arguments["to_path"].(string)
+		if method == "Copy" {
 
-		if ok1 == true && ok2 == true {
-			return tool.Copy(utils_fmt.FormatFilePath(from_path), utils_fmt.FormatFilePath(to_path))
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"to_path\" is not a string.")
-		} else if ok1 == false && ok2 == true {
-			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"from_path\" is not a string.")
+			from_path, ok1 := arguments["from_path"].(string)
+			to_path,   ok2 := arguments["to_path"].(string)
+
+			if ok1 == true && ok2 == true {
+				return tool.Copy(utils_fmt.FormatFilePath(from_path), utils_fmt.FormatFilePath(to_path))
+			} else if ok1 == true && ok2 == false {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"to_path\" is not a string.")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"from_path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameters.")
+			}
+
+		} else if method == "List" {
+
+			path, ok := arguments["path"].(string)
+
+			if ok == true {
+				return tool.List(utils_fmt.FormatFilePath(path))
+			} else {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			}
+
+		} else if method == "Read" {
+
+			path, ok := arguments["path"].(string)
+
+			if ok == true {
+				return tool.Read(utils_fmt.FormatFilePath(path))
+			} else {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			}
+
+		} else if method == "Stat" {
+
+			path, ok := arguments["path"].(string)
+
+			if ok == true {
+				return tool.Stat(utils_fmt.FormatFilePath(path))
+			} else {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			}
+
+		} else if method == "Write" {
+
+			path,    ok1 := arguments["path"].(string)
+			content, ok2 := arguments["content"].(string)
+
+			if ok1 == true && ok2 == true {
+				return tool.Write(utils_fmt.FormatFilePath(path), content)
+			} else if ok1 == true && ok2 == false {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"content\" is not a string.")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameters.")
+			}
+
 		} else {
-			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameters.")
-		}
-
-	} else if method == "List" {
-
-		path, ok := arguments["path"].(string)
-
-		if ok == true {
-			return tool.List(utils_fmt.FormatFilePath(path))
-		} else {
-			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		}
-
-	} else if method == "Read" {
-
-		path, ok := arguments["path"].(string)
-
-		if ok == true {
-			return tool.Read(utils_fmt.FormatFilePath(path))
-		} else {
-			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		}
-
-	} else if method == "Stat" {
-
-		path, ok := arguments["path"].(string)
-
-		if ok == true {
-			return tool.Stat(utils_fmt.FormatFilePath(path))
-		} else {
-			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		}
-
-	} else if method == "Write" {
-
-		path,    ok1 := arguments["path"].(string)
-		content, ok2 := arguments["content"].(string)
-
-		if ok1 == true && ok2 == true {
-			return tool.Write(utils_fmt.FormatFilePath(path), content)
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"content\" is not a string.")
-		} else if ok1 == false && ok2 == true {
-			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		} else {
-			return "", fmt.Errorf("files.%s: %s", method, "Invalid parameters.")
+			return "", fmt.Errorf("files.%s: Invalid method.", method)
 		}
 
 	} else {
-		return "", fmt.Errorf("files.%s: Invalid method.", method)
+		return "", fmt.Errorf("files.%s: Method not allowed.", method)
 	}
 
 }
@@ -239,6 +253,26 @@ func (tool *Files) Read(path string) (string, error) {
 	} else {
 		return "", fmt.Errorf("files.Read: %s", err0.Error())
 	}
+
+}
+
+func (tool *Files) Schemas() []schemas.Tool {
+
+	result := make([]schemas.Tool, 0)
+
+	for _, method := range tool.Methods {
+
+		for _, schema := range FilesSchema {
+
+			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), method) {
+				result = append(result, schema)
+			}
+
+		}
+
+	}
+
+	return result
 
 }
 

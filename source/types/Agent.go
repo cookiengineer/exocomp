@@ -50,6 +50,16 @@ func ParseAgent(data []byte) (*Agent, error) {
 
 }
 
+func (agent *Agent) HasTools() bool {
+
+	if len(agent.AllowedTools) > 0 {
+		return true
+	}
+
+	return false
+
+}
+
 func (agent *Agent) IsValid() bool {
 
 	tmp_name        := utils_fmt.FormatAgentName(agent.Name)

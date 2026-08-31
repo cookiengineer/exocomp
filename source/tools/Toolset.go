@@ -1,237 +1,74 @@
 package tools
 
-import "exocomp/agents"
-import "exocomp/schemas"
 import "exocomp/types"
 import _ "embed"
 import net_url "net/url"
-import "slices"
+import "strings"
 
-func Toolset(playground string, sandbox string, model string, url *net_url.URL, debug bool, allowed_programs []string, allowed_tools []string) (map[string][]schemas.Tool, map[string]types.Tool) {
+func Toolset(playground string, sandbox string, model string, url *net_url.URL, debug bool, allowed_programs []string, allowed_tools []string) ([]types.Tool) {
 
-	result_schemas := make(map[string][]schemas.Tool, 0)
-	result_tools   := make(map[string]types.Tool, 0)
+	filtered_by_methods := make(map[string][]string, 0)
+	filtered_by_tool    := make(map[string]types.Tool)
 
-	for _, schema := range AgentsSchema {
+	for _, tool_name := range allowed_tools {
 
-		if slices.Contains(allowed_tools, schema.Function.Name) {
+		if strings.Contains(tool_name, ".") {
 
-			// XXX: Make all agent roles available in schema
-			if schema.Function.Name == "agents.Hire" {
+			tmp1 := strings.TrimSpace(tool_name[0:strings.Index(tool_name, ".")])
+			tmp2 := strings.TrimSpace(tool_name[strings.Index(tool_name, ".")+1:])
 
-				roles := make([]string, 0)
+			name   := strings.ToLower(tmp1)
+			method := strings.ToUpper(tmp2[0:1]) + strings.ToLower(tmp2[1:])
 
-				for role, _ := range agents.Roles {
+			_, ok := filtered_by_methods[name]
 
-					if role != "planner" {
-						roles = append(roles, role)
-					}
-
-				}
-
-				property, ok := schema.Function.Parameters.Properties["role"]
-
-				if ok == true {
-					property.Enum = roles
-					schema.Function.Parameters.Properties["role"] = property
-				}
-
+			if ok == false {
+				filtered_by_methods[name] = make([]string, 0)
 			}
 
-			_, ok1 := result_schemas["agents"]
-
-			if ok1 == false {
-				result_schemas["agents"] = make([]schemas.Tool, 0)
-			}
-
-			result_schemas["agents"] = append(result_schemas["agents"], schema)
-
-			_, ok2 := result_tools["agents"]
-
-			if ok2 == false {
-				result_tools["agents"] = NewAgents(playground, sandbox, model, url, debug)
-			}
+			filtered_by_methods[name] = append(filtered_by_methods[name], method)
 
 		}
 
 	}
 
-	for _, schema := range BugsSchema {
+	for tool_name, allowed_methods := range filtered_by_methods {
 
-		if slices.Contains(allowed_tools, schema.Function.Name) {
+		var tool types.Tool = nil
 
-			_, ok1 := result_schemas["bugs"]
+		switch tool_name {
+		case "agents":
+			tool = NewAgents(allowed_methods, playground, sandbox, model, url, debug)
+		case "bugs":
+			tool = NewBugs(allowed_methods, playground, sandbox)
+		case "changelog":
+			tool = NewChangelog(allowed_methods, playground, sandbox)
+		case "files":
+			tool = NewFiles(allowed_methods, playground, sandbox)
+		case "humans":
+			tool = NewHumans(allowed_methods, playground, sandbox)
+		case "programs":
+			tool = NewPrograms(allowed_methods, playground, sandbox, allowed_programs)
+		case "requirements":
+			tool = NewRequirements(allowed_methods, playground, sandbox)
+		case "skills":
+			tool = NewSkills(allowed_methods, playground, sandbox, allowed_programs, allowed_tools)
+		case "websites":
+			tool = NewWebsites(allowed_methods, playground, sandbox)
+		}
 
-			if ok1 == false {
-				result_schemas["bugs"] = make([]schemas.Tool, 0)
-			}
-
-			result_schemas["bugs"] = append(result_schemas["bugs"], schema)
-
-			_, ok2 := result_tools["bugs"]
-
-			if ok2 == false {
-				result_tools["bugs"] = NewBugs(playground, sandbox)
-			}
-
+		if tool != nil {
+			filtered_by_tool[tool_name] = tool
 		}
 
 	}
 
-	for _, schema := range ChangelogSchema {
+	result := make([]types.Tool, 0)
 
-		if slices.Contains(allowed_tools, schema.Function.Name) {
-
-			_, ok1 := result_schemas["changelog"]
-
-			if ok1 == false {
-				result_schemas["changelog"] = make([]schemas.Tool, 0)
-			}
-
-			result_schemas["changelog"] = append(result_schemas["changelog"], schema)
-
-			_, ok2 := result_tools["changelog"]
-
-			if ok2 == false {
-				result_tools["changelog"] = NewChangelog(playground, sandbox)
-			}
-
-		}
-
+	for _, tool := range filtered_by_tool {
+		result = append(result, tool)
 	}
 
-	for _, schema := range FilesSchema {
-
-		if slices.Contains(allowed_tools, schema.Function.Name) {
-
-			_, ok1 := result_schemas["files"]
-
-			if ok1 == false {
-				result_schemas["files"] = make([]schemas.Tool, 0)
-			}
-
-			result_schemas["files"] = append(result_schemas["files"], schema)
-
-			_, ok2 := result_tools["files"]
-
-			if ok2 == false {
-				result_tools["files"] = NewFiles(playground, sandbox)
-			}
-
-		}
-
-	}
-
-	for _, schema := range ProgramsSchema {
-
-		if slices.Contains(allowed_tools, schema.Function.Name) {
-
-			_, ok1 := result_schemas["programs"]
-
-			if ok1 == false {
-				result_schemas["programs"] = make([]schemas.Tool, 0)
-			}
-
-			result_schemas["programs"] = append(result_schemas["programs"], schema)
-
-			_, ok2 := result_tools["programs"]
-
-			if ok2 == false {
-				result_tools["programs"] = NewPrograms(playground, sandbox, allowed_programs)
-			}
-
-		}
-
-	}
-
-	for _, schema := range HumansSchema {
-
-		if slices.Contains(allowed_tools, schema.Function.Name) {
-
-			_, ok1 := result_schemas["humans"]
-
-			if ok1 == false {
-				result_schemas["humans"] = make([]schemas.Tool, 0)
-			}
-
-			result_schemas["humans"] = append(result_schemas["humans"], schema)
-
-			_, ok2 := result_tools["humans"]
-
-			if ok2 == false {
-				result_tools["humans"] = NewHumans()
-			}
-
-		}
-
-	}
-
-	for _, schema := range RequirementsSchema {
-
-		if slices.Contains(allowed_tools, schema.Function.Name) {
-
-			_, ok1 := result_schemas["requirements"]
-
-			if ok1 == false {
-				result_schemas["requirements"] = make([]schemas.Tool, 0)
-			}
-
-			result_schemas["requirements"] = append(result_schemas["requirements"], schema)
-
-			_, ok2 := result_tools["requirements"]
-
-			if ok2 == false {
-				result_tools["requirements"] = NewRequirements(playground, sandbox)
-			}
-
-		}
-
-	}
-
-	for _, schema := range SkillsSchema {
-
-		if slices.Contains(allowed_tools, schema.Function.Name) {
-
-			_, ok1 := result_schemas["skills"]
-
-			if ok1 == false {
-				result_schemas["skills"] = make([]schemas.Tool, 0)
-			}
-
-			result_schemas["skills"] = append(result_schemas["skills"], schema)
-
-			_, ok2 := result_tools["skills"]
-
-			if ok2 == false {
-				result_tools["skills"] = NewSkills(playground, sandbox, allowed_programs, allowed_tools)
-			}
-
-		}
-
-	}
-
-	for _, schema := range WebsitesSchema {
-
-		if slices.Contains(allowed_tools, schema.Function.Name) {
-
-			_, ok1 := result_schemas["websites"]
-
-			if ok1 == false {
-				result_schemas["websites"] = make([]schemas.Tool, 0)
-			}
-
-			result_schemas["websites"] = append(result_schemas["websites"], schema)
-
-			_, ok2 := result_tools["websites"]
-
-			if ok2 == false {
-				result_tools["websites"] = NewWebsites(playground, sandbox)
-			}
-
-		}
-
-	}
-
-	return result_schemas, result_tools
+	return result
 
 }

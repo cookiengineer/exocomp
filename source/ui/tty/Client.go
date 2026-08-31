@@ -1,5 +1,6 @@
 package tty
 
+import "exocomp/adapters"
 import "exocomp/engine"
 import "exocomp/schemas"
 import "exocomp/tools"
@@ -28,8 +29,11 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 		session = recovery.RestoreSession()
 
-		if session == nil {
+		if session != nil {
+			session.Console.Info("Restored Session from Backup")
+		} else {
 			session = engine.NewSession(agent, config)
+			session.Console.Warn("Could not restore Session from Backup")
 		}
 
 	} else {
@@ -38,9 +42,9 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	renderer := NewRenderer(session)
 
-	if len(agent.AllowedTools) > 0 {
+	if agent.HasTools() {
 
-		tool_schemas, tools := tools.Toolset(
+		toolset := tools.Toolset(
 			config.Playground,
 			config.Sandbox,
 			config.Model,
@@ -50,8 +54,29 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 			agent.AllowedTools,
 		)
 
-		for name, tool := range tools {
-			session.SetTool(name, tool, tool_schemas[name])
+		if len(toolset) > 0 {
+
+			for _, tool := range toolset {
+				session.SetTool(tool)
+			}
+
+		}
+
+	}
+
+	if config.HasProvider(agent.Model) {
+
+		adapterset := adapters.Adapterset(
+			config.ResolveURL(agent.Model, ""),
+			config.ResolveModel(agent.Model),
+		)
+
+		if len(adapterset) > 0 {
+
+			for _, adapter := range adapterset {
+				session.SetAdapter(adapter)
+			}
+
 		}
 
 	}

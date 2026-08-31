@@ -15,6 +15,7 @@ import "io"
 import net_url "net/url"
 import "os"
 import "os/exec"
+import "slices"
 import "sort"
 import "strings"
 import "sync"
@@ -155,6 +156,7 @@ func watch_process(tool *Agents, process *agent_process) {
 }
 
 type Agents struct {
+	Methods     []string
 	Playground  string
 	Sandbox     string
 	Model       string
@@ -168,9 +170,10 @@ type Agents struct {
 	processes   map[string]*agent_process
 }
 
-func NewAgents(playground string, sandbox string, model string, url *net_url.URL, debug bool) *Agents {
+func NewAgents(methods []string, playground string, sandbox string, model string, url *net_url.URL, debug bool) *Agents {
 
 	agents := &Agents{
+		Methods:     methods,
 		Playground:  playground,
 		Sandbox:     sandbox,
 		Model:       model,
@@ -191,92 +194,102 @@ func NewAgents(playground string, sandbox string, model string, url *net_url.URL
 
 }
 
+func (tool *Agents) Name() string {
+	return "agents"
+}
+
 func (tool *Agents) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "Await" {
+	if slices.Contains(tool.Methods, method) == true {
 
-		name, ok1 := arguments["name"].(string)
+		if method == "Await" {
 
-		if ok1 == true {
-			return tool.Await(utils_fmt.FormatAgentName(name))
+			name, ok1 := arguments["name"].(string)
+
+			if ok1 == true {
+				return tool.Await(utils_fmt.FormatAgentName(name))
+			} else {
+				return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
+			}
+
+		} else if method == "List" {
+
+			return tool.List()
+
+		} else if method == "Roles" {
+
+			return tool.Roles()
+
+		} else if method == "Hire" {
+
+			role,    ok1 := arguments["role"].(string)
+			prompt,  ok2 := arguments["prompt"].(string)
+			sandbox, ok3 := arguments["sandbox"].(string)
+
+			if ok1 == true && role == "planner" {
+
+				return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" can not be \"planner\".")
+
+			} else if ok1 == true && ok2 == true && ok3 == true {
+
+				return tool.Hire(
+					utils_fmt.FormatAgentRole(role),
+					utils_fmt.FormatMultiLine(prompt),
+					sandbox,
+				)
+
+			} else if ok1 == true && ok2 == true && ok3 == false {
+
+				return tool.Hire(
+					utils_fmt.FormatAgentRole(role),
+					utils_fmt.FormatMultiLine(prompt),
+					".",
+				)
+
+			} else if ok1 == true && ok2 == false && ok3 == true {
+				return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == true {
+				return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" is not a string.")
+			} else {
+				return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameters \"role\" is not a string and \"prompt\" is not a string.")
+			}
+
+		} else if method == "Fire" {
+
+			name, ok1 := arguments["name"].(string)
+
+			if ok1 == true {
+				return tool.Fire(utils_fmt.FormatAgentName(name))
+			} else {
+				return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
+			}
+
+		} else if method == "Inquire" {
+
+			name, ok1 := arguments["name"].(string)
+
+			if ok1 == true {
+				return tool.Inquire(utils_fmt.FormatAgentName(name))
+			} else {
+				return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
+			}
+
+		} else if method == "Quit" {
+
+			message, ok1 := arguments["message"].(string)
+
+			if ok1 == true {
+				return tool.Quit(utils_fmt.FormatMultiLine(message))
+			} else {
+				return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"message\" is not a string.")
+			}
+
 		} else {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
-		}
-
-	} else if method == "List" {
-
-		return tool.List()
-
-	} else if method == "Roles" {
-
-		return tool.Roles()
-
-	} else if method == "Hire" {
-
-		role,    ok1 := arguments["role"].(string)
-		prompt,  ok2 := arguments["prompt"].(string)
-		sandbox, ok3 := arguments["sandbox"].(string)
-
-		if ok1 == true && role == "planner" {
-
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" can not be \"planner\".")
-
-		} else if ok1 == true && ok2 == true && ok3 == true {
-
-			return tool.Hire(
-				utils_fmt.FormatAgentRole(role),
-				utils_fmt.FormatMultiLine(prompt),
-				sandbox,
-			)
-
-		} else if ok1 == true && ok2 == true && ok3 == false {
-
-			return tool.Hire(
-				utils_fmt.FormatAgentRole(role),
-				utils_fmt.FormatMultiLine(prompt),
-				".",
-			)
-
-		} else if ok1 == true && ok2 == false && ok3 == true {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"prompt\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" is not a string.")
-		} else {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameters \"role\" is not a string and \"prompt\" is not a string.")
-		}
-
-	} else if method == "Fire" {
-
-		name, ok1 := arguments["name"].(string)
-
-		if ok1 == true {
-			return tool.Fire(utils_fmt.FormatAgentName(name))
-		} else {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
-		}
-
-	} else if method == "Inquire" {
-
-		name, ok1 := arguments["name"].(string)
-
-		if ok1 == true {
-			return tool.Inquire(utils_fmt.FormatAgentName(name))
-		} else {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"name\" is not a string.")
-		}
-
-	} else if method == "Quit" {
-
-		message, ok1 := arguments["message"].(string)
-
-		if ok1 == true {
-			return tool.Quit(utils_fmt.FormatMultiLine(message))
-		} else {
-			return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"message\" is not a string.")
+			return "", fmt.Errorf("agents.%s: Invalid method.", method)
 		}
 
 	} else {
-		return "", fmt.Errorf("agents.%s: Invalid method.", method)
+		return "", fmt.Errorf("agents.%s: Method not allowed.", method)
 	}
 
 }
@@ -736,6 +749,50 @@ func (tool *Agents) Quit(message string) (string, error) {
 		return report, nil
 
 	}
+
+}
+
+func (tool *Agents) Schemas() []schemas.Tool {
+
+	result := make([]schemas.Tool, 0)
+
+	for _, method := range tool.Methods {
+
+		for _, schema := range AgentsSchema {
+
+			// NOTE: Patch the JSON Schema based on available Agent Roles _at runtime_
+			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), "Hire") {
+
+				roles := make([]string, 0)
+
+				for role, _ := range agents.Roles {
+
+					if role != "planner" {
+						roles = append(roles, role)
+					}
+
+				}
+
+				sort.Strings(roles)
+
+				property, ok := schema.Function.Parameters.Properties["role"]
+
+				if ok == true {
+					property.Enum = roles
+					schema.Function.Parameters.Properties["role"] = property
+				}
+
+			}
+
+			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), method) {
+				result = append(result, schema)
+			}
+
+		}
+
+	}
+
+	return result
 
 }
 

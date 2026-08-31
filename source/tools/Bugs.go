@@ -1,21 +1,25 @@
 package tools
 
-import utils_fmt "exocomp/utils/fmt"
+import "exocomp/schemas"
 import "exocomp/types"
+import utils_fmt "exocomp/utils/fmt"
 import "encoding/json"
 import "fmt"
+import "slices"
 import "sort"
 import "strings"
 
 type Bugs struct {
+	Methods    []string
 	Playground string
 	Sandbox    string
 	contents   map[string]map[string]types.Bug // map[path][symbol]
 }
 
-func NewBugs(playground string, sandbox string) *Bugs {
+func NewBugs(methods []string, playground string, sandbox string) *Bugs {
 
 	tool := &Bugs{
+		Methods:    methods,
 		Playground: playground,
 		Sandbox:    sandbox,
 		contents:   make(map[string]map[string]types.Bug),
@@ -25,62 +29,72 @@ func NewBugs(playground string, sandbox string) *Bugs {
 
 }
 
+func (tool *Bugs) Name() string {
+	return "bugs"
+}
+
 func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "List" {
+	if slices.Contains(tool.Methods, method) == true {
 
-		return tool.List()
+		if method == "List" {
 
-	} else if method == "Add" {
+			return tool.List()
 
-		path,        ok1 := arguments["path"].(string)
-		symbol,      ok2 := arguments["symbol"].(string)
-		description, ok3 := arguments["description"].(string)
+		} else if method == "Add" {
 
-		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Add(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
-		} else if ok1 == true && ok2 == true && ok3 == false {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"description\" is not a string.")
-		} else if ok1 == true && ok2 == false && ok3 == true {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			path,        ok1 := arguments["path"].(string)
+			symbol,      ok2 := arguments["symbol"].(string)
+			description, ok3 := arguments["description"].(string)
+
+			if ok1 == true && ok2 == true && ok3 == true {
+				return tool.Add(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
+			} else if ok1 == true && ok2 == true && ok3 == false {
+				return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+			} else if ok1 == true && ok2 == false && ok3 == true {
+				return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == true {
+				return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameters.")
+			}
+
+		} else if method == "Fix" {
+
+			path,   ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
+
+			if ok1 == true && ok2 == true {
+				return tool.Fix(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
+			} else if ok1 == true && ok2 == false {
+				return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameters.")
+			}
+
+		} else if method == "Search" {
+
+			path,   ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
+
+			if ok1 == true && ok2 == true {
+				return tool.Search(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
+			} else if ok1 == true && ok2 == false {
+				return tool.Search(utils_fmt.FormatFilePath(path), "")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameters.")
+			}
+
 		} else {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameters.")
-		}
-
-	} else if method == "Fix" {
-
-		path,   ok1 := arguments["path"].(string)
-		symbol, ok2 := arguments["symbol"].(string)
-
-		if ok1 == true && ok2 == true {
-			return tool.Fix(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
-		} else if ok1 == false && ok2 == true {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		} else {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameters.")
-		}
-
-	} else if method == "Search" {
-
-		path,   ok1 := arguments["path"].(string)
-		symbol, ok2 := arguments["symbol"].(string)
-
-		if ok1 == true && ok2 == true {
-			return tool.Search(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
-		} else if ok1 == true && ok2 == false {
-			return tool.Search(utils_fmt.FormatFilePath(path), "")
-		} else if ok1 == false && ok2 == true {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		} else {
-			return "", fmt.Errorf("bugs.%s: %s", method, "Invalid parameters.")
+			return "", fmt.Errorf("bugs.%s: Invalid method.", method)
 		}
 
 	} else {
-		return "", fmt.Errorf("bugs.%s: Invalid method.", method)
+		return "", fmt.Errorf("bugs.%s: Method not allowed.", method)
 	}
 
 }
@@ -279,6 +293,26 @@ func (tool *Bugs) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(tool.contents)
+
+}
+
+func (tool *Bugs) Schemas() []schemas.Tool {
+
+	result := make([]schemas.Tool, 0)
+
+	for _, method := range tool.Methods {
+
+		for _, schema := range BugsSchema {
+
+			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), method) {
+				result = append(result, schema)
+			}
+
+		}
+
+	}
+
+	return result
 
 }
 

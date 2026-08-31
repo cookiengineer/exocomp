@@ -636,6 +636,14 @@ func (session *Session) SendChatRequest(request schemas.Message) error {
 
 }
 
+func (session *Session) SetAdapter(identifier string, adapter types.Adapter) {
+
+	if identifier != "" && adapter != nil {
+		session.adapters[identifier] = adapter
+	}
+
+}
+
 func (session *Session) SetTool(identifier string, tool types.Tool, schemas []schemas.Tool) {
 
 	if identifier != "" && len(schemas) > 0 && tool != nil {
@@ -706,6 +714,9 @@ func (session *Session) infer_chat_completions() error {
 	resolved_url   := session.Config.ResolveURL(session.Agent.Model, "/chat/completions")
 	resolved_model := session.Config.ResolveModel(session.Agent.Model)
 	resolved_token := session.Config.ResolveToken(session.Agent.Model)
+
+	// TODO: if len(session.adapters) > 0 ... use adapter.TransformRequest
+	// TODO: if session.adapters then use adapter.TransformResponse
 
 	request_payload, err0 := json.MarshalIndent(schemas.ChatRequest{
 		Model:       resolved_model,

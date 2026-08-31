@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/schemas"
 import utils_bytes "exocomp/utils/bytes"
 import "context"
 import "errors"
@@ -13,77 +14,89 @@ import "strings"
 import "time"
 
 type Programs struct {
+	Methods         []string
 	Sandbox         string
 	AllowedPrograms []string
 }
 
-func NewPrograms(playground string, sandbox string, allowed_programs []string) *Programs {
+func NewPrograms(methods []string, playground string, sandbox string, allowed_programs []string) *Programs {
 
 	return &Programs{
+		Methods:         methods,
 		Sandbox:         sandbox,
 		AllowedPrograms: allowed_programs,
 	}
 
 }
 
+func (tool *Programs) Name() string {
+	return "programs"
+}
+
 func (tool *Programs) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "List" {
+	if slices.Contains(tool.Methods, method) == true {
 
-		return tool.List()
+		if method == "List" {
 
-	} else if method == "Execute" {
+			return tool.List()
 
-		program, ok1 := arguments["program"].(string)
+		} else if method == "Execute" {
 
-		if ok1 == true {
+			program, ok1 := arguments["program"].(string)
 
-			args := make([]string, 0)
+			if ok1 == true {
 
-			raw, ok2 := arguments["arguments"]
+				args := make([]string, 0)
 
-			if ok2 == true {
+				raw, ok2 := arguments["arguments"]
 
-				raw_args, ok3 := raw.([]interface{})
+				if ok2 == true {
 
-				if ok3 == true {
+					raw_args, ok3 := raw.([]interface{})
 
-					args = make([]string, len(raw_args))
+					if ok3 == true {
 
-					for a, value := range raw_args {
+						args = make([]string, len(raw_args))
 
-						tmp, ok := value.(string)
+						for a, value := range raw_args {
 
-						if ok == true {
-							args[a] = tmp
+							tmp, ok := value.(string)
+
+							if ok == true {
+								args[a] = tmp
+							}
+
 						}
 
+					} else {
+						return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"arguments\" is not an array of strings.")
 					}
 
-				} else {
-					return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"arguments\" is not an array of strings.")
 				}
 
+				return tool.Execute(program, args)
+
+			} else {
+				return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"program\" is not a string.")
 			}
 
-			return tool.Execute(program, args)
+		} else if method == "Stat" {
+
+			program, ok1 := arguments["program"].(string)
+
+			if ok1 == true {
+				return tool.Stat(program)
+			} else {
+				return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"program\" is not a string.")
+			}
 
 		} else {
-			return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"program\" is not a string.")
-		}
-
-	} else if method == "Stat" {
-
-		program, ok1 := arguments["program"].(string)
-
-		if ok1 == true {
-			return tool.Stat(program)
-		} else {
-			return "", fmt.Errorf("programs.%s: %s", method, "Invalid parameter \"program\" is not a string.")
+			return "", fmt.Errorf("programs.%s: Invalid method.", method)
 		}
 
 	} else {
-		return "", fmt.Errorf("programs.%s: Invalid method.", method)
+		return "", fmt.Errorf("programs.%s: Method not allowed.", method)
 	}
 
 }
@@ -223,6 +236,26 @@ func (tool *Programs) List() (string, error) {
 	}
 
 	return strings.Join(result, "\n"), nil
+
+}
+
+func (tool *Programs) Schemas() []schemas.Tool {
+
+	result := make([]schemas.Tool, 0)
+
+	for _, method := range tool.Methods {
+
+		for _, schema := range ProgramsSchema {
+
+			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), method) {
+				result = append(result, schema)
+			}
+
+		}
+
+	}
+
+	return result
 
 }
 

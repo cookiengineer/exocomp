@@ -227,6 +227,18 @@ func (config *Config) GetPrompt() string {
 	return strings.TrimSpace(config.Prompt)
 }
 
+func (config *Config) HasProvider(model string) bool {
+
+	_, ok := config.Providers[model]
+
+	if ok == true {
+		return true
+	}
+
+	return false
+
+}
+
 func (config *Config) ResolveToken(model string) string {
 
 	provider, ok := config.Providers[model]

@@ -1,10 +1,12 @@
 package tools
 
+import "exocomp/schemas"
 import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
 import "context"
 import "encoding/json"
 import "fmt"
+import "slices"
 import "sync"
 import "time"
 
@@ -33,15 +35,17 @@ func watch_question(tool *Humans, id string, state *question_state) {
 }
 
 type Humans struct {
+	Methods  []string
 	Timeout  time.Duration
 	contents map[string]*types.Question
 	states   map[string]*question_state
 	mutex    *sync.Mutex
 }
 
-func NewHumans() *Humans {
+func NewHumans(methods []string, playground string, sandbox string) *Humans {
 
 	humans := &Humans{
+		Methods:  methods,
 		Timeout:  15 * time.Minute,
 		contents: make(map[string]*types.Question),
 		states:   make(map[string]*question_state),
@@ -52,60 +56,70 @@ func NewHumans() *Humans {
 
 }
 
+func (tool *Humans) Name() string {
+	return "humans"
+}
+
 func (tool *Humans) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "Ask" {
+	if slices.Contains(tool.Methods, method) == true {
 
-		question, ok1 := arguments["question"].(string)
+		if method == "Ask" {
 
-		if ok1 == true {
-			return tool.Ask(utils_fmt.FormatMultiLine(question))
-		} else {
-			return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"question\" is not a string.")
-		}
+			question, ok1 := arguments["question"].(string)
 
-	} else if method == "Choose" {
-
-		question, ok1 := arguments["question"].(string)
-		raw,      ok2 := arguments["options"]
-		multiple, _   := arguments["multiple"].(bool)
-
-		if ok1 == true && ok2 == true {
-
-			options := make([]string, 0)
-
-			raw_options, ok4 := raw.([]interface{})
-
-			if ok4 == true {
-
-				for o, value := range raw_options {
-
-					option, ok := value.(string)
-
-					if ok == true {
-						options = append(options, option)
-					} else {
-						return "", fmt.Errorf("humans.%s: %s", method, fmt.Sprintf("Invalid parameter \"options[%d]\" is not a string.", o))
-					}
-
-				}
-
+			if ok1 == true {
+				return tool.Ask(utils_fmt.FormatMultiLine(question))
 			} else {
-				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"options\" is not an array of strings.")
+				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"question\" is not a string.")
 			}
 
-			return tool.Choice(utils_fmt.FormatMultiLine(question), options, multiple)
+		} else if method == "Choose" {
 
-		} else if ok1 == true && ok2 == false {
-			return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"options\" is not an array of strings.")
-		} else if ok1 == false && ok2 == true {
-			return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"question\" is not a string.")
+			question, ok1 := arguments["question"].(string)
+			raw,      ok2 := arguments["options"]
+			multiple, _   := arguments["multiple"].(bool)
+
+			if ok1 == true && ok2 == true {
+
+				options := make([]string, 0)
+
+				raw_options, ok4 := raw.([]interface{})
+
+				if ok4 == true {
+
+					for o, value := range raw_options {
+
+						option, ok := value.(string)
+
+						if ok == true {
+							options = append(options, option)
+						} else {
+							return "", fmt.Errorf("humans.%s: %s", method, fmt.Sprintf("Invalid parameter \"options[%d]\" is not a string.", o))
+						}
+
+					}
+
+				} else {
+					return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"options\" is not an array of strings.")
+				}
+
+				return tool.Choice(utils_fmt.FormatMultiLine(question), options, multiple)
+
+			} else if ok1 == true && ok2 == false {
+				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"options\" is not an array of strings.")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"question\" is not a string.")
+			} else {
+				return "", fmt.Errorf("humans.%s: Invalid parameters.", method)
+			}
+
 		} else {
-			return "", fmt.Errorf("humans.%s: Invalid parameters.", method)
+			return "", fmt.Errorf("humans.%s: Invalid method.", method)
 		}
 
 	} else {
-		return "", fmt.Errorf("humans.%s: Invalid method.", method)
+		return "", fmt.Errorf("humans.%s: Method not allowed.", method)
 	}
 
 }
@@ -221,6 +235,28 @@ func (tool *Humans) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tool.contents)
 
 }
+
+func (tool *Humans) Schemas() []schemas.Tool {
+
+	result := make([]schemas.Tool, 0)
+
+	for _, method := range tool.Methods {
+
+		for _, schema := range HumansSchema {
+
+			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), method) {
+				result = append(result, schema)
+			}
+
+		}
+
+	}
+
+	return result
+
+}
+
+
 
 // NOTE: Await blocks until the human answered the question. This mirrors
 // agents.Await deliberately: the planner model would otherwise poll in a hot

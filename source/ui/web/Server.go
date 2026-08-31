@@ -1,8 +1,9 @@
 package web
 
+import "exocomp/adapters"
+import "exocomp/engine"
 import routes_parameters "exocomp/ui/web/routes/parameters"
 import routes_session "exocomp/ui/web/routes/session"
-import "exocomp/engine"
 import "exocomp/tools"
 import "exocomp/types"
 import utils_http "exocomp/utils/http"
@@ -49,9 +50,9 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 
 	url, _ := net_url.Parse("http://localhost:3000/")
 
-	if len(agent.AllowedTools) > 0 {
+	if agent.HasTools() {
 
-		tool_schemas, tools := tools.Toolset(
+		toolset := tools.Toolset(
 			config.Playground,
 			config.Sandbox,
 			config.Model,
@@ -61,8 +62,29 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 			agent.AllowedTools,
 		)
 
-		for name, tool := range tools {
-			session.SetTool(name, tool, tool_schemas[name])
+		if len(toolset) > 0 {
+
+			for _, tool := range toolset {
+				session.SetTool(tool)
+			}
+
+		}
+
+	}
+
+	if config.HasProvider(agent.Model) {
+
+		adapterset := adapters.Adapterset(
+			config.ResolveURL(agent.Model, ""),
+			config.ResolveModel(agent.Model),
+		)
+
+		if len(adapterset) > 0 {
+
+			for _, adapter := range adapterset {
+				session.SetAdapter(adapter)
+			}
+
 		}
 
 	}

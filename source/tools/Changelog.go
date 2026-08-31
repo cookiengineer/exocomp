@@ -1,22 +1,26 @@
 package tools
 
-import utils_fmt "exocomp/utils/fmt"
+import "exocomp/schemas"
 import "exocomp/types"
+import utils_fmt "exocomp/utils/fmt"
 import "encoding/json"
 import "fmt"
+import "slices"
 import "sort"
 import "strings"
 import "time"
 
 type Changelog struct {
-	Sandbox    string
+	Methods    []string
 	Playground string
+	Sandbox    string
 	contents   map[string]map[string][]types.ChangelogEntry // map[path][symbol]
 }
 
-func NewChangelog(playground string, sandbox string) *Changelog {
+func NewChangelog(methods []string, playground string, sandbox string) *Changelog {
 
 	tool := &Changelog{
+		Methods:    methods,
 		Playground: playground,
 		Sandbox:    sandbox,
 		contents:   make(map[string]map[string][]types.ChangelogEntry, 0),
@@ -26,119 +30,129 @@ func NewChangelog(playground string, sandbox string) *Changelog {
 
 }
 
+func (tool *Changelog) Name() string {
+	return "changelog"
+}
+
 func (tool *Changelog) Call(method string, arguments map[string]interface{}) (string, error) {
 
-	if method == "Add" {
+	if slices.Contains(tool.Methods, method) == true {
 
-		path,        ok1 := arguments["path"].(string)
-		symbol,      ok2 := arguments["symbol"].(string)
-		description, ok3 := arguments["description"].(string)
+		if method == "Add" {
 
-		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Add(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
-		} else if ok1 == true && ok2 == true && ok3 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
-		} else if ok1 == true && ok2 == false && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			path,        ok1 := arguments["path"].(string)
+			symbol,      ok2 := arguments["symbol"].(string)
+			description, ok3 := arguments["description"].(string)
+
+			if ok1 == true && ok2 == true && ok3 == true {
+				return tool.Add(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
+			} else if ok1 == true && ok2 == true && ok3 == false {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+			} else if ok1 == true && ok2 == false && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
+			}
+
+		} else if method == "Change" {
+
+			path,        ok1 := arguments["path"].(string)
+			symbol,      ok2 := arguments["symbol"].(string)
+			description, ok3 := arguments["description"].(string)
+
+			if ok1 == true && ok2 == true && ok3 == true {
+				return tool.Change(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
+			} else if ok1 == true && ok2 == true && ok3 == false {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+			} else if ok1 == true && ok2 == false && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
+			}
+
+		} else if method == "Deprecate" {
+
+			path,        ok1 := arguments["path"].(string)
+			symbol,      ok2 := arguments["symbol"].(string)
+			description, ok3 := arguments["description"].(string)
+
+			if ok1 == true && ok2 == true && ok3 == true {
+				return tool.Deprecate(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
+			} else if ok1 == true && ok2 == true && ok3 == false {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+			} else if ok1 == true && ok2 == false && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
+			}
+
+		} else if method == "Fix" {
+
+			path,        ok1 := arguments["path"].(string)
+			symbol,      ok2 := arguments["symbol"].(string)
+			description, ok3 := arguments["description"].(string)
+
+			if ok1 == true && ok2 == true && ok3 == true {
+				return tool.Fix(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
+			} else if ok1 == true && ok2 == true && ok3 == false {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+			} else if ok1 == true && ok2 == false && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
+			}
+
+		} else if method == "List" {
+
+			return tool.List()
+
+		} else if method == "Remove" {
+
+			path,        ok1 := arguments["path"].(string)
+			symbol,      ok2 := arguments["symbol"].(string)
+			description, ok3 := arguments["description"].(string)
+
+			if ok1 == true && ok2 == true && ok3 == true {
+				return tool.Remove(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
+			} else if ok1 == true && ok2 == true && ok3 == false {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
+			} else if ok1 == true && ok2 == false && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
+			}
+
+		} else if method == "Search" {
+
+			path,   ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
+
+			if ok1 == true && ok2 == true {
+				return tool.Search(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
+			} else if ok1 == true && ok2 == false {
+				return tool.Search(utils_fmt.FormatFilePath(path), "")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
+			}
+
 		} else {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
-		}
-
-	} else if method == "Change" {
-
-		path,        ok1 := arguments["path"].(string)
-		symbol,      ok2 := arguments["symbol"].(string)
-		description, ok3 := arguments["description"].(string)
-
-		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Change(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
-		} else if ok1 == true && ok2 == true && ok3 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
-		} else if ok1 == true && ok2 == false && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		} else {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
-		}
-
-	} else if method == "Deprecate" {
-
-		path,        ok1 := arguments["path"].(string)
-		symbol,      ok2 := arguments["symbol"].(string)
-		description, ok3 := arguments["description"].(string)
-
-		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Deprecate(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
-		} else if ok1 == true && ok2 == true && ok3 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
-		} else if ok1 == true && ok2 == false && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		} else {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
-		}
-
-	} else if method == "Fix" {
-
-		path,        ok1 := arguments["path"].(string)
-		symbol,      ok2 := arguments["symbol"].(string)
-		description, ok3 := arguments["description"].(string)
-
-		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Fix(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
-		} else if ok1 == true && ok2 == true && ok3 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
-		} else if ok1 == true && ok2 == false && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		} else {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
-		}
-
-	} else if method == "List" {
-
-		return tool.List()
-
-	} else if method == "Remove" {
-
-		path,        ok1 := arguments["path"].(string)
-		symbol,      ok2 := arguments["symbol"].(string)
-		description, ok3 := arguments["description"].(string)
-
-		if ok1 == true && ok2 == true && ok3 == true {
-			return tool.Remove(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(description))
-		} else if ok1 == true && ok2 == true && ok3 == false {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"description\" is not a string.")
-		} else if ok1 == true && ok2 == false && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
-		} else if ok1 == false && ok2 == true && ok3 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		} else {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
-		}
-
-	} else if method == "Search" {
-
-		path,   ok1 := arguments["path"].(string)
-		symbol, ok2 := arguments["symbol"].(string)
-
-		if ok1 == true && ok2 == true {
-			return tool.Search(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
-		} else if ok1 == true && ok2 == false {
-			return tool.Search(utils_fmt.FormatFilePath(path), "")
-		} else if ok1 == false && ok2 == true {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameter \"path\" is not a string.")
-		} else {
-			return "", fmt.Errorf("changelog.%s: %s", method, "Invalid parameters.")
+			return "", fmt.Errorf("changelog.%s: Invalid method.", method)
 		}
 
 	} else {
-		return "", fmt.Errorf("changelog.%s: Invalid method.", method)
+		return "", fmt.Errorf("changelog.%s: Method not allowed.", method)
 	}
 
 }
@@ -248,8 +262,40 @@ func (tool *Changelog) List() (string, error) {
 
 }
 
+func (tool *Changelog) MarshalJSON() ([]byte, error) {
+
+	err := readChangelog(tool)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(tool.contents)
+
+}
+
 func (tool *Changelog) Remove(path string, symbol string, description string) (string, error) {
 	return tool.createEntry("Remove", path, symbol, description)
+}
+
+func (tool *Changelog) Schemas() []schemas.Tool {
+
+	result := make([]schemas.Tool, 0)
+
+	for _, method := range tool.Methods {
+
+		for _, schema := range ChangelogSchema {
+
+			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), method) {
+				result = append(result, schema)
+			}
+
+		}
+
+	}
+
+	return result
+
 }
 
 func (tool *Changelog) Search(path string, symbol string) (string, error) {
@@ -457,18 +503,6 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 	} else {
 		return "", fmt.Errorf("changelog.%s: %s", method, err1.Error())
 	}
-
-}
-
-func (tool *Changelog) MarshalJSON() ([]byte, error) {
-
-	err := readChangelog(tool)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return json.Marshal(tool.contents)
 
 }
 
