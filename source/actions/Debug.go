@@ -21,19 +21,31 @@ func Debug(agent *types.Agent, config *types.Config) {
 		fmt.Fprintf(os.Stderr, "| Prompt:      %d bytes\n", len(types.GlobalConfig.Prompt))
 		fmt.Fprintf(os.Stderr, "| Temperature: %.2f\n", types.GlobalConfig.Temperature)
 		fmt.Fprintf(os.Stderr, "| Sandbox:     %s\n", types.GlobalConfig.Sandbox)
-		fmt.Fprintf(os.Stderr, "| URL:         %s\n", types.GlobalConfig.URL.String())
+
+		if types.GlobalConfig.URL != nil {
+			fmt.Fprintf(os.Stderr, "| URL:         %s\n", types.GlobalConfig.URL.String())
+		} else {
+			fmt.Fprintf(os.Stderr, "| URL:         %s\n", "")
+		}
+
 		fmt.Fprintf(os.Stderr, "| Debug:       %t\n", types.GlobalConfig.Debug)
 		fmt.Fprintf(os.Stderr, "| Providers:\n")
 
 		for model, provider := range types.GlobalConfig.Providers {
 
-			if provider.Alias != "" {
-				fmt.Fprintf(os.Stderr, "|> \"%s\" as \"%s\": \"%s\", \"%s\"\n", model, provider.Alias, provider.URL.String(), provider.Token)
-			} else {
-				fmt.Fprintf(os.Stderr, "|> \"%s\": \"%s\", \"%s\"\n", model, provider.URL.String(), provider.Token)
+			if provider.URL != nil {
+
+				if provider.Alias != "" {
+					fmt.Fprintf(os.Stderr, "|> \"%s\" via \"%s\" as \"%s\"\n", model, provider.URL.String(), provider.Alias)
+				} else {
+					fmt.Fprintf(os.Stderr, "|> \"%s\" via \"%s\"\n", model, provider.URL.String())
+				}
+
 			}
 
 		}
+
+		fmt.Fprintf(os.Stderr, "\n")
 
 	}
 

@@ -16,6 +16,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 
 	}
 
+	if target.Type() == net_url_type || target.Type() == net_url_pointer_type {
+		return decodeURL(node, target)
+	}
+
 	switch target.Kind() {
 
 	case reflect.Bool:

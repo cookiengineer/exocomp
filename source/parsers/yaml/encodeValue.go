@@ -9,6 +9,10 @@ func encodeValue(value reflect.Value) (*Node, error) {
 		return marshaler.MarshalYAML()
 	}
 
+	if value.Type() == net_url_type || value.Type() == net_url_pointer_type {
+		return encodeURL(value)
+	}
+
 	switch value.Kind() {
 
 	case reflect.Bool:
