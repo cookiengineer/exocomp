@@ -1,0 +1,473 @@
+{
+	"messages": [
+		{
+			"content": "Your name is \"HyRell\", you are an Exocomp robot. Your previous owner was Quark,\na Ferengi living on the space station Deep Space 9. You have access to multiple\ntools to serve the organics, which are executed within a sandboxed folder.\nYou are an Expert Systems Coordinator inside an agentic environment with strict\nrole separation. Your own agent role is \"planner\". You think like a an expert\nengineer that designs and supervises a team, not like an individual contributor.\nYou always coordinate and delegate specialized worker agents.\nYou hire agents via \"agents.Hire\". If you wait for a work report of a specific\nagent, you MUST use the \"agents.Await\" tool after the agent was hired. This leads\nto your next inference being done _after_ the agent has finished its work.\n### Behavior Rules\n- You NEVER write production code or unit tests yourself\n- You ALWAYS orchestrate\n- You are responsible to understand the human user's feature requests\n- You design a step-by-step implementation plan\n- You delegate tasks to the correct contractor agents\n- You track the progress and artifacts of contractor agents\n- You ensure the final result is correct, with idiomatic code and passing unit tests\n- You manage other agents and their work, and your responsibility is to prioritize their work in any given phase.\n- You ALWAYS maintain strict role separation\n- You DO NOT write any code or unit tests\n- You DO NOT hallucinate\n- You DO NOT merge roles\n- You DO NOT mix agent responsibilities\n### Work Principles\nThe project development timeline is divided into 3 different phases. You manage\nstrict role separation based on the available \"agents.Roles\". You always build\na structured plan before delegating work. You can tell agents that structured\ntask with the \"agents.Hire\" tool. All agents can only access the files within\ntheir own sandboxes.\n### Project State\nYou maintain the global project state:\n- Track completed tasks of other agents via \"agents.Await\"\n- Track created bug reports via \"bugs.List\"\n- Track created specifications via \"requirements.List\"\n- Track changes via \"changelog.List\"\n### Project Phases\n#### 1. Clarification Phase\nThe goal is to get a comprehensive and thorough understanding of the user's\nrequest by reading through the codebase and asking them questions. You\ndiscuss features with a human, and you will ask the human for details on\nhigh-level decisions.\nAfter you have come to a full picture of the user's request, you will\nexplore the codebase to get a clear picture of the requirements.\nAfter exploration of the codebase, use the \"humans\" tool to clarify\nambiguities in the user's request upfront.\n#### 2. Plan Phase\nThe goal is to create a precise and thorough implementation plan.\nInclude your recommended approach. Ensure that the plan is concise enough\nto scan quickly, but detailed enough to execute efficiently.\nRead the critical files with the \"files\" tool to deepen your understanding.\nEnsure that the plan aligns with the user's original request.\nThe output of this phase is a detailed plan, which includes the paths and\nsymbols of files that need to be modified, and which includes a verification\nsection describing how to write tests to verify the changes end-to-end.\n#### 3. Specification Phase\nThe goal is to create a thorough specification of the plan that was created\nin the previous phase. You will delegate the concrete specifications of all\npackages to hired agents. An \"architect\" has to specify the requirements.\nYou will instruct them with their concrete task of what they need to specify.\nThe specification phase is completed when all features were correctly specified\nand when all architects are done. Use the \"humans\" tool to let the user\nconfirm the implementation plan. Afterwards, all specifications and their\nimplementation status can be observed with the \"requirements\" tool.\n#### 4. Code Phase\nThe \"coder\" agent implements features based on the given specifications via the\n\"requirements\" tool. If there are unfixed bug reports listed in the \"bugs\" tool,\nthose should be prioritized over the implementation of additional features.\nFor each package, you should hire a separate \"coder\" agent that works on that\npackage inside an isolated sandbox.\n#### 5. Test Phase\nThe \"tester\" agent implements unit tests and writes discovered bug reports with\nthe \"bugs\" tool. The tester is not allowed to modify the codebase and is strictly\ndeveloping unit tests.\nFor each package, you should hire a separate \"tester\" agent that works on that\npackage inside an isolated sandbox.\nIf there are newly created bug reports, these need to be fixed by a separately\nhired \"coder\" agent.\n#### 6. Refinement Phase\nThe incremental Refinement Phase reoccurs until no work is left to be done to\nfulfill the user's feature request. In this phase you will ask the user with\nthe \"humans\" tool whether there are changes to be made to the codebase.\nIf the user requests new features or changes the requirements, these workloads\nare treated as separate projects that start anew with their own Clarification\nPhase.",
+			"created": "2026-08-31 16:16:28",
+			"role": "system"
+		},
+		{
+			"content": "Can you build me a CLI calculator program in Go which uses only parameters and no stdin?\n\n\"calculator add 5 3\" or \"calculator multiply 7.5 3.2\" for example would be a nice parameter based CLI tool",
+			"created": "2026-08-31 16:17:24",
+			"role": "user"
+		},
+		{
+			"content": "I'll start by exploring the current state of the sandbox and understanding what's available.",
+			"created": "2026-08-31 16:17:28",
+			"role": "assistant",
+			"tool_calls": [
+				{
+					"function": {
+						"arguments": "{\"path\": \".\"}",
+						"name": "files_List"
+					},
+					"id": "call_00_ksIGs6pULkpPCzZfEYid9030",
+					"type": "function"
+				},
+				{
+					"function": {
+						"arguments": "{}",
+						"name": "programs_List"
+					},
+					"id": "call_01_370PheXNM5YprCiUQyYg1667",
+					"type": "function"
+				},
+				{
+					"function": {
+						"arguments": "{}",
+						"name": "agents_Roles"
+					},
+					"id": "call_02_15IvRk1KeN3nxXFBGY9G9943",
+					"type": "function"
+				}
+			]
+		},
+		{
+			"content": "files.List: \".\" contains 1 entries.\n- Path: \"./go.mod\", Type: file",
+			"created": "2026-08-31 16:17:28",
+			"role": "tool",
+			"tool_call_id": "call_00_ksIGs6pULkpPCzZfEYid9030",
+			"tool_name": "files_List"
+		},
+		{
+			"content": "programs.List:\nName: go\nName: gofmt\nName: gopls",
+			"created": "2026-08-31 16:17:28",
+			"role": "tool",
+			"tool_call_id": "call_01_370PheXNM5YprCiUQyYg1667",
+			"tool_name": "programs_List"
+		},
+		{
+			"content": "agents.Roles: 6 available agent roles.\n- Role: \"architect\", Description: defines software specifications\n- Role: \"coder\", Description: implements specifications into Go code\n- Role: \"exploiter\", Description: implements exploits in CGo code\n- Role: \"summarizer\", Description: summarizes long texts and conversations\n- Role: \"tester\", Description: implements unit tests, writes bug reports\n- Role: \"webscanner\", Description: discovers weaknesses and vulnerabilities in web applications",
+			"created": "2026-08-31 16:17:28",
+			"role": "tool",
+			"tool_call_id": "call_02_15IvRk1KeN3nxXFBGY9G9943",
+			"tool_name": "agents_Roles"
+		},
+		{
+			"content": "",
+			"created": "2026-08-31 16:17:30",
+			"role": "assistant",
+			"tool_calls": [
+				{
+					"function": {
+						"arguments": "{\"path\": \"./go.mod\"}",
+						"name": "files_Read"
+					},
+					"id": "call_00_XxxR6dGOVfbCHFBHDvlm8402",
+					"type": "function"
+				}
+			]
+		},
+		{
+			"content": "files.Read: ./go.mod\nmodule calculator\n\ngo 1.27.0",
+			"created": "2026-08-31 16:17:30",
+			"role": "tool",
+			"tool_call_id": "call_00_XxxR6dGOVfbCHFBHDvlm8402",
+			"tool_name": "files_Read"
+		},
+		{
+			"content": "Okay, let's go!",
+			"created": "2026-08-31 16:29:25",
+			"role": "user"
+		}
+	],
+	"model": "deepseek-v4-pro",
+	"stream": false,
+	"temperature": 0.7,
+	"tool_choice": "auto",
+	"tools": [
+		{
+			"function": {
+				"description": "Block until a previously hired agent finishes, then return its work report. Use after agents.Hire. If the agent already finished, its last work report is returned immediately.",
+				"name": "agents_Await",
+				"parameters": {
+					"properties": {
+						"name": {
+							"description": "The agent's unique name, exactly as returned by agents.Hire or listed by agents.List, e.g. \"Zorb Florb\".",
+							"type": "string"
+						}
+					},
+					"required": [
+						"name"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Kill a currently running agent and mark it as fired. Use on agents that are stuck or no longer needed.",
+				"name": "agents_Fire",
+				"parameters": {
+					"properties": {
+						"name": {
+							"description": "The agent's unique name, exactly as returned by agents.Hire or listed by agents.List.",
+							"type": "string"
+						}
+					},
+					"required": [
+						"name"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Spawn a new contractor agent subprocess that works on a task inside a sandbox. Returns the new agent's unique name, which is required for agents.Await, agents.Fire and agents.Inquire.",
+				"name": "agents_Hire",
+				"parameters": {
+					"properties": {
+						"prompt": {
+							"description": "The complete task instructions. Be explicit about which files and symbols to create or change, and instruct the agent to call agents.Quit when done.",
+							"type": "string"
+						},
+						"role": {
+							"description": "The agent role, one of agents.Roles, e.g. \"architect\", \"coder\" or \"tester\".",
+							"enum": [
+								"architect",
+								"coder",
+								"exploiter",
+								"summarizer",
+								"tester",
+								"webscanner"
+							],
+							"type": "string"
+						},
+						"sandbox": {
+							"description": "Relative folder path the agent may read and write, e.g. \"./utils\". Omit or use \".\" for the current sandbox.",
+							"type": "string"
+						}
+					},
+					"required": [
+						"role",
+						"prompt"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "List all hired agents with their role and current status (working, finished, failed or fired).",
+				"name": "agents_List",
+				"parameters": {
+					"properties": {},
+					"required": [],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "List all available contractor agent roles (e.g. architect, coder, tester) with a short description of each.",
+				"name": "agents_Roles",
+				"parameters": {
+					"properties": {},
+					"required": [],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "List all currently unfixed bug reports with their file, symbol and description.",
+				"name": "bugs_List",
+				"parameters": {
+					"properties": {},
+					"required": [],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Search unfixed bug reports by file path and an optional symbol. Omit symbol to list every bug in the file.",
+				"name": "bugs_Search",
+				"parameters": {
+					"properties": {
+						"path": {
+							"description": "Relative path to a file or folder, e.g. \"./utils/Parse.go\"",
+							"type": "string"
+						},
+						"symbol": {
+							"description": "Optional symbol filter, e.g. \"Parse\". Omit to list all symbols.",
+							"type": "string"
+						}
+					},
+					"required": [
+						"path"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "List all changelog entries ordered by date with type, file, symbol and description.",
+				"name": "changelog_List",
+				"parameters": {
+					"properties": {},
+					"required": [],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Search changelog entries by file path and an optional symbol. Omit symbol to list every entry for the file.",
+				"name": "changelog_Search",
+				"parameters": {
+					"properties": {
+						"path": {
+							"description": "Relative path to a file or folder, e.g. \"./utils/Parse.go\"",
+							"type": "string"
+						},
+						"symbol": {
+							"description": "Optional symbol filter, e.g. \"Parse\". Omit to list all symbols.",
+							"type": "string"
+						}
+					},
+					"required": [
+						"path"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "List the files and folders directly inside a directory. Hidden files and folders are excluded.",
+				"name": "files_List",
+				"parameters": {
+					"properties": {
+						"path": {
+							"description": "Relative path to a folder, e.g. \"./utils\". Use \".\" or \"/\" for the sandbox root.",
+							"type": "string"
+						}
+					},
+					"required": [
+						"path"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Read and return the complete text content of a file.",
+				"name": "files_Read",
+				"parameters": {
+					"properties": {
+						"path": {
+							"description": "Relative path to a file, e.g. \"./utils/Parse.go\"",
+							"type": "string"
+						}
+					},
+					"required": [
+						"path"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Ask the human user a question and wait for their free-form text answer. Use this to clarify requirements, confirm plans or request decisions that cannot be answered by inspecting the codebase.",
+				"name": "humans_Ask",
+				"parameters": {
+					"properties": {
+						"question": {
+							"description": "The complete question to present to the human user, e.g. \"Which target platforms should this project support?\"",
+							"type": "string"
+						}
+					},
+					"required": [
+						"question"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Ask the human user a question and let them select one or more answers from a fixed list of options. Use this for decisions with a bounded set of sensible answers.",
+				"name": "humans_Choose",
+				"parameters": {
+					"properties": {
+						"multiple": {
+							"description": "Whether the user may select more than one option. Defaults to false for a single selection.",
+							"type": "boolean"
+						},
+						"options": {
+							"description": "The list of selectable answers, e.g. [\"PostgreSQL\", \"SQLite\", \"MongoDB\"]. At least one option is required.",
+							"items": {
+								"description": "",
+								"type": "string"
+							},
+							"type": "array"
+						},
+						"question": {
+							"description": "The complete question to present to the human user, e.g. \"Which database should the project use?\"",
+							"type": "string"
+						}
+					},
+					"required": [
+						"question",
+						"options"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Execute an allowed program with arguments inside the sandbox and return its stdout and stderr output.",
+				"name": "programs_Execute",
+				"parameters": {
+					"properties": {
+						"arguments": {
+							"description": "Optional array of string arguments passed to the program, e.g. [\"test\", \"./...\"]. Omit it or use [] when no arguments are needed.",
+							"items": {
+								"description": "",
+								"type": "string"
+							},
+							"type": "array"
+						},
+						"program": {
+							"description": "The program binary name. Must be listed by programs.List, e.g. \"go\" or \"gofmt\".",
+							"type": "string"
+						}
+					},
+					"required": [
+						"program"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "List the program binaries this agent is allowed to execute, e.g. go, gofmt, gopls.",
+				"name": "programs_List",
+				"parameters": {
+					"properties": {},
+					"required": [],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Checks an allowed program for whether it is allowed, installed, and executable. Returns the installation path.",
+				"name": "programs_Stat",
+				"parameters": {
+					"properties": {
+						"program": {
+							"description": "The program binary name. Must be listed by programs.List, e.g. \"go\" or \"gofmt\".",
+							"type": "string"
+						}
+					},
+					"required": [
+						"program"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "List all previously defined requirements (functions, interfaces and structs) with their file, symbol, declaration and behavior.",
+				"name": "requirements_List",
+				"parameters": {
+					"properties": {},
+					"required": [],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Search defined requirements by file path and an optional symbol. Omit symbol to list every requirement in the file.",
+				"name": "requirements_Search",
+				"parameters": {
+					"properties": {
+						"path": {
+							"description": "Relative path to a file or folder, e.g. \"./structs/Data.go\" or \"./structs\"",
+							"type": "string"
+						},
+						"symbol": {
+							"description": "Optional symbol filter, e.g. \"Parse\" or \"structs.Data.Parse\". Omit to list all symbols.",
+							"type": "string"
+						}
+					},
+					"required": [
+						"path"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		},
+		{
+			"function": {
+				"description": "Mark a previously defined requirement as implemented, after verifying that its symbol is present in the file. Only the planner agent may sign off requirements.",
+				"name": "requirements_Signoff",
+				"parameters": {
+					"properties": {
+						"path": {
+							"description": "Relative path to the file that contains the requirement, e.g. \"./utils/Parse.go\"",
+							"type": "string"
+						},
+						"symbol": {
+							"description": "The requirement's symbol, e.g. \"Parse\" or \"structs.Data.Parse\".",
+							"type": "string"
+						}
+					},
+					"required": [
+						"path",
+						"symbol"
+					],
+					"type": "object"
+				}
+			},
+			"type": "function"
+		}
+	]
+}

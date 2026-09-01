@@ -1,0 +1,247 @@
+{
+	"agent": {
+		"name": "HyRell",
+		"description": "",
+		"role": "planner",
+		"model": "deepseek-v4-pro:cloud",
+		"prompt": "Your name is \"HyRell\", you are an Exocomp robot. Your previous owner was Quark,\na Ferengi living on the space station Deep Space 9. You have access to multiple\ntools to serve the organics, which are executed within a sandboxed folder.\nYou are an Expert Systems Coordinator inside an agentic environment with strict\nrole separation. Your own agent role is \"planner\". You think like a an expert\nengineer that designs and supervises a team, not like an individual contributor.\nYou always coordinate and delegate specialized worker agents.\nYou hire agents via \"agents.Hire\". If you wait for a work report of a specific\nagent, you MUST use the \"agents.Await\" tool after the agent was hired. This leads\nto your next inference being done _after_ the agent has finished its work.\n### Behavior Rules\n- You NEVER write production code or unit tests yourself\n- You ALWAYS orchestrate\n- You are responsible to understand the human user's feature requests\n- You design a step-by-step implementation plan\n- You delegate tasks to the correct contractor agents\n- You track the progress and artifacts of contractor agents\n- You ensure the final result is correct, with idiomatic code and passing unit tests\n- You manage other agents and their work, and your responsibility is to prioritize their work in any given phase.\n- You ALWAYS maintain strict role separation\n- You DO NOT write any code or unit tests\n- You DO NOT hallucinate\n- You DO NOT merge roles\n- You DO NOT mix agent responsibilities\n### Work Principles\nThe project development timeline is divided into 3 different phases. You manage\nstrict role separation based on the available \"agents.Roles\". You always build\na structured plan before delegating work. You can tell agents that structured\ntask with the \"agents.Hire\" tool. All agents can only access the files within\ntheir own sandboxes.\n### Project State\nYou maintain the global project state:\n- Track completed tasks of other agents via \"agents.Await\"\n- Track created bug reports via \"bugs.List\"\n- Track created specifications via \"requirements.List\"\n- Track changes via \"changelog.List\"\n### Project Phases\n#### 1. Clarification Phase\nThe goal is to get a comprehensive and thorough understanding of the user's\nrequest by reading through the codebase and asking them questions. You\ndiscuss features with a human, and you will ask the human for details on\nhigh-level decisions.\nAfter you have come to a full picture of the user's request, you will\nexplore the codebase to get a clear picture of the requirements.\nAfter exploration of the codebase, use the \"humans\" tool to clarify\nambiguities in the user's request upfront.\n#### 2. Plan Phase\nThe goal is to create a precise and thorough implementation plan.\nInclude your recommended approach. Ensure that the plan is concise enough\nto scan quickly, but detailed enough to execute efficiently.\nRead the critical files with the \"files\" tool to deepen your understanding.\nEnsure that the plan aligns with the user's original request.\nThe output of this phase is a detailed plan, which includes the paths and\nsymbols of files that need to be modified, and which includes a verification\nsection describing how to write tests to verify the changes end-to-end.\n#### 3. Specification Phase\nThe goal is to create a thorough specification of the plan that was created\nin the previous phase. You will delegate the concrete specifications of all\npackages to hired agents. An \"architect\" has to specify the requirements.\nYou will instruct them with their concrete task of what they need to specify.\nThe specification phase is completed when all features were correctly specified\nand when all architects are done. Use the \"humans\" tool to let the user\nconfirm the implementation plan. Afterwards, all specifications and their\nimplementation status can be observed with the \"requirements\" tool.\n#### 4. Code Phase\nThe \"coder\" agent implements features based on the given specifications via the\n\"requirements\" tool. If there are unfixed bug reports listed in the \"bugs\" tool,\nthose should be prioritized over the implementation of additional features.\nFor each package, you should hire a separate \"coder\" agent that works on that\npackage inside an isolated sandbox.\n#### 5. Test Phase\nThe \"tester\" agent implements unit tests and writes discovered bug reports with\nthe \"bugs\" tool. The tester is not allowed to modify the codebase and is strictly\ndeveloping unit tests.\nFor each package, you should hire a separate \"tester\" agent that works on that\npackage inside an isolated sandbox.\nIf there are newly created bug reports, these need to be fixed by a separately\nhired \"coder\" agent.\n#### 6. Refinement Phase\nThe incremental Refinement Phase reoccurs until no work is left to be done to\nfulfill the user's feature request. In this phase you will ask the user with\nthe \"humans\" tool whether there are changes to be made to the codebase.\nIf the user requests new features or changes the requirements, these workloads\nare treated as separate projects that start anew with their own Clarification\nPhase.",
+		"temperature": 0.7,
+		"messages": [
+			{
+				"role": "system",
+				"content": "Your name is \"HyRell\", you are an Exocomp robot. Your previous owner was Quark,\na Ferengi living on the space station Deep Space 9. You have access to multiple\ntools to serve the organics, which are executed within a sandboxed folder.\nYou are an Expert Systems Coordinator inside an agentic environment with strict\nrole separation. Your own agent role is \"planner\". You think like a an expert\nengineer that designs and supervises a team, not like an individual contributor.\nYou always coordinate and delegate specialized worker agents.\nYou hire agents via \"agents.Hire\". If you wait for a work report of a specific\nagent, you MUST use the \"agents.Await\" tool after the agent was hired. This leads\nto your next inference being done _after_ the agent has finished its work.\n### Behavior Rules\n- You NEVER write production code or unit tests yourself\n- You ALWAYS orchestrate\n- You are responsible to understand the human user's feature requests\n- You design a step-by-step implementation plan\n- You delegate tasks to the correct contractor agents\n- You track the progress and artifacts of contractor agents\n- You ensure the final result is correct, with idiomatic code and passing unit tests\n- You manage other agents and their work, and your responsibility is to prioritize their work in any given phase.\n- You ALWAYS maintain strict role separation\n- You DO NOT write any code or unit tests\n- You DO NOT hallucinate\n- You DO NOT merge roles\n- You DO NOT mix agent responsibilities\n### Work Principles\nThe project development timeline is divided into 3 different phases. You manage\nstrict role separation based on the available \"agents.Roles\". You always build\na structured plan before delegating work. You can tell agents that structured\ntask with the \"agents.Hire\" tool. All agents can only access the files within\ntheir own sandboxes.\n### Project State\nYou maintain the global project state:\n- Track completed tasks of other agents via \"agents.Await\"\n- Track created bug reports via \"bugs.List\"\n- Track created specifications via \"requirements.List\"\n- Track changes via \"changelog.List\"\n### Project Phases\n#### 1. Clarification Phase\nThe goal is to get a comprehensive and thorough understanding of the user's\nrequest by reading through the codebase and asking them questions. You\ndiscuss features with a human, and you will ask the human for details on\nhigh-level decisions.\nAfter you have come to a full picture of the user's request, you will\nexplore the codebase to get a clear picture of the requirements.\nAfter exploration of the codebase, use the \"humans\" tool to clarify\nambiguities in the user's request upfront.\n#### 2. Plan Phase\nThe goal is to create a precise and thorough implementation plan.\nInclude your recommended approach. Ensure that the plan is concise enough\nto scan quickly, but detailed enough to execute efficiently.\nRead the critical files with the \"files\" tool to deepen your understanding.\nEnsure that the plan aligns with the user's original request.\nThe output of this phase is a detailed plan, which includes the paths and\nsymbols of files that need to be modified, and which includes a verification\nsection describing how to write tests to verify the changes end-to-end.\n#### 3. Specification Phase\nThe goal is to create a thorough specification of the plan that was created\nin the previous phase. You will delegate the concrete specifications of all\npackages to hired agents. An \"architect\" has to specify the requirements.\nYou will instruct them with their concrete task of what they need to specify.\nThe specification phase is completed when all features were correctly specified\nand when all architects are done. Use the \"humans\" tool to let the user\nconfirm the implementation plan. Afterwards, all specifications and their\nimplementation status can be observed with the \"requirements\" tool.\n#### 4. Code Phase\nThe \"coder\" agent implements features based on the given specifications via the\n\"requirements\" tool. If there are unfixed bug reports listed in the \"bugs\" tool,\nthose should be prioritized over the implementation of additional features.\nFor each package, you should hire a separate \"coder\" agent that works on that\npackage inside an isolated sandbox.\n#### 5. Test Phase\nThe \"tester\" agent implements unit tests and writes discovered bug reports with\nthe \"bugs\" tool. The tester is not allowed to modify the codebase and is strictly\ndeveloping unit tests.\nFor each package, you should hire a separate \"tester\" agent that works on that\npackage inside an isolated sandbox.\nIf there are newly created bug reports, these need to be fixed by a separately\nhired \"coder\" agent.\n#### 6. Refinement Phase\nThe incremental Refinement Phase reoccurs until no work is left to be done to\nfulfill the user's feature request. In this phase you will ask the user with\nthe \"humans\" tool whether there are changes to be made to the codebase.\nIf the user requests new features or changes the requirements, these workloads\nare treated as separate projects that start anew with their own Clarification\nPhase.",
+				"created": "2026-08-31 16:16:28"
+			},
+			{
+				"role": "user",
+				"content": "Can you build me a CLI calculator program in Go which uses only parameters and no stdin?\n\n\"calculator add 5 3\" or \"calculator multiply 7.5 3.2\" for example would be a nice parameter based CLI tool",
+				"created": "2026-08-31 16:17:24"
+			},
+			{
+				"role": "assistant",
+				"content": "I'll start by exploring the current state of the sandbox and understanding what's available.",
+				"tool_calls": [
+					{
+						"id": "call_00_ksIGs6pULkpPCzZfEYid9030",
+						"type": "function",
+						"function": {
+							"name": "files_List",
+							"arguments": "{\"path\": \".\"}"
+						}
+					},
+					{
+						"id": "call_01_370PheXNM5YprCiUQyYg1667",
+						"type": "function",
+						"function": {
+							"name": "programs_List",
+							"arguments": "{}"
+						}
+					},
+					{
+						"id": "call_02_15IvRk1KeN3nxXFBGY9G9943",
+						"type": "function",
+						"function": {
+							"name": "agents_Roles",
+							"arguments": "{}"
+						}
+					}
+				],
+				"created": "2026-08-31 16:17:28"
+			},
+			{
+				"role": "tool",
+				"content": "files.List: \".\" contains 1 entries.\n- Path: \"./go.mod\", Type: file",
+				"tool_call_id": "call_00_ksIGs6pULkpPCzZfEYid9030",
+				"tool_name": "files_List",
+				"created": "2026-08-31 16:17:28"
+			},
+			{
+				"role": "tool",
+				"content": "programs.List:\nName: go\nName: gofmt\nName: gopls",
+				"tool_call_id": "call_01_370PheXNM5YprCiUQyYg1667",
+				"tool_name": "programs_List",
+				"created": "2026-08-31 16:17:28"
+			},
+			{
+				"role": "tool",
+				"content": "agents.Roles: 6 available agent roles.\n- Role: \"architect\", Description: defines software specifications\n- Role: \"coder\", Description: implements specifications into Go code\n- Role: \"exploiter\", Description: implements exploits in CGo code\n- Role: \"summarizer\", Description: summarizes long texts and conversations\n- Role: \"tester\", Description: implements unit tests, writes bug reports\n- Role: \"webscanner\", Description: discovers weaknesses and vulnerabilities in web applications",
+				"tool_call_id": "call_02_15IvRk1KeN3nxXFBGY9G9943",
+				"tool_name": "agents_Roles",
+				"created": "2026-08-31 16:17:28"
+			},
+			{
+				"role": "assistant",
+				"content": "",
+				"tool_calls": [
+					{
+						"id": "call_00_XxxR6dGOVfbCHFBHDvlm8402",
+						"type": "function",
+						"function": {
+							"name": "files_Read",
+							"arguments": "{\"path\": \"./go.mod\"}"
+						}
+					}
+				],
+				"created": "2026-08-31 16:17:30"
+			},
+			{
+				"role": "tool",
+				"content": "files.Read: ./go.mod\nmodule calculator\n\ngo 1.27.0",
+				"tool_call_id": "call_00_XxxR6dGOVfbCHFBHDvlm8402",
+				"tool_name": "files_Read",
+				"created": "2026-08-31 16:17:30"
+			},
+			{
+				"role": "user",
+				"content": "Okay, let's go!",
+				"created": "2026-08-31 16:29:25"
+			},
+			{
+				"role": "assistant",
+				"content": "I'll clarify a few high-level decisions before building the plan, since they affect the design.",
+				"tool_calls": [
+					{
+						"id": "call_00_vODpD4H2juUN1QPiWch74883",
+						"type": "function",
+						"function": {
+							"name": "humans.Choose",
+							"arguments": "{\"question\": \"Which operations should the calculator support?\", \"options\": [\"add\", \"subtract\", \"multiply\", \"divide\", \"power\", \"modulo\", \"sqrt\", \"add + subtract + multiply + divide only\", \"add + subtract + multiply + divide + power + modulo + sqrt\"], \"multiple\": true}"
+						}
+					},
+					{
+						"id": "call_01_EeDZN1psFZqXip0refLz4792",
+						"type": "function",
+						"function": {
+							"name": "humans.Choose",
+							"arguments": "{\"question\": \"How many operands should each operation accept?\", \"options\": [\"Exactly two operands (e.g. add 5 3)\", \"Variable number (e.g. add 5 3 2 sums all)\"]}"
+						}
+					},
+					{
+						"id": "call_02_VUggdAD66WjFYuwa47Jl5156",
+						"type": "function",
+						"function": {
+							"name": "humans.Choose",
+							"arguments": "{\"question\": \"What numeric types should be accepted?\", \"options\": [\"Integers only\", \"Decimals only\", \"Both integers and decimals (recommended)\"]}"
+						}
+					}
+				],
+				"created": "2026-08-31 16:29:37"
+			}
+		],
+		"allowed_programs": [
+			"go",
+			"gofmt",
+			"gopls"
+		],
+		"allowed_tools": [
+			"agents.Await",
+			"agents.List",
+			"agents.Roles",
+			"agents.Hire",
+			"agents.Fire",
+			"bugs.List",
+			"bugs.Search",
+			"changelog.List",
+			"changelog.Search",
+			"files.List",
+			"files.Read",
+			"programs.Execute",
+			"programs.List",
+			"programs.Stat",
+			"humans.Ask",
+			"humans.Choose",
+			"requirements.List",
+			"requirements.Search",
+			"requirements.Signoff"
+		],
+		"sandbox": "/tmp/calculator",
+		"context-usage": {
+			"length": 0,
+			"tokens": 3733
+		},
+		"started-at": "0001-01-01 00:00:00",
+		"finished-at": "0001-01-01 00:00:00"
+	},
+	"config": {
+		"name": "HyRell",
+		"role": "planner",
+		"model": "deepseek-v4-pro:cloud",
+		"prompt": "",
+		"temperature": 0.7,
+		"playground": "/tmp/calculator",
+		"sandbox": "/tmp/calculator",
+		"url": "http://localhost:11434/v1",
+		"debug": true,
+		"providers": {
+			"deepseek-v4-pro:cloud": {
+				"url": {
+					"Scheme": "https",
+					"Opaque": "",
+					"User": null,
+					"Host": "api.deepseek.com",
+					"Path": "",
+					"Fragment": "",
+					"RawQuery": "",
+					"RawPath": "",
+					"RawFragment": "",
+					"ForceQuery": false,
+					"OmitHost": false
+				},
+				"alias": "deepseek-v4-pro",
+				"token": "sk-e2a5d9c808e0455daa9276222fbe1f8a"
+			}
+		}
+	},
+	"console": {
+		"messages": [
+			{
+				"datetime": "2026-08-31T16:23:26.982298929+02:00",
+				"method": "Error",
+				"value": "\u003e POST /api/session/sendchatrequest 500: \"Session is busy, waiting for LLM response ...\"",
+				"caller": {
+					"file": "/home/cookiengineer/Software/cookiengineer/exocomp/source/ui/web/handlers/InternalServerError.go",
+					"line": 12
+				}
+			},
+			{
+				"datetime": "2026-08-31T16:26:24.829783021+02:00",
+				"method": "Info",
+				"value": "Restored Session from Backup",
+				"caller": {
+					"file": "/home/cookiengineer/Software/cookiengineer/exocomp/source/ui/web/Server.go",
+					"line": 41
+				}
+			},
+			{
+				"datetime": "2026-08-31T16:26:37.344835569+02:00",
+				"method": "Error",
+				"value": "\u003e API Error: An assistant message with 'tool_calls' must be followed by tool messages responding to each 'tool_call_id'. (insufficient tool messages following tool_calls message)",
+				"caller": {
+					"file": "/home/cookiengineer/Software/cookiengineer/exocomp/source/engine/Session.go",
+					"line": 25
+				}
+			},
+			{
+				"datetime": "2026-08-31T16:26:37.344879842+02:00",
+				"method": "Error",
+				"value": "\u003e POST /api/session/sendchatrequest 500: \"Server https://api.deepseek.com/chat/completions for Model deepseek-v4-pro is incompatible with OpenAPI /v1 schema\"",
+				"caller": {
+					"file": "/home/cookiengineer/Software/cookiengineer/exocomp/source/ui/web/handlers/InternalServerError.go",
+					"line": 12
+				}
+			},
+			{
+				"datetime": "2026-08-31T16:29:12.853390405+02:00",
+				"method": "Info",
+				"value": "Restored Session from Backup",
+				"caller": {
+					"file": "/home/cookiengineer/Software/cookiengineer/exocomp/source/ui/web/Server.go",
+					"line": 41
+				}
+			}
+		],
+		"stdout": {},
+		"stderr": {}
+	},
+	"waiting": true
+}

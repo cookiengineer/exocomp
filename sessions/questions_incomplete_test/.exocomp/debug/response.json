@@ -1,0 +1,61 @@
+{
+	"choices": [
+		{
+			"finish_reason": "tool_calls",
+			"index": 0,
+			"logprobs": null,
+			"message": {
+				"content": "I'll clarify a few high-level decisions before building the plan, since they affect the design.",
+				"reasoning_content": "The user wants a CLI calculator in Go using only parameters (no stdin). Module is \"calculator\" and Go 1.27.0. I need to follow the process: clarify, plan, specify, code, test, refine.\n\nLet me think about what needs clarifying. The user gave examples: \"calculator add 5 3\" and \"calculator multiply 7.5 3.2\". They want parameter-based CLI, no stdin.\n\nKey decisions to clarify:\n1. Which operations to support? (add, subtract, multiply, divide, maybe more)\n2. Number types: integers, floats (decimals), or both? Examples show both 5, 3 (integers) and 7.5, 3.2 (floats).\n3. How many operands? Examples show 2, but could be variable-length (add 5 3 2).\n4. Binary name: \"calculator\" (module is calculator).\n5. Error handling: division by zero, non-numeric input, missing args.\n6. Output format.\n\nI should ask clarifying questions. Let me use humans_Ask or humans_Choose. There are several decisions. Let me batch a few important ones.\n\nActually, I should ask high-level questions. Let me ask about:\n1. Operations to support\n2. Number types / precision\n3. Variable vs fixed number of operands\n\nLet me use humans_Choose for operations and maybe ask for others.\n\nLet me think about what's genuinely ambiguous and important. The examples use two operands. But many calculators support chaining. I'll ask.\n\nI'll do a few questions. Since these are somewhat independent, I could batch, but humans_Choose and humans_Ask are separate tool calls. I can do multiple tool calls in one block if independent. They are independent questions. But it might be better to ask sequentially to keep it clean. Actually I can batch them in one block.\n\nLet me ask:\n\n1. Which arithmetic operations should be supported? (multiple choice) - add, subtract, multiply, divide, power, modulo, sqrt... \n\n2. Should the calculator support exactly two operands, or a variable number?\n\n3. Number types: integers only, decimals only, or both?\n\nLet me batch these three questions.\n\nActually, let me be thoughtful. The user is a bit casual (\"Okay, let's go!\"). I should still clarify key decisions upfront per my process.\n\nLet me ask the three questions in one block.",
+				"role": "assistant",
+				"tool_calls": [
+					{
+						"function": {
+							"arguments": "{\"question\": \"Which operations should the calculator support?\", \"options\": [\"add\", \"subtract\", \"multiply\", \"divide\", \"power\", \"modulo\", \"sqrt\", \"add + subtract + multiply + divide only\", \"add + subtract + multiply + divide + power + modulo + sqrt\"], \"multiple\": true}",
+							"name": "humans_Choose"
+						},
+						"id": "call_00_vODpD4H2juUN1QPiWch74883",
+						"index": 0,
+						"type": "function"
+					},
+					{
+						"function": {
+							"arguments": "{\"question\": \"How many operands should each operation accept?\", \"options\": [\"Exactly two operands (e.g. add 5 3)\", \"Variable number (e.g. add 5 3 2 sums all)\"]}",
+							"name": "humans_Choose"
+						},
+						"id": "call_01_EeDZN1psFZqXip0refLz4792",
+						"index": 1,
+						"type": "function"
+					},
+					{
+						"function": {
+							"arguments": "{\"question\": \"What numeric types should be accepted?\", \"options\": [\"Integers only\", \"Decimals only\", \"Both integers and decimals (recommended)\"]}",
+							"name": "humans_Choose"
+						},
+						"id": "call_02_VUggdAD66WjFYuwa47Jl5156",
+						"index": 2,
+						"type": "function"
+					}
+				]
+			}
+		}
+	],
+	"created": 1788186603,
+	"id": "f3c9f1d2-e99a-4ea8-a448-c16988a86ebb",
+	"model": "deepseek-v4-pro",
+	"object": "chat.completion",
+	"system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+	"usage": {
+		"completion_tokens": 817,
+		"completion_tokens_details": {
+			"reasoning_tokens": 509
+		},
+		"prompt_cache_hit_tokens": 3328,
+		"prompt_cache_miss_tokens": 405,
+		"prompt_tokens": 3733,
+		"prompt_tokens_details": {
+			"cached_tokens": 3328
+		},
+		"total_tokens": 4550
+	}
+}

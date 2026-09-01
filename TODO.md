@@ -1,7 +1,23 @@
 
 # TODO
 
+## Agents Workflow
+
+- [ ] agents.Hire() needs to be more clear for DeepSeek model
+      somehow "user" prompt isn't being injected into the subprocess
+
+## Questions Workflow
+
+- [ ] Questions should be rendered as Tool Calls in the Web UI
+      If they're unanswered (no following `tool` Type Message for the same toolcall id)
+      then render a UI for answering them _inside_ the tool call message's article element
+      If they're answered, then render a UI with disabled elements for now.
+
+
 ## types/Session DEBUGGING
+
+- [ ] There's a bug of Session persistance, because any subagent of the parent will write
+      its session to the same folder/path of the parent?
 
 - [ ] Add better debugging messages when Session is recovered successfully
 - [ ] Reprint the correct config after Recovery and Backup calls
