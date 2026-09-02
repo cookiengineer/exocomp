@@ -7,10 +7,9 @@ import "context"
 import "encoding/json"
 import "fmt"
 import "slices"
+import "strings"
 import "sync"
 import "time"
-
-var question_unique_id int64 = 0
 
 type question_state struct {
 	ctx    context.Context
@@ -18,17 +17,17 @@ type question_state struct {
 	done   chan struct{}
 }
 
-func watch_question(tool *Humans, id string, state *question_state) {
+func watch_question(tool *Humans, question string, state *question_state) {
 
 	<-state.ctx.Done()
 
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	_, still_waiting := tool.states[id]
+	_, still_waiting := tool.states[question]
 
 	if still_waiting == true {
-		delete(tool.states, id)
+		delete(tool.states, question)
 		close(state.done)
 	}
 
@@ -69,7 +68,7 @@ func (tool *Humans) Call(method string, arguments map[string]interface{}) (strin
 			question, ok1 := arguments["question"].(string)
 
 			if ok1 == true {
-				return tool.Ask(utils_fmt.FormatMultiLine(question))
+				return tool.Ask(utils_fmt.FormatSingleLine(question))
 			} else {
 				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"question\" is not a string.")
 			}
@@ -104,7 +103,7 @@ func (tool *Humans) Call(method string, arguments map[string]interface{}) (strin
 					return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"options\" is not an array of strings.")
 				}
 
-				return tool.Choice(utils_fmt.FormatMultiLine(question), options, multiple)
+				return tool.Choose(utils_fmt.FormatSingleLine(question), options, multiple)
 
 			} else if ok1 == true && ok2 == false {
 				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"options\" is not an array of strings.")
@@ -112,6 +111,17 @@ func (tool *Humans) Call(method string, arguments map[string]interface{}) (strin
 				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"question\" is not a string.")
 			} else {
 				return "", fmt.Errorf("humans.%s: Invalid parameters.", method)
+			}
+
+		} else if method == "Answer" {
+
+			question, ok1 := arguments["question"].(string)
+			answer,   ok2 := arguments["answer"].(string)
+
+			if ok1 == true && ok2 == true {
+				return tool.Answer(utils_fmt.FormatSingleLine(question), utils_fmt.FormatMultiLine(answer))
+			} else {
+				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameters \"id\" and \"answer\" are not strings.")
 			}
 
 		} else {
@@ -124,41 +134,49 @@ func (tool *Humans) Call(method string, arguments map[string]interface{}) (strin
 
 }
 
-func (tool *Humans) Answer(id string, answer string) error {
+func (tool *Humans) Answer(question string, answer string) (string, error) {
 
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	question, ok := tool.contents[id]
+	answered := false
 
-	if ok == false {
-		return fmt.Errorf("humans.Answer: Invalid question id.")
+	for _, other := range tool.contents {
+
+		if other.Question == question {
+
+			other.Answer = answer
+
+			state, is_waiting := tool.states[question]
+
+			if is_waiting == true {
+
+				delete(tool.states, question)
+				state.cancel()
+				close(state.done)
+
+			}
+
+			answered = true
+			break
+
+		}
+
 	}
 
-	question.Answer = answer
-
-	state, waiting := tool.states[id]
-
-	if waiting == true {
-
-		delete(tool.states, id)
-		state.cancel()
-		close(state.done)
-
+	if answered == true {
+		return fmt.Sprintf("humans.Answer: Answer for Question \"%s\" is:\n===\n%s\n===", question, answer), nil
+	} else {
+		return "", fmt.Errorf("humans.Answer: Question \"%s\" was never asked!", question)
 	}
-
-	return nil
 
 }
 
 func (tool *Humans) Ask(text string) (string, error) {
 
-	question_unique_id++
-
 	question := &types.Question{
-		ID:       fmt.Sprintf("question-%d", question_unique_id),
 		Type:     "Ask",
-		Question: text,
+		Question: strings.TrimSpace(text),
 		Options:  []string{},
 		Multiple: false,
 		Answer:   "",
@@ -172,24 +190,21 @@ func (tool *Humans) Ask(text string) (string, error) {
 	}
 
 	tool.mutex.Lock()
-	tool.contents[question.ID] = question
-	tool.states[question.ID]  = state
+	tool.contents[question.Question] = question
+	tool.states[question.Question]  = state
 	tool.mutex.Unlock()
 
-	go watch_question(tool, question.ID, state)
+	go watch_question(tool, question.Question, state)
 
-	return tool.Await(question.ID)
+	return tool.Await(question.Question)
 
 }
 
-func (tool *Humans) Choice(text string, options []string, multiple bool) (string, error) {
-
-	question_unique_id++
+func (tool *Humans) Choose(text string, options []string, multiple bool) (string, error) {
 
 	question := &types.Question{
-		ID:       fmt.Sprintf("question-%d", question_unique_id),
-		Type:     "Choice",
-		Question: text,
+		Type:     "Choose",
+		Question: strings.TrimSpace(text),
 		Options:  options,
 		Multiple: multiple,
 		Answer:   "",
@@ -203,32 +218,41 @@ func (tool *Humans) Choice(text string, options []string, multiple bool) (string
 	}
 
 	tool.mutex.Lock()
-	tool.contents[question.ID] = question
-	tool.states[question.ID]  = state
+	tool.contents[question.Question] = question
+	tool.states[question.Question] = state
 	tool.mutex.Unlock()
 
-	go watch_question(tool, question.ID, state)
+	go watch_question(tool, question.Question, state)
 
-	return tool.Await(question.ID)
+	return tool.Await(question.Question)
 
 }
 
-func (tool *Humans) GetContent(id string) (any, error) {
+func (tool *Humans) GetContent(question string) (any, error) {
+
+	question = strings.TrimSpace(question)
 
 	tool.mutex.Lock()
-	content, ok := tool.contents[id]
+	content, ok := tool.contents[question]
 	tool.mutex.Unlock()
 
 	if ok == true {
 		return content, nil
 	} else {
-		return nil, fmt.Errorf("humans.GetContent: No question asked for id \"%s\".", id)
+		return nil, fmt.Errorf("humans.GetContent: Question \"%s\" was never asked!", question)
 	}
 
 }
 
 func (tool *Humans) HasMethod(method string) bool {
-	return slices.Contains(tool.Methods, method) == true
+
+	// NOTE: Special case, required for UI/UX integration
+	if method == "Answer" {
+		return true
+	} else {
+		return slices.Contains(tool.Methods, method) == true
+	}
+
 }
 
 func (tool *Humans) MarshalJSON() ([]byte, error) {
@@ -268,10 +292,10 @@ func (tool *Humans) Schemas() []schemas.Tool {
 // tool messages. The lifecycle guarantees the done channel always closes
 // (answer received -> Answer() -> close, or timeout -> watch_question ->
 // close), so Await never blocks forever.
-func (tool *Humans) Await(id string) (string, error) {
+func (tool *Humans) Await(reference string) (string, error) {
 
 	tool.mutex.Lock()
-	state, waiting := tool.states[id]
+	state, waiting := tool.states[reference]
 	tool.mutex.Unlock()
 
 	if waiting == true {
@@ -279,23 +303,20 @@ func (tool *Humans) Await(id string) (string, error) {
 	}
 
 	tool.mutex.Lock()
-	question, ok := tool.contents[id]
-	answer := ""
+	defer tool.mutex.Unlock()
+
+	question, ok := tool.contents[reference]
 
 	if ok == true {
-		answer = question.Answer
-	}
 
-	tool.mutex.Unlock()
+		if question.Answer != "" {
+			return fmt.Sprintf("humans.%s: Answer for Question \"%s\" is:\n===\n%s\n===", question.Type, question.Question, question.Answer), nil
+		} else {
+			return "", fmt.Errorf("humans.%s: Question \"%s\" was never answered!", question.Type, question.Question)
+		}
 
-	if ok == false {
-		return "", fmt.Errorf("humans.Await: Question \"%s\" was never asked!", id)
-	}
-
-	if answer != "" {
-		return fmt.Sprintf("humans.Await: Answer for question \"%s\"\n===%s\n===", id, answer), nil
 	} else {
-		return "", fmt.Errorf("humans.Await: Question \"%s\" was never answered!", id)
+		return "", fmt.Errorf("humans.Await: Question \"%s\" was never asked!", reference)
 	}
 
 }

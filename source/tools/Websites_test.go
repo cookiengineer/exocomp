@@ -8,7 +8,7 @@ import "testing"
 
 func TestWebsites_List(t *testing.T) {
 
-	tool := NewWebsites("/tmp", "/tmp")
+	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
 
 	result, err0 := tool.List()
 
@@ -43,7 +43,7 @@ func TestWebsites_Fetch_Markdown(t *testing.T) {
 	}))
 	defer server.Close()
 
-	tool := NewWebsites("/tmp", "/tmp")
+	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
 
 	result, err0 := tool.Fetch(server.URL, "chrome-windows", "markdown")
 
@@ -77,7 +77,7 @@ func TestWebsites_Fetch_Text(t *testing.T) {
 	}))
 	defer server.Close()
 
-	tool := NewWebsites("/tmp", "/tmp")
+	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
 
 	result, err0 := tool.Fetch(server.URL, "", "text")
 
@@ -97,7 +97,7 @@ func TestWebsites_Fetch_Text(t *testing.T) {
 
 func TestWebsites_Fetch_InvalidURL(t *testing.T) {
 
-	tool := NewWebsites("/tmp", "/tmp")
+	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
 
 	_, err0 := tool.Fetch("ftp://example.com/file", "", "markdown")
 
@@ -109,7 +109,7 @@ func TestWebsites_Fetch_InvalidURL(t *testing.T) {
 
 func TestWebsites_Fetch_InvalidUserAgent(t *testing.T) {
 
-	tool := NewWebsites("/tmp", "/tmp")
+	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
 
 	_, err0 := tool.Fetch("https://example.com/", "does-not-exist", "markdown")
 
@@ -127,7 +127,7 @@ func TestWebsites_Stat(t *testing.T) {
 	}))
 	defer server.Close()
 
-	tool := NewWebsites("/tmp", "/tmp")
+	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
 
 	result, err0 := tool.Stat(server.URL, "")
 

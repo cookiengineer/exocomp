@@ -30,13 +30,13 @@ func waitForQuestion(t *testing.T, tool *Humans, timeout time.Duration) string {
 
 func TestHumans_Ask_Await_Blocks_Until_Answer(t *testing.T) {
 
-	tool := NewHumans()
+	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 
 	result_ch := make(chan string, 1)
 	err_ch    := make(chan error, 1)
 
 	go func() {
-		result, err := tool.Ask("What is your name?")
+		result, err := tool.Ask("question-test-1", "What is your name?")
 		result_ch <- result
 		err_ch    <- err
 	}()
@@ -85,13 +85,13 @@ func TestHumans_Ask_Await_Blocks_Until_Answer(t *testing.T) {
 
 func TestHumans_Choice_Persists_Options_And_Multiple(t *testing.T) {
 
-	tool := NewHumans()
+	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 
 	result_ch := make(chan string, 1)
 	err_ch    := make(chan error, 1)
 
 	go func() {
-		result, err := tool.Choice("Which database?", []string{"PostgreSQL", "SQLite", "MongoDB"}, true)
+		result, err := tool.Choice("question-test-2", "Which database?", []string{"PostgreSQL", "SQLite", "MongoDB"}, true)
 		result_ch <- result
 		err_ch    <- err
 	}()
@@ -143,11 +143,11 @@ func TestHumans_Choice_Persists_Options_And_Multiple(t *testing.T) {
 
 func TestHumans_Await_Timeout(t *testing.T) {
 
-	tool := NewHumans()
+	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 	tool.Timeout = 50 * time.Millisecond
 
 	start := time.Now()
-	_, err0 := tool.Ask("Are you still there?")
+	_, err0 := tool.Ask("question-test-3", "Are you still there?")
 	elapsed := time.Since(start)
 
 	if err0 == nil {
@@ -166,7 +166,7 @@ func TestHumans_Await_Timeout(t *testing.T) {
 
 func TestHumans_Await_NeverAsked(t *testing.T) {
 
-	tool := NewHumans()
+	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 
 	_, err0 := tool.Await("question-999")
 
@@ -182,7 +182,7 @@ func TestHumans_Await_NeverAsked(t *testing.T) {
 
 func TestHumans_Answer_InvalidID(t *testing.T) {
 
-	tool := NewHumans()
+	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 
 	err0 := tool.Answer("question-999", "answer")
 
@@ -198,7 +198,7 @@ func TestHumans_Answer_InvalidID(t *testing.T) {
 
 func TestHumans_Call_ArgumentValidation(t *testing.T) {
 
-	tool := NewHumans()
+	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 
 	_, err0 := tool.Call("Ask", map[string]interface{}{})
 
@@ -225,8 +225,75 @@ func TestHumans_Call_ArgumentValidation(t *testing.T) {
 
 	_, err3 := tool.Call("Invalid", map[string]interface{}{})
 
-	if err3 == nil || !strings.Contains(err3.Error(), "Invalid method") {
-		t.Errorf("Expected invalid method error, got %v", err3)
+	if err3 == nil || !strings.Contains(err3.Error(), "not allowed") {
+		t.Errorf("Expected method not allowed error, got %v", err3)
+	}
+
+}
+
+func TestHumans_CallWithID_Answer_Unblocks(t *testing.T) {
+
+	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
+
+	result_ch := make(chan string, 1)
+	err_ch    := make(chan error, 1)
+
+	go func() {
+		result, err := tool.Ask("call_1", "What is your name?")
+		result_ch <- result
+		err_ch    <- err
+	}()
+
+	id := waitForQuestion(t, tool, 1*time.Second)
+
+	if id != "call_1" {
+		t.Fatalf("Expected question id %q, got %q", "call_1", id)
+	}
+
+	result, err0 := tool.CallWithID("", "Answer", map[string]interface{}{
+		"id":     id,
+		"answer": "Alice",
+	})
+
+	if err0 != nil {
+		t.Fatalf("Expected %v to be nil", err0)
+	}
+
+	if !strings.Contains(result, "Answered question") {
+		t.Errorf("Expected answer report, got %s", result)
+	}
+
+	select {
+	case err := <-err_ch:
+		if err != nil {
+			t.Fatalf("Expected %v to be nil", err)
+		}
+	case <-time.After(1 * time.Second):
+		t.Fatalf("Expected Ask to return after the answer")
+	}
+
+	got := <-result_ch
+
+	if !strings.Contains(got, "Alice") {
+		t.Errorf("Expected answer to contain %q, got %s", "Alice", got)
+	}
+
+}
+
+func TestHumans_ControlMethods(t *testing.T) {
+
+	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
+
+	if tool.HasMethod("Answer") != true {
+		t.Errorf("Expected humans.Answer to be allowed")
+	}
+
+	if tool.IsControl("Answer") != true {
+		t.Errorf("Expected humans.Answer to be a control method")
+	}
+
+	if tool.IsControl("Ask") != false {
+		t.Errorf("Expected humans.Ask not to be a control method")
 	}
 
 }

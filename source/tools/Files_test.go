@@ -9,7 +9,7 @@ func TestFiles_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
 	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles(playground, sandbox)
+	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -107,7 +107,7 @@ func TestFiles_Read(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
 	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles(playground, sandbox)
+	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -211,7 +211,7 @@ func TestFiles_Stat(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
 	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles(playground, sandbox)
+	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -294,7 +294,7 @@ func TestFiles_Write(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
 	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles(playground, sandbox)
+	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
 
 	if tool != nil {
 

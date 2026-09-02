@@ -24,9 +24,9 @@ func waitForAgent(tool *Agents, name string) bool {
 			select {
 			case <-ticker.C:
 
-				tool.Mutex.Lock()
+				tool.mutex.Lock()
 				_, ok := tool.processes[name]
-				tool.Mutex.Unlock()
+				tool.mutex.Unlock()
 
 				if ok == false {
 					done<-true
@@ -101,7 +101,7 @@ func TestAgents_Hire(t *testing.T) {
 	sandbox       := filepath.Join(playground, "agents")
 	model         := "huihui_ai/Qwen3.6-abliterated:35b"
 	url,        _ := net_url.Parse("http://localhost:11434/v1")
-	tool          := NewAgents(playground, sandbox, model, url, true)
+	tool          := NewAgents([]string{"Hire", "Await", "Fire", "Quit"}, playground, sandbox, model, url, true)
 
 	if tool != nil {
 
