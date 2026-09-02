@@ -167,7 +167,82 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 		result, err0 := tool.Call(method, arguments)
 
-		if name == "skills" && method == "Load" {
+		if name == "humans" && method == "Answer" {
+
+			found_tool_calls := make([]schemas.ToolCall, 0)
+			found_index      := int(-1)
+
+			session.mutex.Lock()
+
+			for m := len(session.Agent.Messages); m >= 0; m-- {
+
+				message := session.Agent.Messages[m]
+
+				if message.Role == "assistant" {
+
+					tool_calls, err := utils_chat.FindToolCalls(message, []string{
+						"humans.Ask",
+						"humans.Choose",
+					})
+
+					if err == nil {
+
+						for _, tool_call := range tool_calls {
+							found_tool_calls = append(found_tool_calls, tool_call)
+						}
+
+						found_index = m
+						break
+
+					}
+
+				}
+
+			}
+
+			if found_index != -1 && len(found_tool_calls) > 0 {
+
+				for _, tool_call := range found_tool_calls {
+
+					tool_call_id, err0 := tool_call.GetID()
+
+					if err0 == nil {
+
+						found_answer := false
+
+						for m := found_index + 1; m < len(session.Agent.Messages); m++ {
+
+							message := session.Agent.Messages[m]
+
+							if message.Role == "tool" && message.ToolCallID == tool_call_id {
+								found_answer = true
+								break
+							}
+
+						}
+
+						if found_answer == false {
+
+							// TODO: Answer question
+							// - append message.Role = "tool"
+							// - message must have message starting with humans.Ask or humans.Choose (depending on tool call)
+							// - message must have same "answered with" format like in tools/Humans.go
+
+							TODO: IMPLEMENT_THIS
+
+						}
+
+					}
+
+				}
+
+			}
+
+			session.mutex.Unlock()
+
+			return nil
+
+		} else if name == "skills" && method == "Load" {
 
 			content := ""
 
@@ -575,10 +650,10 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 			for _, tool_call := range response.ToolCalls {
 
-				tool_id,        err0 := tool_call.ToolID()
-				tool_name,      err1 := tool_call.ToolName()
-				tool_method,    err2 := tool_call.ToolMethod()
-				tool_arguments, err3 := tool_call.ToolArguments()
+				tool_id,        err0 := tool_call.GetID()
+				tool_name,      err1 := tool_call.GetName()
+				tool_method,    err2 := tool_call.GetMethod()
+				tool_arguments, err3 := tool_call.GetArguments()
 
 				if err0 == nil && err1 == nil && err2 == nil && err3 == nil {
 

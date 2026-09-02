@@ -33,11 +33,11 @@ type ToolCallFunction struct {
 	// Arguments map[string]interface{} `json:"arguments"`
 }
 
-func (toolcall *ToolCall) ToolID() (string, error) {
+func (toolcall *ToolCall) GetID() (string, error) {
 	return strings.TrimSpace(toolcall.ID), nil
 }
 
-func (toolcall *ToolCall) ToolName() (string, error) {
+func (toolcall *ToolCall) GetName() (string, error) {
 
 	if strings.Contains(toolcall.Function.Name, ".") {
 
@@ -64,7 +64,7 @@ func (toolcall *ToolCall) ToolName() (string, error) {
 
 }
 
-func (toolcall *ToolCall) ToolMethod() (string, error) {
+func (toolcall *ToolCall) GetMethod() (string, error) {
 
 	if strings.Contains(toolcall.Function.Name, ".") {
 
@@ -90,7 +90,7 @@ func (toolcall *ToolCall) ToolMethod() (string, error) {
 
 }
 
-func (toolcall *ToolCall) ToolArguments() (map[string]any, error) {
+func (toolcall *ToolCall) GetArguments() (map[string]any, error) {
 
 	result := make(map[string]any)
 	err0   := json.Unmarshal(toolcall.Function.ArgumentsRaw, &result)

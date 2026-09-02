@@ -25,10 +25,10 @@ func CallTool(session *engine.Session, request *http.Request, response http.Resp
 
 				if err1 == nil {
 
-					tool_id,        err2 := tool_call.ToolID()
-					tool_name,      err3 := tool_call.ToolName()
-					tool_method,    err4 := tool_call.ToolMethod()
-					tool_arguments, err5 := tool_call.ToolArguments()
+					tool_id,        err2 := tool_call.GetID()
+					tool_name,      err3 := tool_call.GetName()
+					tool_method,    err4 := tool_call.GetMethod()
+					tool_arguments, err5 := tool_call.GetArguments()
 
 					if err2 == nil {
 
