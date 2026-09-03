@@ -142,7 +142,8 @@ func RestoreSession(playground string, backup Session) *Session {
 
 func (session *Session) Destroy() {
 
-	if session.Recovery != nil {
+	// NOTE: Only backup planner sessions, hired agents are backed up automatically
+	if session.Recovery != nil && session.Agent.Role == "planner" {
 		session.Recovery.BackupSession(session)
 	}
 
@@ -204,31 +205,52 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 				for _, tool_call := range found_tool_calls {
 
-					tool_call_id, err0 := tool_call.GetID()
+					tool_call_name,      err1 := tool_call.GetName()
+					tool_call_id,        err2 := tool_call.GetID()
+					tool_call_arguments, err3 := tool_call.GetArguments()
 
-					if err0 == nil {
+					if err1 == nil && err2 == nil && err3 == nil {
 
-						found_answer := false
+						question1, ok1 := arguments["question"].(string)
+						question2, ok2 := tool_call_arguments["question"].(string)
 
-						for m := found_index + 1; m < len(session.Agent.Messages); m++ {
+						if ok1 == true && ok2 == true && question1 == question2 {
 
-							message := session.Agent.Messages[m]
+							// NOTE: Find out if question was already answered with a Tool Message
+							found_answer := false
 
-							if message.Role == "tool" && message.ToolCallID == tool_call_id {
-								found_answer = true
-								break
+							for m := found_index + 1; m < len(session.Agent.Messages); m++ {
+
+								message := session.Agent.Messages[m]
+
+								if message.Role == "tool" && message.ToolCallID == tool_call_id {
+									found_answer = true
+									break
+								}
+
 							}
 
-						}
+							if found_answer == false {
 
-						if found_answer == false {
+								content := ""
 
-							// TODO: Answer question
-							// - append message.Role = "tool"
-							// - message must have message starting with humans.Ask or humans.Choose (depending on tool call)
-							// - message must have same "answered with" format like in tools/Humans.go
+								if err0 == nil {
+									content = strings.TrimSpace(result)
+								} else {
+									content = fmt.Sprintf("Error: humans.Answer: %s", err0.Error())
+								}
 
-							TODO: IMPLEMENT_THIS
+								// NOTE: Append custom Tool Message matching the previous humans.Ask/humans.Choose Tool Call
+								tmp := &schemas.Message{
+									Role:       "tool",
+									Content:    content,
+									ToolCallID: tool_call_id,
+									ToolName:   tool_call_name,
+									Created:    schemas.NewDatetime(),
+								}
+								session.Agent.Messages = append(session.Agent.Messages, tmp)
+
+							}
 
 						}
 
@@ -666,7 +688,8 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 			}
 
-			if session.Recovery != nil {
+			// NOTE: Only backup planner sessions, hired agents are backed up automatically
+			if session.Recovery != nil && session.Agent.Role == "planner" {
 				session.Recovery.BackupSession(session)
 			}
 

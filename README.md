@@ -80,6 +80,7 @@ Check the unit tests on whether the Tools can be relied on or not.
 | Containers                                     |                                            | manages virtual containers                         | `redteamer`, `blueteamer`                               |
 | Exploits                                       |                                            | manages PoCs for CVEs from local dataset           | `pentester`, `reverser`                                 |
 | [Files](./source/tools/Files.go)               | [Yes](./source/tools/Files_test.go)        | interacts with files and folders                   | `planner`, `architect`, `coder`, `summarizer`, `tester` |
+| [Humans](./source/tools/Humans.go)             | [Yes](./source/tools/Humans_test.go)       | asks the human clarifying questions                | `planner`                                               |
 | Findings                                       |                                            | reports findings of vulnerabilities and weaknesses | `pentester`                                             |
 | [Programs](./source/tools/Programs.go)         | [Yes](./source/tools/Programs_test.go)     | interacts with installed programs                  | `coder`, `tester`                                       |
 | [Requirements](./source/tools/Requirements.go) | [Yes](./source/tools/Requirements_test.go) | manages specifications of implementations          | `architect`, `coder`, `tester`                          |
