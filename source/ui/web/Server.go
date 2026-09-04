@@ -89,22 +89,86 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 
 	}
 
-	tool := session.GetTool("agents.List")
+	tool   := session.GetTool("agents.List")
+	agents := recovery.RestoreAgents()
 
-	if tool != nil {
+	if tool != nil && len(agents) > 0 {
 
-		agent_tool, ok := tool.(*tools.Agents)
+		agents_tool, ok := tool.(*tools.Agents)
 
 		if ok == true {
 
-			agents := recovery.RestoreAgents()
+			for _, agent := range agents {
+				agents_tool.SetAgent(agent)
+			}
 
-			if len(agents) > 0 {
+		}
 
-				for _, agent := range agents {
-					agent_tool.SetAgent(agent)
-				}
+	}
 
+	return &Server{
+		Session: session,
+		URL:     url,
+		handler: utils_http.NewHandler(
+			http.NotFoundHandler(),
+		),
+	}
+
+}
+
+func RestoreServer(session *engine.Session, agents []*types.Agent) *Server {
+
+	url, _ := net_url.Parse("http://localhost:3000/")
+
+	if session.Agent.HasTools() {
+
+		toolset := tools.Toolset(
+			session.Config.Playground,
+			session.Config.Sandbox,
+			session.Config.Model,
+			session.Config.URL,
+			session.Config.Debug,
+			session.Agent.AllowedPrograms,
+			session.Agent.AllowedTools,
+		)
+
+		if len(toolset) > 0 {
+
+			for _, tool := range toolset {
+				session.SetTool(tool)
+			}
+
+		}
+
+	}
+
+	if session.Config.HasProvider(session.Agent.Model) {
+
+		adapterset := adapters.Adapterset(
+			session.Config.ResolveURL(session.Agent.Model, ""),
+			session.Config.ResolveModel(session.Agent.Model),
+		)
+
+		if len(adapterset) > 0 {
+
+			for _, adapter := range adapterset {
+				session.SetAdapter(adapter)
+			}
+
+		}
+
+	}
+
+	tool := session.GetTool("agents.List")
+
+	if tool != nil && len(agents) > 0 {
+
+		agents_tool, ok := tool.(*tools.Agents)
+
+		if ok == true {
+
+			for _, agent := range agents {
+				agents_tool.SetAgent(agent)
 			}
 
 		}
@@ -304,16 +368,8 @@ func (server *Server) Listen() error {
 
 
 	// Session Interaction
-	http.HandleFunc("/api/session/answer", func(response http.ResponseWriter, request *http.Request) {
-		routes_session.Answer(server.Session, request, response)
-	})
-
 	http.HandleFunc("/api/session/calltool", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.CallTool(server.Session, request, response)
-	})
-
-	http.HandleFunc("/api/session/questions", func(response http.ResponseWriter, request *http.Request) {
-		routes_session.Questions(server.Session, request, response)
 	})
 
 	http.HandleFunc("/api/session/sendchatrequest", func(response http.ResponseWriter, request *http.Request) {

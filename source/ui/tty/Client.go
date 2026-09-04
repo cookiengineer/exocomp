@@ -81,28 +81,24 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	}
 
-	tool := session.GetTool("agents.List")
+	tool   := session.GetTool("agents.List")
+	agents := recovery.RestoreAgents()
 
-	if tool != nil {
+	if tool != nil && len(agents) > 0 {
 
-		agent_tool, ok := tool.(*tools.Agents)
+		agents_tool, ok := tool.(*tools.Agents)
 
 		if ok == true {
 
-			agents := recovery.RestoreAgents()
-
-			if len(agents) > 0 {
-
-				for _, agent := range agents {
-					agent_tool.SetAgent(agent)
-				}
-
+			for _, agent := range agents {
+				agents_tool.SetAgent(agent)
 			}
 
 		}
 
 	}
 
+	// TODO: Verify this
 	if config.GetPrompt() != "" {
 		session.Init()
 	}
@@ -112,6 +108,75 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 		Session:  session,
 		Role:     "user",
 	}
+
+}
+
+func RestoreClient(session *engine.Session, agents []*types.Agent) *Client {
+
+	renderer := NewRenderer(session)
+
+	if session.Agent.HasTools() {
+
+		toolset := tools.Toolset(
+			session.Config.Playground,
+			session.Config.Sandbox,
+			session.Config.Model,
+			session.Config.URL,
+			session.Config.Debug,
+			session.Agent.AllowedPrograms,
+			session.Agent.AllowedTools,
+		)
+
+		if len(toolset) > 0 {
+
+			for _, tool := range toolset {
+				session.SetTool(tool)
+			}
+
+		}
+
+	}
+
+	if session.Config.HasProvider(session.Agent.Model) {
+
+		adapterset := adapters.Adapterset(
+			session.Config.ResolveURL(session.Agent.Model, ""),
+			session.Config.ResolveModel(session.Agent.Model),
+		)
+
+		if len(adapterset) > 0 {
+
+			for _, adapter := range adapterset {
+				session.SetAdapter(adapter)
+			}
+
+		}
+
+	}
+
+	tool := session.GetTool("agents.List")
+
+	if tool != nil && len(agents) > 0 {
+
+		agents_tool, ok := tool.(*tools.Agents)
+
+		if ok == true {
+
+			for _, agent := range agents {
+				agents_tool.SetAgent(agent)
+			}
+
+		}
+
+	}
+
+	client := &Client{
+		Renderer: renderer,
+		Session:  session,
+		Role:     "user",
+	}
+
+	return client
 
 }
 
