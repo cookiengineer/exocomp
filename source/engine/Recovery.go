@@ -71,7 +71,45 @@ func (recovery *Recovery) BackupSession(session *Session) error {
 			err3 := os.WriteFile(path, bytes, 0666)
 
 			if err3 == nil {
-				return recovery.BackupAgent(session.Agent)
+
+				err4 := recovery.BackupAgent(session.Agent)
+
+				if err4 == nil {
+
+					tool := session.GetTool("agents.List")
+
+					if tool != nil {
+
+						identifiers := tool.GetContentIdentifiers()
+
+						if len(identifiers) > 0 {
+
+							for _, id := range identifiers {
+
+								wrapped, err := tool.GetContent(id)
+
+								if wrapped != nil && err == nil {
+
+									agent, ok := wrapped.(*types.Agent)
+
+									if ok == true {
+										recovery.BackupAgent(agent)
+									}
+
+								}
+
+							}
+
+						}
+
+					}
+
+					return nil
+
+				} else {
+					return err4
+				}
+
 			} else {
 				return err3
 			}
