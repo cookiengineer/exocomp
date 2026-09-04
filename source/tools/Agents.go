@@ -109,12 +109,12 @@ func read_process(tool *Agents, name string, process *agent_process, stdout_pipe
 	if ok == true && agent.Status == "working" {
 
 		if getAgentWorkReport(agent) != "" {
+			agent.FinishedAt = schemas.NewDatetime()
 			agent.Status = "finished"
 		} else {
+			agent.FinishedAt = schemas.NewDatetime()
 			agent.Status = "failed"
 		}
-
-		agent.FinishedAt = schemas.NewDatetime()
 
 	}
 
@@ -563,8 +563,6 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 						tool.URL,
 						false,
 					))
-					agent.Status    = "working"
-					agent.StartedAt = schemas.NewDatetime()
 
 					if debug_flag != "" {
 						// NOTE: "exocomp agent" prints first system message

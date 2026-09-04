@@ -34,6 +34,13 @@ func NewAgent(config *types.Config) *types.Agent {
 		}
 
 		prompt := render_prompt(name, role, template.Prompt)
+		status := ""
+
+		if role == "planner" {
+			status = "planning"
+		} else {
+			status = "working"
+		}
 
 		return &types.Agent{
 			Name:            name,
@@ -45,6 +52,11 @@ func NewAgent(config *types.Config) *types.Agent {
 			AllowedPrograms: template.AllowedPrograms,
 			AllowedTools:    template.AllowedTools,
 			Sandbox:         config.Sandbox,
+			Status:          status,
+			StartedAt:       schemas.NewDatetime(),
+			FinishedAt:      schemas.Datetime{
+				Time: time.Time{},
+			},
 		}
 
 	} else {
