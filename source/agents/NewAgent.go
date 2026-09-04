@@ -1,7 +1,9 @@
 package agents
 
+import "exocomp/schemas"
 import "exocomp/types"
 import "strings"
+import "time"
 
 func NewAgent(config *types.Config) *types.Agent {
 
