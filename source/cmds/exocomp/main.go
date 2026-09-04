@@ -18,8 +18,8 @@ func main() {
 		tmp1 := strings.TrimSpace(os.Args[1])
 
 		switch tmp1 {
-		case "debug":
-			mode = "debug"
+		case "config":
+			mode = "config"
 		case "agent":
 			mode = "agent"
 		case "tty":
@@ -57,8 +57,8 @@ func main() {
 			switch mode {
 			case "agent":
 				actions.Agent(agent, config)
-			case "debug":
-				actions.Debug(agent, config)
+			case "config":
+				actions.Config(agent, config)
 			case "terminal":
 				actions.Terminal(agent, config, "user")
 			case "web":
@@ -66,7 +66,7 @@ func main() {
 			case "webview":
 				actions.Webview(agent, config)
 			default:
-				actions.Usage([]string{"agent", "debug", "terminal", "web", "webview"})
+				actions.Usage([]string{"agent", "config", "terminal", "web", "webview"})
 			}
 
 		} else {
@@ -78,7 +78,7 @@ func main() {
 
 	} else {
 
-		actions.Usage([]string{"agent", "debug", "terminal", "web", "webview"})
+		actions.Usage([]string{"agent", "config", "terminal", "web", "webview"})
 
 	}
 

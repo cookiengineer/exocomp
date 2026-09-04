@@ -1,80 +1,53 @@
 package actions
 
+import "exocomp/engine"
 import "exocomp/types"
+import "exocomp/ui/tty"
+import "exocomp/ui/web"
 import "fmt"
 import "os"
 import "strings"
 
-func Debug(agent *types.Agent, config *types.Config) {
+func Debug(session *engine.Session, agents []*types.Agent, role string) {
 
-	fmt.Fprintf(os.Stderr, "[agent]:\n")
-	fmt.Fprintf(os.Stderr, "| Agent: %s | %s | %s | %.2f\n", agent.Name, agent.Role, agent.Model, agent.Temperature)
-	fmt.Fprintf(os.Stderr, "| Tools: %s\n", strings.Join(agent.AllowedTools, ", "))
-	fmt.Fprintf(os.Stderr, "\n")
+	client := tty.RestoreClient(session, agents)
+	server := web.RestoreServer(session, agents)
 
-	if types.GlobalConfig != nil {
-
-		fmt.Fprintf(os.Stderr, "[global config]:\n")
-		fmt.Fprintf(os.Stderr, "| Name:        %s\n", types.GlobalConfig.Name)
-		fmt.Fprintf(os.Stderr, "| Role:        %s\n", types.GlobalConfig.Role)
-		fmt.Fprintf(os.Stderr, "| Model:       %s\n", types.GlobalConfig.Model)
-		fmt.Fprintf(os.Stderr, "| Prompt:      %d bytes\n", len(types.GlobalConfig.Prompt))
-		fmt.Fprintf(os.Stderr, "| Temperature: %.2f\n", types.GlobalConfig.Temperature)
-		fmt.Fprintf(os.Stderr, "| Sandbox:     %s\n", types.GlobalConfig.Sandbox)
-
-		if types.GlobalConfig.URL != nil {
-			fmt.Fprintf(os.Stderr, "| URL:         %s\n", types.GlobalConfig.URL.String())
-		} else {
-			fmt.Fprintf(os.Stderr, "| URL:         %s\n", "")
-		}
-
-		fmt.Fprintf(os.Stderr, "| Debug:       %t\n", types.GlobalConfig.Debug)
-		fmt.Fprintf(os.Stderr, "| Providers:\n")
-
-		for model, provider := range types.GlobalConfig.Providers {
-
-			if provider.URL != nil {
-
-				if provider.Alias != "" {
-					fmt.Fprintf(os.Stderr, "|> \"%s\" via \"%s\" as \"%s\"\n", model, provider.URL.String(), provider.Alias)
-				} else {
-					fmt.Fprintf(os.Stderr, "|> \"%s\" via \"%s\"\n", model, provider.URL.String())
-				}
-
-			}
-
-		}
-
-		fmt.Fprintf(os.Stderr, "\n")
-
+	if role != "" {
+		client.SetRole(role)
 	}
 
-	fmt.Fprintf(os.Stderr, "[config]:\n")
-	fmt.Fprintf(os.Stderr, "| Name:        %s\n", config.Name)
-	fmt.Fprintf(os.Stderr, "| Role:        %s\n", config.Role)
-	fmt.Fprintf(os.Stderr, "| Model:       %s\n", config.Model)
-	fmt.Fprintf(os.Stderr, "| Prompt:      %d bytes\n", len(config.Prompt))
-	fmt.Fprintf(os.Stderr, "| Temperature: %.2f\n", config.Temperature)
-	fmt.Fprintf(os.Stderr, "| Sandbox:     %s\n", config.Sandbox)
-	fmt.Fprintf(os.Stderr, "| URL:         %s\n", config.URL.String())
-	fmt.Fprintf(os.Stderr, "| Debug:       %t\n", config.Debug)
-	fmt.Fprintf(os.Stderr, "| Providers:\n")
+	fmt.Fprintf(os.Stdout, "[config]:\n")
+	fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", session.Agent.Name, session.Agent.Role, session.Agent.Model, session.Agent.Temperature)
+	fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(session.Agent.AllowedTools, ", "))
+	fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", session.Config.Sandbox)
+	fmt.Fprintf(os.Stdout, "| URL:     %s\n", session.Config.URL.String())
+	fmt.Fprintf(os.Stdout, "| Web:     %s\n", server.URL.String())
+	fmt.Fprintf(os.Stdout, "| Debug:   %t\n", session.Config.Debug)
+	fmt.Fprintf(os.Stdout, "|\n")
 
-	for model, provider := range config.Providers {
-
-		if provider.Alias != "" {
-			fmt.Fprintf(os.Stderr, "|> \"%s\" as \"%s\": \"%s\", \"%s\"\n", model, provider.Alias, provider.URL.String(), provider.Token)
-		} else {
-			fmt.Fprintf(os.Stderr, "|> \"%s\": \"%s\", \"%s\"\n", model, provider.URL.String(), provider.Token)
-		}
-
+	for _, agent := range agents {
+		fmt.Fprintf(os.Stdout, "|-> Restored Agent \"%s\" with %d messages\n", agent.Name, len(agent.Messages))
 	}
-
-	fmt.Fprintf(os.Stderr, "\n")
 
 	os.Stdout.Sync()
-	os.Stderr.Sync()
 
-	fmt.Fprintf(os.Stderr, "\n")
+
+	shutdown := make(chan bool, 1)
+
+	go func() {
+		client.Init()
+		shutdown<-true
+	}()
+
+	go func() {
+		server.Init()
+		shutdown<-true
+	}()
+
+	select {
+	case <-shutdown:
+		os.Exit(0)
+	}
 
 }

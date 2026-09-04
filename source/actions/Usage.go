@@ -7,9 +7,9 @@ import "sort"
 import "strconv"
 import "strings"
 
-func Usage(options_ui []string) {
+func Usage(options_mode []string) {
 
-	default_ui          := "unset"
+	default_mode        := "unset"
 	default_name        := strconv.Quote("Peanut Hamper")
 	default_role        := strconv.Quote("planner")
 	default_model       := strconv.Quote("deepseek-v4-pro:cloud")
@@ -36,13 +36,13 @@ func Usage(options_ui []string) {
 	sort.Strings(options_model)
 
 	fmt.Fprint(os.Stdout, "\n")
-	fmt.Fprint(os.Stdout, "Usage: exocomp <ui> [flags]\n")
+	fmt.Fprint(os.Stdout, "Usage: exocomp <mode> [flags]\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "Arguments:\n")
 	fmt.Fprint(os.Stdout, "\n")
-	fmt.Fprint(os.Stdout, "  <ui> string            UI type\n")
-	fmt.Fprint(os.Stdout, "                         (options: " + strings.Join(options_ui, ", ") + ")\n")
-	fmt.Fprint(os.Stdout, "                         (default: " + default_ui + ")\n")
+	fmt.Fprint(os.Stdout, "  <mode> string          UI type\n")
+	fmt.Fprint(os.Stdout, "                         (options: " + strings.Join(options_mode, ", ") + ")\n")
+	fmt.Fprint(os.Stdout, "                         (default: " + default_mode + ")\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "Flags:\n")
 	fmt.Fprint(os.Stdout, "\n")

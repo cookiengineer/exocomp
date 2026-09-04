@@ -20,6 +20,8 @@ func main() {
 		switch tmp1 {
 		case "agent":
 			mode = "agent"
+		case "config":
+			mode = "config"
 		case "web":
 			mode = "web"
 		}
@@ -46,17 +48,13 @@ func main() {
 
 			switch mode {
 			case "agent":
-
 				actions.Agent(agent, config)
-
+			case "config":
+				actions.Config(agent, config)
 			case "web":
-
 				actions.Web(agent, config)
-
 			default:
-
-				actions.Usage([]string{"agent", "web"})
-
+				actions.Usage([]string{"agent", "config", "web"})
 			}
 
 		} else {
