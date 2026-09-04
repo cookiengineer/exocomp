@@ -15,11 +15,13 @@ import "os"
 import "slices"
 import "sort"
 import "strings"
+import "sync"
 
 type Requirements struct {
 	Methods    []string
 	Playground string
 	Sandbox    string
+	mutex      *sync.RWMutex
 	contents   map[string]map[string]types.Requirement // map[resolved][symbol]
 }
 
@@ -29,6 +31,7 @@ func NewRequirements(methods []string, playground string, sandbox string) *Requi
 		Methods:    methods,
 		Playground: playground,
 		Sandbox:    sandbox,
+		mutex:      &sync.RWMutex{},
 		contents:   make(map[string]map[string]types.Requirement),
 	}
 
@@ -164,7 +167,9 @@ func (tool *Requirements) GetContent(id string) (any, error) {
 
 		if err2 == nil {
 
+			tool.mutex.RLock()
 			content, ok := tool.contents[internal_path]
+			tool.mutex.RUnlock()
 
 			if ok == true {
 				return content, nil
@@ -182,6 +187,24 @@ func (tool *Requirements) GetContent(id string) (any, error) {
 
 }
 
+func (tool *Requirements) GetContentIdentifiers() []string {
+
+	result := make([]string, 0)
+
+	tool.mutex.RLock()
+
+	for id, _ := range tool.contents {
+		result = append(result, id)
+	}
+
+	tool.mutex.RUnlock()
+
+	sort.Strings(result)
+
+	return result
+
+}
+
 func (tool *Requirements) HasMethod(method string) bool {
 	return slices.Contains(tool.Methods, method) == true
 }
@@ -191,6 +214,8 @@ func (tool *Requirements) List() (string, error) {
 	readRequirements(tool)
 
 	lines := make([]string, 0)
+
+	tool.mutex.RLock()
 
 	for _, specifications := range tool.contents {
 
@@ -211,6 +236,8 @@ func (tool *Requirements) List() (string, error) {
 		}
 
 	}
+
+	tool.mutex.RUnlock()
 
 	sort.Strings(lines)
 
@@ -269,7 +296,9 @@ func (tool *Requirements) Signoff(path string, symbol string) (string, error) {
 
 			readRequirements(tool)
 
+			tool.mutex.RLock()
 			specification, ok1 := tool.contents[internal_path][symbol]
+			tool.mutex.RUnlock()
 
 			if ok1 == true {
 
@@ -283,8 +312,10 @@ func (tool *Requirements) Signoff(path string, symbol string) (string, error) {
 
 						if utils_ast.HasSymbol(source, specification.Symbol, specification.Type) == true {
 
+							tool.mutex.Lock()
 							specification.IsImplemented = true
 							tool.contents[internal_path][symbol] = specification
+							tool.mutex.Unlock()
 
 							err5 := writeRequirements(tool)
 
@@ -381,6 +412,8 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 					readRequirements(tool)
 
+					tool.mutex.Lock()
+
 					_, ok1 := tool.contents[internal_path]
 
 					if ok1 == false {
@@ -394,6 +427,8 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 						Symbol:      declaration_symbol,
 						Behavior:    behavior,
 					}
+
+					tool.mutex.Unlock()
 
 					err4 := writeRequirements(tool)
 
@@ -507,6 +542,8 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 
 					readRequirements(tool)
 
+					tool.mutex.Lock()
+
 					_, ok3 := tool.contents[internal_path]
 
 					if ok3 == false {
@@ -520,6 +557,8 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 						Symbol:      declaration_symbol,
 						Behavior:    behavior,
 					}
+
+					tool.mutex.Unlock()
 
 					err4 := writeRequirements(tool)
 
@@ -633,6 +672,8 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 
 					readRequirements(tool)
 
+					tool.mutex.Lock()
+
 					_, ok3 := tool.contents[internal_path]
 
 					if ok3 == false {
@@ -646,6 +687,8 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 						Symbol:      declaration_symbol,
 						Behavior:    behavior,
 					}
+
+					tool.mutex.Unlock()
 
 					err4 := writeRequirements(tool)
 
@@ -694,6 +737,8 @@ func (tool *Requirements) Search(path string, symbol string) (string, error) {
 
 			lines := make([]string, 0)
 
+			tool.mutex.RLock()
+
 			for internal_path, specifications := range tool.contents {
 
 				if strings.HasPrefix(internal_path, search_path) {
@@ -729,6 +774,8 @@ func (tool *Requirements) Search(path string, symbol string) (string, error) {
 				}
 
 			}
+
+			tool.mutex.RUnlock()
 
 			sort.Strings(lines)
 

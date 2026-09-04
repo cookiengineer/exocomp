@@ -157,6 +157,10 @@ func (tool *Files) GetContent(id string) (any, error) {
 	return nil, nil
 }
 
+func (tool *Files) GetContentIdentifiers() []string {
+	return []string{}
+}
+
 func (tool *Files) HasMethod(method string) bool {
 	return slices.Contains(tool.Methods, method) == true
 }

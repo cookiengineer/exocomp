@@ -8,11 +8,13 @@ import "fmt"
 import "slices"
 import "sort"
 import "strings"
+import "sync"
 
 type Bugs struct {
 	Methods    []string
 	Playground string
 	Sandbox    string
+	mutex      *sync.RWMutex
 	contents   map[string]map[string]types.Bug // map[path][symbol]
 }
 
@@ -22,6 +24,7 @@ func NewBugs(methods []string, playground string, sandbox string) *Bugs {
 		Methods:    methods,
 		Playground: playground,
 		Sandbox:    sandbox,
+		mutex:      &sync.RWMutex{},
 		contents:   make(map[string]map[string]types.Bug),
 	}
 
@@ -101,6 +104,9 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 
 func (tool *Bugs) Add(path string, symbol string, description string) (string, error) {
 
+	tool.mutex.Lock()
+	defer tool.mutex.Unlock()
+
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err1 == nil {
@@ -165,6 +171,9 @@ func (tool *Bugs) Add(path string, symbol string, description string) (string, e
 
 func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 
+	tool.mutex.Lock()
+	defer tool.mutex.Unlock()
+
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err1 == nil {
@@ -223,7 +232,9 @@ func (tool *Bugs) GetContent(id string) (any, error) {
 
 		if err2 == nil {
 
+			tool.mutex.RLock()
 			content, ok := tool.contents[internal_path]
+			tool.mutex.RUnlock()
 
 			if ok == true {
 				return content, nil
@@ -241,6 +252,24 @@ func (tool *Bugs) GetContent(id string) (any, error) {
 
 }
 
+func (tool *Bugs) GetContentIdentifiers() []string {
+
+	result := make([]string, 0)
+
+	tool.mutex.RLock()
+
+	for id, _ := range tool.contents {
+		result = append(result, id)
+	}
+
+	tool.mutex.RUnlock()
+
+	sort.Strings(result)
+
+	return result
+
+}
+
 func (tool *Bugs) HasMethod(method string) bool {
 	return slices.Contains(tool.Methods, method) == true
 }
@@ -250,6 +279,8 @@ func (tool *Bugs) List() (string, error) {
 	readBugs(tool)
 
 	lines := make([]string, 0)
+
+	tool.mutex.RLock()
 
 	for _, bug_reports := range tool.contents {
 
@@ -274,6 +305,8 @@ func (tool *Bugs) List() (string, error) {
 		}
 
 	}
+
+	tool.mutex.RUnlock()
 
 	sort.Strings(lines)
 
@@ -335,6 +368,9 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 			if symbol != "" {
 
 				lines  := make([]string, 0)
+
+				tool.mutex.RLock()
+
 				_, ok1 := tool.contents[internal_path]
 
 				if ok1 == true {
@@ -357,6 +393,8 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 				}
 
+				tool.mutex.RUnlock()
+
 				sort.Strings(lines)
 
 				result := make([]string, 0)
@@ -370,7 +408,10 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 			} else {
 
-				lines            := make([]string, 0)
+				lines := make([]string, 0)
+
+				tool.mutex.RLock()
+
 				bug_reports, ok1 := tool.contents[internal_path]
 
 				if ok1 == true {
@@ -390,6 +431,8 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 					}
 
 				}
+
+				tool.mutex.RUnlock()
 
 				sort.Strings(lines)
 

@@ -8,12 +8,14 @@ import "fmt"
 import "slices"
 import "sort"
 import "strings"
+import "sync"
 import "time"
 
 type Changelog struct {
 	Methods    []string
 	Playground string
 	Sandbox    string
+	mutex      *sync.RWMutex
 	contents   map[string]map[string][]types.ChangelogEntry // map[path][symbol]
 }
 
@@ -23,6 +25,7 @@ func NewChangelog(methods []string, playground string, sandbox string) *Changelo
 		Methods:    methods,
 		Playground: playground,
 		Sandbox:    sandbox,
+		mutex:      &sync.RWMutex{},
 		contents:   make(map[string]map[string][]types.ChangelogEntry, 0),
 	}
 
@@ -184,7 +187,9 @@ func (tool *Changelog) GetContent(id string) (any, error) {
 
 		if err2 == nil {
 
+			tool.mutex.RLock()
 			content, ok := tool.contents[internal_path]
+			tool.mutex.RUnlock()
 
 			if ok == true {
 				return content, nil
@@ -202,6 +207,24 @@ func (tool *Changelog) GetContent(id string) (any, error) {
 
 }
 
+func (tool *Changelog) GetContentIdentifiers() []string {
+
+	result := make([]string, 0)
+
+	tool.mutex.RLock()
+
+	for id, _ := range tool.contents {
+		result = append(result, id)
+	}
+
+	tool.mutex.RUnlock()
+
+	sort.Strings(result)
+
+	return result
+
+}
+
 func (tool *Changelog) HasMethod(method string) bool {
 	return slices.Contains(tool.Methods, method) == true
 }
@@ -211,6 +234,8 @@ func (tool *Changelog) List() (string, error) {
 	readChangelog(tool)
 
 	found := make(map[time.Time][]string, 0)
+
+	tool.mutex.RLock()
 
 	for _, symbols := range tool.contents {
 
@@ -235,6 +260,8 @@ func (tool *Changelog) List() (string, error) {
 		}
 
 	}
+
+	tool.mutex.RUnlock()
 
 	dates := make([]time.Time, 0)
 	lines := make([]string, 0)
@@ -318,6 +345,8 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 
 			if symbol != "" {
 
+				tool.mutex.RLock()
+
 				_, ok1 := tool.contents[internal_path]
 
 				if ok1 == true {
@@ -339,6 +368,8 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 					}
 
 				}
+
+				tool.mutex.RUnlock()
 
 				dates := make([]time.Time, 0)
 				lines := make([]string, 0)
@@ -370,6 +401,8 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 
 			} else {
 
+				tool.mutex.RLock()
+
 				symbols, ok1 := tool.contents[internal_path]
 
 				if ok1 == true {
@@ -399,6 +432,8 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 					}
 
 				}
+
+				tool.mutex.RUnlock()
 
 				dates := make([]time.Time, 0)
 				lines := make([]string, 0)
@@ -441,6 +476,9 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 }
 
 func (tool *Changelog) createEntry(method string, path string, symbol string, description string) (string, error) {
+
+	tool.mutex.Lock()
+	defer tool.mutex.Unlock()
 
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 

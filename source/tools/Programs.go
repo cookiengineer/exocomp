@@ -218,6 +218,10 @@ func (tool *Programs) GetContent(id string) (any, error) {
 	return nil, nil
 }
 
+func (tool *Programs) GetContentIdentifiers() []string {
+	return []string{}
+}
+
 func (tool *Programs) HasMethod(method string) bool {
 	return slices.Contains(tool.Methods, method) == true
 }

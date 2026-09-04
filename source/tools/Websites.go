@@ -174,6 +174,10 @@ func (tool *Websites) GetContent(id string) (any, error) {
 	return nil, nil
 }
 
+func (tool *Websites) GetContentIdentifiers() []string {
+	return []string{}
+}
+
 func (tool *Websites) HasMethod(method string) bool {
 	return slices.Contains(tool.Methods, method) == true
 }

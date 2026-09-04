@@ -359,6 +359,24 @@ func (tool *Agents) GetContent(id string) (any, error) {
 
 }
 
+func (tool *Agents) GetContentIdentifiers() []string {
+
+	result := make([]string, 0)
+
+	tool.mutex.Lock()
+
+	for id, _ := range tool.contents {
+		result = append(result, id)
+	}
+
+	tool.mutex.Unlock()
+
+	sort.Strings(result)
+
+	return result
+
+}
+
 func (tool *Agents) GetAgent(name string) *types.Agent {
 
 	sanitized_name := utils_fmt.FormatAgentName(name)

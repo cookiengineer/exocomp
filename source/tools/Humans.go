@@ -7,6 +7,7 @@ import "context"
 import "encoding/json"
 import "fmt"
 import "slices"
+import "sort"
 import "strings"
 import "sync"
 import "time"
@@ -38,7 +39,7 @@ type Humans struct {
 	Timeout  time.Duration
 	contents map[string]*types.Question
 	states   map[string]*question_state
-	mutex    *sync.Mutex
+	mutex    *sync.RWMutex
 }
 
 func NewHumans(methods []string, playground string, sandbox string) *Humans {
@@ -48,7 +49,7 @@ func NewHumans(methods []string, playground string, sandbox string) *Humans {
 		Timeout:  15 * time.Minute,
 		contents: make(map[string]*types.Question),
 		states:   make(map[string]*question_state),
-		mutex:    &sync.Mutex{},
+		mutex:    &sync.RWMutex{},
 	}
 
 	return humans
@@ -232,15 +233,33 @@ func (tool *Humans) GetContent(question string) (any, error) {
 
 	question = strings.TrimSpace(question)
 
-	tool.mutex.Lock()
+	tool.mutex.RLock()
 	content, ok := tool.contents[question]
-	tool.mutex.Unlock()
+	tool.mutex.RUnlock()
 
 	if ok == true {
 		return content, nil
 	} else {
 		return nil, fmt.Errorf("humans.GetContent: Question \"%s\" was never asked!", question)
 	}
+
+}
+
+func (tool *Humans) GetContentIdentifiers() []string {
+
+	result := make([]string, 0)
+
+	tool.mutex.RLock()
+
+	for id, _ := range tool.contents {
+		result = append(result, id)
+	}
+
+	tool.mutex.RUnlock()
+
+	sort.Strings(result)
+
+	return result
 
 }
 

@@ -147,6 +147,20 @@ func (tool *Skills) GetContent(id string) (any, error) {
 
 }
 
+func (tool *Skills) GetContentIdentifiers() []string {
+
+	result := make([]string, 0)
+
+	for id, _ := range tool.contents {
+		result = append(result, id)
+	}
+
+	sort.Strings(result)
+
+	return result
+
+}
+
 func (tool *Skills) HasMethod(method string) bool {
 	return slices.Contains(tool.Methods, method) == true
 }
