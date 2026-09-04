@@ -32,22 +32,19 @@ func Debug(session *engine.Session, agents []*types.Agent, role string) {
 
 	os.Stdout.Sync()
 
-
-	shutdown := make(chan bool, 1)
+	shutdown := make(chan struct{})
 
 	go func() {
 		client.Init()
-		shutdown<-true
+		close(shutdown)
 	}()
 
 	go func() {
 		server.Init()
-		shutdown<-true
+		close(shutdown)
 	}()
 
-	select {
-	case <-shutdown:
-		os.Exit(0)
-	}
+	<-shutdown
+	os.Exit(0)
 
 }
