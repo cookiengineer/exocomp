@@ -1,10 +1,15 @@
 
 # TODO
 
+## cmds/agimus
+
+- [ ] Verify that playground and sandbox are set to correct `/tmp/agimus-*` folder
+- [ ] Verify that internal session backup is stored in correct `/tmp` folder and doesn't override source folder
+
 ## Agents Workflow
 
-- [ ] agents.Hire() needs to be more clear for DeepSeek model
-      somehow "user" prompt isn't being injected into the subprocess
+- [ ] agents.Hire() needs to be more clear for DeepSeek planner model
+- [ ] "user" prompt isn't being injected into the subprocess. Might be a Config issue because config.Prompt isn't user prompt but a system prompt!?
 
 ## Questions Workflow
 
@@ -14,19 +19,10 @@
       If they're answered, then render a UI with disabled elements for now.
 
 
-## types/Session DEBUGGING
+## engine/Session
 
-- [ ] There's a bug of Session persistance, because any subagent of the parent will write
-      its session to the same folder/path of the parent?
-
-- [ ] Add better debugging messages when Session is recovered successfully
-- [ ] Reprint the correct config after Recovery and Backup calls
-- [ ] Write debug messages that it was backed up to `./.exocomp/debug/*.json`
-
-## Questions Tool
-
-- [ ] Implement a Question tool with `question string`, `options []string`, `multiple bool` parameters that
-      shows UI elements to confirm/select options and that allows to type your own answer.
+- [ ] Add better debugging messages when Session is recovered and backed up
+- [ ] Print the correct config after Recovery and Backup calls
 
 ## Files Tool
 

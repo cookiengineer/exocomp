@@ -8,8 +8,9 @@ type Tool interface {
 	Call(string, map[string]any) (string, error)
 
 	// XXX: This method can't be put anywhere else, cyclic dependency loop
-	GetContent(string) (any, error)
-	HasMethod(string)  bool
-	Schemas()          []schemas.Tool
+	GetContentIdentifiers() []string
+	GetContent(string)      (any, error)
+	HasMethod(string)       bool
+	Schemas()               []schemas.Tool
 
 }

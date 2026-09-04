@@ -98,7 +98,6 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	}
 
-	// TODO: Verify this
 	if config.GetPrompt() != "" {
 		session.Init()
 	}
