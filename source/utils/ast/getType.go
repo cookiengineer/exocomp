@@ -20,31 +20,12 @@ func getType(file *ast.File, fileset *token.FileSet, symbol string, expected_typ
 
 				if ok2 == true && type_spec.Name != nil && type_spec.Name.Name == symbol {
 
-					if expected_type == "interface" {
+					if typeName(fileset, type_spec.Type) == expected_type {
 
-						_, is_interface := type_spec.Type.(*ast.InterfaceType)
+						buffer := bytes.Buffer{}
+						printer.Fprint(&buffer, fileset, gen_decl)
 
-						if is_interface == true {
-
-							buffer := bytes.Buffer{}
-							printer.Fprint(&buffer, fileset, gen_decl)
-
-							return strings.TrimSpace(buffer.String())
-
-						}
-
-					} else if expected_type == "struct" {
-
-						_, is_struct := type_spec.Type.(*ast.StructType)
-
-						if is_struct == true {
-
-							buffer := bytes.Buffer{}
-							printer.Fprint(&buffer, fileset, gen_decl)
-
-							return strings.TrimSpace(buffer.String())
-
-						}
+						return strings.TrimSpace(buffer.String())
 
 					}
 

@@ -17,20 +17,8 @@ func hasType(file *ast.File, fileset *token.FileSet, symbol string, expected_typ
 
 				if ok2 == true && type_spec.Name != nil && type_spec.Name.Name == symbol {
 
-					if expected_type == "interface" {
-
-						_, is_interface := type_spec.Type.(*ast.InterfaceType)
-						if is_interface == true {
-							return true
-						}
-
-					} else if expected_type == "struct" {
-
-						_, is_struct := type_spec.Type.(*ast.StructType)
-						if is_struct == true {
-							return true
-						}
-
+					if typeName(fileset, type_spec.Type) == expected_type {
+						return true
 					}
 
 				}

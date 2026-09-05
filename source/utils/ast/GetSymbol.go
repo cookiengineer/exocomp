@@ -5,18 +5,24 @@ import "go/token"
 
 func GetSymbol(source []byte, symbol string, declaration_type string) string {
 
-	fileset   := token.NewFileSet()
+	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, "", source, 0)
 
 	if err == nil {
 
 		if declaration_type == "func" {
-			return getFunc(file, fileset, symbol)
-		} else if declaration_type == "interface" {
-			return getType(file, fileset, symbol, "interface")
-		} else if declaration_type == "struct" {
-			return getType(file, fileset, symbol, "struct")
+
+			result := getFunc(file, fileset, symbol)
+
+			if result == "" {
+				result = getType(file, fileset, symbol, declaration_type)
+			}
+
+			return result
+
 		}
+
+		return getType(file, fileset, symbol, declaration_type)
 
 	}
 

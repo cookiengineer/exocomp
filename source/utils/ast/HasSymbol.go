@@ -17,14 +17,14 @@ func HasSymbol(source []byte, symbol string, expected_type string) bool {
 	}
 
 	if expected_type == "func" {
-		return hasFunc(file, fileset, symbol)
-	} else if expected_type == "interface" {
-		return hasType(file, fileset, symbol, "interface")
-	} else if expected_type == "struct" {
-		return hasType(file, fileset, symbol, "struct")
+
+		if hasFunc(file, fileset, symbol) == true {
+			return true
+		}
+
 	}
 
-	return false
+	return hasType(file, fileset, symbol, expected_type)
 
 }
 
