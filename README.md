@@ -128,8 +128,8 @@ The idea is here to preserve the internal ollama-compatible naming scheme, so th
 aliases can be maintained in a provider-specific manner.
 
 ```yaml
-name: Peanut Hamper
-role: planner
+name: "Peanut Hamper"
+role: "planner"
 model: "deepseek-v4-pro:cloud"
 providers:
   deepseek-v4-pro:cloud:
@@ -150,14 +150,33 @@ require a [llama.cpp](https://github.com/ggml-org/llama.cpp) `llama-server`
 running. Take a look at the [TESTING.md](./docs/TESTING.md) for more details.
 
 
-### Usage
+### Development Usage
+
+The easiest way to use Exocomp is in combination with `ollama`. The provided
+scripts allow to quickly get started, and the scripts automatically set the
+correct context size for the default ollama KV cache and Prompt cache sizes.
+
+```bash
+# Required for quickstart usage
+sudo pacman -S ollama;
+
+# In the first terminal, start ollama
+cd /path/to/exocomp;
+bash quickstart-ollama.sh;
+
+# In the second terminal, start exocomp
+cd /path/to/exocomp;
+bash quickstart-exocomp.sh;
+```
+
+### Advanced Usage
 
 Exocomp's sandboxes are based on the `current working directory`, meaning that
 the folder in which the program is executed is the sandbox that the running agent
 can't escape from.
 
-The recommended default usage is to use the `Web UI` so that you can observe
-other agents working for the agent you're talking with.
+The recommended usage is to use the `Web UI` so that you can observe other agents
+working for the agent you're talking with.
 
 ```bash
 cd /path/to/project-root;

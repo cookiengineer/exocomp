@@ -18,12 +18,6 @@
       then render a UI for answering them _inside_ the tool call message's article element
       If they're answered, then render a UI with disabled elements for now.
 
-
-## engine/Session
-
-- [ ] Add better debugging messages when Session is recovered and backed up
-- [ ] Print the correct config after Recovery and Backup calls
-
 ## Files Tool
 
 - [ ] Implement `files.ReadSymbol(file, symbol)`

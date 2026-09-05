@@ -9,7 +9,7 @@ type Provider struct {
 	Token string       `json:"token" yaml:"token"`
 }
 
-func (provider *Provider) MarshalJSON() ([]byte, error) {
+func (provider Provider) MarshalJSON() ([]byte, error) {
 
 	url_str := ""
 

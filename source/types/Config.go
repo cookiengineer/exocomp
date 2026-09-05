@@ -324,7 +324,7 @@ func (config *Config) Public() *Config {
 
 }
 
-func (config *Config) MarshalJSON() ([]byte, error) {
+func (config Config) MarshalJSON() ([]byte, error) {
 
 	url_str := ""
 
