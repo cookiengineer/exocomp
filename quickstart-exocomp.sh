@@ -2,7 +2,7 @@
 
 ROOT="${PWD}";
 
-serve_exocomp() {
+quickstart_exocomp() {
 
 	local role="$1";
 	local model="$2";
@@ -15,9 +15,10 @@ serve_exocomp() {
 	cd "${ROOT}/source";
 
 	echo "Starting exocomp ...";
-	go run cmds/exocomp/main.go web --role="${role}" --model="${model}";
+
+	exec go run cmds/exocomp/main.go web --role="${role}" --model="${model}";
 
 }
 
-serve_exocomp "planner" "huihui_ai/Qwen3.6-abliterated:35b";
+quickstart_exocomp "planner" "huihui_ai/Qwen3.6-abliterated:35b";
 

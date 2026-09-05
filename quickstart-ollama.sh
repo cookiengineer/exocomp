@@ -81,7 +81,5 @@ echo "Available context length: ${OLLAMA_CONTEXT_LENGTH} tokens";
 echo "";
 echo "Starting Ollama ...";
 
-exit 1;
-
 exec ollama serve;
 
