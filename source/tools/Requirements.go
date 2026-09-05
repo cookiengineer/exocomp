@@ -4,11 +4,6 @@ import "exocomp/schemas"
 import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
 import utils_ast "exocomp/utils/ast"
-import "go/ast"
-import "go/parser"
-import "go/printer"
-import "go/token"
-import "bytes"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -363,95 +358,43 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 			declaration = strings.TrimSpace(declaration)
 
-			fileset    := token.NewFileSet()
-			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
+			prettified := utils_ast.GetSymbol([]byte(strings.Join([]string{
 				"package dummy",
 				declaration,
-			}, "\n"), 0)
+			}, "\n")), symbol, "func")
 
-			if err3 == nil {
+			if prettified != "" {
 
-				declaration_symbol := ""
-				declaration_code   := ""
+				readRequirements(tool)
 
-				for _, decl := range file.Decls {
+				tool.mutex.Lock()
 
-					declaration, ok0 := decl.(*ast.FuncDecl)
+				_, ok1 := tool.contents[internal_path]
 
-					if ok0 == true {
-
-						if declaration.Name != nil {
-
-							if declaration.Recv != nil && len(declaration.Recv.List) > 0 {
-
-								// NOTE: Method on a struct. The receiver
-								// type is the symbol owner, so the
-								// symbol is "ReceiverType.MethodName".
-								recv_type := declaration.Recv.List[0].Type
-								type_name := getReceiverTypeName(recv_type)
-
-								declaration_symbol = type_name + "." + declaration.Name.Name
-
-							} else {
-								declaration_symbol = declaration.Name.Name
-							}
-
-						}
-
-						buffer := bytes.Buffer{}
-						printer.Fprint(&buffer, token.NewFileSet(), declaration)
-						declaration_code = strings.TrimSpace(buffer.String())
-
-						break
-
-					}
-
+				if ok1 == false {
+					tool.contents[internal_path] = make(map[string]types.Requirement)
 				}
 
-				if declaration_symbol == symbol {
+				tool.contents[internal_path][symbol] = types.Requirement{
+					File:        internal_path,
+					Type:        "func",
+					Declaration: prettified,
+					Symbol:      symbol,
+					Behavior:    behavior,
+				}
 
-					readRequirements(tool)
+				tool.mutex.Unlock()
 
-					tool.mutex.Lock()
+				err4 := writeRequirements(tool)
 
-					_, ok1 := tool.contents[internal_path]
-
-					if ok1 == false {
-						tool.contents[internal_path] = make(map[string]types.Requirement)
-					}
-
-					tool.contents[internal_path][symbol] = types.Requirement{
-						File:        internal_path,
-						Type:        "func",
-						Declaration: declaration_code,
-						Symbol:      declaration_symbol,
-						Behavior:    behavior,
-					}
-
-					tool.mutex.Unlock()
-
-					err4 := writeRequirements(tool)
-
-					if err4 == nil {
-						return fmt.Sprintf("requirements.DefineFunc: %s defined as %s", declaration_symbol, declaration_code), nil
-					} else {
-						return "", fmt.Errorf("requirements.DefineFunc: %s", err4.Error())
-					}
-
+				if err4 == nil {
+					return fmt.Sprintf("requirements.DefineFunc: %s defined as %s", symbol, prettified), nil
 				} else {
-
-					err_example := fmt.Errorf("%s", strings.Join([]string{
-						fmt.Sprintf("requirements.DefineFunc: Invalid Go syntax, function symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
-						fmt.Sprintf("Declaration was: \"%s\"", declaration),
-						fmt.Sprintf("Declaration should be: \"func %s (...) (...)\"", symbol),
-					}, "\n"))
-
-					return "", err_example
-
+					return "", fmt.Errorf("requirements.DefineFunc: %s", err4.Error())
 				}
 
 			} else {
-				return "", fmt.Errorf("requirements.DefineFunc: Invalid Go syntax: \"%s\" threw parser error \"%s\"", declaration, err3.Error())
+				return "", fmt.Errorf("requirements.DefineFunc: Invalid Go syntax. \"func %s (...) (...)\" must be defined!", symbol)
 			}
 
 		} else {
@@ -480,108 +423,43 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 				declaration = "type " + symbol + " interface " + strings.TrimSpace(declaration[9:])
 			}
 
-			fileset    := token.NewFileSet()
-			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
+			prettified := utils_ast.GetSymbol([]byte(strings.Join([]string{
 				"package dummy",
 				declaration,
-			}, "\n"), 0)
+			}, "\n")), symbol, "interface")
 
-			if err3 == nil {
+			if prettified != "" {
 
-				declaration_symbol := ""
-				declaration_code   := ""
+				readRequirements(tool)
 
-				for _, decl := range file.Decls {
+				tool.mutex.Lock()
 
-					gen_decl, ok0 := decl.(*ast.GenDecl)
+				_, ok3 := tool.contents[internal_path]
 
-					if ok0 == true {
-
-						if gen_decl.Tok == token.TYPE {
-
-							for _, spec := range gen_decl.Specs {
-
-								type_spec, ok1 := spec.(*ast.TypeSpec)
-
-								if ok1 == true {
-
-									interface_type, ok2 := type_spec.Type.(*ast.InterfaceType)
-
-									if ok2 == true {
-
-										if type_spec.Name != nil {
-											declaration_symbol = type_spec.Name.Name
-										}
-
-										buffer := bytes.Buffer{}
-										printer.Fprint(&buffer, token.NewFileSet(), gen_decl)
-										declaration_code = strings.TrimSpace(buffer.String())
-
-										// explicitly referencing interface_type to keep symmetry with func parsing
-										_ = interface_type
-
-										break
-
-									}
-
-								}
-
-							}
-
-						}
-
-					}
-
-					if declaration_symbol != "" {
-						break
-					}
-
+				if ok3 == false {
+					tool.contents[internal_path] = make(map[string]types.Requirement)
 				}
 
-				if declaration_symbol == symbol {
+				tool.contents[internal_path][symbol] = types.Requirement{
+					File:        internal_path,
+					Type:        "interface",
+					Declaration: prettified,
+					Symbol:      symbol,
+					Behavior:    behavior,
+				}
 
-					readRequirements(tool)
+				tool.mutex.Unlock()
 
-					tool.mutex.Lock()
+				err4 := writeRequirements(tool)
 
-					_, ok3 := tool.contents[internal_path]
-
-					if ok3 == false {
-						tool.contents[internal_path] = make(map[string]types.Requirement)
-					}
-
-					tool.contents[internal_path][symbol] = types.Requirement{
-						File:        internal_path,
-						Type:        "interface",
-						Declaration: declaration_code,
-						Symbol:      declaration_symbol,
-						Behavior:    behavior,
-					}
-
-					tool.mutex.Unlock()
-
-					err4 := writeRequirements(tool)
-
-					if err4 == nil {
-						return fmt.Sprintf("requirements.DefineInterface: %s defined as %s", declaration_symbol, declaration_code), nil
-					} else {
-						return "", fmt.Errorf("requirements.DefineInterface: %s", err4.Error())
-					}
-
+				if err4 == nil {
+					return fmt.Sprintf("requirements.DefineInterface: %s defined as %s", symbol, prettified), nil
 				} else {
-
-					err_example := fmt.Errorf("%s", strings.Join([]string{
-						fmt.Sprintf("requirements.DefineInterface: Invalid Go syntax, interface symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
-						fmt.Sprintf("Declaration was: \"%s\"", declaration),
-						fmt.Sprintf("Declaration should be: \"type %s interface { ... }\"", symbol),
-					}, "\n"))
-
-					return "", err_example
-
+					return "", fmt.Errorf("requirements.DefineInterface: %s", err4.Error())
 				}
 
 			} else {
-				return "", fmt.Errorf("requirements.DefineInterface: Invalid Go syntax: \"%s\" threw parser error \"%s\"", declaration, err3.Error())
+				return "", fmt.Errorf("requirements.DefineInterface: Invalid Go syntax. \"type %s interface { ...}\" must be defined!", symbol)
 			}
 
 		} else {
@@ -610,108 +488,43 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 				declaration = "type " + symbol + " struct " + strings.TrimSpace(declaration[6:])
 			}
 
-			fileset    := token.NewFileSet()
-			file, err3 := parser.ParseFile(fileset, "", strings.Join([]string{
+			prettified := utils_ast.GetSymbol([]byte(strings.Join([]string{
 				"package dummy",
 				declaration,
-			}, "\n"), 0)
+			}, "\n")), symbol, "struct")
 
-			if err3 == nil {
+			if prettified != "" {
 
-				declaration_symbol := ""
-				declaration_code   := ""
+				readRequirements(tool)
 
-				for _, decl := range file.Decls {
+				tool.mutex.Lock()
 
-					gen_decl, ok0 := decl.(*ast.GenDecl)
+				_, ok3 := tool.contents[internal_path]
 
-					if ok0 == true {
-
-						if gen_decl.Tok == token.TYPE {
-
-							for _, spec := range gen_decl.Specs {
-
-								type_spec, ok1 := spec.(*ast.TypeSpec)
-
-								if ok1 == true {
-
-									struct_type, ok2 := type_spec.Type.(*ast.StructType)
-
-									if ok2 == true {
-
-										if type_spec.Name != nil {
-											declaration_symbol = type_spec.Name.Name
-										}
-
-										buffer := bytes.Buffer{}
-										printer.Fprint(&buffer, token.NewFileSet(), gen_decl)
-										declaration_code = strings.TrimSpace(buffer.String())
-
-										// explicitly referencing struct_type to keep symmetry with func parsing
-										_ = struct_type
-
-										break
-
-									}
-
-								}
-
-							}
-
-						}
-
-					}
-
-					if declaration_symbol != "" {
-						break
-					}
-
+				if ok3 == false {
+					tool.contents[internal_path] = make(map[string]types.Requirement)
 				}
 
-				if declaration_symbol == symbol {
+				tool.contents[internal_path][symbol] = types.Requirement{
+					File:        internal_path,
+					Type:        "struct",
+					Declaration: prettified,
+					Symbol:      symbol,
+					Behavior:    behavior,
+				}
 
-					readRequirements(tool)
+				tool.mutex.Unlock()
 
-					tool.mutex.Lock()
+				err4 := writeRequirements(tool)
 
-					_, ok3 := tool.contents[internal_path]
-
-					if ok3 == false {
-						tool.contents[internal_path] = make(map[string]types.Requirement)
-					}
-
-					tool.contents[internal_path][symbol] = types.Requirement{
-						File:        internal_path,
-						Type:        "struct",
-						Declaration: declaration_code,
-						Symbol:      declaration_symbol,
-						Behavior:    behavior,
-					}
-
-					tool.mutex.Unlock()
-
-					err4 := writeRequirements(tool)
-
-					if err4 == nil {
-						return fmt.Sprintf("requirements.DefineStruct: %s defined as %s", declaration_symbol, declaration_code), nil
-					} else {
-						return "", fmt.Errorf("requirements.DefineStruct: %s", err4.Error())
-					}
-
+				if err4 == nil {
+					return fmt.Sprintf("requirements.DefineStruct: %s defined as %s", symbol, prettified), nil
 				} else {
-
-					err_example := fmt.Errorf("%s", strings.Join([]string{
-						fmt.Sprintf("requirements.DefineStruct: Invalid Go syntax, struct symbol \"%s\" must be the same as symbol \"%s\".", declaration_symbol, symbol),
-						fmt.Sprintf("Declaration was: \"%s\"", declaration),
-						fmt.Sprintf("Declaration should be: \"type %s struct { ... }\"", symbol),
-					}, "\n"))
-
-					return "", err_example
-
+					return "", fmt.Errorf("requirements.DefineStruct: %s", err4.Error())
 				}
 
 			} else {
-				return "", fmt.Errorf("requirements.DefineStruct: Invalid Go syntax: \"%s\" threw parser error \"%s\"", declaration, err3.Error())
+				return "", fmt.Errorf("requirements.DefineStruct: Invalid Go syntax. \"type %s struct { ...}\" must be defined!", symbol)
 			}
 
 		} else {
