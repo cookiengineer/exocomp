@@ -22,6 +22,12 @@
 
 - [ ] Implement `files.ReadSymbol(file, symbol)`
 
+## Requirements Tool
+
+- [ ] readRequirements() only shows the planned requirements.
+- [ ] Extend readRequirements() to parse all packages and include their existing symbols.
+- [ ] Exceute command "go list ${playground}/..." to find out packages list, then parse them incrementally
+
 ## Tools
 
 - [ ] Implement Tool Call Shrinking, probably best in types/Session.go

@@ -1,6 +1,6 @@
 
-import { Agent            } from "../types/Agent.mjs";
-import { ScheduleRenderer } from "./renderers/ScheduleRenderer.mjs";
+import { Agent            } from "/types/Agent.mjs";
+import { ScheduleRenderer } from "/ui/renderers/ScheduleRenderer.mjs";
 
 const time_Second = 1 * 1000;
 

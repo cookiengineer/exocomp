@@ -1,6 +1,6 @@
 
-import { Requirement          } from "../types/Requirement.mjs";
-import { RequirementsRenderer } from "./renderers/RequirementsRenderer.mjs";
+import { Requirement          } from "/types/Requirement.mjs";
+import { RequirementsRenderer } from "/ui/renderers/RequirementsRenderer.mjs";
 
 const time_Second = 1 * 1000;
 

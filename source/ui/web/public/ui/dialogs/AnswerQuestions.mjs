@@ -15,8 +15,8 @@ export const AnswerQuestions = function(element, config) {
 	this.questions = [];
 	this.question = null;
 
-	this.OnNext    = (data) => {};
-	this.OnConfirm = (data) => {};
+	this.OnNext    = (data) => {}; // /types/Question
+	this.OnConfirm = (data) => {}; // /types/Question
 	this.OnCancel  = () => {};
 
 	this.Init();

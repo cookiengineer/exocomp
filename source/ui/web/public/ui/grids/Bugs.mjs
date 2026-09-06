@@ -1,6 +1,6 @@
 
-import { Bug          } from "../types/Bug.mjs";
-import { BugsRenderer } from "./renderers/BugsRenderer.mjs";
+import { Bug          } from "/types/Bug.mjs";
+import { BugsRenderer } from "/ui/renderers/BugsRenderer.mjs";
 
 const time_Second = 1 * 1000;
 

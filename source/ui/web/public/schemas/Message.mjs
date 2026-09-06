@@ -1,5 +1,5 @@
 
-import { ToolCall } from "./ToolCall.mjs";
+import { ToolCall } from "/schemas/ToolCall.mjs";
 
 export const Message = function() {
 

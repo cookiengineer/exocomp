@@ -1,6 +1,6 @@
 
-import { ChangelogEntry   } from "../types/ChangelogEntry.mjs";
-import { ChangelogRenderer } from "./renderers/ChangelogRenderer.mjs";
+import { ChangelogEntry    } from "/types/ChangelogEntry.mjs";
+import { ChangelogRenderer } from "/ui/renderers/ChangelogRenderer.mjs";
 
 const time_Second = 1 * 1000;
 

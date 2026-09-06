@@ -1,4 +1,4 @@
-import { Message } from "./Message.mjs";
+import { Message } from "/schemas/Message.mjs";
 
 export const Agent = function() {
 

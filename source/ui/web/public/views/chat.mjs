@@ -105,6 +105,7 @@ async function main() {
 
 						dialog.Reset();
 						dialog.Hide();
+						client.Resume();
 
 					} else {
 

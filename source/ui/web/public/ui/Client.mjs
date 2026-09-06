@@ -1,8 +1,9 @@
 
-import { Agent           } from "../types/Agent.mjs";
-import { ChatRenderer    } from "./renderers/ChatRenderer.mjs";
-import { Session         } from "../types/Session.mjs";
-import { ParseParameters } from "../utils/cli/ParseParameters.mjs";
+import { Agent                  } from "/types/Agent.mjs";
+import { ChatRenderer           } from "/ui/renderers/ChatRenderer.mjs";
+import { Session                } from "/engine/Session.mjs";
+import { ParseParameters        } from "/utils/cli/ParseParameters.mjs";
+import { GetUnansweredQuestions } from "/utils/chat/GetUnansweredQuestions.mjs";
 
 const time_Second = 1 * 1000;
 
@@ -24,9 +25,11 @@ export const Client = function(config) {
 		session: 0, // every  5 seconds
 	};
 
-	this.OnChange = (prompt) => {};
+	this.OnChange    = (prompt)    => {}; // String
+	this.OnQuestions = (questions) => {}; // Array of /types/Question.mjs
 
 	this.interval_id = null;
+	this.is_paused   = false;
 
 	setTimeout(() => {
 		this.UpdateAgents();
@@ -94,7 +97,7 @@ Client.prototype = {
 			errors.push(new Error("Invalid Agent Name, must be a unique Pseudonym."));
 		}
 
-		if (role == "") {
+		if (role === "") {
 			errors.push(new Error("Invalid Agent Role."));
 		}
 
@@ -311,6 +314,14 @@ Client.prototype = {
 
 	},
 
+	Pause: function() {
+		this.is_paused = true;
+	},
+
+	Resume: function() {
+		this.is_paused = false;
+	},
+
 	SetRole: function(role) {
 
 		if (role === "assistant" || role === "user") {
@@ -331,9 +342,9 @@ Client.prototype = {
 			let next_suggestion   = "";
 
 			if (
-				suggestion.type == "array-of-booleans"
-				|| suggestion.type == "array-of-numbers"
-				|| suggestion.type == "array-of-strings"
+				suggestion.type === "array-of-booleans"
+				|| suggestion.type === "array-of-numbers"
+				|| suggestion.type === "array-of-strings"
 			) {
 
 				if (current_parameter.endsWith("=")) {
@@ -344,16 +355,16 @@ Client.prototype = {
 
 					if (suggestion.key.startsWith(current_parameter) && current_parameter.length < suggestion.key.length) {
 						next_suggestion = suggestion.key.substr(current_parameter.length);
-					} else if (current_parameter == suggestion.key) {
+					} else if (current_parameter === suggestion.key) {
 						next_suggestion = "=[";
 					}
 
 				}
 
 			} else if (
-				suggestion.type == "boolean"
-				|| suggestion.type == "number"
-				|| suggestion.type == "string"
+				suggestion.type === "boolean"
+				|| suggestion.type === "number"
+				|| suggestion.type === "string"
 			) {
 
 				if (current_parameter.endsWith("=")) {
@@ -404,6 +415,13 @@ Client.prototype = {
 					agents.forEach((agent) => {
 						this.Session.ReceiveAgent(Agent.from(agent));
 					});
+
+					let agent = this.Session.GetAgent(null);
+					let questions = GetUnansweredQuestions(agent);
+					if (questions.length > 0) {
+						this.OnQuestions(questions);
+						this.Pause();
+					}
 
 				}
 
@@ -461,24 +479,28 @@ Client.prototype = {
 		this.timers.session += delta;
 		this.timers.label   += delta;
 
-		if (this.timers.label >= 1 * time_Second) {
-			this.UpdateLabel();
-			this.timers.label = 0;
-		}
+		if (this.is_paused === false) {
 
-		if (this.timers.session >= 5 * time_Second) {
-
-			if (this.Session !== null) {
-				this.Session.Update();
+			if (this.timers.label >= 1 * time_Second) {
+				this.UpdateLabel();
+				this.timers.label = 0;
 			}
 
-			this.timers.session = 0;
+			if (this.timers.session >= 5 * time_Second) {
 
-		}
+				if (this.Session !== null) {
+					this.Session.Update();
+				}
 
-		if (this.timers.agents >= 5 * time_Second) {
-			this.UpdateAgents();
-			this.timers.agents = 0;
+				this.timers.session = 0;
+
+			}
+
+			if (this.timers.agents >= 5 * time_Second) {
+				this.UpdateAgents();
+				this.timers.agents = 0;
+			}
+
 		}
 
 	},

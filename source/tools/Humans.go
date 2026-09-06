@@ -329,7 +329,7 @@ func (tool *Humans) Await(reference string) (string, error) {
 	if ok == true {
 
 		if question.Answer != "" {
-			return fmt.Sprintf("humans.%s: Answer for Question \"%s\" is:\n===\n%s\n===", question.Type, question.Question, question.Answer), nil
+			return fmt.Sprintf("humans.%s: Answer for Question \"%s\":\n===\n%s\n===", question.Type, question.Question, question.Answer), nil
 		} else {
 			return "", fmt.Errorf("humans.%s: Question \"%s\" was never answered!", question.Type, question.Question)
 		}

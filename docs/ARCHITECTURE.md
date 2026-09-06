@@ -135,8 +135,7 @@ only the allowed tools and their JSON schemas, and registers them on the `Sessio
 keyed by their namespace (the part before the first `.`).
 
 - Tool schema names are `namespace.Method` (e.g. `files.Read`, `requirements.DefineFunc`, `agents.Hire`).
-- `Session.CallTool` resolves the namespace, calls `Tool.Call(method, arguments)` and appends the result (or `Error: ...`) as a `tool` message.
-- `Tool.Get(id)` is the symbol lookup used by `skills` and other meta tools.
+- `Session.CallTool` resolves the namespace, invokes the tool and appends the result (or `Error: ...`) as a `tool` message carrying the matching `tool_call_id`.
 - Sandbox-bound tools (files, programs, requirements, bugs, changelog) resolve all paths through `resolveSandboxPath`/`sanitizeSandboxPath` so a contractor cannot escape its sandbox.
 
 Each tool's LLM-facing contract lives in its embedded JSON schema at `tools/*.json`
@@ -151,13 +150,17 @@ with `requirements.Define*`. A coder gets `files.Write`, `changelog.*` and
 
 ## Session Loop
 
-[types.Session](../source/types/Session.go) drives a single agent's
+[engine.Session](../source/engine/Session.go) drives a single agent's
 request/response loop:
 
 1. `SendChatRequest` appends the user message and calls
    `infer_chat_completions` (one HTTP POST to `/v1/chat/completions`).
 2. `ReceiveChatResponse` appends the assistant message; if it contains
-   `tool_calls`, each is executed via `CallTool` (blocking for `agents.Await`)
-   and then the loop recurses into `infer_chat_completions`.
+   `tool_calls`, each is executed via `CallTool` and then the loop recurses into
+   `infer_chat_completions`.
+   - `agents.Await` blocks until the hired agent finishes.
+   - `humans.Ask` and `humans.Choose` block until a human answers. The answer is
+     submitted through `/api/session/calltool` as a `humans.Answer` and appends
+     the correct message with `Role="tool"`.
 3. `Recovery` snapshots the session and agents to
    `<playground>/.exocomp/` so a planner can be restored across restarts.

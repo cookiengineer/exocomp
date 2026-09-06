@@ -1,6 +1,6 @@
 
-import { Agent   } from "./Agent.mjs";
-import { Console } from "./Console.mjs";
+import { Agent   } from "/types/Agent.mjs";
+import { Console } from "/types/Console.mjs";
 
 export const Session = function(config) {
 

@@ -62,7 +62,7 @@ export const RenderMessage = (message, with_empty_content) => {
 		article.setAttribute("data-role", "tool");
 
 		let tmp = message.Content.split("\n");
-		if (tmp.length == 1) {
+		if (tmp.length === 1) {
 
 			article.innerHTML = [
 				"<pre>" + tmp[0] + "</pre>"
