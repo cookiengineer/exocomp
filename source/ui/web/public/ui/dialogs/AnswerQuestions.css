@@ -1,11 +1,10 @@
 
-
-dialog#question article {
+dialog#answer-questions article {
 	min-width: 512px;
 	max-width: 80vw;
 }
 
-dialog#question article p[data-name="question"] {
+dialog#answer-questions article p[data-name="question"] {
 	display: block;
 	margin: 16px 16px 8px 16px;
 	padding: 0px;
@@ -16,7 +15,7 @@ dialog#question article p[data-name="question"] {
 	user-select: none;
 }
 
-dialog#question article div[data-name="answers"] {
+dialog#answer-questions article div[data-name="answers"] {
 	display: grid;
 	grid-template-columns: 1fr;
 	row-gap: 8px;
@@ -24,7 +23,7 @@ dialog#question article div[data-name="answers"] {
 	padding: 0px;
 }
 
-dialog#question article div[data-name="answers"] label {
+dialog#answer-questions article div[data-name="answers"] label {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -41,25 +40,25 @@ dialog#question article div[data-name="answers"] label {
 	user-select: none;
 }
 
-dialog#question article div[data-name="answers"] label:hover {
+dialog#answer-questions article div[data-name="answers"] label:hover {
 	border: 1px solid var(--article-border);
 }
 
-dialog#question article div[data-name="answers"] label input {
+dialog#answer-questions article div[data-name="answers"] label input {
 	flex: 0 0 auto;
 }
 
-dialog#question article div[data-name="answers"] label span {
+dialog#answer-questions article div[data-name="answers"] label span {
 	flex: 1 1 auto;
 }
 
-dialog#question article div[data-name="answers"] textarea {
+dialog#answer-questions article div[data-name="answers"] textarea {
 	width: 100%;
 	min-height: 10em;
 	box-sizing: border-box;
 }
 
-dialog#question article div[data-name="errors"] b {
+dialog#answer-questions article div[data-name="errors"] b {
 	display: block;
 	margin: 8px 16px;
 	padding: 2px 4px;

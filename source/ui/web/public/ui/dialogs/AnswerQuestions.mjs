@@ -1,7 +1,7 @@
 
 import { SanitizeContent } from "../../utils/fmt/SanitizeContent.mjs";
 
-export const Question = function(element, config) {
+export const AnswerQuestions = function(element, config) {
 
 	this.Config  = config;
 	this.Element = element;
@@ -12,16 +12,18 @@ export const Question = function(element, config) {
 		"errors":   element.querySelector("div[data-name=\"errors\"]"),
 	};
 
+	this.questions = [];
 	this.question = null;
 
+	this.OnNext    = (data) => {};
 	this.OnConfirm = (data) => {};
-	this.OnCancel  = (id) => {};
+	this.OnCancel  = () => {};
 
 	this.Init();
 
 };
 
-Question.prototype = {
+AnswerQuestions.prototype = {
 
 	Error: function(errors) {
 
@@ -44,7 +46,18 @@ Question.prototype = {
 			return null;
 		}
 
-		if (this.question.kind === "ask") {
+		if (this.IsChoice() === true) {
+
+			let inputs = Array.from(this.elements["answers"].querySelectorAll("input[name=\"question-answer\"]:checked"));
+			let values = inputs.map((input) => input.value);
+
+			if (values.length > 0) {
+				return values.join("\n");
+			}
+
+			return null;
+
+		} else {
 
 			let textarea = this.elements["answers"].querySelector("textarea[data-name=\"answer\"]");
 			if (textarea !== null) {
@@ -54,17 +67,6 @@ Question.prototype = {
 					return value;
 				}
 
-			}
-
-			return null;
-
-		} else {
-
-			let inputs = Array.from(this.elements["answers"].querySelectorAll("input[name=\"question-answer\"]:checked"));
-			let values = inputs.map((input) => input.value);
-
-			if (values.length > 0) {
-				return values.join("\n");
 			}
 
 			return null;
@@ -89,10 +91,9 @@ Question.prototype = {
 
 				event.preventDefault();
 
-				let id = this.question !== null ? this.question.id : null;
 				this.question = null;
 				this.Hide();
-				this.OnCancel(id);
+				this.OnCancel();
 
 			});
 
@@ -100,10 +101,9 @@ Question.prototype = {
 			if (close !== null) {
 				close.onclick = () => {
 
-					let id = this.question !== null ? this.question.id : null;
 					this.question = null;
 					this.Hide();
-					this.OnCancel(id);
+					this.OnCancel();
 
 				};
 			}
@@ -130,15 +130,29 @@ Question.prototype = {
 			if (cancel !== null) {
 				cancel.onclick = () => {
 
-					let id = this.question !== null ? this.question.id : null;
 					this.question = null;
 					this.Hide();
-					this.OnCancel(id);
+					this.OnCancel();
 
 				};
 			}
 
 		}
+
+	},
+
+	IsChoice: function() {
+
+		if (this.question !== null) {
+
+			let type    = (this.question.type || "").toString().toLowerCase();
+			let options = this.question.options || [];
+
+			return type === "choice" || type === "choices" || (Array.isArray(options) && options.length > 0);
+
+		}
+
+		return false;
 
 	},
 
@@ -162,7 +176,7 @@ Question.prototype = {
 
 		if (this.elements["title"] !== null) {
 
-			if (question.kind === "choices") {
+			if (this.IsChoice() === true) {
 				this.elements["title"].innerHTML = "Choices";
 			} else {
 				this.elements["title"].innerHTML = "Question";
@@ -180,16 +194,10 @@ Question.prototype = {
 
 		if (this.elements["answers"] !== null) {
 
-			if (question.kind === "ask") {
-
-				this.elements["answers"].innerHTML = [
-					"<textarea data-name=\"answer\" placeholder=\"Your answer ...\"></textarea>"
-				].join("");
-
-			} else {
+			if (this.IsChoice() === true) {
 
 				let type    = question.multiple === true ? "checkbox" : "radio";
-				let options = Object.prototype.toString.call(question.options) === "[object Array]" ? question.options : [];
+				let options = Array.isArray(question.options) ? question.options : [];
 
 				let html = options.map((option) => {
 					return [
@@ -201,6 +209,12 @@ Question.prototype = {
 				});
 
 				this.elements["answers"].innerHTML = html.join("");
+
+			} else {
+
+				this.elements["answers"].innerHTML = [
+					"<textarea data-name=\"answer\" placeholder=\"Your answer ...\"></textarea>"
+				].join("");
 
 			}
 
@@ -222,7 +236,9 @@ Question.prototype = {
 
 	},
 
-	Show: function(question) {
+	// TODO: Show should have been questions array not question object
+
+	Show: function(questions) {
 
 		this.question = question;
 		this.Render();

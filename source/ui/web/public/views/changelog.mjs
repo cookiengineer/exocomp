@@ -1,14 +1,14 @@
 
-import { Init as InitHeader } from "../ui/components/layout/Header.mjs";
-import { Changelog          } from "../ui/Changelog.mjs";
-import { BootstrapConfig    } from "../types/Config.mjs";
+import { Init as InitHeader         } from "/ui/components/layout/Header.mjs";
+import { Changelog as ChangelogGrid } from "/ui/grids/Changelog.mjs";
+import { BootstrapConfig            } from "/types/Config.mjs";
 
 async function main() {
 
 	try {
 
 		const config    = await BootstrapConfig("");
-		const changelog = new Changelog(config);
+		const changelog = new ChangelogGrid(config);
 
 		InitHeader();
 

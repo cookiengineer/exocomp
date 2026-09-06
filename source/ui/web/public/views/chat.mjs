@@ -1,9 +1,10 @@
 
-import { Client                       } from "../ui/Client.mjs";
-import { Init      as InitHeader      } from "../ui/components/layout/Header.mjs";
-import { CallTool  as CallToolPopover } from "../ui/popovers/CallTool.mjs";
-import { HireAgent as HireAgentDialog } from "../ui/dialogs/HireAgent.mjs";
-import { BootstrapConfig              } from "../types/Config.mjs";
+import { Client                                   } from "/ui/Client.mjs";
+import { Init            as InitHeader            } from "/ui/components/layout/Header.mjs";
+import { CallTool        as CallToolPopover       } from "/ui/popovers/CallTool.mjs";
+import { HireAgent       as HireAgentDialog       } from "/ui/dialogs/HireAgent.mjs";
+import { AnswerQuestions as AnswerQuestionsDialog } from "/ui/dialogs/AnswerQuestions.mjs";
+import { BootstrapConfig                          } from "/types/Config.mjs";
 
 async function main() {
 
@@ -70,6 +71,56 @@ async function main() {
 			}
 
 		})(document.querySelector("div#call-tool"));
+
+		((element) => {
+
+			if (element !== null) {
+
+				let dialog = new AnswerQuestionsDialog(element, config);
+
+				dialog.OnNext = (data) => {
+
+					let { result, errors } = client.AnswerQuestion(data);
+
+					if (result === true && errors.length === 0) {
+
+						// Do Nothing
+						dialog.Next();
+
+					} else {
+
+						if (errors.length > 0) {
+							dialog.Error(errors);
+						}
+
+					}
+
+				};
+
+				dialog.OnConfirm = (data) => {
+
+					let { result, errors } = client.AnswerQuestion(data);
+
+					if (result === true && errors.length === 0) {
+
+						dialog.Reset();
+						dialog.Hide();
+
+					} else {
+
+						if (errors.length > 0) {
+							dialog.Error(errors);
+						}
+
+					}
+
+				};
+
+				client.OnQuestions = (questions) => dialog.Show(questions);
+
+			}
+
+		})(document.querySelector("dialog#answer-questions"));
 
 		window.CLIENT = client;
 		window.CLIENT.Init();

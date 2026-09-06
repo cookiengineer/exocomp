@@ -1,14 +1,14 @@
 
-import { Init as InitHeader } from "../ui/components/layout/Header.mjs";
-import { Bugs                } from "../ui/Bugs.mjs";
-import { BootstrapConfig     } from "../types/Config.mjs";
+import { Init as InitHeader } from "/ui/components/layout/Header.mjs";
+import { Bugs as BugsGrid   } from "/ui/grids/Bugs.mjs";
+import { BootstrapConfig    } from "/types/Config.mjs";
 
 async function main() {
 
 	try {
 
 		const config = await BootstrapConfig("");
-		const bugs   = new Bugs(config);
+		const bugs   = new BugsGrid(config);
 
 		InitHeader();
 
