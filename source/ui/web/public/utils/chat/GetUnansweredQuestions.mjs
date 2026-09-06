@@ -24,7 +24,7 @@ export const GetUnansweredQuestions = (agent) => {
 			if (message.ToolName === "humans.Ask") {
 
 				let question = questions[message.ToolCallID] || null;
-				if (question !== null && question.Type === "humans.Ask") {
+				if (question !== null && question.Type === "Ask") {
 
 					let content = (message.Content || "").trim();
 					if (content.includes("Answer for Question") && content.includes("===")) {
@@ -36,7 +36,7 @@ export const GetUnansweredQuestions = (agent) => {
 			} else if (message.ToolName === "humans.Choose") {
 
 				let question = questions[message.ToolCallID] || null;
-				if (question !== null && question.Type === "humans.Choose") {
+				if (question !== null && question.Type === "Choose") {
 
 					let content = (message.Content || "").trim();
 					if (content.includes("Answer for Question") && content.includes("===")) {

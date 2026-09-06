@@ -20,6 +20,18 @@ export const Agent = function() {
 
 Agent.from = (data) => {
 
+	if (typeof data === "string") {
+		try {
+			data = JSON.parse(data);
+		} catch (err) {
+			data = {};
+		}
+	}
+
+	if (Object.prototype.toString.call(data) !== "[object Object]") {
+		data = {};
+	}
+
 	let agent = new Agent();
 
 	agent.Name        = data["name"]        || "";

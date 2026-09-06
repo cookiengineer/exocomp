@@ -138,6 +138,34 @@ Client.prototype = {
 
 	},
 
+	AnswerQuestion: function(data) {
+
+		let question = (data["question"] || "").trim();
+		let answer   = (data["answer"]   || "").trim();
+
+		if (question !== "" && answer !== "") {
+
+			this.CallTool("humans.Answer", "Answer", {
+				"question": question,
+				"answer":   answer,
+			});
+
+			return {
+				result: true,
+				errors: [],
+			};
+
+		} else {
+
+			return {
+				result: false,
+				errors: [ new Error("Invalid Answer, must not be empty.") ],
+			};
+
+		}
+
+	},
+
 	Init: function() {
 
 		if (this.Session !== null) {

@@ -10,6 +10,18 @@ export const Bug = function() {
 
 Bug.from = (data) => {
 
+	if (typeof data === "string") {
+		try {
+			data = JSON.parse(data);
+		} catch (err) {
+			data = {};
+		}
+	}
+
+	if (Object.prototype.toString.call(data) !== "[object Object]") {
+		data = {};
+	}
+
 	let bug = new Bug();
 
 	bug.IsFixed     = data["is_fixed"]     || false;

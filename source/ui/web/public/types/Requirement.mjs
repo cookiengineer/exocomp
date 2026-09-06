@@ -12,6 +12,18 @@ export const Requirement = function() {
 
 Requirement.from = (data) => {
 
+	if (typeof data === "string") {
+		try {
+			data = JSON.parse(data);
+		} catch (err) {
+			data = {};
+		}
+	}
+
+	if (Object.prototype.toString.call(data) !== "[object Object]") {
+		data = {};
+	}
+
 	let requirement = new Requirement();
 
 	requirement.Type          = data["type"]           || "";

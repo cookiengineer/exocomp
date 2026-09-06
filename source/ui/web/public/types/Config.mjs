@@ -52,6 +52,18 @@ export const Config = function() {
 
 Config.from = (data) => {
 
+	if (typeof data === "string") {
+		try {
+			data = JSON.parse(data);
+		} catch (err) {
+			data = {};
+		}
+	}
+
+	if (Object.prototype.toString.call(data) !== "[object Object]") {
+		data = {};
+	}
+
 	let config = new Config();
 
 	config.Name        = data["name"]        || "";

@@ -117,6 +117,10 @@ async function main() {
 
 				};
 
+				dialog.OnCancel = () => {
+					client.Resume();
+				};
+
 				client.OnQuestions = (questions) => dialog.Show(questions);
 
 			}

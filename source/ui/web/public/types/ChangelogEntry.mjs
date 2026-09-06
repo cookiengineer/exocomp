@@ -11,6 +11,18 @@ export const ChangelogEntry = function() {
 
 ChangelogEntry.from = (data) => {
 
+	if (typeof data === "string") {
+		try {
+			data = JSON.parse(data);
+		} catch (err) {
+			data = {};
+		}
+	}
+
+	if (Object.prototype.toString.call(data) !== "[object Object]") {
+		data = {};
+	}
+
 	let entry = new ChangelogEntry();
 
 	entry.Date        = data["date"]        || "";

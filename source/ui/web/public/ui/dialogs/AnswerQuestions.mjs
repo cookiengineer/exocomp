@@ -14,6 +14,7 @@ export const AnswerQuestions = function(element, config) {
 
 	this.questions = [];
 	this.question = null;
+	this.index    = 0;
 
 	this.OnNext    = (data) => {}; // /types/Question
 	this.OnConfirm = (data) => {}; // /types/Question
@@ -116,8 +117,16 @@ AnswerQuestions.prototype = {
 
 					if (answer !== null && this.question !== null) {
 
-						let id = this.question.id;
-						this.OnConfirm({ id: id, answer: answer });
+						let data = {
+							"question": this.question.Question,
+							"answer":   answer,
+						};
+
+						if (this.IsLast() === true) {
+							this.OnConfirm(data);
+						} else {
+							this.OnNext(data);
+						}
 
 					} else {
 						this.Error([ new Error("Please select an answer or type a response.") ]);
@@ -144,15 +153,16 @@ AnswerQuestions.prototype = {
 	IsChoice: function() {
 
 		if (this.question !== null) {
-
-			let type    = (this.question.type || "").toString().toLowerCase();
-			let options = this.question.options || [];
-
-			return type === "choice" || type === "choices" || (Array.isArray(options) && options.length > 0);
-
+			return this.question.Type === "Choose";
 		}
 
 		return false;
+
+	},
+
+	IsLast: function() {
+
+		return this.index >= this.questions.length - 1;
 
 	},
 
@@ -163,6 +173,19 @@ AnswerQuestions.prototype = {
 		}
 
 		return false;
+
+	},
+
+	Next: function() {
+
+		if (this.index < this.questions.length - 1) {
+
+			this.index    += 1;
+			this.question  = this.questions[this.index];
+
+			this.Render();
+
+		}
 
 	},
 
@@ -185,7 +208,7 @@ AnswerQuestions.prototype = {
 		}
 
 		if (this.elements["question"] !== null) {
-			this.elements["question"].innerHTML = SanitizeContent(question.question || "");
+			this.elements["question"].innerHTML = SanitizeContent(question.Question || "");
 		}
 
 		if (this.elements["errors"] !== null) {
@@ -196,8 +219,8 @@ AnswerQuestions.prototype = {
 
 			if (this.IsChoice() === true) {
 
-				let type    = question.multiple === true ? "checkbox" : "radio";
-				let options = Array.isArray(question.options) ? question.options : [];
+				let type    = question.Multiple === true ? "checkbox" : "radio";
+				let options = Array.isArray(question.Options) ? question.Options : [];
 
 				let html = options.map((option) => {
 					return [
@@ -224,7 +247,9 @@ AnswerQuestions.prototype = {
 
 	Reset: function() {
 
-		this.question = null;
+		this.question  = null;
+		this.questions = [];
+		this.index     = 0;
 
 		if (this.elements["answers"] !== null) {
 			this.elements["answers"].innerHTML = "";
@@ -236,14 +261,15 @@ AnswerQuestions.prototype = {
 
 	},
 
-	// TODO: Show should have been questions array not question object
-
 	Show: function(questions) {
 
-		this.question = question;
+		this.questions = Array.isArray(questions) ? questions : [];
+		this.index     = 0;
+		this.question  = this.questions.length > 0 ? this.questions[0] : null;
+
 		this.Render();
 
-		if (this.Element !== null) {
+		if (this.Element !== null && this.question !== null) {
 
 			if (this.Element.hasAttribute("open") === false) {
 				this.Element.showModal();

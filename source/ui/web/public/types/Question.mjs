@@ -11,16 +11,28 @@ export const Question = function() {
 
 Question.from = (data) => {
 
-	let question = NewQuestion();
+	if (typeof data === "string") {
+		try {
+			data = JSON.parse(data);
+		} catch (err) {
+			data = {};
+		}
+	}
+
+	if (Object.prototype.toString.call(data) !== "[object Object]") {
+		data = {};
+	}
+
+	let question = new Question();
 
 	question.Question = data["question"] || "";
 	question.Options  = data["options"]  || [];
 	question.Multiple = typeof data["multiple"] === "boolean" ? data["multiple"] : false;
 
 	if (question.Question !== "" && question.Options.length > 0) {
-		question.Type = "humans.Choose";
+		question.Type = "Choose";
 	} else {
-		question.Type = "humans.Ask";
+		question.Type = "Ask";
 	}
 
 	return question;
