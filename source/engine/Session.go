@@ -696,7 +696,14 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 			return session.infer_chat_completions()
 
 		} else {
+
+			// NOTE: Only backup planner sessions, hired agents are backed up automatically
+			if session.Recovery != nil && session.Agent.Role == "planner" {
+				session.Recovery.BackupSession(session)
+			}
+
 			return nil
+
 		}
 
 	} else {
