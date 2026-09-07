@@ -6,7 +6,7 @@ import "go/printer"
 import "go/token"
 import "strings"
 
-func getFunc(file *ast.File, fileset *token.FileSet, symbol string) string {
+func getFunc(file *ast.File, fileset *token.FileSet, symbol string, header_only bool) string {
 
 	for _, decl := range file.Decls {
 
@@ -23,7 +23,17 @@ func getFunc(file *ast.File, fileset *token.FileSet, symbol string) string {
 					buffer := bytes.Buffer{}
 					printer.Fprint(&buffer, fileset, func_decl)
 
-					return strings.TrimSpace(buffer.String())
+					declaration := strings.TrimSpace(buffer.String())
+
+					if header_only == true {
+
+						if strings.Contains(declaration, "{\n") {
+							declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
+						}
+
+					}
+
+					return declaration
 
 				}
 
@@ -32,7 +42,17 @@ func getFunc(file *ast.File, fileset *token.FileSet, symbol string) string {
 				buffer := bytes.Buffer{}
 				printer.Fprint(&buffer, fileset, func_decl)
 
-				return strings.TrimSpace(buffer.String())
+				declaration := strings.TrimSpace(buffer.String())
+
+				if header_only == true {
+
+					if strings.Contains(declaration, "{\n") {
+						declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
+					}
+
+				}
+
+				return declaration
 
 			}
 

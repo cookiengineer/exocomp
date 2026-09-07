@@ -12,17 +12,17 @@ func GetSymbol(source []byte, symbol string, declaration_type string) string {
 
 		if declaration_type == "func" {
 
-			result := getFunc(file, fileset, symbol)
+			result := getFunc(file, fileset, symbol, true)
 
 			if result == "" {
-				result = getType(file, fileset, symbol, declaration_type)
+				result = getType(file, fileset, symbol, declaration_type, true)
 			}
 
 			return result
 
 		}
 
-		return getType(file, fileset, symbol, declaration_type)
+		return getType(file, fileset, symbol, declaration_type, true)
 
 	}
 
