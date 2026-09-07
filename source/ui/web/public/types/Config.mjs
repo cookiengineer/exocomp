@@ -1,4 +1,6 @@
 
+import { Provider } from "/types/Provider.mjs";
+
 export const BootstrapConfig = (agent) => {
 
 	return new Promise((resolve, reject) => {
@@ -47,6 +49,7 @@ export const Config = function() {
 	this.Sandbox     = "";
 	this.URL         = new URL("http://localhost:3000/");
 	this.Debug       = false;
+	this.Providers   = {};
 
 };
 
@@ -75,6 +78,14 @@ Config.from = (data) => {
 	config.Sandbox     = data["sandbox"]     || "";
 	config.URL         = new URL("/", window.location.origin);
 	config.Debug       = data["debug"]       || false;
+
+	if (Array.isArray(data["providers"]) === true) {
+
+		config.Providers = data["providers"].map((provider) => {
+			return Provider.from(provider);
+		});
+
+	}
 
 	return config;
 

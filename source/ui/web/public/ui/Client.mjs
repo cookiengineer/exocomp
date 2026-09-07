@@ -315,7 +315,7 @@ Client.prototype = {
 
 				} else if (event.key === "Backspace" || event.key === "Delete") {
 
-					// Don't fire OnChange event
+					// NOTE: Don't fire OnChange event
 
 				} else {
 
