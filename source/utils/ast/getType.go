@@ -6,7 +6,7 @@ import "go/printer"
 import "go/token"
 import "strings"
 
-func getType(file *ast.File, fileset *token.FileSet, symbol string, expected_type string, header_only bool) string {
+func getType(file *ast.File, fileset *token.FileSet, symbol string, expected_type string) *Symbol {
 
 	for _, decl := range file.Decls {
 
@@ -25,17 +25,11 @@ func getType(file *ast.File, fileset *token.FileSet, symbol string, expected_typ
 						buffer := bytes.Buffer{}
 						printer.Fprint(&buffer, fileset, gen_decl)
 
-						declaration := strings.TrimSpace(buffer.String())
-
-						if header_only == true {
-
-							if strings.Contains(declaration, "{\n") {
-								declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
-							}
-
+						return &Symbol{
+							Name: type_spec.Name.Name,
+							Type: "type",
+							Body: strings.TrimSpace(buffer.String()),
 						}
-
-						return declaration
 
 					}
 
@@ -47,6 +41,6 @@ func getType(file *ast.File, fileset *token.FileSet, symbol string, expected_typ
 
 	}
 
-	return ""
+	return nil
 
 }

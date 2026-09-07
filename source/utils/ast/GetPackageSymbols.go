@@ -6,9 +6,9 @@ import "io/fs"
 import "path/filepath"
 import "strings"
 
-func GetPackageHeaders(folder string) map[string]map[string]string {
+func GetPackageSymbols(folder string, with_private bool) map[string]map[string]*Symbol {
 
-	result := make(map[string]map[string]string, 0)
+	result := make(map[string]map[string]*Symbol, 0)
 	fileset := token.NewFileSet()
 
 	filepath.WalkDir(folder, func(path string, entry fs.DirEntry, err error) error {
@@ -22,7 +22,7 @@ func GetPackageHeaders(folder string) map[string]map[string]string {
 				relative, rel_err := filepath.Rel(folder, path)
 
 				if rel_err == nil {
-					result[folder + "/" + relative] = getFileHeaders(file, fileset)
+					result[folder + "/" + relative] = getFileSymbols(file, fileset, with_private)
 				}
 
 			}

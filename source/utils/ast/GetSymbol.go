@@ -3,7 +3,7 @@ package ast
 import "go/parser"
 import "go/token"
 
-func GetSymbol(source []byte, symbol string, declaration_type string) string {
+func GetSymbol(source []byte, symbol string, declaration_type string) *Symbol {
 
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, "", source, 0)
@@ -12,20 +12,20 @@ func GetSymbol(source []byte, symbol string, declaration_type string) string {
 
 		if declaration_type == "func" {
 
-			result := getFunc(file, fileset, symbol, true)
+			result := getFunc(file, fileset, symbol)
 
-			if result == "" {
-				result = getType(file, fileset, symbol, declaration_type, true)
+			if result == nil {
+				result = getType(file, fileset, symbol, declaration_type)
 			}
 
 			return result
 
+		} else if declaration_type == "type" {
+			return getType(file, fileset, symbol, declaration_type)
 		}
-
-		return getType(file, fileset, symbol, declaration_type, true)
 
 	}
 
-	return ""
+	return nil
 
 }

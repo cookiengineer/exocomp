@@ -6,7 +6,7 @@ import "go/printer"
 import "go/token"
 import "strings"
 
-func getFunc(file *ast.File, fileset *token.FileSet, symbol string, header_only bool) string {
+func getFunc(file *ast.File, fileset *token.FileSet, symbol string) *Symbol {
 
 	for _, decl := range file.Decls {
 
@@ -23,17 +23,11 @@ func getFunc(file *ast.File, fileset *token.FileSet, symbol string, header_only 
 					buffer := bytes.Buffer{}
 					printer.Fprint(&buffer, fileset, func_decl)
 
-					declaration := strings.TrimSpace(buffer.String())
-
-					if header_only == true {
-
-						if strings.Contains(declaration, "{\n") {
-							declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
-						}
-
+					return &Symbol{
+						Name: receiver_type+"."+func_decl.Name.Name,
+						Type: "func",
+						Body: strings.TrimSpace(buffer.String()),
 					}
-
-					return declaration
 
 				}
 
@@ -42,17 +36,11 @@ func getFunc(file *ast.File, fileset *token.FileSet, symbol string, header_only 
 				buffer := bytes.Buffer{}
 				printer.Fprint(&buffer, fileset, func_decl)
 
-				declaration := strings.TrimSpace(buffer.String())
-
-				if header_only == true {
-
-					if strings.Contains(declaration, "{\n") {
-						declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
-					}
-
+				return &Symbol{
+					Name: func_decl.Name.Name,
+					Type: "func",
+					Body: strings.TrimSpace(buffer.String()),
 				}
-
-				return declaration
 
 			}
 
@@ -60,6 +48,6 @@ func getFunc(file *ast.File, fileset *token.FileSet, symbol string, header_only 
 
 	}
 
-	return ""
+	return nil
 
 }

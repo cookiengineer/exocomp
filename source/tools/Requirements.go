@@ -223,7 +223,7 @@ func (tool *Requirements) List() (string, error) {
 				sandbox_path, err2 := sanitizeSandboxPath(tool.Sandbox, resolved_path)
 
 				if err2 == nil {
-					lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
+					lines = append(lines, fmt.Sprintf("- File: \"%s\", Symbol: \"%s\", Declaration: \"%s\", Behavior: \"%s\", IsImplemented: %t", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior, specification.IsImplemented))
 				}
 
 			}
@@ -363,7 +363,7 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 				declaration,
 			}, "\n")), symbol, "func")
 
-			if prettified != "" {
+			if prettified != nil {
 
 				readRequirements(tool)
 
@@ -377,9 +377,9 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 				tool.contents[internal_path][symbol] = types.Requirement{
 					File:        internal_path,
-					Type:        "func",
-					Declaration: prettified,
-					Symbol:      symbol,
+					Type:        prettified.Type,
+					Declaration: prettified.Body,
+					Symbol:      prettified.Name,
 					Behavior:    behavior,
 				}
 
@@ -388,7 +388,7 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 				err4 := writeRequirements(tool)
 
 				if err4 == nil {
-					return fmt.Sprintf("requirements.DefineFunc: %s defined as %s", symbol, prettified), nil
+					return fmt.Sprintf("requirements.DefineFunc: Symbol \"%s\" defined as \"%s\"", prettified.Name, prettified.Body), nil
 				} else {
 					return "", fmt.Errorf("requirements.DefineFunc: %s", err4.Error())
 				}
@@ -428,7 +428,7 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 				declaration,
 			}, "\n")), symbol, "interface")
 
-			if prettified != "" {
+			if prettified != nil {
 
 				readRequirements(tool)
 
@@ -442,9 +442,9 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 
 				tool.contents[internal_path][symbol] = types.Requirement{
 					File:        internal_path,
-					Type:        "interface",
-					Declaration: prettified,
-					Symbol:      symbol,
+					Type:        prettified.Type,
+					Declaration: prettified.Type,
+					Symbol:      prettified.Name,
 					Behavior:    behavior,
 				}
 
@@ -453,7 +453,7 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 				err4 := writeRequirements(tool)
 
 				if err4 == nil {
-					return fmt.Sprintf("requirements.DefineInterface: %s defined as %s", symbol, prettified), nil
+					return fmt.Sprintf("requirements.DefineInterface: Symbol \"%s\" defined as \"%s\"", prettified.Name, prettified.Body), nil
 				} else {
 					return "", fmt.Errorf("requirements.DefineInterface: %s", err4.Error())
 				}
@@ -493,7 +493,7 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 				declaration,
 			}, "\n")), symbol, "struct")
 
-			if prettified != "" {
+			if prettified != nil {
 
 				readRequirements(tool)
 
@@ -507,9 +507,9 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 
 				tool.contents[internal_path][symbol] = types.Requirement{
 					File:        internal_path,
-					Type:        "struct",
-					Declaration: prettified,
-					Symbol:      symbol,
+					Type:        prettified.Type,
+					Declaration: prettified.Body,
+					Symbol:      prettified.Name,
 					Behavior:    behavior,
 				}
 
@@ -518,7 +518,7 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 				err4 := writeRequirements(tool)
 
 				if err4 == nil {
-					return fmt.Sprintf("requirements.DefineStruct: %s defined as %s", symbol, prettified), nil
+					return fmt.Sprintf("requirements.DefineStruct: Symbol \"%s\" defined as \"%s\"", prettified.Name, prettified.Body), nil
 				} else {
 					return "", fmt.Errorf("requirements.DefineStruct: %s", err4.Error())
 				}

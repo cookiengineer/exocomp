@@ -8,6 +8,12 @@ import "path/filepath"
 
 func readRequirements(tool *Requirements) error {
 
+	tool.contents = make(map[string]map[string]types.Requirement)
+
+	if tool.Playground != "" {
+		readImplementedRequirements(tool)
+	}
+
 	if tool.Playground != "" {
 
 		resolved, err0 := resolveSandboxPath(tool.Playground, filepath.Join(".exocomp", "requirements.json"))
@@ -39,7 +45,6 @@ func readRequirements(tool *Requirements) error {
 
 			} else if os.IsNotExist(err1) {
 
-				tool.contents = make(map[string]map[string]types.Requirement)
 				return nil
 
 			} else {

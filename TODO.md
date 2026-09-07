@@ -26,6 +26,7 @@
 ## Files Tool
 
 - [ ] Implement `files.ReadSymbol(file, symbol)`
+- [ ] Implement `files.WriteSymbol(file, symbol, declaration)`
 
 ## Requirements Tool
 

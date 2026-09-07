@@ -6,9 +6,9 @@ import "go/printer"
 import "go/token"
 import "strings"
 
-func getFileHeaders(file *ast.File, fileset *token.FileSet) map[string]string {
+func getFileSymbols(file *ast.File, fileset *token.FileSet, with_private bool) map[string]*Symbol {
 
-	result := make(map[string]string, 0)
+	result := make(map[string]*Symbol, 0)
 
 	for _, decl := range file.Decls {
 
@@ -29,7 +29,15 @@ func getFileHeaders(file *ast.File, fileset *token.FileSet) map[string]string {
 					declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
 				}
 
-				result[receiver_type+"."+func_decl.Name.Name] = declaration
+				if isExportedSymbol(receiver_type) || with_private == true {
+
+					result[receiver_type+"."+func_decl.Name.Name] = &Symbol{
+						Name: receiver_type+"."+func_decl.Name.Name,
+						Type: "func",
+						Body: declaration,
+					}
+
+				}
 
 			} else {
 
@@ -42,7 +50,15 @@ func getFileHeaders(file *ast.File, fileset *token.FileSet) map[string]string {
 					declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
 				}
 
-				result[func_decl.Name.Name] = declaration
+				if isExportedSymbol(func_decl.Name.Name) || with_private == true {
+
+					result[func_decl.Name.Name] = &Symbol{
+						Name: func_decl.Name.Name,
+						Type: "func",
+						Body: declaration,
+					}
+
+				}
 
 			}
 
@@ -67,7 +83,15 @@ func getFileHeaders(file *ast.File, fileset *token.FileSet) map[string]string {
 							declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
 						}
 
-						result[type_spec.Name.Name] = declaration
+						if isExportedSymbol(type_spec.Name.Name) || with_private == true {
+
+							result[type_spec.Name.Name] = &Symbol{
+								Name: type_spec.Name.Name,
+								Type: "type",
+								Body: declaration,
+							}
+
+						}
 
 					}
 
