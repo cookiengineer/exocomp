@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/types"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -13,7 +14,28 @@ func writeRequirements(tool *Requirements) error {
 
 		if err0 == nil {
 
-			bytes, err1 := json.MarshalIndent(tool.contents, "", "\t")
+			contents := make(map[string]map[string]types.Requirement)
+
+			for resolved, specifications := range tool.contents {
+
+				for symbol, specification := range specifications {
+
+					if specification.IsImplemented == false {
+
+						_, ok := contents[resolved]
+
+						if ok == false {
+							contents[resolved] = make(map[string]types.Requirement)
+						}
+
+						contents[resolved][symbol] = specification
+					}
+
+				}
+
+			}
+
+			bytes, err1 := json.MarshalIndent(contents, "", "\t")
 
 			if err1 == nil {
 
