@@ -570,14 +570,16 @@ func (tool *Requirements) DefineType(path string, symbol string, declaration str
 
 			declaration = strings.TrimSpace(declaration)
 
-			type_name, err3 := getTypeDeclarationName(declaration, symbol)
+			source := []byte(strings.Join([]string{
+				"package dummy",
+				declaration,
+			}, "\n"))
+
+			type_name, err3 := utils_ast.GetSymbolType(source, symbol)
 
 			if err3 == nil {
 
-				prettified := utils_ast.GetSymbol([]byte(strings.Join([]string{
-					"package dummy",
-					declaration,
-				}, "\n")), symbol, type_name)
+				prettified := utils_ast.GetSymbol(source, symbol, type_name)
 
 				if prettified != nil {
 
