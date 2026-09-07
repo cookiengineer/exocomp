@@ -20,9 +20,8 @@ export const Client = function(config) {
 	};
 
 	this.timers = {
-		agents:  0, // every 10 seconds
-		label:   0, // every  1 second
-		session: 0, // every  5 seconds
+		label:   0, // every 1 second
+		session: 0, // every 5 seconds
 	};
 
 	this.OnChange    = (prompt)    => {}; // String
@@ -30,10 +29,6 @@ export const Client = function(config) {
 
 	this.interval_id = null;
 	this.is_paused   = false;
-
-	setTimeout(() => {
-		this.UpdateAgents();
-	}, 500);
 
 	setTimeout(() => {
 
@@ -428,37 +423,6 @@ Client.prototype = {
 
 	},
 
-	UpdateAgents: function() {
-
-		if (this.Session !== null) {
-
-			fetch(this.Session.Config.ResolveAPI("/api/session/agents").toString(), {
-				method: "GET"
-			}).then((response) => {
-				return response.json();
-			}).then((agents) => {
-
-				if (Object.prototype.toString.call(agents) === "[object Array]") {
-
-					agents.forEach((agent) => {
-						this.Session.ReceiveAgent(Agent.from(agent));
-					});
-
-					let agent = this.Session.GetAgent(null);
-					let questions = GetUnansweredQuestions(agent);
-					if (questions.length > 0) {
-						this.OnQuestions(questions);
-						this.Pause();
-					}
-
-				}
-
-			});
-
-		}
-
-	},
-
 	UpdateLabel: function() {
 
 		let prompt = "";
@@ -486,7 +450,7 @@ Client.prototype = {
 			if (this.Session.Waiting === false) {
 				this.Renderer.RenderLabel(usage.toFixed(2) + "%");
 			} else {
-				this.Renderer.RenderLabel("Processing ...");
+				this.Renderer.RenderLabel("Thinking ...");
 			}
 
 		} else {
@@ -494,7 +458,7 @@ Client.prototype = {
 			if (this.Session.Waiting === false) {
 				this.Renderer.RenderLabel(usage.toFixed(2) + "%");
 			} else {
-				this.Renderer.RenderLabel("Processing ...");
+				this.Renderer.RenderLabel("Thinking ...");
 			}
 
 		}
@@ -503,7 +467,6 @@ Client.prototype = {
 
 	UpdateLoop: function(delta) {
 
-		this.timers.agents  += delta;
 		this.timers.session += delta;
 		this.timers.label   += delta;
 
@@ -511,6 +474,7 @@ Client.prototype = {
 
 			if (this.timers.label >= 1 * time_Second) {
 				this.UpdateLabel();
+				this.UpdateQuestions();
 				this.timers.label = 0;
 			}
 
@@ -522,11 +486,6 @@ Client.prototype = {
 
 				this.timers.session = 0;
 
-			}
-
-			if (this.timers.agents >= 5 * time_Second) {
-				this.UpdateAgents();
-				this.timers.agents = 0;
 			}
 
 		}
@@ -545,6 +504,21 @@ Client.prototype = {
 		this.elements["prompt"].value = prompt;
 
 		this.UpdateLabel();
+
+	},
+
+	UpdateQuestions: function() {
+
+		if (this.Session !== null) {
+
+			let agent     = this.Session.GetAgent(null);
+			let questions = GetUnansweredQuestions(agent);
+			if (questions.length > 0) {
+				this.OnQuestions(questions);
+				this.Pause();
+			}
+
+		}
 
 	},
 

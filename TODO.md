@@ -6,6 +6,11 @@
 - [ ] Verify that playground and sandbox are set to correct `/tmp/agimus-*` folder
 - [ ] Verify that internal session backup is stored in correct `/tmp` folder and doesn't override source folder
 
+## Web UI Client
+
+- [ ] Migrate towards use of a WebSocket so that we don't need to poll /api/session/agents all the time
+- [ ] It would be really cool if server had a `ui/web/sockets/session/Agents` kind of wrapper for the `/api/session/agents` route
+
 ## Agents Workflow
 
 - [ ] agents.Hire() needs to be more clear for DeepSeek planner model

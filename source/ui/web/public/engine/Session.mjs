@@ -159,6 +159,7 @@ Session.prototype = {
 	Init: function() {
 
 		this.Update();
+		this.UpdateTools();
 
 	},
 
@@ -246,13 +247,34 @@ Session.prototype = {
 
 	Update: function() {
 
-		this.UpdateTools();
+		// NOTE: Tools don't change per-session
+		this.UpdateAgents();
+
+	},
+
+	UpdateAgents: function() {
+
+		fetch(this.Config.ResolveAPI("/api/session/agents").toString(), {
+			method: "GET"
+		}).then((response) => {
+			return response.json();
+		}).then((agents) => {
+
+			if (Array.isArray(agents) === true) {
+
+				agents.forEach((agent) => {
+					this.ReceiveAgent(Agent.from(agent));
+				});
+
+			}
+
+		});
 
 	},
 
 	UpdateTools: function() {
 
-		// Empty Tools without losing references
+		// NOTE: Empty Tools without losing references
 		this.Tools.splice(0, this.Tools.length);
 
 		fetch(this.Config.ResolveAPI("/api/session/tools").toString(), {
@@ -261,9 +283,13 @@ Session.prototype = {
 			return response.json();
 		}).then((tools) => {
 
-			tools.forEach((tool) => {
-				this.Tools.push(tool);
-			});
+			if (Array.isArray(tools) === true) {
+
+				tools.forEach((tool) => {
+					this.Tools.push(tool);
+				});
+
+			}
 
 		});
 
