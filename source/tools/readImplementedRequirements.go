@@ -2,7 +2,6 @@ package tools
 
 import "exocomp/types"
 import utils_ast "exocomp/utils/ast"
-import "strings"
 
 import "fmt"
 
@@ -18,21 +17,27 @@ func readImplementedRequirements(tool *Requirements) error {
 
 			for path, symbols := range package_symbols {
 
-				path = strings.TrimPrefix(path, resolved + "/")
+				internal_path, err1 := sanitizeSandboxPath(tool.Playground, path)
 
-				tool.contents[path] = make(map[string]types.Requirement)
+				if err1 == nil {
 
-				for symbol, declaration := range symbols {
+					tool.contents[internal_path] = make(map[string]types.Requirement)
 
-					tool.contents[path][symbol] = types.Requirement{
-						Type:          declaration.Type,
-						File:          path,
-						Symbol:        symbol,
-						Declaration:   declaration.Body,
-						Behavior:      "",
-						IsImplemented: true,
+					for symbol, declaration := range symbols {
+
+						tool.contents[internal_path][symbol] = types.Requirement{
+							Type:          declaration.Type,
+							File:          internal_path,
+							Symbol:        symbol,
+							Declaration:   declaration.Body,
+							Behavior:      "",
+							IsImplemented: true,
+						}
+
 					}
 
+				} else {
+					return fmt.Errorf("readImplementedRequirements: %s", err1.Error())
 				}
 
 			}

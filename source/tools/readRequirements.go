@@ -25,16 +25,28 @@ func readRequirements(tool *Requirements) error {
 			if err1 == nil {
 
 				contents := make(map[string]map[string]types.Requirement)
-				err2     := json.Unmarshal(bytes, &contents)
+				err2 := json.Unmarshal(bytes, &contents)
 
 				if err2 == nil {
 
-					for file, _ := range tool.contents {
-						delete(tool.contents, file)
-					}
-
 					for file, symbols := range contents {
-						tool.contents[file] = symbols
+
+						_, ok := tool.contents[file]
+
+						if ok == false {
+							tool.contents[file] = make(map[string]types.Requirement)
+						}
+
+						for symbol, specification := range symbols {
+
+							_, exists := tool.contents[file][symbol]
+
+							if exists == false {
+								tool.contents[file][symbol] = specification
+							}
+
+						}
+
 					}
 
 					return nil
