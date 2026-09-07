@@ -14,12 +14,24 @@ func FirstFunction(current int64, added int64) (string, error) {
 
 	result := ReadSymbol(source, "FirstFunction", "func")
 
-	if strings.Contains(result, "func FirstFunction(current int64, added int64) (string, error)") != true {
-		t.Errorf("Expected function signature, got: %q", result)
+	if result == nil {
+		t.Fatalf("Expected FirstFunction to be found")
 	}
 
-	if strings.Contains(result, `return "", nil`) != true {
-		t.Errorf("Expected function body, got: %q", result)
+	if result.Name != "FirstFunction" {
+		t.Errorf("Expected name %q, got %q", "FirstFunction", result.Name)
+	}
+
+	if result.Type != "func" {
+		t.Errorf("Expected type %q, got %q", "func", result.Type)
+	}
+
+	if strings.Contains(result.Body, "func FirstFunction(current int64, added int64) (string, error)") != true {
+		t.Errorf("Expected function signature, got: %q", result.Body)
+	}
+
+	if strings.Contains(result.Body, `return "", nil`) != true {
+		t.Errorf("Expected function body, got: %q", result.Body)
 	}
 
 }
@@ -35,12 +47,20 @@ func (data *Data) Parse(specification *Input) {
 
 	result := ReadSymbol(source, "Data.Parse", "func")
 
-	if strings.Contains(result, "func (data *Data) Parse(specification *Input)") != true {
-		t.Errorf("Expected method signature, got: %q", result)
+	if result == nil {
+		t.Fatalf("Expected Data.Parse to be found")
 	}
 
-	if strings.Contains(result, "data.Name = specification.Name") != true {
-		t.Errorf("Expected method body, got: %q", result)
+	if result.Name != "Data.Parse" {
+		t.Errorf("Expected name %q, got %q", "Data.Parse", result.Name)
+	}
+
+	if strings.Contains(result.Body, "func (data *Data) Parse(specification *Input)") != true {
+		t.Errorf("Expected method signature, got: %q", result.Body)
+	}
+
+	if strings.Contains(result.Body, "data.Name = specification.Name") != true {
+		t.Errorf("Expected method body, got: %q", result.Body)
 	}
 
 }
@@ -57,16 +77,24 @@ type Data struct {
 
 	result := ReadSymbol(source, "Data", "struct")
 
-	if strings.Contains(result, "type Data struct") != true {
-		t.Errorf("Expected struct declaration, got: %q", result)
+	if result == nil {
+		t.Fatalf("Expected Data to be found")
 	}
 
-	if strings.Contains(result, "Name") != true {
-		t.Errorf("Expected struct field, got: %q", result)
+	if result.Name != "Data" {
+		t.Errorf("Expected name %q, got %q", "Data", result.Name)
 	}
 
-	if strings.Contains(result, "Age") != true {
-		t.Errorf("Expected struct field, got: %q", result)
+	if strings.Contains(result.Body, "type Data struct") != true {
+		t.Errorf("Expected struct declaration, got: %q", result.Body)
+	}
+
+	if strings.Contains(result.Body, "Name") != true {
+		t.Errorf("Expected struct field, got: %q", result.Body)
+	}
+
+	if strings.Contains(result.Body, "Age") != true {
+		t.Errorf("Expected struct field, got: %q", result.Body)
 	}
 
 }
@@ -82,8 +110,16 @@ type Parser interface {
 
 	result := ReadSymbol(source, "Parser", "interface")
 
-	if strings.Contains(result, "Parse() error") != true {
-		t.Errorf("Expected interface method, got: %q", result)
+	if result == nil {
+		t.Fatalf("Expected Parser to be found")
+	}
+
+	if result.Name != "Parser" {
+		t.Errorf("Expected name %q, got %q", "Parser", result.Name)
+	}
+
+	if strings.Contains(result.Body, "Parse() error") != true {
+		t.Errorf("Expected interface method, got: %q", result.Body)
 	}
 
 }
@@ -95,16 +131,16 @@ func TestReadSymbol_Missing(t *testing.T) {
 func FirstFunction() {}
 `)
 
-	if result := ReadSymbol(source, "Missing", "func"); result != "" {
-		t.Errorf("Expected empty result, got: %q", result)
+	if result := ReadSymbol(source, "Missing", "func"); result != nil {
+		t.Errorf("Expected nil result, got: %v", result)
 	}
 
 }
 
 func TestReadSymbol_InvalidSource(t *testing.T) {
 
-	if result := ReadSymbol([]byte("func broken"), "broken", "func"); result != "" {
-		t.Errorf("Expected empty result, got: %q", result)
+	if result := ReadSymbol([]byte("func broken"), "broken", "func"); result != nil {
+		t.Errorf("Expected nil result, got: %v", result)
 	}
 
 }

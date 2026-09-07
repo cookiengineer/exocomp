@@ -20,9 +20,9 @@ func GetSymbol(source []byte, symbol string, declaration_type string) *Symbol {
 
 			return result
 
-		} else if declaration_type == "type" {
-			return getType(file, fileset, symbol, declaration_type)
 		}
+
+		return getType(file, fileset, symbol, declaration_type)
 
 	}
 

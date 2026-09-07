@@ -111,6 +111,27 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 				return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameters.")
 			}
 
+		} else if method == "DefineType" {
+
+			path,        ok1 := arguments["path"].(string)
+			symbol,      ok2 := arguments["symbol"].(string)
+			declaration, ok3 := arguments["declaration"].(string)
+			behavior,    ok4 := arguments["behavior"].(string)
+
+			if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
+				return tool.DefineType(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(declaration), utils_fmt.FormatSingleLine(behavior))
+			} else if ok1 == true && ok2 == true && ok3 == true && ok4 == false {
+				return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"behavior\" is not a string.")
+			} else if ok1 == true && ok2 == true && ok3 == false && ok4 == true {
+				return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"declaration\" is not a string.")
+			} else if ok1 == true && ok2 == false && ok3 == true && ok4 == true {
+				return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == true && ok4 == true {
+				return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("requirements.%s: %s", method, "Invalid parameters.")
+			}
+
 		} else if method == "Search" {
 
 			path,   ok1 := arguments["path"].(string)
@@ -377,7 +398,7 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 				tool.contents[internal_path][symbol] = types.Requirement{
 					File:        internal_path,
-					Type:        prettified.Type,
+					Type:        "func",
 					Declaration: prettified.Body,
 					Symbol:      prettified.Name,
 					Behavior:    behavior,
@@ -442,8 +463,8 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 
 				tool.contents[internal_path][symbol] = types.Requirement{
 					File:        internal_path,
-					Type:        prettified.Type,
-					Declaration: prettified.Type,
+					Type:        "interface",
+					Declaration: prettified.Body,
 					Symbol:      prettified.Name,
 					Behavior:    behavior,
 				}
@@ -507,7 +528,7 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 
 				tool.contents[internal_path][symbol] = types.Requirement{
 					File:        internal_path,
-					Type:        prettified.Type,
+					Type:        "struct",
 					Declaration: prettified.Body,
 					Symbol:      prettified.Name,
 					Behavior:    behavior,
@@ -533,6 +554,75 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 
 	} else {
 		return "", fmt.Errorf("requirements.DefineStruct: %s", err1.Error())
+	}
+
+}
+
+func (tool *Requirements) DefineType(path string, symbol string, declaration string, behavior string) (string, error) {
+
+	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			declaration = strings.TrimSpace(declaration)
+
+			type_name, err3 := getTypeDeclarationName(declaration, symbol)
+
+			if err3 == nil {
+
+				prettified := utils_ast.GetSymbol([]byte(strings.Join([]string{
+					"package dummy",
+					declaration,
+				}, "\n")), symbol, type_name)
+
+				if prettified != nil {
+
+					readRequirements(tool)
+
+					tool.mutex.Lock()
+
+					_, ok := tool.contents[internal_path]
+
+					if ok == false {
+						tool.contents[internal_path] = make(map[string]types.Requirement)
+					}
+
+					tool.contents[internal_path][symbol] = types.Requirement{
+						File:        internal_path,
+						Type:        "type",
+						Declaration: prettified.Body,
+						Symbol:      prettified.Name,
+						Behavior:    behavior,
+					}
+
+					tool.mutex.Unlock()
+
+					err4 := writeRequirements(tool)
+
+					if err4 == nil {
+						return fmt.Sprintf("requirements.DefineType: Symbol \"%s\" defined as \"%s\"", prettified.Name, prettified.Body), nil
+					} else {
+						return "", fmt.Errorf("requirements.DefineType: %s", err4.Error())
+					}
+
+				} else {
+					return "", fmt.Errorf("requirements.DefineType: Invalid Go syntax. \"type %s <type>\" must be defined!", symbol)
+				}
+
+			} else {
+				return "", fmt.Errorf("requirements.DefineType: %s", err3.Error())
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.DefineType: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.DefineType: %s", err1.Error())
 	}
 
 }

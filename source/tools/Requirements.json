@@ -89,6 +89,35 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "requirements.DefineType",
+			"description": "Define a Go named (wrapper) type contract based on a basic type or a composite of basic types (arrays, slices and maps). Use this for declarations like \"type IPv4 [4]byte\", \"type MyEnum string\" or \"type ScaleFactor float64\". Structs, interfaces and functions must be defined via DefineStruct, DefineInterface and DefineFunc instead.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to the Go file that will contain the type, e.g. \"./structs/IPv4.go\""
+					},
+					"symbol": {
+						"type": "string",
+						"description": "The type name, e.g. \"IPv4\" or \"ScaleFactor\". Must match the parsed declaration exactly."
+					},
+					"declaration": {
+						"type": "string",
+						"description": "Single-line Go type declaration using Go syntax, e.g. \"type IPv4 [4]byte\" or \"type MyEnum string\" or \"type ScaleFactor float64\""
+					},
+					"behavior": {
+						"type": "string",
+						"description": "One-line note describing what the type represents and how it must be used."
+					}
+				},
+				"required": ["path", "symbol", "declaration", "behavior"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "requirements.List",
 			"description": "List all previously defined requirements (functions, interfaces and structs) with their file, symbol, declaration and behavior.",
 			"parameters": {

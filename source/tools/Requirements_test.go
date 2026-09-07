@@ -22,19 +22,19 @@ func TestRequirements_DefineFunc(t *testing.T) {
 		result4, err4 := tool.DefineFunc("./structs/Data.go", "structs.Data.Parse", "func (data *structs.Data) Parse(specification *schemas.Input)", "The method needs to implement a schema parser.")
 		result5, err5 := tool.DefineFunc("./invalid/FunctionWithInvalidType.go", "FunctionWithInvalidType", "function FunctionWithInvalidType (a int, b_custom float1337) (null)", "This method has an invalid b parameter.")
 
-		if result1 != "requirements.DefineFunc: FirstFunction defined as func FirstFunction(current int64, added int64) (string, error)" {
+		if result1 != "requirements.DefineFunc: Symbol \"FirstFunction\" defined as \"func FirstFunction(current int64, added int64) (string, error)\"" {
 			t.Errorf("Expected FirstFunction to be defined")
 		}
 
-		if result2 != "requirements.DefineFunc: Parse defined as func Parse(specification *structs.Specification, debug bool) *schemas.Result" {
+		if result2 != "requirements.DefineFunc: Symbol \"Parse\" defined as \"func Parse(specification *structs.Specification, debug bool) *schemas.Result\"" {
 			t.Errorf("Expected Parse to be defined")
 		}
 
-		if result3 != "requirements.DefineFunc: ProcessData defined as func ProcessData(specification *structs.Data)" {
+		if result3 != "requirements.DefineFunc: Symbol \"ProcessData\" defined as \"func ProcessData(specification *structs.Data)\"" {
 			t.Errorf("Expected ProcessData to be defined")
 		}
 
-		if result4 != "requirements.DefineFunc: structs.Data.Parse defined as func (data *structs.Data) Parse(specification *schemas.Input)" {
+		if result4 != "requirements.DefineFunc: Symbol \"structs.Data.Parse\" defined as \"func (data *structs.Data) Parse(specification *schemas.Input)\"" {
 			t.Errorf("Expected (*structs.Data) Parse to be defined")
 		}
 
@@ -98,11 +98,11 @@ func TestRequirements_DefineInterface(t *testing.T) {
 		result2, err2 := tool.DefineFunc("./structs/Data.go", "structs.Data.Parse", declaration2, "The method needs to implement a schema parser.")
 		result3, err3 := tool.DefineFunc("./structs/Data.go", "DifferentSymbol", declaration1, "The method needs to implement a schema parser.")
 
-		if strings.HasPrefix(result1, "requirements.DefineInterface: Data defined as type Data interface {") == false {
+		if strings.HasPrefix(result1, "requirements.DefineInterface: Symbol \"Data\" defined as \"type Data interface {") == false {
 			t.Errorf("Expected \"%s\" to be defined as \"%s\"", "Data", declaration1)
 		}
 
-		if result2 != "requirements.DefineFunc: structs.Data.Parse defined as func (data *structs.Data) Parse(specification *schemas.Input)" {
+		if result2 != "requirements.DefineFunc: Symbol \"structs.Data.Parse\" defined as \"func (data *structs.Data) Parse(specification *schemas.Input)\"" {
 			t.Errorf("Expected \"%s\" to be defined as \"%s\"", "Parse", declaration2)
 		}
 
@@ -160,11 +160,11 @@ func TestRequirements_DefineStruct(t *testing.T) {
 		result2, err2 := tool.DefineFunc("./structs/Data.go", "structs.Data.Parse", declaration2, "The method needs to implement a schema parser.")
 		result3, err3 := tool.DefineFunc("./structs/Data.go", "DifferentSymbol", declaration1, "The method needs to implement a schema parser.")
 
-		if strings.HasPrefix(result1, "requirements.DefineStruct: Data defined as type Data struct {") == false {
+		if strings.HasPrefix(result1, "requirements.DefineStruct: Symbol \"Data\" defined as \"type Data struct {") == false {
 			t.Errorf("Expected \"%s\" to be defined as \"%s\"", "Data", declaration1)
 		}
 
-		if result2 != "requirements.DefineFunc: structs.Data.Parse defined as func (data *structs.Data) Parse(specification *schemas.Input)" {
+		if result2 != "requirements.DefineFunc: Symbol \"structs.Data.Parse\" defined as \"func (data *structs.Data) Parse(specification *schemas.Input)\"" {
 			t.Errorf("Expected \"%s\" to be defined as \"%s\"", "Parse", declaration2)
 		}
 
@@ -182,6 +182,76 @@ func TestRequirements_DefineStruct(t *testing.T) {
 
 		if err3 == nil {
 			t.Errorf("Expected %v to be not nil", err3)
+		}
+
+	} else {
+		t.Errorf("Expected %v to be not nil", tool)
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
+func TestRequirements_DefineType(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
+	sandbox       := filepath.Join(playground, "requirements")
+	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "DefineType", "Search", "Signoff"}, playground, sandbox)
+
+	if tool != nil {
+
+		result1, err1 := tool.DefineType("./structs/MyEnum.go", "MyEnum", "type MyEnum string", "The enum needs to represent a status.")
+		result2, err2 := tool.DefineType("./structs/IPv4.go", "IPv4", "type IPv4 [4]byte", "The type needs to represent an IPv4 address.")
+		result3, err3 := tool.DefineType("./structs/ScaleFactor.go", "ScaleFactor", "type ScaleFactor float64", "The type needs to represent a scaling factor.")
+		result4, err4 := tool.DefineType("./structs/Data.go", "Data", "type Data struct {\n\tName string\n}", "This is a struct and must be rejected.")
+		result5, err5 := tool.DefineType("./structs/Data.go", "Data", "type Data interface {\n\tParse() error\n}", "This is an interface and must be rejected.")
+
+		if result1 != "requirements.DefineType: Symbol \"MyEnum\" defined as \"type MyEnum string\"" {
+			t.Errorf("Expected MyEnum to be defined")
+		}
+
+		if result2 != "requirements.DefineType: Symbol \"IPv4\" defined as \"type IPv4 [4]byte\"" {
+			t.Errorf("Expected IPv4 to be defined")
+		}
+
+		if result3 != "requirements.DefineType: Symbol \"ScaleFactor\" defined as \"type ScaleFactor float64\"" {
+			t.Errorf("Expected ScaleFactor to be defined")
+		}
+
+		if result4 != "" {
+			t.Errorf("Expected struct to be rejected")
+		}
+
+		if result5 != "" {
+			t.Errorf("Expected interface to be rejected")
+		}
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if err4 == nil {
+			t.Errorf("Expected %v to be not nil", err4)
+		}
+
+		if err5 == nil {
+			t.Errorf("Expected %v to be not nil", err5)
 		}
 
 	} else {
@@ -361,7 +431,7 @@ func TestRequirements_Call(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
 	sandbox       := filepath.Join(playground, "requirements")
-	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
+	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "DefineType", "Search", "Signoff"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -376,7 +446,7 @@ func TestRequirements_Call(t *testing.T) {
 			t.Errorf("Expected %v to be nil", err1)
 		}
 
-		if result1 != "requirements.DefineFunc: structs.Data.Parse defined as func (data *structs.Data) Parse(specification *schemas.Input)" {
+		if result1 != "requirements.DefineFunc: Symbol \"structs.Data.Parse\" defined as \"func (data *structs.Data) Parse(specification *schemas.Input)\"" {
 			t.Errorf("Expected the method to be defined, got %s", result1)
 		}
 
@@ -391,8 +461,23 @@ func TestRequirements_Call(t *testing.T) {
 			t.Errorf("Expected %v to be nil", err2)
 		}
 
-		if !strings.HasPrefix(result2, "requirements.DefineStruct: Data defined as type Data struct {") {
+		if !strings.HasPrefix(result2, "requirements.DefineStruct: Symbol \"Data\" defined as \"type Data struct {") {
 			t.Errorf("Expected the struct to be defined, got %s", result2)
+		}
+
+		result3, err3 := tool.Call("DefineType", map[string]interface{}{
+			"path":        "./structs/IPv4.go",
+			"symbol":      "IPv4",
+			"declaration": "type IPv4 [4]byte",
+			"behavior":    "The type needs to represent an IPv4 address.",
+		})
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if result3 != "requirements.DefineType: Symbol \"IPv4\" defined as \"type IPv4 [4]byte\"" {
+			t.Errorf("Expected the type to be defined, got %s", result3)
 		}
 
 	} else {
