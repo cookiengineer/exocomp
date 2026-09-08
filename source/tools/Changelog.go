@@ -194,7 +194,7 @@ func (tool *Changelog) GetContent(id string) (any, error) {
 			if ok == true {
 				return content, nil
 			} else {
-				return nil, fmt.Errorf("changelog.GetContent: No changelog entry available for path \"%s\".", path)
+				return nil, fmt.Errorf("changelog.GetContent: File \"%s\" has no Changelog entries.", path)
 			}
 
 		} else {
@@ -250,7 +250,7 @@ func (tool *Changelog) List() (string, error) {
 					sandbox_path, err2 := sanitizeSandboxPath(tool.Sandbox, resolved_path)
 
 					if err2 == nil {
-						found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: %s, File: %s, Symbol: %s, Description: %s", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
+						found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: \"%s\", File: \"%s\", Symbol: \"%s\", Description: \"%s\"", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
 					}
 
 				}
@@ -283,7 +283,7 @@ func (tool *Changelog) List() (string, error) {
 	}
 
 	result := make([]string, 0)
-	result = append(result, fmt.Sprintf("changelog.List: %d changelog entries.", len(lines)))
+	result = append(result, fmt.Sprintf("changelog.List: %d Changelog entries.", len(lines)))
 
 	for l := 0; l < len(lines); l++ {
 		result = append(result, lines[l])
@@ -360,7 +360,7 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, entry.File)
 
 							if err3 == nil {
-								found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: %s, File: %s, Symbol: %s, Description: %s", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
+								found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: \"%s\", File: \"%s\", Symbol: \"%s\", Description: \"%s\"", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
 							}
 
 						}
@@ -391,7 +391,7 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 				}
 
 				result := make([]string, 0)
-				result = append(result, fmt.Sprintf("changelog.Search: %s#%s contains %d changelog entries.", path, symbol, len(lines)))
+				result = append(result, fmt.Sprintf("changelog.Search: File \"%s\" with Symbol \"%s\" contains %d Changelog entries.", path, symbol, len(lines)))
 
 				for l := 0; l < len(lines); l++ {
 					result = append(result, lines[l])
@@ -455,7 +455,7 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 				}
 
 				result := make([]string, 0)
-				result = append(result, fmt.Sprintf("changelog.Search: %s contains %d changelog entries.", path, len(lines)))
+				result = append(result, fmt.Sprintf("changelog.Search: File \"%s\" contains %d Changelog entries.", path, len(lines)))
 
 				for l := 0; l < len(lines); l++ {
 					result = append(result, lines[l])
@@ -529,13 +529,13 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 				err3 := writeChangelog(tool)
 
 				if err3 == nil {
-					return fmt.Sprintf("changelog.%s: Log entry created for %s#%s at %s.", method, path, symbol, today.Format("2006-01-02")), nil
+					return fmt.Sprintf("changelog.%s: Log entry created for File \"%s\" with Symbol \"%s\" at %s.", method, path, symbol, today.Format("2006-01-02")), nil
 				} else {
 					return "", fmt.Errorf("changelog.%s: %s", method, err3.Error())
 				}
 
 			} else {
-				return fmt.Sprintf("changelog.%s: Log entry already exists for %s#%s at %s.", method, path, found.Symbol, found.Date.Format("2006-01-02")), nil
+				return fmt.Sprintf("changelog.%s: Log entry already exists for File \"%s\" with Symbol \"%s\" at %s.", method, path, found.Symbol, found.Date.Format("2006-01-02")), nil
 			}
 
 		} else {

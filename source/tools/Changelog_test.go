@@ -18,7 +18,7 @@ func TestChangelog_Add(t *testing.T) {
 		result2, err2 := tool.Add("./path/to/File.go", "Whatever", "New updated cache implementation")
 		result3, err3 := tool.Add("./path/to/File.go", "Whatever", "New cache implementation")
 
-		if strings.Contains(result1, "changelog.Add: Log entry created for ./path/to/File.go#Whatever at") == false {
+		if strings.Contains(result1, "changelog.Add: Log entry created for File \"./path/to/File.go\" with Symbol \"Whatever\" at") == false {
 			t.Errorf("Expected Log entry to be created")
 		}
 
@@ -26,7 +26,7 @@ func TestChangelog_Add(t *testing.T) {
 			t.Errorf("Expected %v to be nil", err1)
 		}
 
-		if strings.Contains(result2, "changelog.Add: Log entry created for ./path/to/File.go#Whatever at") == false {
+		if strings.Contains(result2, "changelog.Add: Log entry created for File \"./path/to/File.go\" with Symbol \"Whatever\" at") == false {
 			t.Errorf("Expected Log entry to be created")
 		}
 
@@ -34,7 +34,7 @@ func TestChangelog_Add(t *testing.T) {
 			t.Errorf("Expected %v to be nil", err2)
 		}
 
-		if strings.Contains(result3, "changelog.Add: Log entry already exists for ./path/to/File.go#Whatever at") == false {
+		if strings.Contains(result3, "changelog.Add: Log entry already exists for File \"./path/to/File.go\" with Symbol \"Whatever\" at") == false {
 			t.Errorf("Expected Log entry to already exist")
 		}
 
@@ -69,7 +69,7 @@ func TestChangelog_Change(t *testing.T) {
 		result1, err1 := tool.Change("./path/to/File.go", "Whatever", "New cache implementation")
 		result2, err2 := tool.List()
 
-		if strings.Contains(result1, "changelog.Change: Log entry created for ./path/to/File.go#Whatever at") == false {
+		if strings.Contains(result1, "changelog.Change: Log entry created for File \"./path/to/File.go\" with Symbol \"Whatever\" at") == false {
 			t.Errorf("Expected Log entry to be created")
 		}
 
@@ -77,7 +77,7 @@ func TestChangelog_Change(t *testing.T) {
 			t.Errorf("Expected %v to be nil", err1)
 		}
 
-		if strings.HasPrefix(result2, "changelog.List: 1 changelog entries.") == false {
+		if strings.HasPrefix(result2, "changelog.List: 1 Changelog entries.") == false {
 			t.Errorf("Expected 1 changelog entries")
 		}
 
@@ -112,7 +112,7 @@ func TestChangelog_Deprecate(t *testing.T) {
 		result1, err1 := tool.Deprecate("./path/to/File.go", "Whatever", "New cache implementation")
 		result2, err2 := tool.List()
 
-		if strings.Contains(result1, "changelog.Deprecate: Log entry created for ./path/to/File.go#Whatever at") == false {
+		if strings.Contains(result1, "changelog.Deprecate: Log entry created for File \"./path/to/File.go\" with Symbol \"Whatever\" at") == false {
 			t.Errorf("Expected Log entry to be created")
 		}
 
@@ -120,7 +120,7 @@ func TestChangelog_Deprecate(t *testing.T) {
 			t.Errorf("Expected %v to be nil", err1)
 		}
 
-		if strings.HasPrefix(result2, "changelog.List: 1 changelog entries.") == false {
+		if strings.HasPrefix(result2, "changelog.List: 1 Changelog entries.") == false {
 			t.Errorf("Expected 1 changelog entries")
 		}
 
@@ -155,7 +155,7 @@ func TestChangelog_Fix(t *testing.T) {
 		result1, err1 := tool.Fix("./path/to/File.go", "Whatever", "New cache implementation")
 		result2, err2 := tool.List()
 
-		if strings.Contains(result1, "changelog.Fix: Log entry created for ./path/to/File.go#Whatever at") == false {
+		if strings.Contains(result1, "changelog.Fix: Log entry created for File \"./path/to/File.go\" with Symbol \"Whatever\" at") == false {
 			t.Errorf("Expected Log entry to be created")
 		}
 
@@ -163,7 +163,7 @@ func TestChangelog_Fix(t *testing.T) {
 			t.Errorf("Expected %v to be nil", err1)
 		}
 
-		if strings.HasPrefix(result2, "changelog.List: 1 changelog entries.") == false {
+		if strings.HasPrefix(result2, "changelog.List: 1 Changelog entries.") == false {
 			t.Errorf("Expected 1 changelog entries")
 		}
 
@@ -235,28 +235,28 @@ func TestChangelog_List(t *testing.T) {
 
 		if len(lines) == 6 {
 
-			if lines[0] != "changelog.List: 5 changelog entries." {
+			if lines[0] != "changelog.List: 5 Changelog entries." {
 				t.Errorf("Expected %d changelog entries", 5)
 			}
 
-			if strings.Contains(lines[1], "Type: Add") == false {
-				t.Errorf("Expected \"%s\" to be \"%s\"", lines[1], "Type: Add")
+			if strings.Contains(lines[1], "Type: \"Add\"") == false {
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[1], "Type: \"Add\"")
 			}
 
-			if strings.Contains(lines[2], "Type: Change") == false {
-				t.Errorf("Expected \"%s\" to be \"%s\"", lines[2], "Type: Change")
+			if strings.Contains(lines[2], "Type: \"Change\"") == false {
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[2], "Type: \"Change\"")
 			}
 
-			if strings.Contains(lines[3], "Type: Fix") == false {
-				t.Errorf("Expected \"%s\" to be \"%s\"", lines[3], "Type: Fix")
+			if strings.Contains(lines[3], "Type: \"Fix\"") == false {
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[3], "Type: \"Fix\"")
 			}
 
-			if strings.Contains(lines[4], "Type: Deprecate") == false {
-				t.Errorf("Expected \"%s\" to be \"%s\"", lines[4], "Type: Deprecate")
+			if strings.Contains(lines[4], "Type: \"Deprecate\"") == false {
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[4], "Type: \"Deprecate\"")
 			}
 
-			if strings.Contains(lines[5], "Type: Remove") == false {
-				t.Errorf("Expected \"%s\" to be \"%s\"", lines[5], "Type: Remove")
+			if strings.Contains(lines[5], "Type: \"Remove\"") == false {
+				t.Errorf("Expected \"%s\" to be \"%s\"", lines[5], "Type: \"Remove\"")
 			}
 
 		} else {
@@ -294,7 +294,7 @@ func TestChangelog_Remove(t *testing.T) {
 		result1, err1 := tool.Remove("./path/to/File.go", "Whatever", "New cache implementation")
 		result2, err2 := tool.List()
 
-		if strings.Contains(result1, "changelog.Remove: Log entry created for ./path/to/File.go#Whatever at") == false {
+		if strings.Contains(result1, "changelog.Remove: Log entry created for File \"./path/to/File.go\" with Symbol \"Whatever\" at") == false {
 			t.Errorf("Expected Log entry to be created")
 		}
 
@@ -302,7 +302,7 @@ func TestChangelog_Remove(t *testing.T) {
 			t.Errorf("Expected %v to be nil", err1)
 		}
 
-		if strings.HasPrefix(result2, "changelog.List: 1 changelog entries.") == false {
+		if strings.HasPrefix(result2, "changelog.List: 1 Changelog entries.") == false {
 			t.Errorf("Expected 1 changelog entries")
 		}
 
@@ -385,7 +385,7 @@ func TestChangelog_Search(t *testing.T) {
 
 		if len(lines1) == 7 {
 
-			if lines1[0] != "changelog.Search: ./path/to/Cache.go contains 6 changelog entries." {
+			if lines1[0] != "changelog.Search: File \"./path/to/Cache.go\" contains 6 Changelog entries." {
 				t.Errorf("Expected %d changelog entries", 6)
 			}
 
@@ -447,40 +447,40 @@ func TestChangelog_Search(t *testing.T) {
 
 		if len(lines2) == 5 {
 
-			if lines2[0] != "changelog.Search: ./path/to/Cache.go#Store contains 4 changelog entries." {
+			if lines2[0] != "changelog.Search: File \"./path/to/Cache.go\" with Symbol \"Store\" contains 4 Changelog entries." {
 				t.Errorf("Expected %d changelog entries", 4)
 			}
 
-			if strings.Contains(lines2[1], "Type: Add,") == false {
-				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[1], "Type: Add")
+			if strings.Contains(lines2[1], "Type: \"Add\",") == false {
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[1], "Type: \"Add\"")
 			}
 
-			if strings.Contains(lines2[1], "Symbol: Store,") == false {
-				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[1], "Symbol: Store")
+			if strings.Contains(lines2[1], "Symbol: \"Store\",") == false {
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[1], "Symbol: \"Store\"")
 			}
 
-			if strings.Contains(lines2[2], "Type: Change,") == false {
-				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[2], "Type: Change")
+			if strings.Contains(lines2[2], "Type: \"Change\",") == false {
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[2], "Type: \"Change\"")
 			}
 
-			if strings.Contains(lines2[2], "Symbol: Store,") == false {
-				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[2], "Symbol: Store")
+			if strings.Contains(lines2[2], "Symbol: \"Store\",") == false {
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[2], "Symbol: \"Store\"")
 			}
 
-			if strings.Contains(lines2[3], "Type: Deprecate,") == false {
-				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[3], "Type: Deprecate")
+			if strings.Contains(lines2[3], "Type: \"Deprecate\",") == false {
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[3], "Type: \"Deprecate\"")
 			}
 
-			if strings.Contains(lines2[3], "Symbol: Store,") == false {
-				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[3], "Symbol: Store")
+			if strings.Contains(lines2[3], "Symbol: \"Store\",") == false {
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[3], "Symbol: \"Store\"")
 			}
 
-			if strings.Contains(lines2[4], "Type: Remove,") == false {
-				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[4], "Type: Remove")
+			if strings.Contains(lines2[4], "Type: \"Remove\",") == false {
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[4], "Type: \"Remove\"")
 			}
 
-			if strings.Contains(lines2[4], "Symbol: Store,") == false {
-				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[4], "Symbol: Store")
+			if strings.Contains(lines2[4], "Symbol: \"Store\",") == false {
+				t.Errorf("Expected \"%s\" to contain \"%s\"", lines2[4], "Symbol: \"Store\"")
 			}
 
 		} else {
@@ -493,24 +493,24 @@ func TestChangelog_Search(t *testing.T) {
 
 		if len(lines3) == 3 {
 
-			if lines3[0] != "changelog.Search: ./path/to/Cache.go#StoreItem contains 2 changelog entries." {
+			if lines3[0] != "changelog.Search: File \"./path/to/Cache.go\" with Symbol \"StoreItem\" contains 2 Changelog entries." {
 				t.Errorf("Expected %d changelog entries", 2)
 			}
 
-			if strings.Contains(lines3[1], "Type: Add,") == false {
-				t.Errorf("Expected %s to be Type: Add", lines1[1])
+			if strings.Contains(lines3[1], "Type: \"Add\",") == false {
+				t.Errorf("Expected %s to be Type: \"Add\"", lines1[1])
 			}
 
-			if strings.Contains(lines3[1], "Symbol: StoreItem,") == false {
-				t.Errorf("Expected %s to be Symbol: StoreItem", lines3[1])
+			if strings.Contains(lines3[1], "Symbol: \"StoreItem\",") == false {
+				t.Errorf("Expected %s to be Symbol: \"StoreItem\"", lines3[1])
 			}
 
-			if strings.Contains(lines3[2], "Type: Fix,") == false {
-				t.Errorf("Expected %s to be Type: Fix", lines1[2])
+			if strings.Contains(lines3[2], "Type: \"Fix\",") == false {
+				t.Errorf("Expected %s to be Type: \"Fix\"", lines1[2])
 			}
 
-			if strings.Contains(lines3[2], "Symbol: StoreItem,") == false {
-				t.Errorf("Expected %s to be Symbol: StoreItem", lines3[2])
+			if strings.Contains(lines3[2], "Symbol: \"StoreItem\",") == false {
+				t.Errorf("Expected %s to be Symbol: \"StoreItem\"", lines3[2])
 			}
 
 		} else {
