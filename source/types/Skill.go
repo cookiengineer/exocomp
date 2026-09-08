@@ -34,7 +34,13 @@ func ParseSkill(data []byte) (*Skill, error) {
 		err   := json.Unmarshal(data, &skill)
 
 		if err == nil {
+
+			if skill.Scripts == nil {
+				skill.Scripts = make(map[string]string)
+			}
+
 			return &skill, nil
+
 		} else {
 			return nil, err
 		}
@@ -56,6 +62,10 @@ func ParseSkill(data []byte) (*Skill, error) {
 				if err == nil {
 
 					skill.Body = body
+
+					if skill.Scripts == nil {
+						skill.Scripts = make(map[string]string)
+					}
 
 					return &skill, nil
 
