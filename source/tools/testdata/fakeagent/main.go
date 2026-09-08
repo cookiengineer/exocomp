@@ -51,6 +51,10 @@ func main() {
 	case "hang":
 		time.Sleep(24 * time.Hour)
 
+	case "summarize":
+		emitMessage("assistant", "The agent implemented the feature successfully.")
+		os.Exit(0)
+
 	default:
 		emitMessage("system", "hello")
 		emitQuit("my work is done: implemented the feature")

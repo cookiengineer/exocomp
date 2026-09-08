@@ -4,6 +4,7 @@ import "exocomp/schemas"
 import utils_ast "exocomp/utils/ast"
 import utils_fmt "exocomp/utils/fmt"
 import utils_fs "exocomp/utils/fs"
+import "bytes"
 import "errors"
 import "fmt"
 import "io/fs"
@@ -77,6 +78,39 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 				return tool.Stat(utils_fmt.FormatFilePath(path))
 			} else {
 				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			}
+
+		} else if method == "ReadSymbol" {
+
+			path,   ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
+
+			if ok1 == true && ok2 == true {
+				return tool.ReadSymbol(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol))
+			} else if ok1 == true && ok2 == false {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameters.")
+			}
+
+		} else if method == "WriteSymbol" {
+
+			path,        ok1 := arguments["path"].(string)
+			symbol,      ok2 := arguments["symbol"].(string)
+			declaration, ok3 := arguments["declaration"].(string)
+
+			if ok1 == true && ok2 == true && ok3 == true {
+				return tool.WriteSymbol(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatMultiLine(declaration))
+			} else if ok1 == true && ok2 == true && ok3 == false {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"declaration\" is not a string.")
+			} else if ok1 == true && ok2 == false && ok3 == true {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"symbol\" is not a string.")
+			} else if ok1 == false && ok2 == true && ok3 == true {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameters.")
 			}
 
 		} else if method == "Write" {
@@ -296,6 +330,46 @@ func (tool *Files) ReadSymbol(path string, symbol string) (string, error) {
 
 	} else {
 		return "", fmt.Errorf("files.ReadSymbol: %s", err0.Error())
+	}
+
+}
+
+func (tool *Files) WriteSymbol(path string, symbol string, declaration string) (string, error) {
+
+	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err0 == nil {
+
+		source, err1 := os.ReadFile(resolved)
+
+		if err1 == nil {
+
+			declaration_type := ""
+
+			if strings.HasPrefix(strings.TrimSpace(declaration), "func") {
+				declaration_type = "func"
+			}
+
+			result := utils_ast.WriteSymbol(source, symbol, declaration, declaration_type)
+
+			if bytes.Equal(result, source) == true {
+				return "", fmt.Errorf("files.WriteSymbol: File \"%s\" has no Symbol \"%s\"", path, symbol)
+			}
+
+			err2 := os.WriteFile(resolved, result, 0666)
+
+			if err2 == nil {
+				return fmt.Sprintf("files.WriteSymbol: File \"%s\" Symbol \"%s\" written.", path, symbol), nil
+			} else {
+				return "", fmt.Errorf("files.WriteSymbol: %s", err2.Error())
+			}
+
+		} else {
+			return "", fmt.Errorf("files.WriteSymbol: %s", err1.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("files.WriteSymbol: %s", err0.Error())
 	}
 
 }

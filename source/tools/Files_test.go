@@ -353,3 +353,217 @@ func TestFiles_Write(t *testing.T) {
 	})
 
 }
+
+func TestFiles_Copy(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
+	sandbox       := filepath.Join(playground, "files")
+	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
+
+	if tool != nil {
+
+		_, err1 := tool.Write("./source.txt", "This is the source file content!")
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		result2, err2 := tool.Copy("./source.txt", "./copy/source.txt")
+		result3, err3 := tool.Read("./copy/source.txt")
+		result4, err4 := tool.Copy("./../../../source.txt", "./escape.txt")
+
+		if strings.Contains(result2, "File \"./source.txt\" copied to \"./copy/source.txt\"") == false {
+			t.Errorf("Expected file to be copied, got %s", result2)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if strings.Contains(result3, "This is the source file content!") == false {
+			t.Errorf("Expected copied file to contain source content, got %s", result3)
+		}
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if result4 != "" {
+			t.Errorf("Expected %s to be empty", result4)
+		}
+
+		if err4 != nil {
+
+			if strings.Contains(err4.Error(), "Attempt to escape sandbox") == false {
+				t.Errorf("Expected %v to detect attempt to escape sandbox", err4)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err4)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
+func TestFiles_ReadSymbol(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
+	sandbox       := filepath.Join(playground, "files")
+	tool          := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
+
+	if tool != nil {
+
+		_, err1 := tool.Write("./core.go", "package core\n\nfunc FirstFunction(current int64) (string, error) {\n\treturn \"\", nil\n}\n\ntype MyByte uint8\n")
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		result2, err2 := tool.ReadSymbol("./core.go", "FirstFunction")
+		result3, err3 := tool.ReadSymbol("./core.go", "MyByte")
+		result4, err4 := tool.ReadSymbol("./core.go", "Missing")
+
+		if strings.Contains(result2, "Symbol \"FirstFunction\" with Type \"func\"") == false {
+			t.Errorf("Expected function symbol to be read, got %s", result2)
+		}
+
+		if strings.Contains(result2, "func FirstFunction(current int64) (string, error)") == false {
+			t.Errorf("Expected function declaration in result, got %s", result2)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if strings.Contains(result3, "Symbol \"MyByte\" with Type \"type\"") == false {
+			t.Errorf("Expected type symbol to be read, got %s", result3)
+		}
+
+		if strings.Contains(result3, "type MyByte uint8") == false {
+			t.Errorf("Expected type declaration in result, got %s", result3)
+		}
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if result4 != "" {
+			t.Errorf("Expected %s to be empty", result4)
+		}
+
+		if err4 == nil {
+			t.Errorf("Expected %v to be not nil", err4)
+		} else if strings.Contains(err4.Error(), "has no Symbol") == false {
+			t.Errorf("Expected missing symbol error, got %v", err4)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
+func TestFiles_WriteSymbol(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
+	sandbox       := filepath.Join(playground, "files")
+	tool          := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
+
+	if tool != nil {
+
+		_, err1 := tool.Write("./core.go", "package core\n\nfunc FirstFunction() int {\n\treturn 1\n}\n\ntype MyByte uint8\n")
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		result2, err2 := tool.WriteSymbol("./core.go", "FirstFunction", "func FirstFunction() int {\n\treturn 2\n}")
+		result3, err3 := tool.WriteSymbol("./core.go", "MyByte", "type MyByte string")
+		result4, err4 := tool.WriteSymbol("./core.go", "Missing", "func Missing() {}")
+
+		if strings.Contains(result2, "Symbol \"FirstFunction\" written") == false {
+			t.Errorf("Expected function symbol to be written, got %s", result2)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if strings.Contains(result3, "Symbol \"MyByte\" written") == false {
+			t.Errorf("Expected type symbol to be written, got %s", result3)
+		}
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if result4 != "" {
+			t.Errorf("Expected %s to be empty", result4)
+		}
+
+		if err4 == nil {
+			t.Errorf("Expected %v to be not nil", err4)
+		} else if strings.Contains(err4.Error(), "has no Symbol") == false {
+			t.Errorf("Expected missing symbol error, got %v", err4)
+		}
+
+		content, err5 := tool.Read("./core.go")
+
+		if err5 != nil {
+			t.Errorf("Expected %v to be nil", err5)
+		}
+
+		if strings.Contains(content, "return 2") == false {
+			t.Errorf("Expected function body to be overwritten, got %s", content)
+		}
+
+		if strings.Contains(content, "return 1") == true {
+			t.Errorf("Expected old function body to be gone, got %s", content)
+		}
+
+		if strings.Contains(content, "type MyByte string") == false {
+			t.Errorf("Expected type to be overwritten, got %s", content)
+		}
+
+		if strings.Contains(content, "type MyByte uint8") == true {
+			t.Errorf("Expected old type to be gone, got %s", content)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}

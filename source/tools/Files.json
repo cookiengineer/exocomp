@@ -57,6 +57,27 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "files.ReadSymbol",
+			"description": "Read and return a single symbol declaration (function, method, struct, interface or named type) from a Go file.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to a Go file, e.g. \"./utils/Parse.go\""
+					},
+					"symbol": {
+						"type": "string",
+						"description": "The linkable symbol name, e.g. \"Parse\" or \"structs.Data.Parse\"."
+					}
+				},
+				"required": ["path", "symbol"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "files.Stat",
 			"description": "Return the metadata of a file or folder: type, name, size, mode and last modified time.",
 			"parameters": {
@@ -89,6 +110,31 @@
 					}
 				},
 				"required": ["path", "content"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "files.WriteSymbol",
+			"description": "Write or replace a single symbol declaration (function, method, struct, interface or named type) in a Go file.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to a Go file, e.g. \"./utils/Parse.go\""
+					},
+					"symbol": {
+						"type": "string",
+						"description": "The linkable symbol name, e.g. \"Parse\" or \"structs.Data.Parse\". Must match the parsed declaration exactly."
+					},
+					"declaration": {
+						"type": "string",
+						"description": "The complete Go declaration to write, e.g. \"func Parse(input string) error\" or \"type Data struct { Name string }\""
+					}
+				},
+				"required": ["path", "symbol", "declaration"]
 			}
 		}
 	}

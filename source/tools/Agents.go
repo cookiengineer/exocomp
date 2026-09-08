@@ -710,8 +710,14 @@ func (tool *Agents) Inquire(name string) (string, error) {
 
 				if len(lines) > 0 {
 
+					line    := strings.TrimSpace(lines[len(lines) - 1])
 					summary := schemas.Message{}
-					err2    := json.Unmarshal([]byte(lines[len(lines) - 1]), &summary)
+
+					if strings.HasPrefix(line, "schemas.Message:") {
+						line = strings.TrimSpace(line[16:])
+					}
+
+					err2 := json.Unmarshal([]byte(line), &summary)
 
 					if err2 == nil {
 

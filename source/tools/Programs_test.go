@@ -236,6 +236,147 @@ func TestPrograms_ExecuteWithoutProgram(t *testing.T) {
 }
 
 
+func TestPrograms_List(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
+	sandbox       := filepath.Join(playground, "programs")
+	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"cat", "ls", "pwd"})
+
+	if tool != nil {
+
+		result1, err1 := tool.List()
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		lines := strings.Split(result1, "\n")
+
+		if len(lines) != 4 {
+			t.Errorf("Expected %d lines, got %d: %s", 4, len(lines), result1)
+		}
+
+		if lines[0] != "programs.List:" {
+			t.Errorf("Expected header %q, got %q", "programs.List:", lines[0])
+		}
+
+		if strings.Contains(lines[1], "Name: cat") == false {
+			t.Errorf("Expected %q to contain %q", lines[1], "Name: cat")
+		}
+
+		if strings.Contains(lines[2], "Name: ls") == false {
+			t.Errorf("Expected %q to contain %q", lines[2], "Name: ls")
+		}
+
+		if strings.Contains(lines[3], "Name: pwd") == false {
+			t.Errorf("Expected %q to contain %q", lines[3], "Name: pwd")
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
+func TestPrograms_Stat(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
+	sandbox       := filepath.Join(playground, "programs")
+	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"cat", "ls", "pwd"})
+
+	if tool != nil {
+
+		result1, err1 := tool.Stat("cat")
+		result2, err2 := tool.Stat("nc")
+
+		if result1 == "" {
+			t.Errorf("Expected resolved path for %q", "cat")
+		}
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if result2 != "" {
+			t.Errorf("Expected %s to be empty", result2)
+		}
+
+		if err2 != nil {
+
+			if strings.Contains(err2.Error(), "Attempt to lookup unallowed program") == false {
+				t.Errorf("Expected %v to detect unallowed program", err2)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err2)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
+func TestPrograms_StatWithoutProgram(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
+	sandbox       := filepath.Join(playground, "programs")
+	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"doesntexist"})
+
+	if tool != nil {
+
+		result1, err1 := tool.Stat("doesntexist")
+
+		if result1 != "" {
+			t.Errorf("Expected %s to be empty", result1)
+		}
+
+		if err1 != nil {
+
+			if strings.Contains(err1.Error(), "Program doesn't exist") == false {
+				t.Errorf("Expected %v to detect not existing program", err1)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err1)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
 func TestPrograms_Call_OptionalArguments(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
