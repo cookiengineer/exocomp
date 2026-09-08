@@ -302,7 +302,7 @@ func TestFiles_Write(t *testing.T) {
 		result2, err2 := tool.Write("./../../../file.txt", "This is the file content!")
 		result3, err3 := tool.Write("/etc/passwd", "This is the file content!")
 
-		if result1 != "files.Write: ./file.txt with 26 B written." {
+		if result1 != "files.Write: File \"./file.txt\" with 26 B written." {
 			t.Errorf("Expected file to be written")
 		}
 

@@ -98,75 +98,93 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 
 	format = strings.ToLower(strings.TrimSpace(format))
 
-	if format == "" {
+	switch format {
+	case "markdown", "text", "html":
+	case "":
 		format = "markdown"
-	} else if format != "markdown" && format != "text" && format != "html" {
+	default:
+		format = ""
+	}
+
+	if format != "" {
+
+		url, err0 := parseWebsiteURL(url_str)
+
+		if err0 == nil {
+
+			useragent, err1 := getWebsiteUserAgent(user_agent)
+
+			if err1 == nil {
+
+				request, err2 := net_http.NewRequest(net_http.MethodGet, url.String(), nil)
+
+				if err2 == nil {
+
+					request.Header = useragent.Header()
+
+					accept          := request.Header.Get("Accept")
+					accept_language := request.Header.Get("Accept-Language")
+
+					if accept == "" {
+						accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+					}
+
+					if accept_language == "" {
+						accept_language = "en-US,en;q=0.9"
+					}
+
+					request.Header.Set("Accept",          accept)
+					request.Header.Set("Accept-Language", accept_language)
+
+					response, err3 := tool.client.Do(request)
+
+					if err3 == nil {
+
+						defer response.Body.Close()
+
+						bytes, err4 := io.ReadAll(io.LimitReader(response.Body, 16*1024*1024))
+
+						if err4 == nil {
+
+							content := ""
+
+							switch format {
+							case "html":
+								content = string(bytes)
+							case "text":
+								content = getWebsiteText(url, bytes)
+							default:
+								content = getWebsiteMarkdown(url, bytes)
+							}
+
+							return strings.Join([]string{
+								fmt.Sprintf("websites.Fetch: URL \"%s\" (%s) contents", url.String(), response.Status),
+								strings.TrimSpace(content),
+							}, "\n"), nil
+
+						} else {
+							return "", fmt.Errorf("websites.Fetch: %s", err4.Error())
+						}
+
+					} else {
+						return "", fmt.Errorf("websites.Fetch: %s", err3.Error())
+					}
+
+				} else {
+					return "", fmt.Errorf("websites.Fetch: %s", err2.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("websites.Fetch: %s", err1.Error())
+			}
+
+		} else {
+			return "", fmt.Errorf("websites.Fetch: %s", err0.Error())
+		}
+
+	} else {
 		return "", fmt.Errorf("websites.Fetch: Invalid parameter \"format\" must be \"markdown\", \"text\" or \"html\".")
 	}
-
-	url, err0 := parseWebsiteURL(url_str)
-
-	if err0 != nil {
-		return "", err0
-	}
-
-	useragent, err1 := getWebsiteUserAgent(user_agent)
-
-	if err1 != nil {
-		return "", err1
-	}
-
-	request, err2 := net_http.NewRequest(net_http.MethodGet, url.String(), nil)
-
-	if err2 != nil {
-		return "", fmt.Errorf("websites.Fetch: %s", err2.Error())
-	}
-
-	request.Header = useragent.Header()
-
-	accept          := request.Header.Get("Accept")
-	accept_language := request.Header.Get("Accept-Language")
-
-	if accept == "" {
-		accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-	}
-
-	if accept_language == "" {
-		accept_language = "en-US,en;q=0.9"
-	}
-
-	request.Header.Set("Accept",          accept)
-	request.Header.Set("Accept-Language", accept_language)
-
-	response, err3 := tool.client.Do(request)
-
-	if err3 != nil {
-		return "", fmt.Errorf("websites.Fetch: %s", err3.Error())
-	}
-
-	defer response.Body.Close()
-
-	bytes, err4 := io.ReadAll(io.LimitReader(response.Body, 16*1024*1024))
-
-	if err4 != nil {
-		return "", fmt.Errorf("websites.Fetch: %s", err4.Error())
-	}
-
-	content := ""
-
-	switch format {
-	case "html":
-		content = string(bytes)
-	case "text":
-		content = getWebsiteText(url, bytes)
-	default:
-		content = getWebsiteMarkdown(url, bytes)
-	}
-
-	return strings.Join([]string{
-		fmt.Sprintf("websites.Fetch: %s (%s)", url.String(), response.Status),
-		strings.TrimSpace(content),
-	}, "\n"), nil
 
 }
 
@@ -233,71 +251,94 @@ func (tool *Websites) Stat(url_str string, user_agent string) (string, error) {
 
 	url, err0 := parseWebsiteURL(url_str)
 
-	if err0 != nil {
-		return "", err0
-	}
+	if err0 == nil {
 
-	useragent, err1 := getWebsiteUserAgent(user_agent)
+		useragent, err1 := getWebsiteUserAgent(user_agent)
 
-	if err1 != nil {
-		return "", err1
-	}
+		if err1 == nil {
 
-	request, err2 := net_http.NewRequest(net_http.MethodHead, url.String(), nil)
+			var response *net_http.Response = nil
 
-	if err2 != nil {
-		return "", fmt.Errorf("websites.Stat: %s", err2.Error())
-	}
+			request_head, err2 := net_http.NewRequest(net_http.MethodHead, url.String(), nil)
 
-	request.Header = useragent.Header()
+			if err2 == nil {
 
-	response, err3 := tool.client.Do(request)
+				request_head.Header = useragent.Header()
 
-	if err3 != nil {
+				response_head, err3 := tool.client.Do(request_head)
 
-		// Some servers reject HEAD, fall back to a body-less GET
-		request2, err4 := net_http.NewRequest(net_http.MethodGet, url.String(), nil)
+				if err3 == nil {
 
-		if err4 != nil {
-			return "", fmt.Errorf("websites.Stat: %s", err4.Error())
+					io.Copy(io.Discard, response_head.Body)
+					response_head.Body.Close()
+
+					// NOTE: Falls through for response handling
+					response = response_head
+
+				} else {
+
+					// Some servers reject HEAD, fall back to a body-less GET
+					request_get, err4 := net_http.NewRequest(net_http.MethodGet, url.String(), nil)
+
+					if err4 == nil {
+
+						request_get.Header = useragent.Header()
+
+						response_get, err5 := tool.client.Do(request_get)
+
+						if err5 == nil {
+
+							io.Copy(io.Discard, response_get.Body)
+							response_get.Body.Close()
+
+							// NOTE: Falls through for response handling
+							response = response_get
+
+						} else {
+							return "", fmt.Errorf("websites.Stat: %s", err5.Error())
+						}
+
+
+					} else {
+						return "", fmt.Errorf("websites.Stat: %s", err4.Error())
+					}
+
+				}
+
+			} else {
+				return "", fmt.Errorf("websites.Stat: %s", err2.Error())
+			}
+
+			if response != nil {
+
+				lines := make([]string, 0)
+				lines = append(lines, fmt.Sprintf("websites.Stat: %s (%s)", url.String(), response.Status))
+
+				keys := make([]string, 0)
+
+				for key, _ := range response.Header {
+					keys = append(keys, key)
+				}
+
+				sort.Strings(keys)
+
+				for _, key := range keys {
+					lines = append(lines, fmt.Sprintf("%s: %s", key, strings.Join(response.Header[key], ", ")))
+				}
+
+				return strings.Join(lines, "\n"), nil
+
+			} else {
+				return "", fmt.Errorf("websites.Stat: URL \"%s\" gave no HTTP Response. Maybe a connection error?", url.String())
+			}
+
+		} else {
+			return "", fmt.Errorf("websites.Stat: %s", err1.Error())
 		}
-
-		request2.Header = useragent.Header()
-
-		response2, err5 := tool.client.Do(request2)
-
-		if err5 != nil {
-			return "", fmt.Errorf("websites.Stat: %s", err5.Error())
-		}
-
-		io.Copy(io.Discard, response2.Body)
-		response2.Body.Close()
-
-		response = response2
 
 	} else {
-
-		io.Copy(io.Discard, response.Body)
-		response.Body.Close()
-
+		return "", fmt.Errorf("websites.Stat: %s", err0.Error())
 	}
-
-	lines := make([]string, 0)
-	lines = append(lines, fmt.Sprintf("websites.Stat: %s (%s)", url.String(), response.Status))
-
-	keys := make([]string, 0)
-
-	for key, _ := range response.Header {
-		keys = append(keys, key)
-	}
-
-	sort.Strings(keys)
-
-	for _, key := range keys {
-		lines = append(lines, fmt.Sprintf("%s: %s", key, strings.Join(response.Header[key], ", ")))
-	}
-
-	return strings.Join(lines, "\n"), nil
 
 }
 

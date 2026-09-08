@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/schemas"
+import utils_ast "exocomp/utils/ast"
 import utils_fmt "exocomp/utils/fmt"
 import utils_fs "exocomp/utils/fs"
 import "errors"
@@ -248,7 +249,7 @@ func (tool *Files) Read(path string) (string, error) {
 		if err1 == nil {
 
 			result := strings.Join([]string{
-				fmt.Sprintf("files.Read: %s", path),
+				fmt.Sprintf("files.Read: File \"%s\" contents", path),
 				string(bytes),
 			}, "\n")
 
@@ -260,6 +261,41 @@ func (tool *Files) Read(path string) (string, error) {
 
 	} else {
 		return "", fmt.Errorf("files.Read: %s", err0.Error())
+	}
+
+}
+
+func (tool *Files) ReadSymbol(path string, symbol string) (string, error) {
+
+	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err0 == nil {
+
+		bytes, err1 := os.ReadFile(resolved)
+
+		if err1 == nil {
+
+			found := utils_ast.GetSymbol(bytes, symbol, "")
+
+			if found != nil {
+
+				result := strings.Join([]string{
+					fmt.Sprintf("files.ReadSymbol: File \"%s\" Symbol \"%s\" with Type \"%s\"", path, found.Name, found.Type),
+					fmt.Sprintf("%s", found.Body),
+				}, "\n")
+
+				return result, nil
+
+			} else {
+				return "", fmt.Errorf("files.ReadSymbol: File \"%s\" has no Symbol \"%s\"", path, symbol)
+			}
+
+		} else {
+			return "", fmt.Errorf("files.ReadSymbol: %s", err1.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("files.ReadSymbol: %s", err0.Error())
 	}
 
 }
@@ -344,7 +380,7 @@ func (tool *Files) Write(path string, content string) (string, error) {
 			if err2 == nil {
 
 				result := strings.Join([]string{
-					fmt.Sprintf("files.Write: %s with %s written.", path, utils_fmt.FormatFileSize(int64(len(buffer)))),
+					fmt.Sprintf("files.Write: File \"%s\" with %s written.", path, utils_fmt.FormatFileSize(int64(len(buffer)))),
 				}, "\n")
 
 				return result, nil
