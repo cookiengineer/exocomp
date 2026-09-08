@@ -7,8 +7,8 @@ sandboxed parts of the codebase, and communicate through explicit tool calls
 instead of freeform markdown documents.
 
 Everything a running agent knows is expressed as a `symbol` of the codebase,
-i.e. a `"path/to/package"` plus a `Symbol` (a struct, function, method or
-variable with its signature).
+i.e. a `"path/to/package"` plus a `Symbol` (a function, method, struct,
+interface or named type such as `string`, `uint8` or `[]byte`).
 
 Sandboxes and packages are equivalent: an agent reworks one subpackage in
 isolation while other agents work on other packages without conflicting.

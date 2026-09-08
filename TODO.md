@@ -23,11 +23,6 @@
       then render a UI for answering them _inside_ the tool call message's article element
       If they're answered, then render a UI with disabled elements for now.
 
-## Files Tool
-
-- [ ] Implement `files.ReadSymbol(file, symbol)`
-- [ ] Implement `files.WriteSymbol(file, symbol, declaration)`
-
 ## Tools
 
 - [ ] Implement Tool Call Shrinking, probably best in types/Session.go
@@ -53,10 +48,8 @@
 
 ## Tools
 
-- [ ] Implement unit tests for `tools/Agents`
 - [ ] Implement `tools/Vulnerabilities` to be able to search CVE dataset
-- [ ] Implement `tools/Websites` to be able to use `zimdex`
-- [ ] Implement `tools/Skills` to parse `$PWD/skills` directory
+- [ ] Implement `tools/Websites.Search()` to be able to use `zimdex` search API locally
 - [ ] Validate all properties of new agents in `readAgents()`
 
 ## Web UI

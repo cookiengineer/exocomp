@@ -1,7 +1,7 @@
 
 # Tool Calls in Practice
 
-A tool call is a multi-step exchange between the LLM and the [Session](../source/types/Session.go).
+A tool call is a multi-step exchange between the LLM and the [Session](../source/engine/Session.go).
 Tool names are always `namespace.Method` (e.g. `files.Read`, `agents.Await`).
 
 ## 1. Assistant requests a Tool Call
@@ -30,7 +30,7 @@ The model returns an assistant message carrying one or more `tool_calls`:
 
 ## 2. Session executes the Tool Call
 
-[Session.ReceiveChatResponse](../source/types/Session.go) parses each
+[Session.ReceiveChatResponse](../source/engine/Session.go) parses each
 `tool_calls` entry, resolves the namespace via `Session.GetTool`, and calls
 `Tool.Call(method, arguments)`. Tool implementations live in
 [source/tools](../source/tools/).

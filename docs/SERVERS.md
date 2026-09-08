@@ -11,7 +11,7 @@ Support for a new inference server requires the following API endpoints:
 
 - `http://server:port/v1/chat/completions` support
 - `http://server:port/v1/models` support
-- [types.Config](../types/Config.go) `GetContextLength(model)` support via custom `utils/api` adapter
+- [types.Config](../source/types/Config.go) `GetContextLength(model)` support via custom `utils/api` adapter
 
 ## ollama Usage
 
