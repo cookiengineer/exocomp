@@ -62,3 +62,28 @@ type Data struct {
 	}
 
 }
+
+func TestHasSymbol_BasicTypes(t *testing.T) {
+
+	source := []byte(`package dummy
+
+type MyByte uint8
+`)
+
+	if HasSymbol(source, "MyByte", "uint8") != true {
+		t.Errorf("Expected MyByte to be found as uint8")
+	}
+
+	if HasSymbol(source, "MyByte", "type") != true {
+		t.Errorf("Expected MyByte to be found as type")
+	}
+
+	if HasSymbol(source, "MyByte", "") != true {
+		t.Errorf("Expected MyByte to be found with empty type")
+	}
+
+	if HasSymbol(source, "Missing", "uint8") != false {
+		t.Errorf("Expected Missing to be not found")
+	}
+
+}

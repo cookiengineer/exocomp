@@ -105,6 +105,28 @@ type Parser interface {
 
 }
 
+func TestWriteSymbol_BasicTypes(t *testing.T) {
+
+	source := []byte(`package dummy
+
+type MyByte uint8
+`)
+
+	declaration := `type MyByte string`
+
+	result := WriteSymbol(source, "MyByte", declaration, "uint8")
+	text := string(result)
+
+	if strings.Contains(text, "type MyByte string") != true {
+		t.Errorf("Expected MyByte type to be overwritten, got: %s", text)
+	}
+
+	if strings.Contains(text, "uint8") == true {
+		t.Errorf("Expected old MyByte type to be gone, got: %s", text)
+	}
+
+}
+
 func TestWriteSymbol_MissingSymbol(t *testing.T) {
 
 	source := []byte(`package core

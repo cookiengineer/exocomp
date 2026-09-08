@@ -90,6 +90,71 @@ func (data *Data) Parse() error {
 
 }
 
+func TestGetPackageSymbols_BasicTypes(t *testing.T) {
+
+	folder := t.TempDir()
+
+	file1 := filepath.Join(folder, "types.go")
+
+	os.WriteFile(file1, []byte(`package core
+
+type MyByte uint8
+
+type MyString string
+
+type MyBytes []byte
+`), 0644)
+
+	result := GetPackageSymbols(folder, false)
+
+	key1 := file1
+
+	symbols1, ok1 := result[key1]
+
+	if ok1 != true {
+		t.Fatalf("Expected %q to be present in result, got keys: %v", key1, result)
+	}
+
+	my_byte, ok2 := symbols1["MyByte"]
+
+	if ok2 != true {
+		t.Fatalf("Expected MyByte to be present in %q", key1)
+	}
+
+	if my_byte.Name != "MyByte" {
+		t.Errorf("Expected name %q, got %q", "MyByte", my_byte.Name)
+	}
+
+	if my_byte.Type != "type" {
+		t.Errorf("Expected type %q, got %q", "type", my_byte.Type)
+	}
+
+	if my_byte.Body != "type MyByte uint8" {
+		t.Errorf("Expected body %q, got %q", "type MyByte uint8", my_byte.Body)
+	}
+
+	my_string, ok3 := symbols1["MyString"]
+
+	if ok3 != true {
+		t.Fatalf("Expected MyString to be present in %q", key1)
+	}
+
+	if my_string.Body != "type MyString string" {
+		t.Errorf("Expected body %q, got %q", "type MyString string", my_string.Body)
+	}
+
+	my_bytes, ok4 := symbols1["MyBytes"]
+
+	if ok4 != true {
+		t.Fatalf("Expected MyBytes to be present in %q", key1)
+	}
+
+	if my_bytes.Body != "type MyBytes []byte" {
+		t.Errorf("Expected body %q, got %q", "type MyBytes []byte", my_bytes.Body)
+	}
+
+}
+
 func TestGetPackageSymbols_EmptyFolder(t *testing.T) {
 
 	folder := t.TempDir()

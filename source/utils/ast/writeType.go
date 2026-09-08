@@ -17,7 +17,7 @@ func writeType(source []byte, fileset *token.FileSet, file *ast.File, symbol str
 
 				if ok2 == true && type_spec.Name != nil && type_spec.Name.Name == symbol {
 
-					if typeName(fileset, type_spec.Type) == expected_type {
+					if expected_type == "" || typeName(fileset, type_spec.Type) == expected_type {
 						return spliceNode(source, fileset, gen_decl, replacement), true
 					}
 

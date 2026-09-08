@@ -26,15 +26,35 @@ func WriteSymbol(source []byte, symbol string, declaration string, declaration_t
 			return result
 		}
 
-		result, _ = writeType(source, fileset, file, symbol, declaration_type, replacement)
+		result, _ = writeType(source, fileset, file, symbol, "func", replacement)
+
+		return result
+
+	} else if declaration_type == "interface" {
+
+		result, _ := writeType(source, fileset, file, symbol, "interface", replacement)
+
+		return result
+
+	} else if declaration_type == "struct" {
+
+		result, _ := writeType(source, fileset, file, symbol, "struct", replacement)
+
+		return result
+
+	} else {
+
+		result, ok := writeFunc(source, fileset, file, symbol, replacement)
+
+		if ok == true {
+			return result
+		}
+
+		result, _ = writeType(source, fileset, file, symbol, "", replacement)
 
 		return result
 
 	}
-
-	result, _ := writeType(source, fileset, file, symbol, declaration_type, replacement)
-
-	return result
 
 }
 

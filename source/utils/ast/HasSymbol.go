@@ -22,9 +22,25 @@ func HasSymbol(source []byte, symbol string, expected_type string) bool {
 			return true
 		}
 
-	}
+		return hasType(file, fileset, symbol, "func")
 
-	return hasType(file, fileset, symbol, expected_type)
+	} else if expected_type == "interface" {
+
+		return hasType(file, fileset, symbol, "interface")
+
+	} else if expected_type == "struct" {
+
+		return hasType(file, fileset, symbol, "struct")
+
+	} else {
+
+		if hasFunc(file, fileset, symbol) == true {
+			return true
+		}
+
+		return hasType(file, fileset, symbol, "")
+
+	}
 
 }
 

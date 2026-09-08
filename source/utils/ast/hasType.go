@@ -17,7 +17,7 @@ func hasType(file *ast.File, fileset *token.FileSet, symbol string, expected_typ
 
 				if ok2 == true && type_spec.Name != nil && type_spec.Name.Name == symbol {
 
-					if typeName(fileset, type_spec.Type) == expected_type {
+					if expected_type == "" || typeName(fileset, type_spec.Type) == expected_type {
 						return true
 					}
 
