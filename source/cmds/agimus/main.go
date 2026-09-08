@@ -122,11 +122,11 @@ func main() {
 					fmt.Sprintf("--sandbox=\"%s\"", sandbox),
 				})
 
-				session, err1 := utils_engine.RestoreSession(folder, config)
+				session, old_playground, err1 := utils_engine.RestoreSession(folder, config)
 
 				if err1 == nil {
 
-					agents, err2 := utils_engine.RestoreAgents(folder)
+					agents, err2 := utils_engine.RestoreAgents(folder, old_playground, session.Config.Playground)
 
 					if err2 == nil {
 						actions.Debug(session, agents, "assistant")

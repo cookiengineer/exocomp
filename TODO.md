@@ -1,11 +1,6 @@
 
 # TODO
 
-## cmds/agimus
-
-- [ ] Verify that playground and sandbox are set to correct `/tmp/agimus-*` folder
-- [ ] Verify that internal session backup is stored in correct `/tmp` folder and doesn't override source folder
-
 ## Web UI Client
 
 - [ ] Migrate towards use of a WebSocket so that we don't need to poll /api/session/agents all the time
@@ -82,7 +77,7 @@
 - [ ] Each grid tile shows the list of changelog entries for that package
 - [ ] Show/Hide toggle button for showing packages with no changelog entries
 - [ ] Create button in Footer
-- [ ] Create Bug Report dialog
+- [ ] Create Changelog Report dialog (e.g. Add/Change/Deprecate/Fix/Remove)
 
 ### Requirements View
 

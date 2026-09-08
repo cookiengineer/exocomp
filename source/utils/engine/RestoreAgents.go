@@ -6,7 +6,7 @@ import "os"
 import "path/filepath"
 import "strings"
 
-func RestoreAgents(folder string) ([]*types.Agent, error) {
+func RestoreAgents(folder string, old_playground string, new_playground string) ([]*types.Agent, error) {
 
 	result := make([]*types.Agent, 0)
 
@@ -33,7 +33,19 @@ func RestoreAgents(folder string) ([]*types.Agent, error) {
 						agent, err3 := types.ParseAgent(bytes)
 
 						if err3 == nil {
+
+							if old_playground != "" && new_playground != "" && agent.Sandbox != "" {
+
+								relative, err4 := filepath.Rel(old_playground, agent.Sandbox)
+
+								if err4 == nil && relative != ".." && strings.HasPrefix(relative, ".."+string(os.PathSeparator)) == false {
+									agent.Sandbox = filepath.Join(new_playground, relative)
+								}
+
+							}
+
 							result = append(result, agent)
+
 						} else {
 							errors = append(errors, fmt.Sprintf("%s: %s", filename, err3.Error()))
 						}

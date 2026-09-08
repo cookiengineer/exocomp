@@ -136,6 +136,10 @@ func RestoreSession(playground string, backup Session) *Session {
 
 	}
 
+	if session.Agent != nil && session.Config != nil {
+		session.Agent.Sandbox = session.Config.Sandbox
+	}
+
 	return session
 
 }
