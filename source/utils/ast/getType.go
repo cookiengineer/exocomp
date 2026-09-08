@@ -20,7 +20,9 @@ func getType(file *ast.File, fileset *token.FileSet, symbol string, expected_typ
 
 				if ok2 == true && type_spec.Name != nil && type_spec.Name.Name == symbol {
 
-					if typeName(fileset, type_spec.Type) == expected_type {
+					is_same_type := (expected_type == "" || typeName(fileset, type_spec.Type) == expected_type)
+
+					if is_same_type == true {
 
 						buffer := bytes.Buffer{}
 						printer.Fprint(&buffer, fileset, gen_decl)

@@ -15,14 +15,30 @@ func GetSymbol(source []byte, symbol string, declaration_type string) *Symbol {
 			result := getFunc(file, fileset, symbol)
 
 			if result == nil {
-				result = getType(file, fileset, symbol, declaration_type)
+				result = getType(file, fileset, symbol, "func")
+			}
+
+			return result
+
+		} else if declaration_type == "interface" {
+
+			return getType(file, fileset, symbol, "interface")
+
+		} else if declaration_type == "struct" {
+
+			return getType(file, fileset, symbol, "struct")
+
+		} else {
+
+			result := getFunc(file, fileset, symbol)
+
+			if result == nil {
+				result = getType(file, fileset, symbol, "")
 			}
 
 			return result
 
 		}
-
-		return getType(file, fileset, symbol, declaration_type)
 
 	}
 
