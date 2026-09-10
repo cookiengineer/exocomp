@@ -19,6 +19,7 @@ allowed-tools:
   - changelog.Search
   - files.List
   - files.Read
+  - files.Search
   - programs.Execute
   - programs.List
   - programs.Stat

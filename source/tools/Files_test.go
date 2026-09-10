@@ -486,6 +486,111 @@ func TestFiles_ReadSymbol(t *testing.T) {
 
 }
 
+func TestFiles_Search(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
+	sandbox       := filepath.Join(playground, "files")
+	tool          := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Search", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
+
+	if tool != nil {
+
+		_, err01 := tool.Write("./core.go", "package core\n\nfunc ParseInput() {\n\treturn\n}\n\ntype MyByte uint8\n")
+		_, err02 := tool.Write("./utils/Parse.go", "package utils\n\nfunc ParseOutput() string {\n\treturn \"\"\n}\n")
+		_, err03 := tool.Write("./sub/Deep.go", "package sub\n\nfunc DeepSearch() {\n\treturn\n}\n")
+
+		if err01 != nil {
+			t.Errorf("Expected %v to be nil", err01)
+		}
+
+		if err02 != nil {
+			t.Errorf("Expected %v to be nil", err02)
+		}
+
+		if err03 != nil {
+			t.Errorf("Expected %v to be nil", err03)
+		}
+
+		result1, err1 := tool.Search(".", "ParseOutput")
+		result2, err2 := tool.Search(".", "parseoutput")
+		result3, err3 := tool.Search(".", "MyByte")
+		result4, err4 := tool.Search(".", "DeepSearch")
+		result5, err5 := tool.Search(".", "missingquery")
+		result6, err6 := tool.Search("./../../../etc", "ParseOutput")
+
+		if strings.Contains(result1, "files.Search: \".\" for \"ParseOutput\" contains 1 matches.") == false {
+			t.Errorf("Expected header with 1 match, got %s", result1)
+		}
+
+		if strings.Contains(result1, "File: \"./utils/Parse.go\", Symbol: \"ParseOutput\", Type: \"func\"") == false {
+			t.Errorf("Expected match in utils/Parse.go, got %s", result1)
+		}
+
+		if err1 != nil {
+			t.Errorf("Expected %v to be nil", err1)
+		}
+
+		if strings.Contains(result2, "File: \"./utils/Parse.go\", Symbol: \"ParseOutput\", Type: \"func\"") == false {
+			t.Errorf("Expected case-insensitive match in utils/Parse.go, got %s", result2)
+		}
+
+		if err2 != nil {
+			t.Errorf("Expected %v to be nil", err2)
+		}
+
+		if strings.Contains(result3, "File: \"./core.go\", Symbol: \"MyByte\", Type: \"type\"") == false {
+			t.Errorf("Expected type match in core.go, got %s", result3)
+		}
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if strings.Contains(result4, "File: \"./sub/Deep.go\", Symbol: \"DeepSearch\", Type: \"func\"") == false {
+			t.Errorf("Expected recursive match in sub/Deep.go, got %s", result4)
+		}
+
+		if err4 != nil {
+			t.Errorf("Expected %v to be nil", err4)
+		}
+
+		if strings.Contains(result5, "contains 0 matches.") == false {
+			t.Errorf("Expected 0 matches, got %s", result5)
+		}
+
+		if err5 != nil {
+			t.Errorf("Expected %v to be nil", err5)
+		}
+
+		if result6 != "" {
+			t.Errorf("Expected %s to be empty", result6)
+		}
+
+		if err6 != nil {
+
+			if strings.Contains(err6.Error(), "Attempt to escape sandbox") == false {
+				t.Errorf("Expected %v to detect attempt to escape sandbox", err6)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be not nil", err6)
+		}
+
+	} else {
+		t.Errorf("Expected tool to be not nil")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
 func TestFiles_WriteSymbol(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")

@@ -9,6 +9,7 @@ import "errors"
 import "fmt"
 import "io/fs"
 import "os"
+import "path/filepath"
 import "slices"
 import "sort"
 import "strings"
@@ -78,6 +79,21 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 				return tool.Stat(utils_fmt.FormatFilePath(path))
 			} else {
 				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			}
+
+		} else if method == "Search" {
+
+			path,  ok1 := arguments["path"].(string)
+			query, ok2 := arguments["query"].(string)
+
+			if ok1 == true && ok2 == true {
+				return tool.Search(utils_fmt.FormatFilePath(path), query)
+			} else if ok1 == true && ok2 == false {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"query\" is not a string.")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameter \"path\" is not a string.")
+			} else {
+				return "", fmt.Errorf("files.%s: %s", method, "Invalid parameters.")
 			}
 
 		} else if method == "ReadSymbol" {
@@ -295,6 +311,97 @@ func (tool *Files) Read(path string) (string, error) {
 
 	} else {
 		return "", fmt.Errorf("files.Read: %s", err0.Error())
+	}
+
+}
+
+func (tool *Files) Search(path string, query string) (string, error) {
+
+	if path == "/" {
+		path = "."
+	} else if path == "" {
+		path = "."
+	}
+
+	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+
+	if err0 == nil {
+
+		stat, err1 := os.Stat(resolved)
+
+		if err1 == nil {
+
+			if stat.IsDir() == true {
+
+				lines := make([]string, 0)
+
+				err2 := filepath.WalkDir(resolved, func(entry_path string, entry os.DirEntry, err3 error) error {
+
+					if err3 == nil {
+
+						name := entry.Name()
+
+						if strings.HasPrefix(name, ".") == false {
+
+							if entry.IsDir() == false && strings.HasSuffix(name, ".go") {
+
+								bytes, err4 := os.ReadFile(entry_path)
+
+								if err4 == nil {
+
+									symbols := utils_ast.SearchSymbols(bytes, query)
+
+									for s := 0; s < len(symbols); s++ {
+
+										sandbox_path, err5 := sanitizeSandboxPath(tool.Sandbox, entry_path)
+
+										if err5 == nil {
+											lines = append(lines, fmt.Sprintf("- File: \"%s\", Symbol: \"%s\", Type: \"%s\"", sandbox_path, symbols[s].Name, symbols[s].Type))
+										}
+
+									}
+
+								}
+
+							}
+
+						} else if entry.IsDir() == true {
+							return filepath.SkipDir
+						}
+
+					}
+
+					return nil
+
+				})
+
+				if err2 == nil {
+
+					sort.Strings(lines)
+
+					result := make([]string, 0)
+					result = append(result, fmt.Sprintf("files.Search: \"%s\" for \"%s\" contains %d matches.", path, query, len(lines)))
+
+					for l := 0; l < len(lines); l++ {
+						result = append(result, lines[l])
+					}
+
+					return strings.Join(result, "\n"), nil
+
+				} else {
+					return "", fmt.Errorf("files.Search: %s", err2.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("files.Search: Invalid folder path \"%s\".", path)
+			}
+
+		} else {
+			return "", fmt.Errorf("files.Search: %s", err1.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("files.Search: %s", err0.Error())
 	}
 
 }

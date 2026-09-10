@@ -78,6 +78,27 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "files.Search",
+			"description": "Recursively search Go source files inside a folder for a text query and return the symbols (functions, methods, structs, interfaces or named types) that contain it. Hidden files and folders are excluded.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Relative path to a folder, e.g. \"./utils\". Use \".\" or \"/\" for the sandbox root."
+					},
+					"query": {
+						"type": "string",
+						"description": "The text to search for, matched case-insensitively."
+					}
+				},
+				"required": ["path", "query"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "files.Stat",
 			"description": "Return the metadata of a file or folder: type, name, size, mode and last modified time.",
 			"parameters": {

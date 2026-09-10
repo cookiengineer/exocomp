@@ -22,6 +22,7 @@ allowed-tools:
   - files.Copy
   - files.List
   - files.Read
+  - files.Search
   - files.Stat
   - files.Write
   - programs.Execute

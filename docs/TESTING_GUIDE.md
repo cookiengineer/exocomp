@@ -270,7 +270,7 @@ the first line of the file, so the default `go test ./...` run stays offline.
 
 For each tool, confirm every method in its `Call()` switch is tested:
 
-- `files`: `Copy`, `List`, `Read`, `ReadSymbol`, `Stat`, `Write`, `WriteSymbol`
+- `files`: `Copy`, `List`, `Read`, `ReadSymbol`, `Search`, `Stat`, `Write`, `WriteSymbol`
 - `requirements`: `List`, `DefineFunc`, `DefineInterface`, `DefineStruct`, `DefineType`, `Search`, `Signoff`
 - `bugs`: `List`, `Add`, `Fix`, `Search`
 - `changelog`: `Add`, `Change`, `Deprecate`, `Fix`, `List`, `Remove`, `Search`
@@ -281,8 +281,8 @@ For each tool, confirm every method in its `Call()` switch is tested:
 - `websites`: `Fetch`, `List`, `Stat`
 
 The `utils/ast` package follows the same rules for its exported API:
-`GetSymbol`, `GetSymbolType`, `GetPackageSymbols`, `ReadSymbol`, `WriteSymbol`
-and `HasSymbol` each have tests covering `func`, `interface`, `struct` and the
+`GetSymbol`, `GetSymbolType`, `GetPackageSymbols`, `ReadSymbol`, `WriteSymbol`,
+`HasSymbol` and `SearchSymbols` each have tests covering `func`, `interface`, `struct` and the
 basic Go types (`uint8`, `string`, `[]byte`, maps, ...).
 
 ## Running the Tests
