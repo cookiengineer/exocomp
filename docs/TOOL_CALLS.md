@@ -72,3 +72,13 @@ the same `tool_call_id` and `tool_name`:
 `agents.Await` blocks inside `CallTool` until the hired agent finishes, so the
 next inference happens only after the agent's work report is available. Other
 tools return immediately.
+
+## Sanitized tool errors
+
+Tool error messages are sanitized before they reach the model (see
+[Tool Error Message Sandboxing](ARCHITECTURE.md#tool-error-message-sandboxing)).
+A failing tool returns a short, deterministic message that uses a relative path,
+e.g. `files.Read: File "./x.go" does not exist.`, instead of the raw Go error
+string. This prevents leaking host information such as the absolute path in an
+ENOENT `*PathError`, the `os.Executable()` path, `/tmp/...` temp dirs, or the
+DNS/IP details of `net/http` dial errors.

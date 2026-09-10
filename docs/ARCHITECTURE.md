@@ -148,6 +148,52 @@ with `requirements.Define*`. A coder gets `files.Write`, `changelog.*` and
 `programs.Execute`. A tester only writes unit tests and `bugs.*` reports.
 ... and so on.
 
+## Tool Error Message Sandboxing
+
+Tool results and error messages are part of the LLM's context window. A
+low-level Go error string can leak host information that a smaller "abliterated"
+model (with fewer safety guardrails) might use to probe or escape the sandbox.
+For example, `os.Stat`'s `*PathError` embeds the **absolute** path it was given:
+
+```
+files.Stat: stat /home/alice/projects/secret/...: no such file or directory
+```
+
+Because `resolveSandboxPath`/`sanitizeSandboxPath` resolve every path to an
+absolute location internally, passing `err.Error()` straight back to the model
+leaks the host's absolute directory layout. The same applies to
+`os.Executable()` paths in `agents.Hire`, the `/tmp/...` temp dir in
+`agents.Inquire`, and `net/http` dial errors in `websites.*` (which can expose
+DNS names and IPs).
+
+### Rules
+
+1. Never return a raw `err.Error()` from `os`, `exec`, `net/http` or `json`
+   through a tool's `Call(...)`. Map it to a fixed, path-safe message.
+2. Always echo the **user-supplied or sanitized relative path** (`"./x"`),
+   never the resolved absolute path.
+3. Keep messages short, deterministic and prefixed `namespace.Method:` so a
+   smaller LLM can parse them. Prefer `File "./x" does not exist.` over an
+   ENOENT string.
+
+### Helpers
+
+| File | Purpose |
+|:-----|:--------|
+| `source/tools/sanitizeFilesystemError.go` | Maps `os.*` filesystem errors to `does not exist.` / `Permission denied.` / `Cannot access ...`, using the relative path. |
+| `source/tools/sanitizeExecutionError.go` | Maps subprocess errors from `programs.Execute` / `skills.Execute` to `Permission denied.` / `Program doesn't exist.` / `exited with an error.` |
+
+### How to add a tool
+
+1. Resolve/sanitize every path via `resolveSandboxPath` / `sanitizeSandboxPath`.
+2. On any `os.*` call failure, return
+   `sanitizeFilesystemError(namespace, method, kind, relativePath, err)`.
+3. On any subprocess failure, return
+   `sanitizeExecutionError(namespace, method, kind, name, result, err)`.
+4. On any HTTP failure, return a fixed message that omits dial/DNS/IP details.
+5. Add a test that asserts the error contains no absolute path, `/tmp/`, IP
+   address or `resolved` path (see `source/tools/*_test.go`).
+
 ## Session Loop
 
 [engine.Session](../source/engine/Session.go) drives a single agent's

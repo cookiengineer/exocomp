@@ -34,7 +34,7 @@ func readChangelog(tool *Changelog) error {
 					return nil
 
 				} else {
-					return fmt.Errorf("readChangelog: %s", err2.Error())
+					return fmt.Errorf("readChangelog: Cannot parse changelog")
 				}
 
 			} else if os.IsNotExist(err1) {
@@ -43,7 +43,7 @@ func readChangelog(tool *Changelog) error {
 				return nil
 
 			} else {
-				return fmt.Errorf("readChangelog: %s", err1.Error())
+				return fmt.Errorf("readChangelog: Cannot read changelog")
 			}
 
 		} else {

@@ -1,6 +1,7 @@
 package engine
 
 import "exocomp/schemas"
+import "exocomp/types"
 import "encoding/json"
 import "fmt"
 import "io"
@@ -14,18 +15,21 @@ import "testing"
 func newTestSession() *Session {
 
 	url, _ := net_url.Parse("http://localhost:11434/v1")
-	config := NewConfig("Test Agent", "planner", "", "", 0.0, "/tmp/exocomp-test", "/tmp/exocomp-test", url, false)
+	config := types.NewConfig("Test Agent", "planner", "test-model", "", 0.0, "/tmp/exocomp-test", "/tmp/exocomp-test", url, false)
 
 	return &Session{
-		Agent:    &Agent{Messages: make([]*schemas.Message, 0)},
+		Agent: &types.Agent{
+			Model:    "test-model",
+			Messages: make([]*schemas.Message, 0),
+		},
 		Config:   config,
-		Console:  NewConsole(os.Stdout, os.Stderr, 0),
+		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
 		Recovery: NewRecovery(config.Playground),
-		Tools:    make([]*schemas.Tool, 0),
 		Waiting:  false,
 		client:   &http.Client{},
 		mutex:    &sync.RWMutex{},
-		tools:    make(map[string]Tool),
+		adapters: make(map[string]types.Adapter),
+		tools:    make(map[string]types.Tool),
 	}
 
 }
@@ -34,7 +38,11 @@ type stubAgentsTool struct {
 	callCount int
 }
 
-func (tool *stubAgentsTool) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *stubAgentsTool) Name() string {
+	return "agents"
+}
+
+func (tool *stubAgentsTool) Call(method string, arguments map[string]any) (string, error) {
 
 	tool.callCount++
 
@@ -48,6 +56,18 @@ func (tool *stubAgentsTool) Call(method string, arguments map[string]interface{}
 
 func (tool *stubAgentsTool) GetContent(id string) (any, error) {
 	return nil, fmt.Errorf("stubAgentsTool.GetContent: nope")
+}
+
+func (tool *stubAgentsTool) GetContentIdentifiers() []string {
+	return []string{}
+}
+
+func (tool *stubAgentsTool) HasMethod(method string) bool {
+	return method == "Await"
+}
+
+func (tool *stubAgentsTool) Schemas() []schemas.Tool {
+	return []schemas.Tool{}
 }
 
 type mockTransport struct {
@@ -71,11 +91,7 @@ func (transport *mockTransport) RoundTrip(request *http.Request) (*http.Response
 func TestSession_GetTool_NoDot(t *testing.T) {
 
 	session := newTestSession()
-
-	session.Tools = append(session.Tools, &schemas.Tool{
-		Type:     "function",
-		Function: schemas.ToolFunction{Name: "agentsList"},
-	})
+	session.SetTool(&stubAgentsTool{})
 
 	result := session.GetTool("agentsList")
 
@@ -91,11 +107,7 @@ func TestSession_ReceiveChatResponse_NoAwaitPollingLoop(t *testing.T) {
 	stub      := &stubAgentsTool{}
 	transport := &mockTransport{}
 
-	session.SetTool("agents", stub, []schemas.Tool{{
-		Type:     "function",
-		Function: schemas.ToolFunction{Name: "agents.Await"},
-	}})
-
+	session.SetTool(stub)
 	session.client = &http.Client{Transport: transport}
 
 	response := schemas.Message{

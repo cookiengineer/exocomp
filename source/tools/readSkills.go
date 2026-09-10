@@ -102,7 +102,7 @@ func readSkills(tool *Skills) error {
 				}
 
 			} else {
-				return fmt.Errorf("readSkills: %s", err1.Error())
+				return fmt.Errorf("readSkills: Cannot list skills folder")
 			}
 
 		} else {

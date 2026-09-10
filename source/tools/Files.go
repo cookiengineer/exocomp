@@ -5,9 +5,7 @@ import utils_ast "exocomp/utils/ast"
 import utils_fmt "exocomp/utils/fmt"
 import utils_fs "exocomp/utils/fs"
 import "bytes"
-import "errors"
 import "fmt"
-import "io/fs"
 import "os"
 import "path/filepath"
 import "slices"
@@ -175,7 +173,7 @@ func (tool *Files) Copy(from_path string, to_path string) (string, error) {
 					if err4 == nil {
 						return fmt.Sprintf("files.Copy: Folder \"%s\" copied to \"%s\".", from_path, to_path), nil
 					} else {
-						return "", fmt.Errorf("files.Copy: %s", err4.Error())
+						return "", fmt.Errorf("files.Copy: Cannot copy \"%s\" to \"%s\".", from_path, to_path)
 					}
 
 				} else {
@@ -185,13 +183,13 @@ func (tool *Files) Copy(from_path string, to_path string) (string, error) {
 					if err4 == nil {
 						return fmt.Sprintf("files.Copy: File \"%s\" copied to \"%s\".", from_path, to_path), nil
 					} else {
-						return "", fmt.Errorf("files.Copy: %s", err4.Error())
+						return "", fmt.Errorf("files.Copy: Cannot copy \"%s\" to \"%s\".", from_path, to_path)
 					}
 
 				}
 
 			} else {
-				return "", fmt.Errorf("files.Copy: %s", err3.Error())
+				return sanitizeFilesystemError("files", "Copy", "Path", from_path, err3)
 			}
 
 		} else {
@@ -271,7 +269,7 @@ func (tool *Files) List(path string) (string, error) {
 					return strings.Join(result, "\n"), nil
 
 				} else {
-					return "", fmt.Errorf("files.List: %s", err2.Error())
+					return "", fmt.Errorf("files.List: Cannot list folder \"%s\".", path)
 				}
 
 			} else {
@@ -279,7 +277,7 @@ func (tool *Files) List(path string) (string, error) {
 			}
 
 		} else {
-			return "", fmt.Errorf("files.List: %s", err1.Error())
+			return sanitizeFilesystemError("files", "List", "Folder", path, err1)
 		}
 
 	} else {
@@ -306,7 +304,7 @@ func (tool *Files) Read(path string) (string, error) {
 			return result, nil
 
 		} else {
-			return "", fmt.Errorf("files.Read: %s", err1.Error())
+			return sanitizeFilesystemError("files", "Read", "File", path, err1)
 		}
 
 	} else {
@@ -389,7 +387,7 @@ func (tool *Files) Search(path string, query string) (string, error) {
 					return strings.Join(result, "\n"), nil
 
 				} else {
-					return "", fmt.Errorf("files.Search: %s", err2.Error())
+					return "", fmt.Errorf("files.Search: Cannot search folder \"%s\".", path)
 				}
 
 			} else {
@@ -397,7 +395,7 @@ func (tool *Files) Search(path string, query string) (string, error) {
 			}
 
 		} else {
-			return "", fmt.Errorf("files.Search: %s", err1.Error())
+			return sanitizeFilesystemError("files", "Search", "Folder", path, err1)
 		}
 
 	} else {
@@ -432,7 +430,7 @@ func (tool *Files) ReadSymbol(path string, symbol string) (string, error) {
 			}
 
 		} else {
-			return "", fmt.Errorf("files.ReadSymbol: %s", err1.Error())
+			return sanitizeFilesystemError("files", "ReadSymbol", "File", path, err1)
 		}
 
 	} else {
@@ -468,11 +466,11 @@ func (tool *Files) WriteSymbol(path string, symbol string, declaration string) (
 			if err2 == nil {
 				return fmt.Sprintf("files.WriteSymbol: File \"%s\" Symbol \"%s\" written.", path, symbol), nil
 			} else {
-				return "", fmt.Errorf("files.WriteSymbol: %s", err2.Error())
+				return sanitizeFilesystemError("files", "WriteSymbol", "File", path, err2)
 			}
 
 		} else {
-			return "", fmt.Errorf("files.WriteSymbol: %s", err1.Error())
+			return sanitizeFilesystemError("files", "WriteSymbol", "File", path, err1)
 		}
 
 	} else {
@@ -529,15 +527,7 @@ func (tool *Files) Stat(path string) (string, error) {
 			return result, nil
 
 		} else {
-
-			if errors.Is(err1, fs.ErrPermission) {
-				return "", fmt.Errorf("files.Stat: Invalid path \"%s\": Permission denied.", path)
-			} else if errors.Is(err1, fs.ErrNotExist) {
-				return "", fmt.Errorf("files.Stat: Invalid path \"%s\": File doesn't exist.", path)
-			} else {
-				return "", fmt.Errorf("files.Stat: Invalid path \"%s\".", path)
-			}
-
+			return sanitizeFilesystemError("files", "Stat", "File", path, err1)
 		}
 
 	} else {
@@ -567,15 +557,7 @@ func (tool *Files) Write(path string, content string) (string, error) {
 				return result, nil
 
 			} else {
-
-				if errors.Is(err2, fs.ErrPermission) {
-					return "", fmt.Errorf("files.Write: Invalid path \"%s\": Permission denied.", path)
-				} else if errors.Is(err2, fs.ErrNotExist) {
-					return "", fmt.Errorf("files.Write: Invalid path \"%s\": Folder doesn't exist.", path)
-				} else {
-					return "", fmt.Errorf("files.Write: Invalid path \"%s\".", path)
-				}
-
+				return sanitizeFilesystemError("files", "Write", "Folder", path, err2)
 			}
 
 		} else {

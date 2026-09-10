@@ -346,7 +346,7 @@ func (tool *Requirements) Signoff(path string, symbol string) (string, error) {
 						}
 
 					} else {
-						return "", fmt.Errorf("requirements.Signoff: %s", err4.Error())
+						return "", fmt.Errorf("requirements.Signoff: File \"%s\" does not exist.", path)
 					}
 
 				} else {

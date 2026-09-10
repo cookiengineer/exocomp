@@ -230,7 +230,7 @@ func TestFiles_Stat(t *testing.T) {
 
 		if err1 != nil {
 
-			if strings.Contains(err1.Error(), "File doesn't exist") == false {
+			if strings.Contains(err1.Error(), "File \"./does-not-exist.txt\" does not exist.") == false {
 				t.Errorf("Expected %v to be file doesn't exist error", err1)
 			}
 

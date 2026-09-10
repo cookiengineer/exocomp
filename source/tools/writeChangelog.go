@@ -22,11 +22,11 @@ func writeChangelog(tool *Changelog) error {
 				if err2 == nil {
 					return nil
 				} else {
-					return fmt.Errorf("writeChangelog: %s", err2.Error())
+					return fmt.Errorf("writeChangelog: Cannot persist changelog")
 				}
 
 			} else {
-				return fmt.Errorf("writeChangelog: %s", err1.Error())
+				return fmt.Errorf("writeChangelog: Cannot serialize changelog")
 			}
 
 		} else {

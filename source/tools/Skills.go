@@ -5,9 +5,7 @@ import "exocomp/types"
 import utils_bytes "exocomp/utils/bytes"
 import utils_fmt "exocomp/utils/fmt"
 import "context"
-import "errors"
 import "fmt"
-import "io/fs"
 import "os"
 import "os/exec"
 import "path/filepath"
@@ -456,19 +454,11 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 						return result, nil
 
 					} else {
-
-						if errors.Is(err2, fs.ErrPermission) {
-							return "", fmt.Errorf("skills.Execute: Invalid script \"%s\": Permission denied.", script_path)
-						} else if errors.Is(err2, fs.ErrNotExist) || strings.Contains(err2.Error(), "executable file not found") {
-							return "", fmt.Errorf("skills.Execute: Invalid runtime \"%s\": Program doesn't exist.", runtime)
-						} else {
-							return result, fmt.Errorf("skills.Execute: Runtime \"%s\" execution error \"%s\".", runtime, err2.Error())
-						}
-
+						return sanitizeExecutionError("skills", "Execute", "runtime", runtime, result, err2)
 					}
 
 				} else {
-					return "", fmt.Errorf("skills.Execute: %s", err1.Error())
+					return "", fmt.Errorf("skills.Execute: Invalid script \"%s\".", script)
 				}
 
 			} else {

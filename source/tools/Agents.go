@@ -595,12 +595,12 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 
 				} else {
 					cancel()
-					return "", fmt.Errorf("agents.Hire: %s", err3.Error())
+					return "", fmt.Errorf("agents.Hire: Cannot start agent \"%s\".", name)
 				}
 
 			} else {
 				cancel()
-				return "", fmt.Errorf("agents.Hire: %s", err2.Error())
+				return "", fmt.Errorf("agents.Hire: Cannot capture agent output for \"%s\".", name)
 			}
 
 		} else {
@@ -762,7 +762,7 @@ func (tool *Agents) Inquire(name string) (string, error) {
 		}
 
 	} else {
-		return "", fmt.Errorf("agents.Inquire: System is out of memory ... %s", err0.Error())
+		return "", fmt.Errorf("agents.Inquire: Cannot create temporary workspace.")
 	}
 
 }

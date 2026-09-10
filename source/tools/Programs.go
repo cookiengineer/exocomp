@@ -3,9 +3,7 @@ package tools
 import "exocomp/schemas"
 import utils_bytes "exocomp/utils/bytes"
 import "context"
-import "errors"
 import "fmt"
-import "io/fs"
 import "os"
 import "os/exec"
 import "path/filepath"
@@ -197,15 +195,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 			return result, nil
 
 		} else {
-
-			if errors.Is(err2, fs.ErrPermission) {
-				return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Permission denied.", program)
-			} else if errors.Is(err2, fs.ErrNotExist) || strings.Contains(err2.Error(), "executable file not found") {
-				return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Program doesn't exist.", program)
-			} else {
-				return result, fmt.Errorf("programs.Execute: Program \"%s\" execution error \"%s\".", program, err2.Error())
-			}
-
+			return sanitizeExecutionError("programs", "Execute", "program", program, result, err2)
 		}
 
 	} else {

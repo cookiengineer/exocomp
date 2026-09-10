@@ -75,7 +75,7 @@ func readAgents(tool *Agents) error {
 				}
 
 			} else {
-				return fmt.Errorf("readAgents: %s", err1.Error())
+				return fmt.Errorf("readAgents: Cannot list agents folder")
 			}
 
 		} else {

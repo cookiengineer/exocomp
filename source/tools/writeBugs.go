@@ -22,11 +22,11 @@ func writeBugs(tool *Bugs) error {
 				if err2 == nil {
 					return nil
 				} else {
-					return fmt.Errorf("writeBugs: %s", err2.Error())
+					return fmt.Errorf("writeBugs: Cannot persist bug reports")
 				}
 
 			} else {
-				return fmt.Errorf("writeBugs: %s", err1.Error())
+				return fmt.Errorf("writeBugs: Cannot serialize bug reports")
 			}
 
 		} else {

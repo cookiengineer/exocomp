@@ -163,15 +163,15 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 							}, "\n"), nil
 
 						} else {
-							return "", fmt.Errorf("websites.Fetch: %s", err4.Error())
+							return "", fmt.Errorf("websites.Fetch: Cannot read HTTP response body.")
 						}
 
 					} else {
-						return "", fmt.Errorf("websites.Fetch: %s", err3.Error())
+						return "", fmt.Errorf("websites.Fetch: URL \"%s\" is unreachable.", url.String())
 					}
 
 				} else {
-					return "", fmt.Errorf("websites.Fetch: %s", err2.Error())
+					return "", fmt.Errorf("websites.Fetch: Invalid URL \"%s\".", url.String())
 				}
 
 			} else {
@@ -295,18 +295,18 @@ func (tool *Websites) Stat(url_str string, user_agent string) (string, error) {
 							response = response_get
 
 						} else {
-							return "", fmt.Errorf("websites.Stat: %s", err5.Error())
+							return "", fmt.Errorf("websites.Stat: URL \"%s\" is unreachable.", url.String())
 						}
 
 
 					} else {
-						return "", fmt.Errorf("websites.Stat: %s", err4.Error())
+						return "", fmt.Errorf("websites.Stat: Invalid URL \"%s\".", url.String())
 					}
 
 				}
 
 			} else {
-				return "", fmt.Errorf("websites.Stat: %s", err2.Error())
+				return "", fmt.Errorf("websites.Stat: Invalid URL \"%s\".", url.String())
 			}
 
 			if response != nil {

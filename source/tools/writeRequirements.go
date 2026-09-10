@@ -44,11 +44,11 @@ func writeRequirements(tool *Requirements) error {
 				if err2 == nil {
 					return nil
 				} else {
-					return fmt.Errorf("writeRequirements: %s", err2.Error())
+					return fmt.Errorf("writeRequirements: Cannot persist requirements")
 				}
 
 			} else {
-				return fmt.Errorf("writeRequirements: %s", err1.Error())
+				return fmt.Errorf("writeRequirements: Cannot serialize requirements")
 			}
 
 		} else {
