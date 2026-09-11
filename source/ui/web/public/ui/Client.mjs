@@ -425,12 +425,8 @@ Client.prototype = {
 
 	UpdateLabel: function() {
 
-		let prompt = "";
-		let usage  = 0.0;
-
-		if (this.elements["prompt"] !== null) {
-			prompt = (this.elements["prompt"].value || "").trim();
-		}
+		let usage = 0.0;
+		let cost  = 0.0;
 
 		if (this.Session.Agent !== "") {
 
@@ -441,27 +437,26 @@ Client.prototype = {
 					usage = ((agent.ContextUsage.Tokens / agent.ContextUsage.Length) * 100) | 0;
 				}
 
+				cost = agent.ContextUsage.Cost;
+
 			}
 
 		}
 
-		if (prompt !== "") {
+		let label = "";
+		let cost_label = cost.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
 
-			if (this.Session.Waiting === false) {
-				this.Renderer.RenderLabel(usage.toFixed(2) + "%");
-			} else {
-				this.Renderer.RenderLabel("Thinking ...");
-			}
-
+		if (cost > 0) {
+			label = usage.toFixed(2) + "% | $" + cost_label;
 		} else {
-
-			if (this.Session.Waiting === false) {
-				this.Renderer.RenderLabel(usage.toFixed(2) + "%");
-			} else {
-				this.Renderer.RenderLabel("Thinking ...");
-			}
-
+			label = usage.toFixed(2) + "%";
 		}
+
+		if (this.Session.Waiting === true) {
+			label = "Thinking ...";
+		}
+
+		this.Renderer.RenderLabel(label);
 
 	},
 

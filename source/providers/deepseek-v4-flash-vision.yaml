@@ -1,0 +1,7 @@
+model: deepseek-v4-flash-vision:cloud
+url: https://api.deepseek.com
+alias: deepseek-v4-flash-vision
+pricing:
+  input_price: 0.30
+  output_price: 1.20
+  cached_input_price: 0.006

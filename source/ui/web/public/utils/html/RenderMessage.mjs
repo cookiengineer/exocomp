@@ -9,12 +9,30 @@ export const RenderMessage = (message, with_empty_content) => {
 
 	if (message.Role === "assistant") {
 
-		if (message.Content !== "") {
+		let has_content          = message.Content          !== "";
+		let has_reasoning        = message.ReasoningContent !== "";
+
+		if (has_content === true || has_reasoning === true) {
 
 			let article = document.createElement("article");
+			let html    = "";
 
 			article.setAttribute("data-role", "assistant");
-			article.innerHTML = marked.parse(message.Content);
+
+			if (has_reasoning === true) {
+
+				html += "<details class=\"reasoning\">";
+				html += "<summary>Thought</summary>";
+				html += marked.parse(message.ReasoningContent);
+				html += "</details>";
+
+			}
+
+			if (has_content === true) {
+				html += marked.parse(message.Content);
+			}
+
+			article.innerHTML = html;
 
 			return article;
 

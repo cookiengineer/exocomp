@@ -8,11 +8,6 @@
 - No format-error feedback loop. In ReceiveChatResponse, an assistant message with no tool_calls just returns nil (dead-end), and malformed tool-call args are silently skipped (err0/err1… != nil → ignored).
 - Choices need to be correctly handled, currently exocomp handles only Choices[0]
 
-## source/schemas and source/engine/Session
-
-- Context Window Size and Token Budget calculations
-- No cost tracking (only token counts). Needs to support typical API providers
-
 ## source/tools
 
 - vulnerabilities.* tool to search CVEs
@@ -39,7 +34,8 @@
 
 ## Agents
 
-- [ ] Check the repos in described order to find better prompts
+Check other repos to find better system prompts for these roles:
+
 - [ ] Binary Reverse Engineer
 - [ ] Web Recon Analyst
 - [ ] Web Business Analyst

@@ -2,7 +2,7 @@ package chat
 
 func estimateBytesTokens(bytes []byte, chars_per_token float64) int {
 
-	if len(bytes) == 0 {
+	if len(bytes) > 0 {
 
 		tokens := int(float64(len(bytes)) / chars_per_token)
 

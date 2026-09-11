@@ -12,8 +12,12 @@ export const Agent = function() {
 	this.Tools        = [];
 	this.Sandbox      = "";
 	this.ContextUsage = {
-		Length: 0,
-		Tokens: 0,
+		Length:           0,
+		Tokens:           0,
+		PromptTokens:     0,
+		CompletionTokens: 0,
+		TotalTokens:      0,
+		Cost:             0.0,
 	};
 
 };
@@ -44,8 +48,12 @@ Agent.from = (data) => {
 	agent.Sandbox     = data["sandbox"]     || "";
 
 	if (Object.prototype.toString.call(data["context-usage"]) === "[object Object]") {
-		agent.ContextUsage.Length = data["context-usage"]["length"] || 0;
-		agent.ContextUsage.Tokens = data["context-usage"]["tokens"] || 0;
+		agent.ContextUsage.Length           = data["context-usage"]["length"]            || 0;
+		agent.ContextUsage.Tokens           = data["context-usage"]["tokens"]            || 0;
+		agent.ContextUsage.PromptTokens     = data["context-usage"]["prompt_tokens"]     || 0;
+		agent.ContextUsage.CompletionTokens = data["context-usage"]["completion_tokens"] || 0;
+		agent.ContextUsage.TotalTokens      = data["context-usage"]["total_tokens"]      || 0;
+		agent.ContextUsage.Cost             = data["context-usage"]["cost"]              || 0.0;
 	}
 
 	if (Object.prototype.toString.call(data["messages"]) === "[object Array]") {

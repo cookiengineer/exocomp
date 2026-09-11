@@ -1,0 +1,7 @@
+model: deepseek-v4-pro:cloud
+url: https://api.deepseek.com
+alias: deepseek-v4-pro
+pricing:
+  input_price: 1.32
+  output_price: 3.96
+  cached_input_price: 0.044

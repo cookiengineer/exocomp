@@ -1,5 +1,6 @@
 package agents
 
+import "exocomp/providers"
 import "exocomp/schemas"
 import "exocomp/types"
 import "strings"
@@ -15,7 +16,7 @@ func NewAgent(config *types.Config) *types.Agent {
 
 	template, ok := Roles[role]
 
-	if ok == true {
+	if ok == true && template != nil {
 
 		name := strings.TrimSpace(config.Name)
 
@@ -27,6 +28,32 @@ func NewAgent(config *types.Config) *types.Agent {
 
 		if model == "" {
 			model = template.Model
+		}
+
+		preset := providers.NewProvider(model)
+
+		if preset != nil {
+
+			provider, ok := config.Providers[model]
+
+			if ok == true {
+
+				if provider.URL == nil {
+					provider.URL = preset.URL
+				}
+
+				if provider.Alias == "" {
+					provider.Alias = preset.Alias
+				}
+
+				if provider.Pricing == (types.Pricing{}) {
+					provider.Pricing = preset.Pricing
+				}
+
+				config.Providers[model] = provider
+
+			}
+
 		}
 
 		temperature := config.Temperature

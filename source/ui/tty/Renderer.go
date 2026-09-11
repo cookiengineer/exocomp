@@ -2,6 +2,7 @@ package tty
 
 import "exocomp/engine"
 import "exocomp/schemas"
+import utils_fmt "exocomp/utils/fmt"
 import "fmt"
 import "os"
 import "sync"
@@ -151,6 +152,7 @@ func (renderer *Renderer) RenderPrompt() {
 
 	model := "unknown"
 	usage := float64(0.0)
+	cost  := float64(0.0)
 
 	if renderer.Session != nil && renderer.Session.Config != nil {
 		model = renderer.Session.Config.Model
@@ -161,16 +163,23 @@ func (renderer *Renderer) RenderPrompt() {
 			usage = float64(float64(context_usage.Tokens) / float64(context_usage.Length))
 		}
 
+		cost = context_usage.Cost
+
 	}
 
 	percentage := fmt.Sprintf("%3d%%", int(usage + 0.5))
+	cost_label := ""
+
+	if cost > 0 {
+		cost_label = fmt.Sprintf(" %s", utils_fmt.FormatUSD(cost))
+	}
 
 	if renderer.Role == "assistant" {
-		fmt.Fprintf(os.Stdout, "\r%s[as %s %s]%s > ", ColorGreen, model, percentage, ColorReset)
+		fmt.Fprintf(os.Stdout, "\r%s[as %s %s%s]%s > ", ColorGreen, model, percentage, cost_label, ColorReset)
 	} else if renderer.Role == "user" {
-		fmt.Fprintf(os.Stdout, "\r%s[to %s %s]%s > ", ColorGreen, model, percentage, ColorReset)
+		fmt.Fprintf(os.Stdout, "\r%s[to %s %s%s]%s > ", ColorGreen, model, percentage, cost_label, ColorReset)
 	} else {
-		fmt.Fprintf(os.Stdout, "\r%s[%s %s]%s > ", ColorGreen, model, percentage, ColorReset)
+		fmt.Fprintf(os.Stdout, "\r%s[%s %s%s]%s > ", ColorGreen, model, percentage, cost_label, ColorReset)
 	}
 
 	os.Stdout.Sync()

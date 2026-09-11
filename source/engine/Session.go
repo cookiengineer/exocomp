@@ -663,11 +663,12 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 		session.mutex.Lock()
 		tmp := &schemas.Message{
-			Role:      response.Role,
-			Content:   response.Content,
-			ToolCalls: response.ToolCalls,
-			ToolName:  response.ToolName,
-			Created:   schemas.NewDatetime(),
+			Role:             response.Role,
+			Content:          response.Content,
+			ReasoningContent: response.ReasoningContent,
+			ToolCalls:        response.ToolCalls,
+			ToolName:         response.ToolName,
+			Created:          schemas.NewDatetime(),
 		}
 		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
@@ -714,11 +715,12 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 		session.mutex.Lock()
 		tmp := &schemas.Message{
-			Role:      response.Role,
-			Content:   response.Content,
-			ToolCalls: response.ToolCalls,
-			ToolName:  response.ToolName,
-			Created:   schemas.NewDatetime(),
+			Role:             response.Role,
+			Content:          response.Content,
+			ReasoningContent: response.ReasoningContent,
+			ToolCalls:        response.ToolCalls,
+			ToolName:         response.ToolName,
+			Created:          schemas.NewDatetime(),
 		}
 		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
@@ -851,6 +853,7 @@ func (session *Session) infer_chat_completions() error {
 		Tools:       session.GetToolSchemas(),
 		ToolChoice:  "auto",
 		Options:     nil,
+		// TODO: How to set Options correctly? Is there an API for this?
 		// Options:     &schemas.Options{
 		// 	NumContext: 262144,
 		// 	NumPredict: 8192,
@@ -908,11 +911,44 @@ func (session *Session) infer_chat_completions() error {
 
 					if err4 == nil {
 
-						if chat_response.Usage != nil && chat_response.Usage.PromptTokens != 0 {
-							session.Agent.ContextUsage.Tokens = chat_response.Usage.PromptTokens
+						session.mutex.Lock()
+
+						if chat_response.Usage != nil && chat_response.Usage.TotalTokens != 0 {
+
+							session.Agent.ContextUsage.Tokens           = chat_response.Usage.PromptTokens
+							session.Agent.ContextUsage.PromptTokens     += chat_response.Usage.PromptTokens
+							session.Agent.ContextUsage.CompletionTokens += chat_response.Usage.CompletionTokens
+							session.Agent.ContextUsage.TotalTokens      += chat_response.Usage.TotalTokens
+
+							pricing, has_pricing := session.Config.ResolvePricing(session.Agent.Model)
+
+							if has_pricing == true {
+
+								cached_tokens := chat_response.Usage.PromptTokensDetails.CachedTokens
+								input_tokens  := chat_response.Usage.PromptTokens
+								output_tokens := chat_response.Usage.CompletionTokens
+								cost          := 0.0
+
+								if cached_tokens > 0 && pricing.CachedInputPrice > 0 {
+
+									cost += float64(cached_tokens) * pricing.CachedInputPrice
+									cost += float64(input_tokens-cached_tokens) * pricing.InputPrice
+
+								} else {
+									cost += float64(input_tokens) * pricing.InputPrice
+								}
+
+								cost += float64(output_tokens) * pricing.OutputPrice
+
+								session.Agent.ContextUsage.Cost += cost / 1000000.0
+
+							}
+
 						} else {
 							session.Agent.ContextUsage.Tokens = utils_chat.CalculateTokens(session.Agent.Messages)
 						}
+
+						session.mutex.Unlock()
 
 						if len(chat_response.Choices) > 0 {
 							return session.ReceiveChatResponse(chat_response.Choices[0].Message)

@@ -66,6 +66,41 @@ main > article[data-role="assistant"]::before {
 	content: "AI";
 }
 
+main > article[data-role="assistant"] > details.reasoning {
+	margin: 0px 0px 1em 0px;
+	padding: 8px 12px;
+	border-left: 4px solid var(--message-reasoning);
+	border-radius: 4px;
+	background: rgba(117, 80, 123, 0.12);
+}
+
+main > article[data-role="assistant"] > details.reasoning > summary {
+	cursor: pointer;
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	color: var(--message-reasoning);
+}
+
+main > article[data-role="assistant"] > details.reasoning > summary::before {
+	content: "\25B8 ";
+}
+
+main > article[data-role="assistant"] > details.reasoning[open] > summary::before {
+	content: "\25BE ";
+}
+
+main > article[data-role="assistant"] > details.reasoning > *:not(summary) {
+	margin-top: 8px;
+	color: #a8a0b0;
+	font-size: 16px;
+	line-height: 22px;
+}
+
+main > article[data-role="assistant"] > details.reasoning:last-child {
+	margin-bottom: 0px;
+}
+
 main > article[data-role="tool"] {
 	background: #303030;
 	border-right: 24px solid var(--message-tool);

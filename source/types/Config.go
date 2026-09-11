@@ -269,6 +269,18 @@ func (config *Config) ResolveModel(model string) string {
 
 }
 
+func (config *Config) ResolvePricing(model string) (Pricing, bool) {
+
+	provider, ok := config.Providers[model]
+
+	if ok == true && provider.Pricing != (Pricing{}) {
+		return provider.Pricing, true
+	}
+
+	return Pricing{}, false
+
+}
+
 func (config *Config) ResolveURL(model string, path string) *net_url.URL {
 
 	base_url := config.URL
