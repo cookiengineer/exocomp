@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Exocomp</title>
+
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'">
+		<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'">
+		<meta http-equiv="Content-Security-Policy" content="script-src-elem 'self'">
+		<meta http-equiv="Content-Security-Policy" content="frame-src 'self'">
+		<meta http-equiv="Content-Security-Policy" content="worker-src 'self'">
+		<meta http-equiv="Content-Security-Policy" content="connect-src 'self'">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="manifest" href="/design/site.webmanifest" />
+
+		<link rel="icon" type="image/png" href="/design/favicon/favicon-96x96.png" sizes="96x96" />
+		<link rel="icon" type="image/svg+xml" href="/design/favicon/favicon.svg" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="/design/favicon/apple-touch-icon.png" sizes="180x180" />
+
+		<link rel="stylesheet" href="/design/index.css" />
+		<link rel="stylesheet" href="/app/index.css" />
+	</head>
+	<body>
+		<header>
+			<div></div>
+			<ul>
+				<li data-state="active"><a data-view="chat" href="/">Chat</a></li>
+				<li><a data-view="agents" href="/agents.html">Agents</a></li>
+				<li><a data-view="bugs" href="/bugs.html">Bugs</a></li>
+				<li><a data-view="changelog" href="/changelog.html">Changelog</a></li>
+				<li><a data-view="requirements" href="/requirements.html">Requirements</a></li>
+			</ul>
+			<div>
+				<label data-name="title"></label>
+				<button data-action="hire-agent">Hire Agent</button>
+			</div>
+		</header>
+		<main data-view="chat">
+			<section data-name="chat" data-label="Chat" data-path="/" data-state="active">
+				<aside data-name="agents">
+					<nav aria-label="agents"></nav>
+				</aside>
+				<message-list data-name="messages"></message-list>
+				<dialog data-name="answer-questions">
+					<article>
+						<button data-action="close"></button>
+						<h3>Question</h3>
+						<p data-name="question"></p>
+						<div data-name="answers"></div>
+						<footer>
+							<div><button data-action="cancel">Cancel</button></div>
+							<div><label data-name="errors"></label></div>
+							<div><button data-action="confirm">Answer</button></div>
+						</footer>
+					</article>
+				</dialog>
+				<chat-footer>
+					<chat-prompt>
+						<label data-name="usage"></label>
+						<textarea rows="1" data-name="prompt" placeholder="Message the planner ... (Ctrl+Enter to send)"></textarea>
+					</chat-prompt>
+				</chat-footer>
+			</section>
+			<section data-name="agents" data-label="Agents" data-path="/agents.html">
+				<article>
+					<h3 data-type="agents">Agents</h3>
+					<p>This view has not been migrated to the Gooey frontend yet.</p>
+				</article>
+			</section>
+			<section data-name="bugs" data-label="Bugs" data-path="/bugs.html">
+				<article>
+					<h3 data-type="bugs">Bugs</h3>
+					<p>This view has not been migrated to the Gooey frontend yet.</p>
+				</article>
+			</section>
+			<section data-name="changelog" data-label="Changelog" data-path="/changelog.html">
+				<article>
+					<h3 data-type="changelog">Changelog</h3>
+					<p>This view has not been migrated to the Gooey frontend yet.</p>
+				</article>
+			</section>
+			<section data-name="requirements" data-label="Requirements" data-path="/requirements.html">
+				<article>
+					<h3 data-type="requirements">Requirements</h3>
+					<p>This view has not been migrated to the Gooey frontend yet.</p>
+				</article>
+			</section>
+		</main>
+		<tool-call id="tool-call">
+			<ul data-name="suggestions"></ul>
+		</tool-call>
+		<dialog>
+			<article>
+				<button data-action="close"></button>
+				<h3>Hire Agent</h3>
+				<fieldset>
+					<div data-name="name">
+						<label data-type="name">Name</label>
+						<input type="text" placeholder="Pseudonym"/>
+					</div>
+					<div data-name="role">
+						<label data-type="role">Role</label>
+						<select data-name="role"></select>
+					</div>
+					<div data-name="sandbox">
+						<label data-type="sandbox">Sandbox</label>
+						<input type="text" value="./"/>
+					</div>
+					<div data-name="prompt">
+						<label data-type="prompt">Prompt</label>
+						<textarea placeholder="What should the agent do?"></textarea>
+					</div>
+				</fieldset>
+				<footer>
+					<div><button data-action="cancel">Cancel</button></div>
+					<div><label data-name="errors"></label></div>
+					<div><button data-action="confirm">Hire</button></div>
+				</footer>
+			</article>
+		</dialog>
+		<script src="wasm_exec.js"></script>
+		<script src="wasm_init.js"></script>
+	</body>
+</html>

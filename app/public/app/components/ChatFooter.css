@@ -1,0 +1,33 @@
+/*
+ * ChatFooter component - the bottom bar of the Chat view.
+ *
+ * Unlike the standard Gooey `layout.Footer` it grows with its `chat-prompt`
+ * content. ChatPrompt publishes the rendered footer height as the
+ * `--chat-footer-height` CSS variable so that the surrounding layout can stay
+ * above it.
+ */
+
+chat-footer {
+	display: block;
+	position: fixed;
+	top: auto;
+	right: 0px;
+	bottom: 0px;
+	left: 200px;
+	height: auto;
+	margin: 0px;
+	padding: 0px;
+	color: var(--footer-color);
+	background: var(--footer-background);
+	box-sizing: border-box;
+	z-index: 20;
+}
+
+/* Keep the chat history and the agent sidebar above the growing footer. */
+message-list {
+	bottom: var(--chat-footer-height, 50px);
+}
+
+aside[data-name="agents"] {
+	bottom: var(--chat-footer-height, 50px);
+}

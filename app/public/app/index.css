@@ -1,0 +1,40 @@
+
+/* Exocomp App styles.
+ *
+ * Gooey's own theme is loaded via `/design/index.css`; this file only contains
+ * the App-specific layout and imports the styles of the custom components.
+ */
+
+@import url("./components/AgentList.css");
+@import url("./components/ToolCall.css");
+@import url("./components/MessageList.css");
+@import url("./components/Message.css");
+@import url("./components/ChatFooter.css");
+@import url("./components/ChatPrompt.css");
+
+/* The custom ChatFooter replaces the standard Gooey footer, so the content
+ * area can fill the viewport on the non-chat views. ChatFooter.css reserves
+ * the footer height again while the Chat view is active. */
+main {
+	bottom: 0px;
+}
+
+/* Dialog validation errors, mirroring the old frontend dialogs. */
+dialog div[data-name="errors"]:not(:empty) {
+	display: block;
+	margin: 8px 16px;
+}
+
+dialog div[data-name="errors"] b {
+	display: block;
+	margin: 4px 0px;
+	padding: 2px 4px;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-style: normal;
+	font-weight: normal;
+	color: #ff3333;
+	background: #303030;
+	border: 1px solid #ff3333;
+	border-radius: 4px;
+}

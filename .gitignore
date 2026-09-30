@@ -6,3 +6,12 @@
 # Ignore vendor
 /vendor/*
 !/vendor/.gitkeep
+
+# Ignore WASM Gooey App
+/source/ui/web/public/app
+/source/ui/web/public/design
+/source/ui/web/public/index.html
+/source/ui/web/public/main.wasm
+/source/ui/web/public/wasm_exec.js
+/source/ui/web/public/wasm_init.js
+

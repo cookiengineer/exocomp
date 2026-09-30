@@ -19,7 +19,7 @@ type Provider struct {
 	URL     *net_url.URL `json:"url" yaml:"url"`
 	Alias   string       `json:"alias" yaml:"alias"`
 	Token   string       `json:"token" yaml:"token"`
-	Pricing Pricing      `json:"-" yaml:"pricing"`
+	Pricing Pricing      `json:"pricing" yaml:"pricing"`
 }
 
 func ParseProvider(data []byte) (*Provider, error) {

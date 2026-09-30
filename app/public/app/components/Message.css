@@ -1,0 +1,212 @@
+
+/*
+ * Message component - a single chat message.
+ */
+
+:root {
+	--message-system: #c19d01;
+	--message-assistant: #3465a4;
+	--message-tool: #c80101;
+	--message-user: #4e9906;
+	--message-reasoning: #75507b;
+}
+
+message-list article {
+	position: relative;
+	width: auto;
+	margin: 0px 0px 16px 24px;
+	padding: 16px;
+	font-family: "crumble";
+	font-size: 18px;
+	font-weight: normal;
+	line-height: 24px;
+	border-top: 2px solid transparent;
+	border-right: 2px solid transparent;
+	border-bottom: 2px solid transparent;
+	border-left: 2px solid transparent;
+	border-radius: 6px;
+}
+
+message-list article[data-role="system"]::before,
+message-list article[data-role="assistant"]::before {
+	position: absolute;
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	top: 50%;
+	right: auto;
+	bottom: auto;
+	left: -23px;
+	vertical-align: middle;
+	transform: translateY(-50%);
+	writing-mode: sideways-rl;
+	text-orientation: mixed;
+}
+
+message-list article[data-role="tool"]::after,
+message-list article[data-role="user"]::after {
+	position: absolute;
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	top: 50%;
+	right: -23px;
+	bottom: auto;
+	left: auto;
+	vertical-align: middle;
+	transform: translateY(-50%);
+	writing-mode: sideways-lr;
+	text-orientation: mixed;
+}
+
+message-list article[data-role="system"] {
+	border-left: 24px solid var(--message-system);
+	border-color: var(--message-system);
+}
+
+message-list article[data-role="system"]::before {
+	content: "System";
+}
+
+message-list article[data-role="assistant"] {
+	border-left: 24px solid var(--message-assistant);
+	border-color: var(--message-assistant);
+}
+
+message-list article[data-role="assistant"]::before {
+	content: "AI";
+}
+
+message-list article[data-role="assistant"] > details.reasoning {
+	margin: 0px 0px 1em 0px;
+	padding: 8px 12px;
+	border-left: 4px solid var(--message-reasoning);
+	border-radius: 4px;
+	background: rgba(117, 80, 123, 0.12);
+}
+
+message-list article[data-role="assistant"] > details.reasoning > summary {
+	cursor: pointer;
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	color: var(--message-reasoning);
+}
+
+message-list article[data-role="assistant"] > details.reasoning > summary::before {
+	content: "\25B8 ";
+}
+
+message-list article[data-role="assistant"] > details.reasoning[open] > summary::before {
+	content: "\25BE ";
+}
+
+message-list article[data-role="assistant"] > details.reasoning > *:not(summary) {
+	margin-top: 8px;
+	color: #a8a0b0;
+	font-size: 16px;
+	line-height: 22px;
+}
+
+message-list article[data-role="assistant"] > details.reasoning:last-child {
+	margin-bottom: 0px;
+}
+
+message-list article[data-role="tool"] {
+	background: #303030;
+	border-right: 24px solid var(--message-tool);
+	border-color: var(--message-tool);
+}
+
+message-list article[data-role="tool"] > pre,
+message-list article[data-role="tool"] > details > summary > pre {
+	display: inline-block;
+	width: auto;
+	max-width: 100%;
+	margin: 0px;
+	padding: 0px;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	text-align: left;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+}
+
+message-list article[data-role="tool"] > details > summary {
+	cursor: pointer;
+}
+
+message-list article[data-role="tool"] > details[open] > summary > pre {
+	font-weight: bold;
+}
+
+message-list article[data-role="tool"] > details > pre {
+	display: block;
+	width: 100%;
+	margin: 1em 0px 0px 0px;
+	padding: 0px;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	text-align: left;
+	overflow: auto;
+}
+
+message-list article[data-role="tool"]::after {
+	content: "Tool";
+}
+
+message-list article[data-role="user"] {
+	border-right: 24px solid var(--message-user);
+	border-color: var(--message-user);
+}
+
+message-list article[data-role="user"]::after {
+	content: "User";
+}
+
+message-list article > p {
+	display: block;
+	margin: 0px 0px 1em 0px;
+	padding: 0px;
+	text-align: left;
+}
+
+message-list article > p:last-child {
+	margin-bottom: 0px;
+}
+
+message-list article > ul {
+	display: block;
+	margin: 0px 0px 1em 0px;
+	padding: 0px;
+	text-align: left;
+	list-style: none;
+}
+
+message-list article > ul:last-child {
+	margin-bottom: 0px;
+}
+
+message-list article > ul > li::before {
+	content: " - ";
+}
+
+message-list article > pre {
+	display: block;
+	width: 100%;
+	margin: 1em 0px 0px 0px;
+	padding: 0px;
+	overflow: auto;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	text-align: left;
+}

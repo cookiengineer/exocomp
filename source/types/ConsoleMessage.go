@@ -37,7 +37,7 @@ func toConsoleMessageWords(message string) []string {
 }
 
 type ConsoleMessage struct {
-	Time     time.Time `json:"datetime"`
+	Time     time.Time `json:"time"`
 	Method   string    `json:"method"`
 	Value    string    `json:"value"`
 	Caller   struct {
@@ -63,12 +63,8 @@ func NewConsoleMessage(method string, value string) ConsoleMessage {
 	if ok == true {
 
 		// XXX: Currently there's no way to get the source code / symbols file path
-		if strings.Contains(file, "/Software/tholian-network/detective/") {
-			file = file[strings.Index(file, "/Software/tholian-network/detective/")+36:]
-		}
-
-		if strings.Contains(file, "/Software/tholian-network/endpoint/") {
-			file = file[strings.Index(file, "/Software/tholian-network/endpoint/")+35:]
+		if strings.Contains(file, "/Software/cookiengineer/exocomp/") {
+			file = file[strings.Index(file, "/Software/cookiengineer/exocomp/")+32:]
 		}
 
 		message.Caller.File = file
