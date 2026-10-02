@@ -12,4 +12,16 @@ func RegisterTo(main *app.Main, config *app_types.Config) {
 		return NewChat(main, view, config)
 	}))
 
+	main.RegisterController("bugs", app.WrapController(func(main *app.Main, view interfaces.View) *Bugs {
+		return NewBugs(main, view)
+	}))
+
+	main.RegisterController("changelog", app.WrapController(func(main *app.Main, view interfaces.View) *Changelog {
+		return NewChangelog(main, view)
+	}))
+
+	main.RegisterController("requirements", app.WrapController(func(main *app.Main, view interfaces.View) *Requirements {
+		return NewRequirements(main, view)
+	}))
+
 }

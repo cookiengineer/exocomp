@@ -11,6 +11,9 @@
 @import url("./components/Message.css");
 @import url("./components/ChatFooter.css");
 @import url("./components/ChatPrompt.css");
+@import url("./components/BugGrid.css");
+@import url("./components/RequirementGrid.css");
+@import url("./components/ChangelogGrid.css");
 
 /* The custom ChatFooter replaces the standard Gooey footer, so the content
  * area can fill the viewport on the non-chat views. ChatFooter.css reserves
