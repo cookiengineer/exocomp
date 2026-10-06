@@ -15,7 +15,7 @@ func BadRequest(session *engine.Session, err error, request *http.Request, respo
 	}
 
 	content_type := ""
-	payload      := []byte{}
+	payload := []byte{}
 
 	if err != nil {
 		content_type, payload = format_error(request, fmt.Sprintf("Bad Request: %s", err.Error()))

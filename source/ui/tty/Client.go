@@ -81,7 +81,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	}
 
-	tool   := session.GetTool("agents.List")
+	tool := session.GetTool("agents.List")
 	agents := recovery.RestoreAgents()
 
 	if tool != nil && len(agents) > 0 {
@@ -233,7 +233,7 @@ func (client *Client) Init() {
 
 	go func() {
 		client.InputLoop()
-		signals<-syscall.SIGINT
+		signals <- syscall.SIGINT
 	}()
 
 	if client.Renderer != nil {
@@ -280,7 +280,7 @@ func (client *Client) InputLoop() {
 
 	for scanner.Scan() {
 
-		role   := client.Role
+		role := client.Role
 		prompt := strings.TrimSpace(scanner.Text())
 
 		if prompt != "" && client.Session != nil {

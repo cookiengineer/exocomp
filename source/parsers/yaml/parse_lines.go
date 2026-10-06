@@ -4,7 +4,7 @@ import "strings"
 
 func parse_lines(input string) []parser_line {
 
-	lines  := strings.Split(input, "\n")
+	lines := strings.Split(input, "\n")
 	result := make([]parser_line, 0)
 
 	for index, line := range lines {
@@ -26,7 +26,7 @@ func parse_lines(input string) []parser_line {
 
 			}
 
-			result  = append(result, parser_line{
+			result = append(result, parser_line{
 				Number: index + 1,
 				Indent: indent,
 				Text:   strings.TrimSpace(tmp),
@@ -41,4 +41,3 @@ func parse_lines(input string) []parser_line {
 	return result
 
 }
-

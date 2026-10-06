@@ -4,10 +4,10 @@ import "strings"
 import "time"
 
 type ConsoleMessage struct {
-	Time     time.Time `json:"time"`
-	Method   string    `json:"method"`
-	Value    string    `json:"value"`
-	Caller   struct {
+	Time   time.Time `json:"time"`
+	Method string    `json:"method"`
+	Value  string    `json:"value"`
+	Caller struct {
 		File string `json:"file"`
 		Line int    `json:"line"`
 	} `json:"caller"`
@@ -33,7 +33,7 @@ func (message *ConsoleMessage) Lines() []string {
 				separator = " "
 			}
 
-			result = append(result, separator + line)
+			result = append(result, separator+line)
 
 		}
 
@@ -53,7 +53,7 @@ func (message *ConsoleMessage) Lines() []string {
 				separator = " "
 			}
 
-			result = append(result, separator + line)
+			result = append(result, separator+line)
 
 		}
 

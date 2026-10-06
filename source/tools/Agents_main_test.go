@@ -77,19 +77,19 @@ func TestMain(main *testing.M) {
 
 		os.Setenv("EXOCOMP_FOR_AGENTS", exe)
 
-		ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
 
-		tools_path  := getToolsPath()
+		tools_path := getToolsPath()
 		server_path := filepath.Join(tools_path, "..", "third_party/llama", "llama-server")
-		model_name  := "huihui_ai/Qwen3.6-abliterated:35b"
-		model_file  := "Huihui-CyberStrike-OffSec-35B-abliterated-Q8_0.gguf"
-		model_path  := filepath.Join(tools_path, "..", "third_party/models", model_file)
+		model_name := "huihui_ai/Qwen3.6-abliterated:35b"
+		model_file := "Huihui-CyberStrike-OffSec-35B-abliterated-Q8_0.gguf"
+		model_path := filepath.Join(tools_path, "..", "third_party/models", model_file)
 
 		cmd := exec.Command(
 			server_path,
 			"-m", model_path,
-			"--alias", model_name + "=" + model_file,
+			"--alias", model_name+"="+model_file,
 			"--gpu-layers", "all",
 			"--ctx-size", "32768",
 			"--batch-size", "512",
@@ -113,7 +113,7 @@ func TestMain(main *testing.M) {
 
 		if err1 == nil && err2 == nil {
 
-			ready  := make(chan bool, 1)
+			ready := make(chan bool, 1)
 			errors := make(chan error, 1)
 
 			fmt.Println("--- Wait for llama-server ...")
@@ -133,7 +133,7 @@ func TestMain(main *testing.M) {
 
 				os.Exit(code)
 
-			case err := <- errors:
+			case err := <-errors:
 
 				panic(fmt.Sprintf("Llama server error: %v", err))
 

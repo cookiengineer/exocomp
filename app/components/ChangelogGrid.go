@@ -260,4 +260,3 @@ func (grid *ChangelogGrid) Unmount() bool {
 	return true
 
 }
-

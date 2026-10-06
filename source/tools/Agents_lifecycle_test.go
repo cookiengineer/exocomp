@@ -29,7 +29,7 @@ func buildFakeAgent(t *testing.T) string {
 		}
 
 		tools_dir := filepath.Dir(filename)
-		output    := filepath.Join(os.TempDir(), "exocomp-fake-agent")
+		output := filepath.Join(os.TempDir(), "exocomp-fake-agent")
 
 		cmd := exec.Command("go", "build", "-o", output, "./testdata/fakeagent")
 		cmd.Dir = tools_dir
@@ -56,8 +56,8 @@ func buildFakeAgent(t *testing.T) string {
 func newTestAgents(t *testing.T, scenario string) *Agents {
 
 	playground := t.TempDir()
-	sandbox    := filepath.Join(playground, "work")
-	url, _     := net_url.Parse("http://localhost:11434/v1")
+	sandbox := filepath.Join(playground, "work")
+	url, _ := net_url.Parse("http://localhost:11434/v1")
 
 	t.Setenv("EXOCOMP_AGENT", buildFakeAgent(t))
 	t.Setenv("EXOCOMP_FAKE_SCENARIO", scenario)
@@ -157,7 +157,7 @@ func TestAgents_Await_IdleTimeout(t *testing.T) {
 
 	tool := newTestAgents(t, "hang")
 	tool.IdleTimeout = 200 * time.Millisecond
-	tool.Timeout     = 10 * time.Second
+	tool.Timeout = 10 * time.Second
 
 	name := hireTestAgent(t, tool, "hang")
 

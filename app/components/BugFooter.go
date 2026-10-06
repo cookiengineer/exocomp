@@ -18,6 +18,9 @@ type BugFooter struct {
 	button      *dom.Element          `json:"-"`
 	search      *dom.Element          `json:"-"`
 	initialized bool                  `json:"-"`
+
+	on_click *dom.EventListener `json:"-"`
+	on_input *dom.EventListener `json:"-"`
 }
 
 func NewBugFooter(placeholder string) *BugFooter {
@@ -81,7 +84,7 @@ func (footer *BugFooter) ensure() {
 	footer.button = footer.Component.Element.QuerySelector("button[data-action=\"toggle-collapse\"]")
 	footer.search = footer.Component.Element.QuerySelector("input[data-name=\"search\"]")
 
-	footer.Component.Element.AddEventListener(dom.EventType("click"), dom.ToEventListener(func(event *dom.Event) {
+	footer.on_click = dom.ToEventListener(func(event *dom.Event) {
 
 		if event.Target == nil {
 			return
@@ -91,9 +94,11 @@ func (footer *BugFooter) ensure() {
 			footer.Component.FireEventListeners("toggle-collapse", map[string]any{})
 		}
 
-	}))
+	})
 
-	footer.Component.Element.AddEventListener(dom.EventType("input"), dom.ToEventListener(func(event *dom.Event) {
+	footer.Component.Element.AddEventListener(dom.EventType("click"), footer.on_click)
+
+	footer.on_input = dom.ToEventListener(func(event *dom.Event) {
 
 		if footer.search == nil || footer.search.Value == nil {
 			return
@@ -107,7 +112,9 @@ func (footer *BugFooter) ensure() {
 
 		footer.Component.FireEventListeners("change-filter", map[string]any{"value": value.String()})
 
-	}))
+	})
+
+	footer.Component.Element.AddEventListener(dom.EventType("input"), footer.on_input)
 
 	footer.initialized = true
 
@@ -195,8 +202,17 @@ func (footer *BugFooter) String() string {
 func (footer *BugFooter) Unmount() bool {
 
 	if footer.Component != nil && footer.Component.Element != nil {
-		footer.Component.Element.RemoveEventListener(dom.EventType("click"), nil)
-		footer.Component.Element.RemoveEventListener(dom.EventType("input"), nil)
+
+		if footer.on_click != nil {
+			footer.Component.Element.RemoveEventListener(dom.EventType("click"), footer.on_click)
+			footer.on_click = nil
+		}
+
+		if footer.on_input != nil {
+			footer.Component.Element.RemoveEventListener(dom.EventType("input"), footer.on_input)
+			footer.on_input = nil
+		}
+
 	}
 
 	return true

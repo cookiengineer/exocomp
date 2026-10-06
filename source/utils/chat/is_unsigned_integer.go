@@ -12,4 +12,3 @@ func is_unsigned_integer(k reflect.Kind) bool {
 	}
 
 }
-

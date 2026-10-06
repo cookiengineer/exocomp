@@ -126,7 +126,7 @@ func (recovery *Recovery) BackupSession(session *Session) error {
 
 func (recovery *Recovery) HasBackup() bool {
 
-	path      := filepath.Join(recovery.Playground, ".exocomp", "session.json")
+	path := filepath.Join(recovery.Playground, ".exocomp", "session.json")
 	stat, err1 := os.Stat(path)
 
 	if err1 == nil && stat.IsDir() == false {
@@ -141,7 +141,7 @@ func (recovery *Recovery) RestoreAgents() []*types.Agent {
 
 	result := make([]*types.Agent, 0)
 
-	path          := filepath.Join(recovery.Playground, ".exocomp", "agents")
+	path := filepath.Join(recovery.Playground, ".exocomp", "agents")
 	entries, err1 := os.ReadDir(path)
 
 	if err1 == nil {
@@ -149,7 +149,7 @@ func (recovery *Recovery) RestoreAgents() []*types.Agent {
 		for _, entry := range entries {
 
 			filename := entry.Name()
-			ext      := filepath.Ext(filename)
+			ext := filepath.Ext(filename)
 
 			if ext == ".json" {
 
@@ -181,13 +181,13 @@ func (recovery *Recovery) RestoreAgent(name string) *types.Agent {
 
 	if sanitized_name != "" {
 
-		path        := filepath.Join(recovery.Playground, ".exocomp", "agents", fmt.Sprintf("%s.json", sanitized_name))
+		path := filepath.Join(recovery.Playground, ".exocomp", "agents", fmt.Sprintf("%s.json", sanitized_name))
 		bytes, err1 := os.ReadFile(path)
 
 		if err1 == nil {
 
 			agent := types.Agent{}
-			err2  := json.Unmarshal(bytes, &agent)
+			err2 := json.Unmarshal(bytes, &agent)
 
 			if err2 == nil {
 				return &agent
@@ -207,12 +207,12 @@ func (recovery *Recovery) RestoreAgent(name string) *types.Agent {
 
 func (recovery *Recovery) RestoreSession() *Session {
 
-	path        := filepath.Join(recovery.Playground, ".exocomp", "session.json")
+	path := filepath.Join(recovery.Playground, ".exocomp", "session.json")
 	bytes, err1 := os.ReadFile(path)
 
 	if err1 == nil {
 
-		tmp  := Session{}
+		tmp := Session{}
 		err2 := json.Unmarshal(bytes, &tmp)
 
 		if err2 == nil {
@@ -306,4 +306,3 @@ func (recovery *Recovery) SnapshotBytes(name string, raw []byte) error {
 	}
 
 }
-

@@ -34,7 +34,7 @@ func GetContextLength(base_url *url.URL, model string) int {
 					if err3 == nil {
 
 						schema := ModelConfigResponse{}
-						err4   := json.Unmarshal(response_payload, &schema)
+						err4 := json.Unmarshal(response_payload, &schema)
 
 						if err4 == nil {
 							context_lengths[model] = schema.ContextLength(model)

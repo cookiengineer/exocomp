@@ -9,9 +9,9 @@ import "sync"
 import "time"
 
 type Renderer struct {
-	Session   *engine.Session
-	mutex     *sync.RWMutex
-	rendered  int
+	Session  *engine.Session
+	mutex    *sync.RWMutex
+	rendered int
 }
 
 func NewRenderer(session *engine.Session) *Renderer {
@@ -98,4 +98,3 @@ func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 	}
 
 }
-

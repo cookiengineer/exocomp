@@ -16,11 +16,11 @@ func main() {
 			tmp := strings.TrimSpace(os.Args[1][9:])
 
 			if strings.HasPrefix(tmp, "\"") && strings.HasSuffix(tmp, "\"") {
-				tmp = strings.TrimSpace(tmp[1:len(tmp)-1])
+				tmp = strings.TrimSpace(tmp[1 : len(tmp)-1])
 			}
 
 			if strings.HasPrefix(tmp, "'") && strings.HasSuffix(tmp, "'") {
-				tmp = strings.TrimSpace(tmp[1:len(tmp)-1])
+				tmp = strings.TrimSpace(tmp[1 : len(tmp)-1])
 			}
 
 			if strings.HasPrefix(tmp, "/") && len(tmp) > 1 {

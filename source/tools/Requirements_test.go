@@ -11,8 +11,8 @@ import "exocomp/types"
 func TestRequirements_DefineFunc(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
-	sandbox       := filepath.Join(playground, "requirements")
-	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "requirements")
+	tool := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -141,8 +141,8 @@ func TestRequirements_DefineInterface(t *testing.T) {
 func TestRequirements_DefineStruct(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
-	sandbox       := filepath.Join(playground, "requirements")
-	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "requirements")
+	tool := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -203,8 +203,8 @@ func TestRequirements_DefineStruct(t *testing.T) {
 func TestRequirements_DefineType(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
-	sandbox       := filepath.Join(playground, "requirements")
-	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "DefineType", "Search", "Signoff"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "requirements")
+	tool := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "DefineType", "Search", "Signoff"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -273,8 +273,8 @@ func TestRequirements_DefineType(t *testing.T) {
 func TestRequirements_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
-	sandbox       := filepath.Join(playground, "requirements")
-	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "requirements")
+	tool := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -319,7 +319,7 @@ func TestRequirements_List(t *testing.T) {
 			t.Errorf("Expected %v to be nil", err6)
 		}
 
-		if strings.HasPrefix(result, "requirements.List: 5 specifications.") == false{
+		if strings.HasPrefix(result, "requirements.List: 5 specifications.") == false {
 			t.Errorf("Expected 5 specifications:\n%s", result)
 		}
 
@@ -342,8 +342,8 @@ func TestRequirements_List(t *testing.T) {
 func TestRequirements_Search(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
-	sandbox       := filepath.Join(playground, "requirements")
-	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "requirements")
+	tool := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -430,8 +430,8 @@ func TestRequirements_Search(t *testing.T) {
 func TestRequirements_Call(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
-	sandbox       := filepath.Join(playground, "requirements")
-	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "DefineType", "Search", "Signoff"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "requirements")
+	tool := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "DefineType", "Search", "Signoff"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -499,8 +499,8 @@ func TestRequirements_Call(t *testing.T) {
 func TestRequirements_Signoff(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-requirements-*")
-	sandbox       := filepath.Join(playground, "requirements")
-	tool          := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "requirements")
+	tool := NewRequirements([]string{"List", "DefineFunc", "DefineInterface", "DefineStruct", "Search", "Signoff"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -519,7 +519,7 @@ func TestRequirements_Signoff(t *testing.T) {
 		}, "\n")
 
 		file_path := filepath.Join(sandbox, "core", "FirstFunction.go")
-		err2      := os.MkdirAll(filepath.Dir(file_path), 0755)
+		err2 := os.MkdirAll(filepath.Dir(file_path), 0755)
 
 		if err2 != nil {
 			t.Errorf("Expected %v to be nil", err2)
@@ -548,7 +548,7 @@ func TestRequirements_Signoff(t *testing.T) {
 		}
 
 		contents := make(map[string]map[string]types.Requirement)
-		err6     := json.Unmarshal(reports, &contents)
+		err6 := json.Unmarshal(reports, &contents)
 
 		if err6 != nil {
 			t.Errorf("Expected %v to be nil", err6)

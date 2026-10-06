@@ -9,8 +9,8 @@ import "time"
 func TestChangelog_Add(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "changelogs")
-	tool          := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "changelogs")
+	tool := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -61,8 +61,8 @@ func TestChangelog_Add(t *testing.T) {
 func TestChangelog_Change(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "changelogs")
-	tool          := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "changelogs")
+	tool := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -104,8 +104,8 @@ func TestChangelog_Change(t *testing.T) {
 func TestChangelog_Deprecate(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "changelogs")
-	tool          := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "changelogs")
+	tool := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -147,8 +147,8 @@ func TestChangelog_Deprecate(t *testing.T) {
 func TestChangelog_Fix(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "changelogs")
-	tool          := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "changelogs")
+	tool := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -190,8 +190,8 @@ func TestChangelog_Fix(t *testing.T) {
 func TestChangelog_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "changelogs")
-	tool          := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "changelogs")
+	tool := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -286,8 +286,8 @@ func TestChangelog_List(t *testing.T) {
 func TestChangelog_Remove(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "changelogs")
-	tool          := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "changelogs")
+	tool := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -329,8 +329,8 @@ func TestChangelog_Remove(t *testing.T) {
 func TestChangelog_Search(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-*")
-	sandbox       := filepath.Join(playground, "changelogs")
-	tool          := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "changelogs")
+	tool := NewChangelog([]string{"Add", "Change", "Deprecate", "Fix", "List", "Remove", "Search"}, playground, sandbox)
 
 	if tool != nil {
 

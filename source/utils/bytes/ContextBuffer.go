@@ -15,7 +15,7 @@ type ContextBuffer struct {
 	cancel      context.CancelFunc
 }
 
-func NewContextBuffer (max_bytes int, cancel context.CancelFunc) *ContextBuffer {
+func NewContextBuffer(max_bytes int, cancel context.CancelFunc) *ContextBuffer {
 
 	return &ContextBuffer{
 		last_write: time.Now(),

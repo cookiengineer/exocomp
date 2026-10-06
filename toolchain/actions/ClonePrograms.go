@@ -56,7 +56,7 @@ func ClonePrograms(base_dir string) {
 
 		for _, install := range installs {
 
-			err1    := CloneRepository(vendor_dir, install.url, install.folder)
+			err1 := CloneRepository(vendor_dir, install.url, install.folder)
 			path, _ := filepath.Rel(base_dir, install.folder)
 
 			if err1 == nil {

@@ -250,4 +250,3 @@ func (grid *BugGrid) Unmount() bool {
 	return true
 
 }
-

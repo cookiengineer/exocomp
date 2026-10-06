@@ -47,11 +47,11 @@ func NewConsole(stdout *os.File, stderr *os.File, offset int) *Console {
 
 	console.Messages = make([]ConsoleMessage, 0)
 	console.methods = map[string]bool{
-		"Group": true,
-		"Log": true,
-		"Info": true,
-		"Warn": true,
-		"Error": true,
+		"Group":    true,
+		"Log":      true,
+		"Info":     true,
+		"Warn":     true,
+		"Error":    true,
 		"Progress": true,
 	}
 	console.mutex = &sync.RWMutex{}
@@ -258,10 +258,10 @@ func (console *Console) Render(target *Console) {
 	if target.height > 0 && len(preserved) > target.height {
 
 		target.mutex.Lock()
-		target.Messages = append(target.Messages, preserved[0:len(preserved) - target.height]...)
+		target.Messages = append(target.Messages, preserved[0:len(preserved)-target.height]...)
 		target.mutex.Unlock()
 
-		preserved = preserved[len(preserved) - target.height:]
+		preserved = preserved[len(preserved)-target.height:]
 
 	}
 
@@ -345,7 +345,7 @@ func (console *Console) Clear(raw string) {
 	}
 
 	found_start := -1
-	found_end   := -1
+	found_end := -1
 
 	for m := 0; m < len(console.Messages); m++ {
 
@@ -391,7 +391,7 @@ func (console *Console) Clear(raw string) {
 
 		console.mutex.Lock()
 		console.Messages = make([]ConsoleMessage, 0)
-		console.offset   = 0
+		console.offset = 0
 		console.mutex.Unlock()
 
 		if console.Stdout != nil {
@@ -407,10 +407,10 @@ func (console *Console) Clear(raw string) {
 		if console.height > 0 && len(preserved) > console.height {
 
 			console.mutex.Lock()
-			console.Messages = preserved[0:len(preserved) - console.height]
+			console.Messages = preserved[0 : len(preserved)-console.height]
 			console.mutex.Unlock()
 
-			preserved = preserved[len(preserved) - console.height:]
+			preserved = preserved[len(preserved)-console.height:]
 
 		}
 
@@ -519,7 +519,7 @@ func (console *Console) Log(raw string) {
 	if enabled, _ := console.methods["Log"]; enabled == true {
 
 		indent := toConsoleIndent(console.offset)
-		lines  := message.Lines()
+		lines := message.Lines()
 
 		if len(lines) > 0 && console.Stdout != nil {
 
@@ -556,7 +556,7 @@ func (console *Console) Error(raw string) {
 	if enabled, _ := console.methods["Error"]; enabled == true {
 
 		indent := toConsoleIndent(console.offset)
-		lines  := message.Lines()
+		lines := message.Lines()
 
 		if len(lines) > 0 && console.Stderr != nil {
 
@@ -593,7 +593,7 @@ func (console *Console) Info(raw string) {
 	if enabled, _ := console.methods["Info"]; enabled == true {
 
 		indent := toConsoleIndent(console.offset)
-		lines  := message.Lines()
+		lines := message.Lines()
 
 		if len(lines) > 0 && console.Stdout != nil {
 
@@ -635,7 +635,7 @@ func (console *Console) Progress(raw string) {
 	if enabled, _ := console.methods["Progress"]; enabled == true {
 
 		indent := toConsoleIndent(console.offset)
-		lines  := message.Lines()
+		lines := message.Lines()
 
 		if len(lines) == 1 {
 
@@ -654,7 +654,7 @@ func (console *Console) Progress(raw string) {
 
 				}
 
-				if last_progress != -1 && last_progress == len(console.Messages) - 1 {
+				if last_progress != -1 && last_progress == len(console.Messages)-1 {
 
 					last_message := console.Messages[last_progress]
 
@@ -672,7 +672,7 @@ func (console *Console) Progress(raw string) {
 
 						}
 
-						console.Messages[len(console.Messages) - 1] = message
+						console.Messages[len(console.Messages)-1] = message
 
 					} else {
 
@@ -737,7 +737,7 @@ func (console *Console) Warn(raw string) {
 	if enabled, _ := console.methods["Warn"]; enabled == true {
 
 		indent := toConsoleIndent(console.offset)
-		lines  := message.Lines()
+		lines := message.Lines()
 
 		if len(lines) > 0 && console.Stdout != nil {
 
@@ -766,4 +766,3 @@ func (console *Console) Warn(raw string) {
 	}
 
 }
-

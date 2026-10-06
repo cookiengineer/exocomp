@@ -21,13 +21,13 @@ func CallTool(session *engine.Session, request *http.Request, response http.Resp
 			if err0 == nil {
 
 				tool_call := schemas.ToolCall{}
-				err1      := json.Unmarshal(request_payload, &tool_call)
+				err1 := json.Unmarshal(request_payload, &tool_call)
 
 				if err1 == nil {
 
-					tool_id,        err2 := tool_call.GetID()
-					tool_name,      err3 := tool_call.GetName()
-					tool_method,    err4 := tool_call.GetMethod()
+					tool_id, err2 := tool_call.GetID()
+					tool_name, err3 := tool_call.GetName()
+					tool_method, err4 := tool_call.GetMethod()
 					tool_arguments, err5 := tool_call.GetArguments()
 
 					if err2 == nil {
@@ -42,7 +42,7 @@ func CallTool(session *engine.Session, request *http.Request, response http.Resp
 
 									if err6 == nil {
 
-										message             := session.GetLastMessage()
+										message := session.GetLastMessage()
 										response_payload, _ := json.MarshalIndent(message, "", "\t")
 
 										response.Header().Set("Content-Type", "application/json")

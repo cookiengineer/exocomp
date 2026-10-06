@@ -25,6 +25,9 @@ type Requirements struct {
 
 	running    bool
 	generation int
+
+	toggleCollapseListener *components.EventListener
+	changeFilterListener   *components.EventListener
 }
 
 func NewRequirements(main *app.Main, view interfaces.View) *Requirements {
@@ -73,8 +76,17 @@ func (requirements *Requirements) Leave() bool {
 	requirements.running = false
 
 	if requirements.Grid != nil && requirements.Grid.Footer != nil {
-		requirements.Grid.Footer.Component.RemoveEventListener("toggle-collapse", nil)
-		requirements.Grid.Footer.Component.RemoveEventListener("change-filter", nil)
+
+		if requirements.toggleCollapseListener != nil {
+			requirements.Grid.Footer.Component.RemoveEventListener("toggle-collapse", requirements.toggleCollapseListener)
+			requirements.toggleCollapseListener = nil
+		}
+
+		if requirements.changeFilterListener != nil {
+			requirements.Grid.Footer.Component.RemoveEventListener("change-filter", requirements.changeFilterListener)
+			requirements.changeFilterListener = nil
+		}
+
 	}
 
 	return true
@@ -117,22 +129,26 @@ func (requirements *Requirements) attach(component *components.Component) {
 		return
 	}
 
-	component.AddEventListener("toggle-collapse", components.ToEventListener(func(event string, attributes map[string]any) {
+	requirements.toggleCollapseListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		requirements.Collapsed = requirements.Collapsed != true
 
 		requirements.Render()
 
-	}, false))
+	}, false)
 
-	component.AddEventListener("change-filter", components.ToEventListener(func(event string, attributes map[string]any) {
+	component.AddEventListener("toggle-collapse", requirements.toggleCollapseListener)
+
+	requirements.changeFilterListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		if value, ok := attributes["value"].(string); ok == true {
 			requirements.Filter = value
 			requirements.Render()
 		}
 
-	}, false))
+	}, false)
+
+	component.AddEventListener("change-filter", requirements.changeFilterListener)
 
 }
 

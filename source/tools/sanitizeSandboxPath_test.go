@@ -5,15 +5,15 @@ import "testing"
 
 func TestSanitizeSandboxPath(t *testing.T) {
 
-	sandbox, _    := os.MkdirTemp("/tmp", "exocomp-test-sanitizesandboxpath-*")
+	sandbox, _ := os.MkdirTemp("/tmp", "exocomp-test-sanitizesandboxpath-*")
 	result1, err1 := sanitizeSandboxPath(sandbox, "./first")
 	result2, err2 := sanitizeSandboxPath(sandbox, "./first/second")
 	result3, err3 := sanitizeSandboxPath(sandbox, "./")
 	result4, err4 := sanitizeSandboxPath(sandbox, ".")
 	result5, err5 := sanitizeSandboxPath(sandbox, "")
 	result6, err6 := sanitizeSandboxPath(sandbox, sandbox)
-	result7, err7 := sanitizeSandboxPath(sandbox, sandbox + "/first")
-	result8, err8 := sanitizeSandboxPath(sandbox, sandbox + "/first/second")
+	result7, err7 := sanitizeSandboxPath(sandbox, sandbox+"/first")
+	result8, err8 := sanitizeSandboxPath(sandbox, sandbox+"/first/second")
 
 	if result1 != "./first" {
 		t.Errorf("Expected \"%s\" to be \"%s\"", result1, "./first")
@@ -83,7 +83,7 @@ func TestSanitizeSandboxPath(t *testing.T) {
 
 func TestSanitizeSandboxPathEscapeAttempts(t *testing.T) {
 
-	sandbox, _    := os.MkdirTemp("/tmp", "exocomp-test-sanitizesandboxpath-*")
+	sandbox, _ := os.MkdirTemp("/tmp", "exocomp-test-sanitizesandboxpath-*")
 	result1, err1 := sanitizeSandboxPath(sandbox, "../")
 	result2, err2 := sanitizeSandboxPath(sandbox, "../../first/second")
 	result3, err3 := sanitizeSandboxPath(sandbox, "./../../../../../etc")

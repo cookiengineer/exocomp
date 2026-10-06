@@ -12,7 +12,7 @@ var RequirementsSchema []schemas.Tool
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err    := json.Unmarshal(requirements_json, &schema)
+	err := json.Unmarshal(requirements_json, &schema)
 
 	if err == nil {
 		RequirementsSchema = schema

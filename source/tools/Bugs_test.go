@@ -8,8 +8,8 @@ import "testing"
 func TestBugs_Add(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
-	sandbox       := filepath.Join(playground, "bugs")
-	tool          := NewBugs([]string{"List", "Add", "Fix", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "bugs")
+	tool := NewBugs([]string{"List", "Add", "Fix", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -51,14 +51,14 @@ func TestBugs_Add(t *testing.T) {
 func TestBugs_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
-	sandbox       := filepath.Join(playground, "bugs")
-	tool          := NewBugs([]string{"List", "Add", "Fix", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "bugs")
+	tool := NewBugs([]string{"List", "Add", "Fix", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
-		_, err1 := tool.Add("./path/to/First.go",  "Foo", "A new feature broke the Foo method.")
+		_, err1 := tool.Add("./path/to/First.go", "Foo", "A new feature broke the Foo method.")
 		_, err2 := tool.Add("./path/to/Second.go", "Bar", "A new feature broke the Bar method.")
-		_, err3 := tool.Add("./path/to/Third.go",  "Qux", "A new feature broke the Qux method.")
+		_, err3 := tool.Add("./path/to/Third.go", "Qux", "A new feature broke the Qux method.")
 		_, err4 := tool.Fix("./path/to/Second.go", "Bar")
 
 		if err1 != nil {
@@ -106,15 +106,15 @@ func TestBugs_List(t *testing.T) {
 func TestBugs_Fix(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
-	sandbox       := filepath.Join(playground, "bugs")
-	tool          := NewBugs([]string{"List", "Add", "Fix", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "bugs")
+	tool := NewBugs([]string{"List", "Add", "Fix", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
-		_, err1 := tool.Add("./path/to/First.go",  "Foo", "A new feature broke the Foo method.")
+		_, err1 := tool.Add("./path/to/First.go", "Foo", "A new feature broke the Foo method.")
 		_, err2 := tool.Add("./path/to/Second.go", "Bar", "A new feature broke the Bar method.")
-		_, err3 := tool.Add("./path/to/Third.go",  "Qux", "A new feature broke the Qux method.")
-		_, err4 := tool.Fix("./path/to/Third.go",  "Qux")
+		_, err3 := tool.Add("./path/to/Third.go", "Qux", "A new feature broke the Qux method.")
+		_, err4 := tool.Fix("./path/to/Third.go", "Qux")
 
 		if err1 != nil {
 			t.Errorf("Expected %v to be nil", err1)
@@ -165,15 +165,15 @@ func TestBugs_Fix(t *testing.T) {
 func TestBugs_Search(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-*")
-	sandbox       := filepath.Join(playground, "bugs")
-	tool          := NewBugs([]string{"List", "Add", "Fix", "Search"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "bugs")
+	tool := NewBugs([]string{"List", "Add", "Fix", "Search"}, playground, sandbox)
 
 	if tool != nil {
 
-		_, err1 := tool.Add("./path/to/First.go",  "Foo", "A new feature broke the Foo method.")
+		_, err1 := tool.Add("./path/to/First.go", "Foo", "A new feature broke the Foo method.")
 		_, err2 := tool.Add("./path/to/Second.go", "Bar", "A new feature broke the Bar method.")
-		_, err3 := tool.Add("./path/to/Third.go",  "Qux", "A new feature broke the Qux method.")
-		_, err4 := tool.Add("./path/to/Third.go",  "Doo", "A new feature broke the Doo method.")
+		_, err3 := tool.Add("./path/to/Third.go", "Qux", "A new feature broke the Qux method.")
+		_, err4 := tool.Add("./path/to/Third.go", "Doo", "A new feature broke the Doo method.")
 
 		if err1 != nil {
 			t.Errorf("Expected %v to be nil", err1)

@@ -16,7 +16,7 @@ func GetSymbolType(source []byte, symbol string) (string, error) {
 
 	for _, decl := range file.Decls {
 
-		gen_decl,  ok1 := decl.(*ast.GenDecl)
+		gen_decl, ok1 := decl.(*ast.GenDecl)
 		func_decl, ok2 := decl.(*ast.FuncDecl)
 
 		if ok1 == true && gen_decl.Tok == token.TYPE {
@@ -58,4 +58,3 @@ func GetSymbolType(source []byte, symbol string) (string, error) {
 	return "", fmt.Errorf("Invalid Go syntax. \"type %s <type>\" must be defined!", symbol)
 
 }
-

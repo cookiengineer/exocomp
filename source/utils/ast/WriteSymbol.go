@@ -57,4 +57,3 @@ func WriteSymbol(source []byte, symbol string, declaration string, declaration_t
 	}
 
 }
-

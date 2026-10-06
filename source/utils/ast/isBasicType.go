@@ -34,4 +34,3 @@ func isBasicType(expr ast.Expr) bool {
 	}
 
 }
-

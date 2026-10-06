@@ -77,8 +77,8 @@ func (tool *Humans) Call(method string, arguments map[string]interface{}) (strin
 		} else if method == "Choose" {
 
 			question, ok1 := arguments["question"].(string)
-			raw,      ok2 := arguments["options"]
-			multiple, _   := arguments["multiple"].(bool)
+			raw, ok2 := arguments["options"]
+			multiple, _ := arguments["multiple"].(bool)
 
 			if ok1 == true && ok2 == true {
 
@@ -117,7 +117,7 @@ func (tool *Humans) Call(method string, arguments map[string]interface{}) (strin
 		} else if method == "Answer" {
 
 			question, ok1 := arguments["question"].(string)
-			answer,   ok2 := arguments["answer"].(string)
+			answer, ok2 := arguments["answer"].(string)
 
 			if ok1 == true && ok2 == true {
 				return tool.Answer(utils_fmt.FormatSingleLine(question), utils_fmt.FormatMultiLine(answer))
@@ -192,7 +192,7 @@ func (tool *Humans) Ask(text string) (string, error) {
 
 	tool.mutex.Lock()
 	tool.contents[question.Question] = question
-	tool.states[question.Question]  = state
+	tool.states[question.Question] = state
 	tool.mutex.Unlock()
 
 	go watch_question(tool, question.Question, state)
@@ -303,8 +303,6 @@ func (tool *Humans) Schemas() []schemas.Tool {
 
 }
 
-
-
 // NOTE: Await blocks until the human answered the question. This mirrors
 // agents.Await deliberately: the planner model would otherwise poll in a hot
 // loop and blow up its limited context window with identical "still waiting"
@@ -339,4 +337,3 @@ func (tool *Humans) Await(reference string) (string, error) {
 	}
 
 }
-

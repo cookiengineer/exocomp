@@ -12,7 +12,7 @@ var AgentsSchema []schemas.Tool
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err    := json.Unmarshal(agents_json, &schema)
+	err := json.Unmarshal(agents_json, &schema)
 
 	if err == nil {
 		AgentsSchema = schema

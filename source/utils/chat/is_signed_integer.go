@@ -12,4 +12,3 @@ func is_signed_integer(k reflect.Kind) bool {
 	}
 
 }
-

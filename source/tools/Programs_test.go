@@ -8,8 +8,8 @@ import "testing"
 func TestPrograms_Execute(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
-	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"cat", "ls", "pwd"})
+	sandbox := filepath.Join(playground, "programs")
+	tool := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"cat", "ls", "pwd"})
 
 	err0 := os.MkdirAll(sandbox, 0755)
 
@@ -130,8 +130,8 @@ func TestPrograms_Execute(t *testing.T) {
 func TestPrograms_ExecuteWithoutPermission(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
-	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"ls", "pwd"})
+	sandbox := filepath.Join(playground, "programs")
+	tool := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"ls", "pwd"})
 
 	// Folder with no execution rights
 	err0 := os.MkdirAll(sandbox, 0644)
@@ -191,8 +191,8 @@ func TestPrograms_ExecuteWithoutPermission(t *testing.T) {
 
 func TestPrograms_ExecuteWithoutProgram(t *testing.T) {
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
-	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"doesntexist"})
+	sandbox := filepath.Join(playground, "programs")
+	tool := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"doesntexist"})
 
 	// Folder with execution rights
 	err0 := os.MkdirAll(sandbox, 0755)
@@ -235,12 +235,11 @@ func TestPrograms_ExecuteWithoutProgram(t *testing.T) {
 
 }
 
-
 func TestPrograms_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
-	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"cat", "ls", "pwd"})
+	sandbox := filepath.Join(playground, "programs")
+	tool := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"cat", "ls", "pwd"})
 
 	if tool != nil {
 
@@ -291,8 +290,8 @@ func TestPrograms_List(t *testing.T) {
 func TestPrograms_Stat(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
-	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"cat", "ls", "pwd"})
+	sandbox := filepath.Join(playground, "programs")
+	tool := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"cat", "ls", "pwd"})
 
 	if tool != nil {
 
@@ -340,8 +339,8 @@ func TestPrograms_Stat(t *testing.T) {
 func TestPrograms_StatWithoutProgram(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
-	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"doesntexist"})
+	sandbox := filepath.Join(playground, "programs")
+	tool := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"doesntexist"})
 
 	if tool != nil {
 
@@ -380,8 +379,8 @@ func TestPrograms_StatWithoutProgram(t *testing.T) {
 func TestPrograms_Call_OptionalArguments(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
-	sandbox       := filepath.Join(playground, "programs")
-	tool          := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"pwd"})
+	sandbox := filepath.Join(playground, "programs")
+	tool := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"pwd"})
 
 	err0 := os.MkdirAll(sandbox, 0755)
 

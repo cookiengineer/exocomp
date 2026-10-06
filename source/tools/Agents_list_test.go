@@ -9,8 +9,8 @@ import "testing"
 func TestAgents_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-agents-*")
-	sandbox       := filepath.Join(playground, "agents")
-	tool          := NewAgents([]string{"List", "Roles"}, playground, sandbox, "huihui_ai/Qwen3.6-abliterated:35b", nil, false)
+	sandbox := filepath.Join(playground, "agents")
+	tool := NewAgents([]string{"List", "Roles"}, playground, sandbox, "huihui_ai/Qwen3.6-abliterated:35b", nil, false)
 
 	if tool != nil {
 
@@ -67,8 +67,8 @@ func TestAgents_List(t *testing.T) {
 func TestAgents_Roles(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-agents-*")
-	sandbox       := filepath.Join(playground, "agents")
-	tool          := NewAgents([]string{"List", "Roles"}, playground, sandbox, "huihui_ai/Qwen3.6-abliterated:35b", nil, false)
+	sandbox := filepath.Join(playground, "agents")
+	tool := NewAgents([]string{"List", "Roles"}, playground, sandbox, "huihui_ai/Qwen3.6-abliterated:35b", nil, false)
 
 	if tool != nil {
 

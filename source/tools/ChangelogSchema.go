@@ -12,7 +12,7 @@ var ChangelogSchema []schemas.Tool
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err    := json.Unmarshal(changelog_json, &schema)
+	err := json.Unmarshal(changelog_json, &schema)
 
 	if err == nil {
 		ChangelogSchema = schema

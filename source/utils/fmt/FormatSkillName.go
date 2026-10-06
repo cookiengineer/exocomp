@@ -6,7 +6,7 @@ func FormatSkillName(input string) string {
 
 	input = strings.ToLower(input)
 
-	formatted     := make([]byte, 0)
+	formatted := make([]byte, 0)
 	last_was_dash := false
 
 	for i := 0; i < len(input); i++ {
@@ -20,7 +20,7 @@ func FormatSkillName(input string) string {
 
 		} else if chr == '-' {
 
-			if i >= 1 && i < len(input) - 1 {
+			if i >= 1 && i < len(input)-1 {
 
 				if last_was_dash == false {
 					formatted = append(formatted, byte(chr))
@@ -36,4 +36,3 @@ func FormatSkillName(input string) string {
 	return string(formatted)
 
 }
-

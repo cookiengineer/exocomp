@@ -64,4 +64,3 @@ func (response *ShowResponse) EmbeddingLength() int {
 	return result
 
 }
-

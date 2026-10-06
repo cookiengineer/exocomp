@@ -5,7 +5,7 @@ import "path/filepath"
 
 func HasExocompFolder(folder string) bool {
 
-	tmp         := filepath.Join(folder, ".exocomp")
+	tmp := filepath.Join(folder, ".exocomp")
 	stat, err := os.Stat(tmp)
 
 	if err == nil && stat.IsDir() {
@@ -15,4 +15,3 @@ func HasExocompFolder(folder string) bool {
 	return false
 
 }
-

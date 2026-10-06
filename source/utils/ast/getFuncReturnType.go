@@ -39,4 +39,3 @@ func getFuncReturnType(fileset *token.FileSet, func_decl *ast.FuncDecl) string {
 	return "(" + strings.Join(types, ", ") + ")"
 
 }
-

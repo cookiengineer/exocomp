@@ -9,7 +9,7 @@ import "unicode"
 func parse_arguments(raw string) map[string]any {
 
 	arguments := make(map[string]any)
-	index     := 0
+	index := 0
 
 	for index < len(raw) {
 
@@ -82,7 +82,7 @@ func parse_value(buffer []byte) any {
 
 		if len(buffer) >= 2 && (buffer[0] == '-' || buffer[0] == '+') {
 
-			num, err1 := strconv.ParseInt(string(buffer), 10, 64);
+			num, err1 := strconv.ParseInt(string(buffer), 10, 64)
 
 			if err1 == nil {
 				return num
@@ -91,11 +91,11 @@ func parse_value(buffer []byte) any {
 		}
 
 		if len(buffer) >= 2 && buffer[0] == '"' && buffer[len(buffer)-1] == '"' {
-			return string(buffer[1:len(buffer)-1])
+			return string(buffer[1 : len(buffer)-1])
 		}
 
 		if len(buffer) >= 2 && buffer[0] == '\'' && buffer[len(buffer)-1] == '\'' {
-			return string(buffer[1:len(buffer)-1])
+			return string(buffer[1 : len(buffer)-1])
 		}
 
 		if string(buffer) == "true" {
@@ -130,10 +130,10 @@ func parse_value(buffer []byte) any {
 
 func seek_nested(raw string, start int, start_token byte, close_token byte) []byte {
 
-	result    := []byte{start_token}
-	depth     := 0
+	result := []byte{start_token}
+	depth := 0
 	in_string := false
-	escaped   := false
+	escaped := false
 
 	for index := start + 1; index < len(raw); index++ {
 
@@ -178,7 +178,7 @@ func seek_nested(raw string, start int, start_token byte, close_token byte) []by
 
 func seek_string(raw string, start int, token byte) []byte {
 
-	result  := []byte{token}
+	result := []byte{token}
 	escaped := false
 
 	for index := start + 1; index < len(raw); index++ {
@@ -212,7 +212,6 @@ func skip_whitespace(raw string, index *int) {
 
 }
 
-
 type Command struct {
 	Name      string         `json:"name"`
 	Method    string         `json:"method"`
@@ -245,8 +244,8 @@ func (command *Command) Parse(prompt string) error {
 
 		if strings.Contains(name, ".") {
 
-			command.Name      = strings.TrimSpace(name)
-			command.Method    = strings.TrimSpace(command.Name[strings.LastIndex(command.Name, ".")+1:])
+			command.Name = strings.TrimSpace(name)
+			command.Method = strings.TrimSpace(command.Name[strings.LastIndex(command.Name, ".")+1:])
 			command.Arguments = parse_arguments(strings.TrimSpace(prompt[1+len(name)+1:]))
 
 			return nil

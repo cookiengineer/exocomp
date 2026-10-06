@@ -21,7 +21,7 @@ func encodeMap(value reflect.Value) (*Node, error) {
 
 		}
 
-		map_value       := value.MapIndex(map_key)
+		map_value := value.MapIndex(map_key)
 		child_node, err := encodeValue(map_value)
 
 		if err != nil {

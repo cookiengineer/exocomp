@@ -25,12 +25,12 @@ void CgoWebViewUnbind(webview_t w, const char *name);
 */
 import "C"
 import (
+	"encoding/json"
+	"errors"
 	_ "exocomp/ui/webview/libs/mswebview2"
 	_ "exocomp/ui/webview/libs/mswebview2/include"
 	_ "exocomp/ui/webview/libs/webview"
 	_ "exocomp/ui/webview/libs/webview/include"
-	"encoding/json"
-	"errors"
 	"reflect"
 	"runtime"
 	"sync"

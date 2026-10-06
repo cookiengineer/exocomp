@@ -32,7 +32,7 @@ func getFileSymbols(file *ast.File, fileset *token.FileSet, with_private bool) m
 				if isExportedSymbol(receiver_type) || with_private == true {
 
 					result[receiver_type+"."+func_decl.Name.Name] = &Symbol{
-						Name: receiver_type+"."+func_decl.Name.Name,
+						Name: receiver_type + "." + func_decl.Name.Name,
 						Type: "func",
 						Body: declaration,
 					}

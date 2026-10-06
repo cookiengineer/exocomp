@@ -5,7 +5,7 @@ import "reflect"
 func decodeSlice(node *Node, target reflect.Value) error {
 
 	target_type := target.Type().Elem()
-	slice       := reflect.MakeSlice(
+	slice := reflect.MakeSlice(
 		target.Type(),
 		0,
 		len(node.ArrayChildren),
@@ -14,7 +14,7 @@ func decodeSlice(node *Node, target reflect.Value) error {
 	for _, child := range node.ArrayChildren {
 
 		element := reflect.New(target_type).Elem()
-		err     := decodeValue(child, element)
+		err := decodeValue(child, element)
 
 		if err == nil {
 			slice = reflect.Append(slice, element)

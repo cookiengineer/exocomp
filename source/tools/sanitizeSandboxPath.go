@@ -31,14 +31,13 @@ func sanitizeSandboxPath(sandbox string, file_path string) (string, error) {
 
 	if strings.HasPrefix(sandbox, string(os.PathSeparator)) && strings.HasPrefix(file_path, string(os.PathSeparator)) {
 
-		if len(file_path) > len(sandbox) && strings.HasPrefix(file_path, sandbox + string(os.PathSeparator)) {
+		if len(file_path) > len(sandbox) && strings.HasPrefix(file_path, sandbox+string(os.PathSeparator)) {
 			file_path = "." + string(os.PathSeparator) + strings.TrimSpace(file_path[len(sandbox):])
 		} else {
 			return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", file_path)
 		}
 
 	}
-
 
 	tmp1 := filepath.Join(sandbox, file_path)
 	resolved_path, err0 := filepath.Abs(tmp1)
@@ -55,7 +54,7 @@ func sanitizeSandboxPath(sandbox string, file_path string) (string, error) {
 
 				if relative == ".." {
 					return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", relative)
-				} else if len(relative) >= 3 && relative[0:3] == ".." + string(os.PathSeparator) {
+				} else if len(relative) >= 3 && relative[0:3] == ".."+string(os.PathSeparator) {
 					return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", relative)
 				} else {
 

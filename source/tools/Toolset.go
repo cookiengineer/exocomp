@@ -5,10 +5,10 @@ import _ "embed"
 import net_url "net/url"
 import "strings"
 
-func Toolset(playground string, sandbox string, model string, url *net_url.URL, debug bool, allowed_programs []string, allowed_tools []string) ([]types.Tool) {
+func Toolset(playground string, sandbox string, model string, url *net_url.URL, debug bool, allowed_programs []string, allowed_tools []string) []types.Tool {
 
 	filtered_by_methods := make(map[string][]string, 0)
-	filtered_by_tool    := make(map[string]types.Tool)
+	filtered_by_tool := make(map[string]types.Tool)
 
 	for _, tool_name := range allowed_tools {
 
@@ -17,7 +17,7 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 			tmp1 := strings.TrimSpace(tool_name[0:strings.Index(tool_name, ".")])
 			tmp2 := strings.TrimSpace(tool_name[strings.Index(tool_name, ".")+1:])
 
-			name   := strings.ToLower(tmp1)
+			name := strings.ToLower(tmp1)
 			method := strings.ToUpper(tmp2[0:1]) + strings.ToLower(tmp2[1:])
 
 			_, ok := filtered_by_methods[name]

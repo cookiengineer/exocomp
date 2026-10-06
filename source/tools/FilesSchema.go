@@ -12,7 +12,7 @@ var FilesSchema []schemas.Tool
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err    := json.Unmarshal(files_json, &schema)
+	err := json.Unmarshal(files_json, &schema)
 
 	if err == nil {
 		FilesSchema = schema

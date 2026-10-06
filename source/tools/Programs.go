@@ -123,8 +123,8 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Minute)
-		buffer      := utils_bytes.NewContextBuffer(16*1024*1024, cancel)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+		buffer := utils_bytes.NewContextBuffer(16*1024*1024, cancel)
 
 		defer cancel()
 
@@ -132,7 +132,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 			ticker := time.NewTicker(10 * time.Second)
 
-			BackgroundLoop:
+		BackgroundLoop:
 			for {
 
 				select {
@@ -145,7 +145,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 					last_write := buffer.LastWrite()
 
-					if time.Since(last_write) > 1 * time.Minute {
+					if time.Since(last_write) > 1*time.Minute {
 
 						cancel()
 						break BackgroundLoop
@@ -160,15 +160,15 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		}()
 
-		cmd    := exec.CommandContext(ctx, program, program_arguments...)
+		cmd := exec.CommandContext(ctx, program, program_arguments...)
 		cmd.Dir = tool.Sandbox
 
-		cmd.Stdin  = strings.NewReader("")
+		cmd.Stdin = strings.NewReader("")
 		cmd.Stdout = buffer
 		cmd.Stderr = buffer
 
 		result := ""
-		err2   := cmd.Run()
+		err2 := cmd.Run()
 
 		if len(program_arguments) > 0 {
 			result = strings.Join([]string{
@@ -293,4 +293,3 @@ func (tool *Programs) Stat(program string) (string, error) {
 	}
 
 }
-

@@ -29,7 +29,7 @@ allowed-tools:
 `
 
 	agent := Agent{}
-	err   := yaml.Unmarshal([]byte(file), &agent)
+	err := yaml.Unmarshal([]byte(file), &agent)
 
 	if err != nil {
 		t.Errorf("Expected %v to be nil", err)
@@ -96,4 +96,3 @@ allowed-tools:
 	}
 
 }
-

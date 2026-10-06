@@ -10,4 +10,3 @@ func SeeOther(session *engine.Session, request *http.Request, response http.Resp
 	response.Write([]byte("I hate this place... and you, Mr. Anderson."))
 
 }
-

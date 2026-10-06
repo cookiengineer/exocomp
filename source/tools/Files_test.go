@@ -8,8 +8,8 @@ import "testing"
 func TestFiles_List(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "files")
+	tool := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -31,7 +31,7 @@ func TestFiles_List(t *testing.T) {
 
 		if len(lines3) == 2 {
 
-			if lines3[0] !=  "files.List: \".\" contains 1 entries." {
+			if lines3[0] != "files.List: \".\" contains 1 entries." {
 				t.Errorf("Expected %d folder entries", 1)
 			}
 
@@ -59,7 +59,7 @@ func TestFiles_List(t *testing.T) {
 
 		if len(lines5) == 3 {
 
-			if lines5[0] !=  "files.List: \".\" contains 2 entries." {
+			if lines5[0] != "files.List: \".\" contains 2 entries." {
 				t.Errorf("Expected %d folder entries", 2)
 			}
 
@@ -106,8 +106,8 @@ func TestFiles_List(t *testing.T) {
 func TestFiles_Read(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "files")
+	tool := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -210,8 +210,8 @@ func TestFiles_Read(t *testing.T) {
 func TestFiles_Stat(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "files")
+	tool := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -293,8 +293,8 @@ func TestFiles_Stat(t *testing.T) {
 func TestFiles_Write(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "files")
+	tool := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -357,8 +357,8 @@ func TestFiles_Write(t *testing.T) {
 func TestFiles_Copy(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "files")
+	tool := NewFiles([]string{"Copy", "List", "Read", "Stat", "Write"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -421,8 +421,8 @@ func TestFiles_Copy(t *testing.T) {
 func TestFiles_ReadSymbol(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "files")
+	tool := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -489,8 +489,8 @@ func TestFiles_ReadSymbol(t *testing.T) {
 func TestFiles_Search(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Search", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "files")
+	tool := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Search", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
 
 	if tool != nil {
 
@@ -594,8 +594,8 @@ func TestFiles_Search(t *testing.T) {
 func TestFiles_WriteSymbol(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-*")
-	sandbox       := filepath.Join(playground, "files")
-	tool          := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
+	sandbox := filepath.Join(playground, "files")
+	tool := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
 
 	if tool != nil {
 

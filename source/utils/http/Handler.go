@@ -8,17 +8,17 @@ type handler_value struct {
 }
 
 type Handler struct {
-    value atomic.Value // stores http.Handler
+	value atomic.Value // stores http.Handler
 }
 
 func NewHandler(http_handler http.Handler) *Handler {
 
-    handler := &Handler{}
-    handler.value.Store(&handler_value{
+	handler := &Handler{}
+	handler.value.Store(&handler_value{
 		handler: http_handler,
 	})
 
-    return handler
+	return handler
 
 }
 
@@ -31,7 +31,7 @@ func (handler *Handler) ServeHTTP(response http.ResponseWriter, request *http.Re
 
 func (handler *Handler) Set(http_handler http.Handler) {
 
-    handler.value.Store(&handler_value{
+	handler.value.Store(&handler_value{
 		handler: http_handler,
 	})
 

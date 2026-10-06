@@ -20,9 +20,9 @@ func SendChatRequest(session *engine.Session, request *http.Request, response ht
 
 			if err0 == nil {
 
-				from    := len(session.Agent.Messages)
+				from := len(session.Agent.Messages)
 				message := schemas.Message{}
-				err1    := json.Unmarshal(request_payload, &message)
+				err1 := json.Unmarshal(request_payload, &message)
 
 				if err1 == nil {
 
@@ -30,7 +30,7 @@ func SendChatRequest(session *engine.Session, request *http.Request, response ht
 
 					if err2 == nil {
 
-						messages               := session.GetMessages(from)
+						messages := session.GetMessages(from)
 						response_payload, err3 := json.MarshalIndent(messages, "", "\t")
 
 						if err3 == nil {
@@ -65,4 +65,3 @@ func SendChatRequest(session *engine.Session, request *http.Request, response ht
 	}
 
 }
-

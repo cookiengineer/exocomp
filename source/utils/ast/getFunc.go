@@ -24,7 +24,7 @@ func getFunc(file *ast.File, fileset *token.FileSet, symbol string) *Symbol {
 					printer.Fprint(&buffer, fileset, func_decl)
 
 					return &Symbol{
-						Name: receiver_type+"."+func_decl.Name.Name,
+						Name: receiver_type + "." + func_decl.Name.Name,
 						Type: "func",
 						Body: strings.TrimSpace(buffer.String()),
 					}

@@ -27,4 +27,3 @@ func (response *ModelsResponse) OwnedBy() string {
 	return owned_by
 
 }
-

@@ -32,8 +32,8 @@ func CalculateTokens(messages []*schemas.Message) int {
 
 				result += 8 // {"tool_call":{"id","type","name","arguments"}}
 
-				result += estimateStringTokens(tool_call.ID,            chars_per_token)
-				result += estimateStringTokens(tool_call.Type,          chars_per_token)
+				result += estimateStringTokens(tool_call.ID, chars_per_token)
+				result += estimateStringTokens(tool_call.Type, chars_per_token)
 				result += estimateStringTokens(tool_call.Function.Name, chars_per_token)
 
 				if len(tool_call.Function.ArgumentsRaw) > 0 {
@@ -49,4 +49,3 @@ func CalculateTokens(messages []*schemas.Message) int {
 	return result
 
 }
-

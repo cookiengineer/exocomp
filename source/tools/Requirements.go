@@ -50,10 +50,10 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 		} else if method == "DefineFunc" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			declaration, ok3 := arguments["declaration"].(string)
-			behavior,    ok4 := arguments["behavior"].(string)
+			behavior, ok4 := arguments["behavior"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
 				return tool.DefineFunc(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(declaration), utils_fmt.FormatSingleLine(behavior))
@@ -71,10 +71,10 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 		} else if method == "DefineInterface" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			declaration, ok3 := arguments["declaration"].(string)
-			behavior,    ok4 := arguments["behavior"].(string)
+			behavior, ok4 := arguments["behavior"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
 				return tool.DefineInterface(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatMultiLine(declaration), utils_fmt.FormatSingleLine(behavior))
@@ -92,10 +92,10 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 		} else if method == "DefineStruct" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			declaration, ok3 := arguments["declaration"].(string)
-			behavior,    ok4 := arguments["behavior"].(string)
+			behavior, ok4 := arguments["behavior"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
 				return tool.DefineStruct(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatMultiLine(declaration), utils_fmt.FormatSingleLine(behavior))
@@ -113,10 +113,10 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 		} else if method == "DefineType" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			declaration, ok3 := arguments["declaration"].(string)
-			behavior,    ok4 := arguments["behavior"].(string)
+			behavior, ok4 := arguments["behavior"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true && ok4 == true {
 				return tool.DefineType(utils_fmt.FormatFilePath(path), utils_fmt.FormatSymbol(symbol), utils_fmt.FormatSingleLine(declaration), utils_fmt.FormatSingleLine(behavior))
@@ -134,7 +134,7 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 		} else if method == "Search" {
 
-			path,   ok1 := arguments["path"].(string)
+			path, ok1 := arguments["path"].(string)
 			symbol, ok2 := arguments["symbol"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -149,7 +149,7 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 		} else if method == "Signoff" {
 
-			path,   ok1 := arguments["path"].(string)
+			path, ok1 := arguments["path"].(string)
 			symbol, ok2 := arguments["symbol"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -174,7 +174,7 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 
 func (tool *Requirements) GetContent(id string) (any, error) {
 
-	path       := utils_fmt.FormatFilePath(id)
+	path := utils_fmt.FormatFilePath(id)
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err1 == nil {
@@ -707,4 +707,3 @@ func (tool *Requirements) Search(path string, symbol string) (string, error) {
 	}
 
 }
-

@@ -12,7 +12,7 @@ var ProgramsSchema []schemas.Tool
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err    := json.Unmarshal(programs_json, &schema)
+	err := json.Unmarshal(programs_json, &schema)
 
 	if err == nil {
 		ProgramsSchema = schema

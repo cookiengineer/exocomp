@@ -23,4 +23,3 @@ type ToolFunctionParameterProperty struct {
 	Enum        []string                       `json:"enum,omitempty"`
 	Items       *ToolFunctionParameterProperty `json:"items,omitempty"`
 }
-

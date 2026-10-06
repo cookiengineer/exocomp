@@ -30,4 +30,3 @@ func writeFunc(source []byte, fileset *token.FileSet, file *ast.File, symbol str
 	return source, false
 
 }
-

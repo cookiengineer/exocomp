@@ -12,7 +12,7 @@ var HumansSchema []schemas.Tool
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err    := json.Unmarshal(humans_json, &schema)
+	err := json.Unmarshal(humans_json, &schema)
 
 	if err == nil {
 		HumansSchema = schema

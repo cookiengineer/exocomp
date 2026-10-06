@@ -8,8 +8,8 @@ func TestConfig_ResolvePricing_FromProvider(t *testing.T) {
 	config := &Config{
 		Providers: map[string]Provider{
 			"deepseek-v4-pro:cloud": {
-				Model:  "deepseek-v4-pro:cloud",
-				Alias:  "deepseek-v4-pro",
+				Model: "deepseek-v4-pro:cloud",
+				Alias: "deepseek-v4-pro",
 				Pricing: Pricing{
 					InputPrice:       1.32,
 					OutputPrice:      3.96,

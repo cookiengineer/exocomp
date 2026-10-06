@@ -43,7 +43,7 @@ func handle_process_json_line(tool *Agents, name string, line []byte) {
 
 	if strings.HasPrefix(text, "schemas.Message:") {
 
-		buffer  := []byte(text[16:])
+		buffer := []byte(text[16:])
 		message := schemas.Message{}
 
 		err := json.Unmarshal(buffer, &message)
@@ -61,7 +61,7 @@ func handle_process_json_line(tool *Agents, name string, line []byte) {
 	} else if strings.HasPrefix(text, "types.ContextUsage:") {
 
 		buffer := []byte(text[19:])
-		usage  := types.ContextUsage{}
+		usage := types.ContextUsage{}
 
 		err := json.Unmarshal(buffer, &usage)
 
@@ -222,8 +222,8 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 
 		} else if method == "Hire" {
 
-			role,    ok1 := arguments["role"].(string)
-			prompt,  ok2 := arguments["prompt"].(string)
+			role, ok1 := arguments["role"].(string)
+			prompt, ok2 := arguments["prompt"].(string)
 			sandbox, ok3 := arguments["sandbox"].(string)
 
 			if ok1 == true && role == "planner" {
@@ -421,7 +421,6 @@ func (tool *Agents) List() (string, error) {
 	len_content = len(tool.contents)
 	tool.mutex.Unlock()
 
-
 	if len_content > 0 {
 
 		lines := make([]string, 0)
@@ -577,7 +576,7 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 					}
 
 					tool.mutex.Lock()
-					tool.contents[name]  = agent
+					tool.contents[name] = agent
 					tool.processes[name] = process
 					tool.mutex.Unlock()
 
@@ -617,7 +616,7 @@ func (tool *Agents) Fire(name string) (string, error) {
 
 	tool.mutex.Lock()
 	process, running := tool.processes[name]
-	agent, ok     := tool.contents[name]
+	agent, ok := tool.contents[name]
 
 	if ok == true && running == true {
 		agent.Status = "fired"
@@ -710,7 +709,7 @@ func (tool *Agents) Inquire(name string) (string, error) {
 
 				if len(lines) > 0 {
 
-					line    := strings.TrimSpace(lines[len(lines) - 1])
+					line := strings.TrimSpace(lines[len(lines)-1])
 					summary := schemas.Message{}
 
 					if strings.HasPrefix(line, "schemas.Message:") {
@@ -860,4 +859,3 @@ func (tool *Agents) SetAgent(agent *types.Agent) bool {
 	return false
 
 }
-

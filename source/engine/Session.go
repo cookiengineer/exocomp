@@ -84,7 +84,7 @@ func ParseSession(data []byte) (*Session, error) {
 	if len(data) > 2 && data[0] == '{' && data[len(data)-1] == '}' {
 
 		session := Session{}
-		err     := json.Unmarshal(data, &session)
+		err := json.Unmarshal(data, &session)
 
 		if err == nil {
 			return &session, nil
@@ -121,7 +121,7 @@ func RestoreSession(playground string, backup Session) *Session {
 		if backup.Config.Playground == backup.Config.Sandbox {
 
 			session.Config.Playground = playground
-			session.Config.Sandbox    = playground
+			session.Config.Sandbox = playground
 
 		} else {
 
@@ -129,7 +129,7 @@ func RestoreSession(playground string, backup Session) *Session {
 
 			if err3 == nil {
 				session.Config.Playground = playground
-				session.Config.Sandbox    = filepath.Join(playground, relative_sandbox)
+				session.Config.Sandbox = filepath.Join(playground, relative_sandbox)
 			}
 
 		}
@@ -175,7 +175,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 		if name == "humans" && method == "Answer" {
 
 			found_tool_calls := make([]schemas.ToolCall, 0)
-			found_index      := int(-1)
+			found_index := int(-1)
 
 			session.mutex.Lock()
 
@@ -209,8 +209,8 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 				for _, tool_call := range found_tool_calls {
 
-					tool_call_name,      err1 := tool_call.GetName()
-					tool_call_id,        err2 := tool_call.GetID()
+					tool_call_name, err1 := tool_call.GetName()
+					tool_call_id, err2 := tool_call.GetID()
 					tool_call_arguments, err3 := tool_call.GetArguments()
 
 					if err1 == nil && err2 == nil && err3 == nil {
@@ -274,9 +274,9 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 			if err0 == nil {
 
-				skill_name,    ok1  := arguments["name"].(string)
+				skill_name, ok1 := arguments["name"].(string)
 				skill_content, err1 := tool.GetContent(skill_name)
-				skill,         ok2  := skill_content.(*types.Skill)
+				skill, ok2 := skill_content.(*types.Skill)
 
 				if ok1 == true && err1 == nil && ok2 == true {
 
@@ -319,9 +319,9 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 			if err0 == nil {
 
-				skill_name,    ok1  := arguments["name"].(string)
+				skill_name, ok1 := arguments["name"].(string)
 				skill_content, err1 := tool.GetContent(skill_name)
-				skill,         ok2  := skill_content.(*types.Skill)
+				skill, ok2 := skill_content.(*types.Skill)
 
 				if ok1 == true && err1 == nil && ok2 == true {
 
@@ -391,7 +391,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 		args_blob, _ := json.Marshal(arguments)
 		json_blob, _ := json.Marshal(schemas.ToolCall{
-			Type:     "function",
+			Type: "function",
 			Function: schemas.ToolCallFunction{
 				Name:         name,
 				ArgumentsRaw: args_blob,
@@ -400,8 +400,8 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 		session.mutex.Lock()
 		tmp := &schemas.Message{
-			Role:       "tool",
-			Content:    strings.Join([]string{
+			Role: "tool",
+			Content: strings.Join([]string{
 				fmt.Sprintf("Error: %s.%s: Tool does not exist or is not allowed.", name, method),
 				"",
 				string(json_blob),
@@ -421,7 +421,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 func (session *Session) GetAdapter(search string) types.Adapter {
 
-	name        := strings.ToLower(search)
+	name := strings.ToLower(search)
 	adapter, ok := session.adapters[name]
 
 	if ok == true {
@@ -493,7 +493,7 @@ func (session *Session) GetTool(search string) types.Tool {
 		tmp1 := strings.TrimSpace(search[0:strings.Index(search, ".")])
 		tmp2 := strings.TrimSpace(search[strings.Index(search, ".")+1:])
 
-		name   := strings.ToLower(tmp1)
+		name := strings.ToLower(tmp1)
 		method := strings.ToUpper(tmp2[0:1]) + strings.ToLower(tmp2[1:])
 
 		tool, ok := session.tools[name]
@@ -508,7 +508,7 @@ func (session *Session) GetTool(search string) types.Tool {
 
 	} else {
 
-		name     := strings.ToLower(search)
+		name := strings.ToLower(search)
 		tool, ok := session.tools[name]
 
 		if ok == true {
@@ -555,9 +555,9 @@ func (session *Session) GetToolSchemas() []schemas.Tool {
 
 func (session *Session) LoadSkill(name string, skill *types.Skill) error {
 
-	index            := int(-1)
+	index := int(-1)
 	missing_programs := make([]string, 0)
-	missing_tools    := make([]string, 0)
+	missing_tools := make([]string, 0)
 
 	session.mutex.Lock()
 
@@ -622,7 +622,7 @@ func (session *Session) LoadSkill(name string, skill *types.Skill) error {
 		if len(missing_tools) == 0 {
 
 			system_messages := make([]*schemas.Message, 0)
-			other_messages  := make([]*schemas.Message, 0)
+			other_messages := make([]*schemas.Message, 0)
 
 			session.mutex.Lock()
 
@@ -677,9 +677,9 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 			for _, tool_call := range response.ToolCalls {
 
-				tool_id,        err0 := tool_call.GetID()
-				tool_name,      err1 := tool_call.GetName()
-				tool_method,    err2 := tool_call.GetMethod()
+				tool_id, err0 := tool_call.GetID()
+				tool_name, err1 := tool_call.GetName()
+				tool_method, err2 := tool_call.GetMethod()
 				tool_arguments, err3 := tool_call.GetArguments()
 
 				if err0 == nil && err1 == nil && err2 == nil && err3 == nil {
@@ -808,7 +808,7 @@ func (session *Session) UnloadSkill(name string, skill *types.Skill) error {
 	if index != -1 {
 
 		system_messages := make([]*schemas.Message, 0)
-		other_messages  := make([]*schemas.Message, 0)
+		other_messages := make([]*schemas.Message, 0)
 
 		session.mutex.Lock()
 
@@ -841,7 +841,7 @@ func (session *Session) UnloadSkill(name string, skill *types.Skill) error {
 func (session *Session) infer_chat_completions() error {
 
 	// NOTE: Resolve provider-specific URLs, model aliases and tokens
-	resolved_url   := session.Config.ResolveURL(session.Agent.Model, "/chat/completions")
+	resolved_url := session.Config.ResolveURL(session.Agent.Model, "/chat/completions")
 	resolved_model := session.Config.ResolveModel(session.Agent.Model)
 	resolved_token := session.Config.ResolveToken(session.Agent.Model)
 
@@ -915,19 +915,19 @@ func (session *Session) infer_chat_completions() error {
 
 						if chat_response.Usage != nil && chat_response.Usage.TotalTokens != 0 {
 
-							session.Agent.ContextUsage.Tokens           = chat_response.Usage.PromptTokens
-							session.Agent.ContextUsage.PromptTokens     += chat_response.Usage.PromptTokens
+							session.Agent.ContextUsage.Tokens = chat_response.Usage.PromptTokens
+							session.Agent.ContextUsage.PromptTokens += chat_response.Usage.PromptTokens
 							session.Agent.ContextUsage.CompletionTokens += chat_response.Usage.CompletionTokens
-							session.Agent.ContextUsage.TotalTokens      += chat_response.Usage.TotalTokens
+							session.Agent.ContextUsage.TotalTokens += chat_response.Usage.TotalTokens
 
 							pricing, has_pricing := session.Config.ResolvePricing(session.Agent.Model)
 
 							if has_pricing == true {
 
 								cached_tokens := chat_response.Usage.PromptTokensDetails.CachedTokens
-								input_tokens  := chat_response.Usage.PromptTokens
+								input_tokens := chat_response.Usage.PromptTokens
 								output_tokens := chat_response.Usage.CompletionTokens
-								cost          := 0.0
+								cost := 0.0
 
 								if cached_tokens > 0 && pricing.CachedInputPrice > 0 {
 
@@ -1020,4 +1020,3 @@ func (session *Session) infer_chat_completions() error {
 	}
 
 }
-

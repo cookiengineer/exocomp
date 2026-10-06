@@ -21,7 +21,7 @@ func NewRenderer(session *engine.Session) *Renderer {
 	resetline := ""
 
 	// prepare reset line string
-	for r := 0; r < len(session.Config.Model) + 14; r++ {
+	for r := 0; r < len(session.Config.Model)+14; r++ {
 		resetline += " "
 	}
 
@@ -89,10 +89,10 @@ func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 			continue
 		}
 
-		color   := ColorReset
-		role    := message.Role
+		color := ColorReset
+		role := message.Role
 		content := formatContent(message.Content)
-		limit   := len(content)
+		limit := len(content)
 
 		switch message.Role {
 		case "user":
@@ -116,7 +116,7 @@ func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 
 			if len(content) > 1 {
 
-				resetline := renderer.resetline[0:len(renderer.resetline) - len(role) - 3]
+				resetline := renderer.resetline[0 : len(renderer.resetline)-len(role)-3]
 
 				fmt.Fprintf(os.Stdout, "\r%s[%s]%s:%s\n", color, role, ColorReset, resetline)
 
@@ -131,8 +131,8 @@ func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 
 				resetline := ""
 
-				if len(content[0]) < len(renderer.resetline) - 4 {
-					resetline = renderer.resetline[0:len(renderer.resetline) - len(content[0]) - 4]
+				if len(content[0]) < len(renderer.resetline)-4 {
+					resetline = renderer.resetline[0 : len(renderer.resetline)-len(content[0])-4]
 				}
 
 				fmt.Fprintf(os.Stdout, "\r%s[%s]%s: %s%s\n", color, role, ColorReset, content[0], resetline)
@@ -152,7 +152,7 @@ func (renderer *Renderer) RenderPrompt() {
 
 	model := "unknown"
 	usage := float64(0.0)
-	cost  := float64(0.0)
+	cost := float64(0.0)
 
 	if renderer.Session != nil && renderer.Session.Config != nil {
 		model = renderer.Session.Config.Model
@@ -167,7 +167,7 @@ func (renderer *Renderer) RenderPrompt() {
 
 	}
 
-	percentage := fmt.Sprintf("%3d%%", int(usage + 0.5))
+	percentage := fmt.Sprintf("%3d%%", int(usage+0.5))
 	cost_label := ""
 
 	if cost > 0 {

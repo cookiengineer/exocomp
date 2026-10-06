@@ -22,7 +22,7 @@ func GetContextLength(base_url *url.URL, model string) int {
 
 			if endpoint != nil {
 
-				client        := &http.Client{}
+				client := &http.Client{}
 				request, err1 := http.NewRequest(http.MethodGet, endpoint.String(), nil)
 
 				if err1 == nil {
@@ -38,7 +38,7 @@ func GetContextLength(base_url *url.URL, model string) int {
 						if err3 == nil {
 
 							schema := RunningModelsResponse{}
-							err4   := json.Unmarshal(response_payload, &schema)
+							err4 := json.Unmarshal(response_payload, &schema)
 
 							if err4 == nil {
 								context_lengths[model] = schema.ContextLength(model)
@@ -60,7 +60,7 @@ func GetContextLength(base_url *url.URL, model string) int {
 
 			if endpoint != nil {
 
-				client          := &http.Client{}
+				client := &http.Client{}
 				request_body, _ := json.Marshal(ShowRequest{
 					Name: model,
 				})
@@ -81,7 +81,7 @@ func GetContextLength(base_url *url.URL, model string) int {
 						if err3 == nil {
 
 							schema := ShowResponse{}
-							err4   := json.Unmarshal(response_payload, &schema)
+							err4 := json.Unmarshal(response_payload, &schema)
 
 							if err4 == nil {
 								context_lengths[model] = schema.ContextLength()

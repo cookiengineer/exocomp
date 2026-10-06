@@ -31,7 +31,6 @@ func (response *ModelsResponse) OwnedBy() string {
 
 }
 
-
 func (response *ModelsResponse) ContextLength(model_name string) int {
 
 	result := int(0)

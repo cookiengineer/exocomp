@@ -29,12 +29,12 @@ func TestWebsites_List(t *testing.T) {
 func TestWebsites_Fetch_Markdown(t *testing.T) {
 
 	var got_user_agent string
-	var got_sec_ch_ua  string
+	var got_sec_ch_ua string
 
 	server := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 
 		got_user_agent = request.Header.Get("User-Agent")
-		got_sec_ch_ua  = request.Header.Get("Sec-CH-UA")
+		got_sec_ch_ua = request.Header.Get("Sec-CH-UA")
 
 		response.Header().Set("Content-Type", "text/html")
 
@@ -144,4 +144,3 @@ func TestWebsites_Stat(t *testing.T) {
 	}
 
 }
-

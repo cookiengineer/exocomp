@@ -30,11 +30,11 @@ func init() {
 		"Windows",
 		false,
 		map[string]string{
-			"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-			"Accept-Language":           "en-US,en;q=0.9",
-			"Sec-CH-UA":                 `"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`,
-			"Sec-CH-UA-Mobile":          "?0",
-			"Sec-CH-UA-Platform":        `"Windows"`,
+			"Accept":                     "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+			"Accept-Language":            "en-US,en;q=0.9",
+			"Sec-CH-UA":                  `"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`,
+			"Sec-CH-UA-Mobile":           "?0",
+			"Sec-CH-UA-Platform":         `"Windows"`,
 			"Sec-CH-UA-Platform-Version": `"15.0.0"`,
 		},
 	))
@@ -45,11 +45,11 @@ func init() {
 		"macOS",
 		false,
 		map[string]string{
-			"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-			"Accept-Language":           "en-US,en;q=0.9",
-			"Sec-CH-UA":                 `"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`,
-			"Sec-CH-UA-Mobile":          "?0",
-			"Sec-CH-UA-Platform":        `"macOS"`,
+			"Accept":                     "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+			"Accept-Language":            "en-US,en;q=0.9",
+			"Sec-CH-UA":                  `"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`,
+			"Sec-CH-UA-Mobile":           "?0",
+			"Sec-CH-UA-Platform":         `"macOS"`,
 			"Sec-CH-UA-Platform-Version": `"14.3.1"`,
 		},
 	))
@@ -60,11 +60,11 @@ func init() {
 		"Linux",
 		false,
 		map[string]string{
-			"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-			"Accept-Language":           "en-US,en;q=0.9",
-			"Sec-CH-UA":                 `"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`,
-			"Sec-CH-UA-Mobile":          "?0",
-			"Sec-CH-UA-Platform":        `"Linux"`,
+			"Accept":                     "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+			"Accept-Language":            "en-US,en;q=0.9",
+			"Sec-CH-UA":                  `"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`,
+			"Sec-CH-UA-Mobile":           "?0",
+			"Sec-CH-UA-Platform":         `"Linux"`,
 			"Sec-CH-UA-Platform-Version": `"6.6.0"`,
 		},
 	))
@@ -75,11 +75,11 @@ func init() {
 		"Android",
 		true,
 		map[string]string{
-			"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-			"Accept-Language":           "en-US,en;q=0.9",
-			"Sec-CH-UA":                 `"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`,
-			"Sec-CH-UA-Mobile":          "?1",
-			"Sec-CH-UA-Platform":        `"Android"`,
+			"Accept":                     "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+			"Accept-Language":            "en-US,en;q=0.9",
+			"Sec-CH-UA":                  `"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`,
+			"Sec-CH-UA-Mobile":           "?1",
+			"Sec-CH-UA-Platform":         `"Android"`,
 			"Sec-CH-UA-Platform-Version": `"14.0.0"`,
 		},
 	))
@@ -128,4 +128,3 @@ func init() {
 	))
 
 }
-

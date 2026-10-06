@@ -9,7 +9,7 @@ func CheckRoot() error {
 
 	var token windows.Token
 
-	err0  := windows.OpenProcessToken(windows.CurrentProcess(), windows.TOKEN_QUERY, &token)
+	err0 := windows.OpenProcessToken(windows.CurrentProcess(), windows.TOKEN_QUERY, &token)
 
 	if err0 == nil {
 

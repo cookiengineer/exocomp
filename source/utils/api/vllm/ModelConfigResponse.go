@@ -3,7 +3,6 @@ package vllm
 import "strings"
 
 type ModelConfigResponse struct {
-
 	Model           string `json:"model"`
 	MaxModelLength  int    `json:"max_model_len"`
 	Tokenizer       string `json:"tokenizer"`
@@ -12,7 +11,6 @@ type ModelConfigResponse struct {
 	DType           string `json:"dtype"`
 	LoadFormat      string `json:"load_format"`
 	ServedModelName string `json:"served_model_name"`
-
 }
 
 func (response *ModelConfigResponse) ContextLength(model_name string) int {

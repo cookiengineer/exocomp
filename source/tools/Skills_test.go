@@ -44,7 +44,7 @@ func main() {
 func newTestSkills(t *testing.T, name string, description string) *Skills {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-skills-*")
-	sandbox       := playground
+	sandbox := playground
 
 	createTestSkill(t, playground, name, description)
 

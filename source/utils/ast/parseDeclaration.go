@@ -69,4 +69,3 @@ func parseDeclaration(declaration string, declaration_type string) (string, stri
 	return "", ""
 
 }
-

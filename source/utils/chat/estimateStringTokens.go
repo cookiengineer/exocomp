@@ -6,7 +6,7 @@ func estimateStringTokens(str string, chars_per_token float64) int {
 
 	if str != "" {
 
-		tmp    := strings.TrimSpace(str)
+		tmp := strings.TrimSpace(str)
 		tokens := int(float64(len(tmp)) / chars_per_token)
 
 		if tokens > 0 {

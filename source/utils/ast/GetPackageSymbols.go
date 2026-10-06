@@ -22,7 +22,7 @@ func GetPackageSymbols(folder string, with_private bool) map[string]map[string]*
 				relative, rel_err := filepath.Rel(folder, path)
 
 				if rel_err == nil {
-					result[folder + "/" + relative] = getFileSymbols(file, fileset, with_private)
+					result[folder+"/"+relative] = getFileSymbols(file, fileset, with_private)
 				}
 
 			}

@@ -21,7 +21,7 @@ func init() {
 		for _, entry := range entries {
 
 			name := entry.Name()
-			ext  := filepath.Ext(name)
+			ext := filepath.Ext(name)
 
 			if ext == ".yaml" {
 

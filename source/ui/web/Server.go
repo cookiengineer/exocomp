@@ -89,7 +89,7 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 
 	}
 
-	tool   := session.GetTool("agents.List")
+	tool := session.GetTool("agents.List")
 	agents := recovery.RestoreAgents()
 
 	if tool != nil && len(agents) > 0 {
@@ -221,7 +221,7 @@ func (server *Server) Destroy() {
 
 func (server *Server) EnableHotReload() error {
 
-	dir_fs     := os.DirFS("ui/web")
+	dir_fs := os.DirFS("ui/web")
 	fsys, err0 := fs.Sub(dir_fs, "public")
 
 	if err0 == nil {
@@ -260,9 +260,9 @@ func (server *Server) Init() {
 		err := server.Listen()
 
 		if err != nil {
-			signals<-syscall.SIGABRT
+			signals <- syscall.SIGABRT
 		} else {
-			signals<-syscall.SIGTERM
+			signals <- syscall.SIGTERM
 		}
 
 	}()
@@ -366,7 +366,6 @@ func (server *Server) Listen() error {
 		routes_session.Tools(server.Session, request, response)
 	})
 
-
 	// Session Interaction
 	http.HandleFunc("/api/session/calltool", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.CallTool(server.Session, request, response)
@@ -376,8 +375,6 @@ func (server *Server) Listen() error {
 		routes_session.SendChatRequest(server.Session, request, response)
 	})
 
-
-	return http.ListenAndServe(":" + server.URL.Port(), nil)
+	return http.ListenAndServe(":"+server.URL.Port(), nil)
 
 }
-

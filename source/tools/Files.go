@@ -37,7 +37,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 		if method == "Copy" {
 
 			from_path, ok1 := arguments["from_path"].(string)
-			to_path,   ok2 := arguments["to_path"].(string)
+			to_path, ok2 := arguments["to_path"].(string)
 
 			if ok1 == true && ok2 == true {
 				return tool.Copy(utils_fmt.FormatFilePath(from_path), utils_fmt.FormatFilePath(to_path))
@@ -81,7 +81,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 
 		} else if method == "Search" {
 
-			path,  ok1 := arguments["path"].(string)
+			path, ok1 := arguments["path"].(string)
 			query, ok2 := arguments["query"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -96,7 +96,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 
 		} else if method == "ReadSymbol" {
 
-			path,   ok1 := arguments["path"].(string)
+			path, ok1 := arguments["path"].(string)
 			symbol, ok2 := arguments["symbol"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -111,8 +111,8 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 
 		} else if method == "WriteSymbol" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			declaration, ok3 := arguments["declaration"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true {
@@ -129,7 +129,7 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 
 		} else if method == "Write" {
 
-			path,    ok1 := arguments["path"].(string)
+			path, ok1 := arguments["path"].(string)
 			content, ok2 := arguments["content"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -240,8 +240,8 @@ func (tool *Files) List(path string) (string, error) {
 
 					for _, entry := range entries {
 
-						name      := entry.Name()
-						path, err := sanitizeSandboxPath(tool.Sandbox, resolved + "/" + name)
+						name := entry.Name()
+						path, err := sanitizeSandboxPath(tool.Sandbox, resolved+"/"+name)
 
 						if err == nil && strings.HasPrefix(name, ".") == false {
 

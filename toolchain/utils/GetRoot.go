@@ -26,4 +26,3 @@ func GetRoot() (string, error) {
 	}
 
 }
-

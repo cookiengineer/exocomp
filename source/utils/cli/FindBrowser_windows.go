@@ -26,15 +26,15 @@ func FindBrowser() (string, error) {
 	}
 
 	// 2. Common install locations fallback
-	program_files     := os.Getenv("ProgramFiles")
+	program_files := os.Getenv("ProgramFiles")
 	program_files_x86 := os.Getenv("ProgramFiles(x86)")
-	local_app_data    := os.Getenv("LocalAppData")
+	local_app_data := os.Getenv("LocalAppData")
 
 	paths := []string{
-		filepath.Join(program_files,     "Google/Chrome/Application/chrome.exe"),
+		filepath.Join(program_files, "Google/Chrome/Application/chrome.exe"),
 		filepath.Join(program_files_x86, "Google/Chrome/Application/chrome.exe"),
-		filepath.Join(program_files,     "Microsoft/Edge/Application/msedge.exe"),
-		filepath.Join(local_app_data,    "Chromium/Application/chrome.exe"),
+		filepath.Join(program_files, "Microsoft/Edge/Application/msedge.exe"),
+		filepath.Join(local_app_data, "Chromium/Application/chrome.exe"),
 	}
 
 	for _, path := range paths {

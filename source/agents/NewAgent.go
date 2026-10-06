@@ -83,7 +83,7 @@ func NewAgent(config *types.Config) *types.Agent {
 			Sandbox:         config.Sandbox,
 			Status:          status,
 			StartedAt:       schemas.NewDatetime(),
-			FinishedAt:      schemas.Datetime{
+			FinishedAt: schemas.Datetime{
 				Time: time.Time{},
 			},
 		}
@@ -95,4 +95,3 @@ func NewAgent(config *types.Config) *types.Agent {
 	}
 
 }
-

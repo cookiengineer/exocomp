@@ -23,7 +23,7 @@ func CheckModel(api_url *url.URL, model_name string) error {
 			if err2 == nil {
 
 				schema := schemas.ModelsResponse{}
-				err3   := json.Unmarshal(response_payload, &schema)
+				err3 := json.Unmarshal(response_payload, &schema)
 
 				if err3 == nil {
 

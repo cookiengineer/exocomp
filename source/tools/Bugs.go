@@ -46,8 +46,8 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 
 		} else if method == "Add" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			description, ok3 := arguments["description"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true {
@@ -64,7 +64,7 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 
 		} else if method == "Fix" {
 
-			path,   ok1 := arguments["path"].(string)
+			path, ok1 := arguments["path"].(string)
 			symbol, ok2 := arguments["symbol"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -79,7 +79,7 @@ func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string,
 
 		} else if method == "Search" {
 
-			path,   ok1 := arguments["path"].(string)
+			path, ok1 := arguments["path"].(string)
 			symbol, ok2 := arguments["symbol"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -146,7 +146,7 @@ func (tool *Bugs) Add(path string, symbol string, description string) (string, e
 
 				bug_report := tool.contents[internal_path][symbol]
 				bug_report.Description = description
-				bug_report.IsFixed     = false
+				bug_report.IsFixed = false
 				tool.contents[internal_path][symbol] = bug_report
 
 				err3 := writeBugs(tool)
@@ -223,7 +223,7 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 
 func (tool *Bugs) GetContent(id string) (any, error) {
 
-	path       := utils_fmt.FormatFilePath(id)
+	path := utils_fmt.FormatFilePath(id)
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err1 == nil {
@@ -367,7 +367,7 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 			if symbol != "" {
 
-				lines  := make([]string, 0)
+				lines := make([]string, 0)
 
 				tool.mutex.RLock()
 

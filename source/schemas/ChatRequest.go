@@ -9,4 +9,3 @@ type ChatRequest struct {
 	ToolChoice  string     `json:"tool_choice"`
 	Options     *Options   `json:"options,omitempty"`
 }
-

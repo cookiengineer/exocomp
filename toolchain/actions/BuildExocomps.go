@@ -7,8 +7,8 @@ import "path/filepath"
 
 func BuildExocomps(base_dir string, operating_system string) {
 
-	build_dir    := filepath.Join(base_dir, "build")
-	source_dir   := filepath.Join(base_dir, "source")
+	build_dir := filepath.Join(base_dir, "build")
+	source_dir := filepath.Join(base_dir, "source")
 	exocomps_dir := filepath.Join(base_dir, "installer", "assets", "exocomps")
 
 	err01 := os.MkdirAll(filepath.Join(build_dir, operating_system), 0755)
@@ -55,7 +55,7 @@ func BuildExocomps(base_dir string, operating_system string) {
 
 		for _, build := range builds {
 
-			err     := utils.Build(source_dir, build.source, build.output, []string{}, operating_system)
+			err := utils.Build(source_dir, build.source, build.output, []string{}, operating_system)
 			path, _ := filepath.Rel(base_dir, build.output)
 
 			if err == nil {

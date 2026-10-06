@@ -28,8 +28,8 @@ func readSkills(tool *Skills) error {
 
 					if skill_entry.IsDir() {
 
-						skill_name       := skill_entry.Name()
-						skill_path       := filepath.Join(tool.Playground, "skills", skill_name, "SKILL.md")
+						skill_name := skill_entry.Name()
+						skill_path := filepath.Join(tool.Playground, "skills", skill_name, "SKILL.md")
 						skill_stat, err1 := os.Stat(skill_path)
 
 						if err1 == nil && skill_stat.IsDir() == false {
@@ -42,7 +42,7 @@ func readSkills(tool *Skills) error {
 
 								if err3 == nil {
 
-									scripts_path       := filepath.Join(tool.Playground, "skills", skill_name, "scripts")
+									scripts_path := filepath.Join(tool.Playground, "skills", skill_name, "scripts")
 									scripts_stat, err4 := os.Stat(scripts_path)
 
 									if err4 == nil && scripts_stat.IsDir() {

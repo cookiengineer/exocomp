@@ -8,7 +8,7 @@ import "path/filepath"
 func BuildPrograms(base_dir string, operating_system string) {
 
 	programs_dir := filepath.Join(base_dir, "installer", "assets", "programs")
-	vendor_dir   := filepath.Join(base_dir, "vendor")
+	vendor_dir := filepath.Join(base_dir, "vendor")
 
 	err01 := os.MkdirAll(programs_dir, 0755)
 	err02 := os.MkdirAll(vendor_dir, 0755)
@@ -67,7 +67,7 @@ func BuildPrograms(base_dir string, operating_system string) {
 
 		for _, build := range builds {
 
-			err     := utils.Build(build.folder, build.source, build.output, []string{}, operating_system)
+			err := utils.Build(build.folder, build.source, build.output, []string{}, operating_system)
 			path, _ := filepath.Rel(base_dir, build.output)
 
 			if err == nil {

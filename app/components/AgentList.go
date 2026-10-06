@@ -21,6 +21,8 @@ type AgentList struct {
 	Component *components.Component       `json:"component"`
 	Active    string                      `json:"active"`
 	Agents    map[string]*app_types.Agent `json:"-"`
+
+	on_click *dom.EventListener `json:"-"`
 }
 
 func NewAgentList() AgentList {
@@ -84,7 +86,7 @@ func (list *AgentList) Mount() bool {
 
 		list.Component.InitEvent("change-agent")
 
-		list.Component.Element.AddEventListener(dom.EventType("click"), dom.ToEventListener(func(event *dom.Event) {
+		list.on_click = dom.ToEventListener(func(event *dom.Event) {
 
 			if event.Target == nil {
 				return
@@ -103,7 +105,9 @@ func (list *AgentList) Mount() bool {
 			event.PreventDefault()
 			event.StopPropagation()
 
-		}))
+		})
+
+		list.Component.Element.AddEventListener(dom.EventType("click"), list.on_click)
 
 		return true
 
@@ -220,7 +224,12 @@ func (list *AgentList) String() string {
 func (list *AgentList) Unmount() bool {
 
 	if list.Component.Element != nil {
-		list.Component.Element.RemoveEventListener(dom.EventType("click"), nil)
+
+		if list.on_click != nil {
+			list.Component.Element.RemoveEventListener(dom.EventType("click"), list.on_click)
+			list.on_click = nil
+		}
+
 	}
 
 	return true

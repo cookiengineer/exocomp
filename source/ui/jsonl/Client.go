@@ -24,7 +24,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	// NOTE: Session Recovery managed by Agents Tool
 
-	session  := engine.NewSession(agent, config)
+	session := engine.NewSession(agent, config)
 	renderer := NewRenderer(session)
 
 	if agent.HasTools() {
@@ -253,7 +253,7 @@ func (client *Client) InputLoop() {
 
 	for scanner.Scan() {
 
-		role   := client.role
+		role := client.role
 		prompt := strings.TrimSpace(scanner.Text())
 
 		if prompt != "" && client.Session != nil {
@@ -270,7 +270,7 @@ func (client *Client) InputLoop() {
 
 				} else if strings.HasPrefix(prompt, "{") && strings.HasSuffix(prompt, "}") {
 
-					tmp  := schemas.Message{}
+					tmp := schemas.Message{}
 					err1 := json.Unmarshal([]byte(prompt), &tmp)
 
 					if err1 == nil && role == tmp.Role {
@@ -305,7 +305,7 @@ func (client *Client) InputLoop() {
 func (client *Client) ContextUsageLoop() {
 
 	last_tokens := 0
-	heartbeat   := time.NewTicker(15 * time.Second)
+	heartbeat := time.NewTicker(15 * time.Second)
 	defer heartbeat.Stop()
 
 	for {

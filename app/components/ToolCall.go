@@ -377,10 +377,6 @@ func (popover *ToolCall) String() string {
 
 func (popover *ToolCall) Unmount() bool {
 
-	if popover.Component.Element != nil {
-		popover.Component.RemoveEventListener("suggest", nil)
-	}
-
 	return true
 
 }

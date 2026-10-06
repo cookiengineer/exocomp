@@ -122,10 +122,10 @@ type Parser interface {
 func TestGetSymbol_BasicTypes(t *testing.T) {
 
 	tests := []struct {
-		source          string
-		symbol          string
+		source           string
+		symbol           string
 		declaration_type string
-		want            string
+		want             string
 	}{
 		{"package dummy\ntype MyByte uint8", "MyByte", "uint8", "type MyByte uint8"},
 		{"package dummy\ntype MyString string", "MyString", "string", "type MyString string"},

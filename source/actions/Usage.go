@@ -9,16 +9,16 @@ import "strings"
 
 func Usage(options_mode []string) {
 
-	default_mode        := "unset"
-	default_name        := strconv.Quote("Peanut Hamper")
-	default_role        := strconv.Quote("planner")
-	default_model       := strconv.Quote("deepseek-v4-pro:cloud")
-	default_prompt      := "unset"
+	default_mode := "unset"
+	default_name := strconv.Quote("Peanut Hamper")
+	default_role := strconv.Quote("planner")
+	default_model := strconv.Quote("deepseek-v4-pro:cloud")
+	default_prompt := "unset"
 	default_temperature := "unset"
-	default_sandbox     := "current working directory"
-	default_url         := strconv.Quote("http://localhost:11434/v1")
+	default_sandbox := "current working directory"
+	default_url := strconv.Quote("http://localhost:11434/v1")
 
-	options_role  := make([]string, 0)
+	options_role := make([]string, 0)
 	options_model := []string{
 		strconv.Quote("deepseek-v4-pro:cloud"),
 		strconv.Quote("huihui_ai/Qwen3.6-abliterated:35b"),
@@ -41,34 +41,34 @@ func Usage(options_mode []string) {
 	fmt.Fprint(os.Stdout, "Arguments:\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  <mode> string          UI type\n")
-	fmt.Fprint(os.Stdout, "                         (options: " + strings.Join(options_mode, ", ") + ")\n")
-	fmt.Fprint(os.Stdout, "                         (default: " + default_mode + ")\n")
+	fmt.Fprint(os.Stdout, "                         (options: "+strings.Join(options_mode, ", ")+")\n")
+	fmt.Fprint(os.Stdout, "                         (default: "+default_mode+")\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "Flags:\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  --name string          LLM agent name\n")
-	fmt.Fprint(os.Stdout, "                         (default: " + default_name + ")\n")
+	fmt.Fprint(os.Stdout, "                         (default: "+default_name+")\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  --role string          LLM agent role\n")
-	fmt.Fprint(os.Stdout, "                         (options: " + strings.Join(options_role, ", ") + ")\n")
-	fmt.Fprint(os.Stdout, "                         (default: " + default_role + ")\n")
+	fmt.Fprint(os.Stdout, "                         (options: "+strings.Join(options_role, ", ")+")\n")
+	fmt.Fprint(os.Stdout, "                         (default: "+default_role+")\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  --model string         LLM agent model\n")
-	fmt.Fprint(os.Stdout, "                         (options: " + strings.Join(options_model, ", ") + ")\n")
-	fmt.Fprint(os.Stdout, "                         (default: " + default_model + ")\n")
+	fmt.Fprint(os.Stdout, "                         (options: "+strings.Join(options_model, ", ")+")\n")
+	fmt.Fprint(os.Stdout, "                         (default: "+default_model+")\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  --temperature float    LLM agent sampling temperature\n")
-	fmt.Fprint(os.Stdout, "                         (options: " + strings.Join(options_temperature, "-") + ")\n")
-	fmt.Fprint(os.Stdout, "                         (default: " + default_temperature + ")\n")
+	fmt.Fprint(os.Stdout, "                         (options: "+strings.Join(options_temperature, "-")+")\n")
+	fmt.Fprint(os.Stdout, "                         (default: "+default_temperature+")\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  --prompt string        Initial LLM instructions prompt\n")
-	fmt.Fprint(os.Stdout, "                         (default: " + default_prompt + ")\n")
+	fmt.Fprint(os.Stdout, "                         (default: "+default_prompt+")\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  --sandbox string       Path to sandbox directory\n")
-	fmt.Fprint(os.Stdout, "                         (default: " + default_sandbox + ")\n")
+	fmt.Fprint(os.Stdout, "                         (default: "+default_sandbox+")\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  --url string           OpenAI API endpoint for LLM backend\n")
-	fmt.Fprint(os.Stdout, "                         (default: " + default_url + ")\n")
+	fmt.Fprint(os.Stdout, "                         (default: "+default_url+")\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "Examples:\n")
 	fmt.Fprint(os.Stdout, "\n")

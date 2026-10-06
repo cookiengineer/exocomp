@@ -5,7 +5,7 @@ import "strings"
 func formatContent(message string) []string {
 
 	result := make([]string, 0)
-	lines  := strings.Split(message, "\n")
+	lines := strings.Split(message, "\n")
 
 	for l := 0; l < len(lines); l++ {
 

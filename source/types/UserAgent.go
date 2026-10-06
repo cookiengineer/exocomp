@@ -54,4 +54,3 @@ func (useragent *UserAgent) Header() http.Header {
 	return header
 
 }
-

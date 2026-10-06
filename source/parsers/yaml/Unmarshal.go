@@ -5,7 +5,7 @@ import "reflect"
 
 func Unmarshal(data []byte, target any) error {
 
-	parser    := NewParser(data)
+	parser := NewParser(data)
 	root, err := parser.Root()
 
 	if err != nil {

@@ -27,7 +27,7 @@ func ParseProvider(data []byte) (*Provider, error) {
 	if len(data) > 2 && data[0] == '{' && data[len(data)-1] == '}' {
 
 		provider := Provider{}
-		err      := json.Unmarshal(data, &provider)
+		err := json.Unmarshal(data, &provider)
 
 		if err == nil {
 			return &provider, nil
@@ -38,7 +38,7 @@ func ParseProvider(data []byte) (*Provider, error) {
 	} else {
 
 		provider := Provider{}
-		err      := yaml.Unmarshal(data, &provider)
+		err := yaml.Unmarshal(data, &provider)
 
 		if err == nil {
 			return &provider, nil

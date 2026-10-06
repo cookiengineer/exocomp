@@ -105,7 +105,7 @@ func TestSession_GetTool_NoDot(t *testing.T) {
 func TestSession_ReceiveChatResponse_NoAwaitPollingLoop(t *testing.T) {
 
 	session := newTestSession()
-	stub      := &stubAgentsTool{}
+	stub := &stubAgentsTool{}
 	transport := &mockTransport{}
 
 	session.SetTool(stub)

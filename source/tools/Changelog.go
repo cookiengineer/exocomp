@@ -43,8 +43,8 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 		if method == "Add" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			description, ok3 := arguments["description"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true {
@@ -61,8 +61,8 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 		} else if method == "Change" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			description, ok3 := arguments["description"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true {
@@ -79,8 +79,8 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 		} else if method == "Deprecate" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			description, ok3 := arguments["description"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true {
@@ -97,8 +97,8 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 		} else if method == "Fix" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			description, ok3 := arguments["description"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true {
@@ -119,8 +119,8 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 		} else if method == "Remove" {
 
-			path,        ok1 := arguments["path"].(string)
-			symbol,      ok2 := arguments["symbol"].(string)
+			path, ok1 := arguments["path"].(string)
+			symbol, ok2 := arguments["symbol"].(string)
 			description, ok3 := arguments["description"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true {
@@ -137,7 +137,7 @@ func (tool *Changelog) Call(method string, arguments map[string]interface{}) (st
 
 		} else if method == "Search" {
 
-			path,   ok1 := arguments["path"].(string)
+			path, ok1 := arguments["path"].(string)
 			symbol, ok2 := arguments["symbol"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -178,7 +178,7 @@ func (tool *Changelog) Fix(path string, symbol string, description string) (stri
 
 func (tool *Changelog) GetContent(id string) (any, error) {
 
-	path       := utils_fmt.FormatFilePath(id)
+	path := utils_fmt.FormatFilePath(id)
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err1 == nil {
@@ -515,7 +515,7 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 
 			if found == nil {
 
-				now   := time.Now()
+				now := time.Now()
 				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
 				tool.contents[internal_path][symbol] = append(tool.contents[internal_path][symbol], types.ChangelogEntry{
@@ -547,4 +547,3 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 	}
 
 }
-

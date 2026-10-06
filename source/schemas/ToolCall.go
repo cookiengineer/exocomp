@@ -45,7 +45,7 @@ func (toolcall *ToolCall) GetName() (string, error) {
 
 		if len(tmp) == 2 && len(tmp[0]) > 0 && len(tmp[1]) >= 2 {
 
-			tool   := strings.TrimSpace(strings.ToLower(tmp[0]))
+			tool := strings.TrimSpace(strings.ToLower(tmp[0]))
 			method := strings.TrimSpace(toUpperCase(tmp[1]))
 
 			if tool != "" && method != "" {
@@ -93,7 +93,7 @@ func (toolcall *ToolCall) GetMethod() (string, error) {
 func (toolcall *ToolCall) GetArguments() (map[string]any, error) {
 
 	result := make(map[string]any)
-	err0   := json.Unmarshal(toolcall.Function.ArgumentsRaw, &result)
+	err0 := json.Unmarshal(toolcall.Function.ArgumentsRaw, &result)
 
 	if err0 == nil {
 
@@ -104,7 +104,7 @@ func (toolcall *ToolCall) GetArguments() (map[string]any, error) {
 
 		// Arguments was a JSON string
 		encoded := ""
-		err1    := json.Unmarshal(toolcall.Function.ArgumentsRaw, &encoded)
+		err1 := json.Unmarshal(toolcall.Function.ArgumentsRaw, &encoded)
 
 		if err1 == nil {
 

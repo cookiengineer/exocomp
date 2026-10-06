@@ -23,7 +23,7 @@ func InstallPrograms(prefix string) error {
 
 				if err12 == nil {
 
-					path  := filepath.Join(prefix, "bin", name)
+					path := filepath.Join(prefix, "bin", name)
 					err13 := os.WriteFile(path, buffer1, 0755)
 
 					if err13 == nil {

@@ -25,6 +25,9 @@ type Changelog struct {
 
 	running    bool
 	generation int
+
+	toggleCollapseListener *components.EventListener
+	changeFilterListener   *components.EventListener
 }
 
 func NewChangelog(main *app.Main, view interfaces.View) *Changelog {
@@ -73,8 +76,17 @@ func (changelog *Changelog) Leave() bool {
 	changelog.running = false
 
 	if changelog.Grid != nil && changelog.Grid.Footer != nil {
-		changelog.Grid.Footer.Component.RemoveEventListener("toggle-collapse", nil)
-		changelog.Grid.Footer.Component.RemoveEventListener("change-filter", nil)
+
+		if changelog.toggleCollapseListener != nil {
+			changelog.Grid.Footer.Component.RemoveEventListener("toggle-collapse", changelog.toggleCollapseListener)
+			changelog.toggleCollapseListener = nil
+		}
+
+		if changelog.changeFilterListener != nil {
+			changelog.Grid.Footer.Component.RemoveEventListener("change-filter", changelog.changeFilterListener)
+			changelog.changeFilterListener = nil
+		}
+
 	}
 
 	return true
@@ -117,22 +129,26 @@ func (changelog *Changelog) attach(component *components.Component) {
 		return
 	}
 
-	component.AddEventListener("toggle-collapse", components.ToEventListener(func(event string, attributes map[string]any) {
+	changelog.toggleCollapseListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		changelog.Collapsed = changelog.Collapsed != true
 
 		changelog.Render()
 
-	}, false))
+	}, false)
 
-	component.AddEventListener("change-filter", components.ToEventListener(func(event string, attributes map[string]any) {
+	component.AddEventListener("toggle-collapse", changelog.toggleCollapseListener)
+
+	changelog.changeFilterListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		if value, ok := attributes["value"].(string); ok == true {
 			changelog.Filter = value
 			changelog.Render()
 		}
 
-	}, false))
+	}, false)
+
+	component.AddEventListener("change-filter", changelog.changeFilterListener)
 
 }
 

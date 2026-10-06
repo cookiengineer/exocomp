@@ -13,7 +13,7 @@ func load_model(base_url *url.URL, model string) bool {
 
 	if endpoint != nil {
 
-		client          := &http.Client{}
+		client := &http.Client{}
 		request_body, _ := json.Marshal(GenerateRequest{
 			Model:     model,
 			Prompt:    "Reply with \"Hello\"!",

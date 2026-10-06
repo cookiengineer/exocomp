@@ -10,7 +10,7 @@ func Messages(session *engine.Session, request *http.Request, response http.Resp
 
 	if request.Method == http.MethodGet {
 
-		messages               := session.GetMessages(0)
+		messages := session.GetMessages(0)
 		response_payload, err0 := json.MarshalIndent(messages, "", "\t")
 
 		if err0 == nil {

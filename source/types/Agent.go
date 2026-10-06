@@ -27,7 +27,7 @@ func ParseAgent(data []byte) (*Agent, error) {
 	if len(data) > 2 && data[0] == '{' && data[len(data)-1] == '}' {
 
 		agent := Agent{}
-		err   := json.Unmarshal(data, &agent)
+		err := json.Unmarshal(data, &agent)
 
 		if err == nil {
 			return &agent, nil
@@ -38,7 +38,7 @@ func ParseAgent(data []byte) (*Agent, error) {
 	} else {
 
 		agent := Agent{}
-		err   := yaml.Unmarshal(data, &agent)
+		err := yaml.Unmarshal(data, &agent)
 
 		if err == nil {
 			return &agent, nil
@@ -62,19 +62,19 @@ func (agent *Agent) HasTools() bool {
 
 func (agent *Agent) IsValid() bool {
 
-	tmp_name        := utils_fmt.FormatAgentName(agent.Name)
+	tmp_name := utils_fmt.FormatAgentName(agent.Name)
 	tmp_description := utils_fmt.FormatASCII(agent.Description)
-	tmp_role        := utils_fmt.FormatAgentRole(agent.Role)
-	tmp_model       := utils_fmt.FormatAgentModel(agent.Model)
-	tmp_prompt      := utils_fmt.FormatASCII(agent.Prompt)
-	tmp_sandbox     := utils_fmt.FormatFilePath(agent.Sandbox)
+	tmp_role := utils_fmt.FormatAgentRole(agent.Role)
+	tmp_model := utils_fmt.FormatAgentModel(agent.Model)
+	tmp_prompt := utils_fmt.FormatASCII(agent.Prompt)
+	tmp_sandbox := utils_fmt.FormatFilePath(agent.Sandbox)
 
 	if tmp_name == agent.Name &&
-	   tmp_description == agent.Description &&
-	   tmp_role == agent.Role &&
-	   tmp_model == agent.Model &&
-	   tmp_prompt == agent.Prompt &&
-	   tmp_sandbox == agent.Sandbox {
+		tmp_description == agent.Description &&
+		tmp_role == agent.Role &&
+		tmp_model == agent.Model &&
+		tmp_prompt == agent.Prompt &&
+		tmp_sandbox == agent.Sandbox {
 		return true
 	}
 

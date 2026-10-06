@@ -44,6 +44,16 @@ type Chat struct {
 	question_index int
 
 	tool_call *app_components.ToolCall
+
+	headerActionListener    *components.EventListener
+	dialogActionListener    *components.EventListener
+	dialogCancelListener    *dom.EventListener
+	answerClickListener     *dom.EventListener
+	answerCancelListener    *dom.EventListener
+	answerDialog            *dom.Element
+	promptActionListener    *components.EventListener
+	toolCallSuggestListener *components.EventListener
+	agentListChangeListener *components.EventListener
 }
 
 func NewChat(main *app.Main, view interfaces.View, config *app_types.Config) *Chat {
@@ -89,35 +99,58 @@ func (chat *Chat) Enter() bool {
 
 func (chat *Chat) Leave() bool {
 
-	if chat.Main.Header != nil {
-		chat.Main.Header.Component.RemoveEventListener("action", nil)
+	if chat.Main.Header != nil && chat.headerActionListener != nil {
+		chat.Main.Header.Component.RemoveEventListener("action", chat.headerActionListener)
+		chat.headerActionListener = nil
 	}
 
 	if chat.Main.Dialog != nil {
 
-		chat.Main.Dialog.Component.RemoveEventListener("action", nil)
+		if chat.dialogActionListener != nil {
+			chat.Main.Dialog.Component.RemoveEventListener("action", chat.dialogActionListener)
+			chat.dialogActionListener = nil
+		}
 
-		if chat.Main.Dialog.Component.Element != nil {
-			chat.Main.Dialog.Component.Element.RemoveEventListener("cancel", nil)
+		if chat.Main.Dialog.Component.Element != nil && chat.dialogCancelListener != nil {
+			chat.Main.Dialog.Component.Element.RemoveEventListener("cancel", chat.dialogCancelListener)
+			chat.dialogCancelListener = nil
 		}
 
 	}
 
-	if dialog := chat.View.QuerySelector("dialog[data-name=\"answer-questions\"]"); dialog != nil {
-		dialog.RemoveEventListener("click", nil)
-		dialog.RemoveEventListener("cancel", nil)
+	if chat.answerDialog != nil {
+
+		if chat.answerClickListener != nil {
+			chat.answerDialog.RemoveEventListener("click", chat.answerClickListener)
+			chat.answerClickListener = nil
+		}
+
+		if chat.answerCancelListener != nil {
+			chat.answerDialog.RemoveEventListener("cancel", chat.answerCancelListener)
+			chat.answerCancelListener = nil
+		}
+
+		chat.answerDialog = nil
+
 	}
 
-	if prompt := chat.prompt(); prompt != nil {
-		prompt.Component.RemoveEventListener("action", nil)
+	if chat.promptActionListener != nil {
+		if prompt := chat.prompt(); prompt != nil {
+			prompt.Component.RemoveEventListener("action", chat.promptActionListener)
+		}
+		chat.promptActionListener = nil
 	}
 
-	if chat.tool_call != nil {
-		chat.tool_call.Component.RemoveEventListener("suggest", nil)
+	if chat.tool_call != nil && chat.toolCallSuggestListener != nil {
+		chat.tool_call.Component.RemoveEventListener("suggest", chat.toolCallSuggestListener)
+		chat.toolCallSuggestListener = nil
 	}
 
-	if agent_list := chat.View.GetAgentList(); agent_list != nil {
-		agent_list.Component.RemoveEventListener("change-agent", nil)
+	if chat.agentListChangeListener != nil {
+		if agent_list := chat.View.GetAgentList(); agent_list != nil {
+			agent_list.Component.RemoveEventListener("change-agent", chat.agentListChangeListener)
+		}
+		chat.agentListChangeListener = nil
 	}
 
 	return true
@@ -297,7 +330,7 @@ func (chat *Chat) attachHeader() {
 		return
 	}
 
-	chat.Main.Header.Component.AddEventListener("action", components.ToEventListener(func(event string, attributes map[string]any) {
+	chat.headerActionListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		action, ok := attributes["action"].(string)
 
@@ -305,7 +338,9 @@ func (chat *Chat) attachHeader() {
 			chat.ShowHireDialog()
 		}
 
-	}, false))
+	}, false)
+
+	chat.Main.Header.Component.AddEventListener("action", chat.headerActionListener)
 
 }
 
@@ -315,7 +350,7 @@ func (chat *Chat) attachDialog() {
 		return
 	}
 
-	chat.Main.Dialog.Component.AddEventListener("action", components.ToEventListener(func(event string, attributes map[string]any) {
+	chat.dialogActionListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		action, ok := attributes["action"].(string)
 
@@ -330,14 +365,18 @@ func (chat *Chat) attachDialog() {
 			chat.Main.Dialog.Hide()
 		}
 
-	}, false))
+	}, false)
+
+	chat.Main.Dialog.Component.AddEventListener("action", chat.dialogActionListener)
 
 	if chat.Main.Dialog.Component.Element != nil {
 
-		chat.Main.Dialog.Component.Element.AddEventListener("cancel", dom.ToEventListener(func(event *dom.Event) {
+		chat.dialogCancelListener = dom.ToEventListener(func(event *dom.Event) {
 			chat.resetHireDialog()
 			chat.Main.Dialog.Hide()
-		}))
+		})
+
+		chat.Main.Dialog.Component.Element.AddEventListener("cancel", chat.dialogCancelListener)
 
 	}
 
@@ -351,7 +390,9 @@ func (chat *Chat) attachAnswerQuestions() {
 		return
 	}
 
-	dialog.AddEventListener("click", dom.ToEventListener(func(event *dom.Event) {
+	chat.answerDialog = dialog
+
+	chat.answerClickListener = dom.ToEventListener(func(event *dom.Event) {
 
 		if event.Target == nil {
 			return
@@ -366,12 +407,16 @@ func (chat *Chat) attachAnswerQuestions() {
 			chat.ConfirmQuestion()
 		}
 
-	}))
+	})
 
-	dialog.AddEventListener("cancel", dom.ToEventListener(func(event *dom.Event) {
+	dialog.AddEventListener("click", chat.answerClickListener)
+
+	chat.answerCancelListener = dom.ToEventListener(func(event *dom.Event) {
 		chat.hideAnswerQuestions()
 		chat.Resume()
-	}))
+	})
+
+	dialog.AddEventListener("cancel", chat.answerCancelListener)
 
 }
 
@@ -383,7 +428,7 @@ func (chat *Chat) attachNavigation() {
 		return
 	}
 
-	agent_list.Component.AddEventListener("change-agent", components.ToEventListener(func(event string, attributes map[string]any) {
+	chat.agentListChangeListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		name, ok := attributes["name"].(string)
 
@@ -391,7 +436,9 @@ func (chat *Chat) attachNavigation() {
 			chat.ViewAgent(name)
 		}
 
-	}, false))
+	}, false)
+
+	agent_list.Component.AddEventListener("change-agent", chat.agentListChangeListener)
 
 }
 
@@ -403,7 +450,7 @@ func (chat *Chat) attachPrompt() {
 		return
 	}
 
-	prompt.Component.AddEventListener("action", components.ToEventListener(func(event string, attributes map[string]any) {
+	chat.promptActionListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		action, _ := attributes["action"].(string)
 		value, _ := attributes["value"].(string)
@@ -438,7 +485,9 @@ func (chat *Chat) attachPrompt() {
 
 		}
 
-	}, false))
+	}, false)
+
+	prompt.Component.AddEventListener("action", chat.promptActionListener)
 
 }
 
@@ -455,13 +504,15 @@ func (chat *Chat) attachPopover() {
 	chat.tool_call = component
 	chat.tool_call.SetTools(chat.Session.Tools)
 
-	chat.tool_call.Component.AddEventListener("suggest", components.ToEventListener(func(event string, attributes map[string]any) {
+	chat.toolCallSuggestListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		if prompt := chat.prompt(); prompt != nil {
 			prompt.ApplySuggestion(attributes)
 		}
 
-	}, false))
+	}, false)
+
+	chat.tool_call.Component.AddEventListener("suggest", chat.toolCallSuggestListener)
 
 }
 

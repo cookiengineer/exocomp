@@ -23,4 +23,3 @@ func parseWebsiteURL(raw string) (*net_url.URL, error) {
 	return url, nil
 
 }
-

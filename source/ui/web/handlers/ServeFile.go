@@ -56,7 +56,7 @@ func ServeFile(session *engine.Session, request *http.Request, response http.Res
 
 			writer := gzip.NewWriter(&buffer)
 
-			_, err1 := writer.Write(data);
+			_, err1 := writer.Write(data)
 
 			if err1 == nil {
 

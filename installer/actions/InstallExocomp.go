@@ -20,7 +20,7 @@ func InstallExocomp(prefix string) error {
 
 			if err11 == nil {
 
-				path  := filepath.Join(prefix, "bin", "exocomp")
+				path := filepath.Join(prefix, "bin", "exocomp")
 				err12 := os.WriteFile(path, buffer1, 0755)
 
 				if err12 == nil {
@@ -45,7 +45,7 @@ func InstallExocomp(prefix string) error {
 
 			if err21 == nil {
 
-				path  := filepath.Join(prefix, "bin", "exocomp-agent")
+				path := filepath.Join(prefix, "bin", "exocomp-agent")
 				err22 := os.WriteFile(path, buffer2, 0755)
 
 				if err22 == nil {

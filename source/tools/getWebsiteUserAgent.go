@@ -19,4 +19,3 @@ func getWebsiteUserAgent(id string) (*types.UserAgent, error) {
 	}
 
 }
-

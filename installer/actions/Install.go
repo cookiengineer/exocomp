@@ -22,12 +22,12 @@ func Install(prefix string) {
 		fmt.Fprintf(os.Stdout, "Prefix:     %s\n", prefix)
 		fmt.Fprintf(os.Stdout, "Disk Space: %s\n", utils_fmt.FormatBytes(available_space))
 
-		if available_space > 1 * gibi_byte {
+		if available_space > 1*gibi_byte {
 
 			install_options["exocomp"] = true
 			install_options["programs"] = true
 
-		} else if available_space > 20 * mibi_byte {
+		} else if available_space > 20*mibi_byte {
 
 			install_options["exocomp"] = true
 			install_options["programs"] = false
@@ -46,13 +46,13 @@ func Install(prefix string) {
 		if install_options["exocomp"] == true {
 			fmt.Fprintf(os.Stdout, "1) Install exocomp\n")
 		} else {
-			fmt.Fprintf(os.Stdout, "1) Install exocomp (requires %s more space)\n", utils_fmt.FormatBytes(20 * mibi_byte - available_space))
+			fmt.Fprintf(os.Stdout, "1) Install exocomp (requires %s more space)\n", utils_fmt.FormatBytes(20*mibi_byte-available_space))
 		}
 
 		if install_options["programs"] == true {
 			fmt.Fprintf(os.Stdout, "2) Install exocomp with agent programs\n")
 		} else {
-			fmt.Fprintf(os.Stdout, "2) Install exocomp with agent programs (requires %s more space)\n", utils_fmt.FormatBytes(1 * gibi_byte - available_space))
+			fmt.Fprintf(os.Stdout, "2) Install exocomp with agent programs (requires %s more space)\n", utils_fmt.FormatBytes(1*gibi_byte-available_space))
 		}
 
 		fmt.Fprintf(os.Stdout, "\n")

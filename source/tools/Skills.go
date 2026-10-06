@@ -79,7 +79,7 @@ func (tool *Skills) Call(method string, arguments map[string]interface{}) (strin
 
 		} else if method == "Execute" {
 
-			name,   ok1 := arguments["name"].(string)
+			name, ok1 := arguments["name"].(string)
 			script, ok2 := arguments["script"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -134,7 +134,7 @@ func (tool *Skills) Call(method string, arguments map[string]interface{}) (strin
 
 func (tool *Skills) GetContent(id string) (any, error) {
 
-	name        := utils_fmt.FormatSkillName(id)
+	name := utils_fmt.FormatSkillName(id)
 	content, ok := tool.contents[name]
 
 	if ok == true {
@@ -173,9 +173,9 @@ func (tool *Skills) List() (string, error) {
 
 		for name, skill := range tool.contents {
 
-			status  := "unloaded"
+			status := "unloaded"
 			scripts := make([]string, 0)
-			tools   := make([]string, 0)
+			tools := make([]string, 0)
 			tmp, ok := tool.loaded_skills[name]
 
 			if ok == true && tmp != nil {
@@ -230,7 +230,7 @@ func (tool *Skills) Load(name string) (string, error) {
 	if ok == true {
 
 		missing_programs := make([]string, 0)
-		missing_tools    := make([]string, 0)
+		missing_tools := make([]string, 0)
 
 		if len(skill.AllowedPrograms) > 0 {
 
@@ -390,8 +390,8 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 					}
 
-					ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Minute)
-					buffer      := utils_bytes.NewContextBuffer(16*1024*1024, cancel)
+					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+					buffer := utils_bytes.NewContextBuffer(16*1024*1024, cancel)
 
 					defer cancel()
 
@@ -399,7 +399,7 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 						ticker := time.NewTicker(10 * time.Second)
 
-						BackgroundLoop:
+					BackgroundLoop:
 						for {
 
 							select {
@@ -412,7 +412,7 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 								last_write := buffer.LastWrite()
 
-								if time.Since(last_write) > 1 * time.Minute {
+								if time.Since(last_write) > 1*time.Minute {
 
 									cancel()
 									break BackgroundLoop
@@ -427,15 +427,14 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 					}()
 
-
-					cmd    := exec.CommandContext(ctx, runtime, runtime_arguments...)
+					cmd := exec.CommandContext(ctx, runtime, runtime_arguments...)
 					cmd.Dir = tool.Sandbox
 
-					cmd.Stdin  = strings.NewReader("")
+					cmd.Stdin = strings.NewReader("")
 					cmd.Stdout = buffer
 					cmd.Stderr = buffer
 
-					err2   := cmd.Run()
+					err2 := cmd.Run()
 					result := strings.Join([]string{
 						fmt.Sprintf("skills.Execute: %s %s", runtime, strings.Join(runtime_arguments, " ")),
 						buffer.String(),
@@ -464,7 +463,6 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 			} else {
 				return "", fmt.Errorf("skills.Execute: Invalid runtime \"%s\": Attempt to execute unallowed program", runtime)
 			}
-
 
 		} else {
 			return "", fmt.Errorf("skills.Execute: Script \"%s\" has no runtime!", script)

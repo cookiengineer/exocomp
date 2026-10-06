@@ -12,7 +12,7 @@ func Build(cwd string, source string, output string, tags []string, operating_sy
 	}
 
 	args := []string{"build"}
-	env  := os.Environ()
+	env := os.Environ()
 
 	if len(tags) > 0 {
 		args = append(args, "-tags", strings.Join(tags, " "))

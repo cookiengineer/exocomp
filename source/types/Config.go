@@ -58,9 +58,9 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 
 	}
 
-	name   = strings.TrimSpace(name)
-	role   = strings.TrimSpace(role)
-	model  = strings.TrimSpace(model)
+	name = strings.TrimSpace(name)
+	role = strings.TrimSpace(role)
+	model = strings.TrimSpace(model)
 	prompt = utils_fmt.FormatSingleLine(prompt)
 
 	if temperature < 0.0 {
@@ -150,7 +150,7 @@ func ParseConfig(data []byte) (*Config, error) {
 	if len(data) > 2 && data[0] == '{' && data[len(data)-1] == '}' {
 
 		config := Config{}
-		err    := json.Unmarshal(data, &config)
+		err := json.Unmarshal(data, &config)
 
 		if err == nil {
 			return &config, nil
@@ -161,7 +161,7 @@ func ParseConfig(data []byte) (*Config, error) {
 	} else {
 
 		config := Config{}
-		err    := yaml.Unmarshal(data, &config)
+		err := yaml.Unmarshal(data, &config)
 
 		if err == nil {
 			return &config, nil
@@ -175,7 +175,7 @@ func ParseConfig(data []byte) (*Config, error) {
 
 func (config *Config) GetContextLength(model string) int {
 
-	client       := &http.Client{}
+	client := &http.Client{}
 	resolved_url := config.ResolveURL(model, "/models")
 
 	request, err1 := http.NewRequest(http.MethodGet, resolved_url.String(), nil)
@@ -191,7 +191,7 @@ func (config *Config) GetContextLength(model string) int {
 			if err3 == nil {
 
 				schema := schemas.ModelsResponse{}
-				err4   := json.Unmarshal(response_payload, &schema)
+				err4 := json.Unmarshal(response_payload, &schema)
 
 				if err4 == nil {
 
@@ -298,7 +298,7 @@ func (config *Config) ResolveURL(model string, path string) *net_url.URL {
 		tmp_base := base_url.Path
 
 		if strings.HasSuffix(tmp_base, "/") {
-			tmp_base = strings.TrimSpace(tmp_base[0:len(tmp_base)-1])
+			tmp_base = strings.TrimSpace(tmp_base[0 : len(tmp_base)-1])
 		}
 
 		// "/chat/completions"
@@ -389,15 +389,15 @@ func (config *Config) UnmarshalJSON(data []byte) error {
 
 	if err0 == nil {
 
-		config.Name        = tmp.Name
-		config.Role        = tmp.Role
-		config.Model       = tmp.Model
-		config.Prompt      = tmp.Prompt
+		config.Name = tmp.Name
+		config.Role = tmp.Role
+		config.Model = tmp.Model
+		config.Prompt = tmp.Prompt
 		config.Temperature = tmp.Temperature
-		config.Playground  = tmp.Playground
-		config.Sandbox     = tmp.Sandbox
-		config.Debug       = tmp.Debug
-		config.Providers   = tmp.Providers
+		config.Playground = tmp.Playground
+		config.Sandbox = tmp.Sandbox
+		config.Debug = tmp.Debug
+		config.Providers = tmp.Providers
 
 		tmp_url, err1 := net_url.Parse(tmp.URL)
 
@@ -466,15 +466,15 @@ func (config *Config) UnmarshalYAML(data []byte) error {
 
 	if err0 == nil {
 
-		config.Name        = tmp.Name
-		config.Role        = tmp.Role
-		config.Model       = tmp.Model
-		config.Prompt      = tmp.Prompt
+		config.Name = tmp.Name
+		config.Role = tmp.Role
+		config.Model = tmp.Model
+		config.Prompt = tmp.Prompt
 		config.Temperature = tmp.Temperature
-		config.Playground  = tmp.Playground
-		config.Sandbox     = tmp.Sandbox
-		config.Debug       = tmp.Debug
-		config.Providers   = tmp.Providers
+		config.Playground = tmp.Playground
+		config.Sandbox = tmp.Sandbox
+		config.Debug = tmp.Debug
+		config.Providers = tmp.Providers
 
 		tmp_url, err1 := net_url.Parse(tmp.URL)
 
@@ -500,10 +500,10 @@ func (config *Config) Update(name string, role string, model string, prompt stri
 		temperature = 1.0
 	}
 
-	config.Name        = name
-	config.Role        = role
-	config.Model       = model
-	config.Prompt      = prompt
+	config.Name = name
+	config.Role = role
+	config.Model = model
+	config.Prompt = prompt
 	config.Temperature = temperature
 
 }

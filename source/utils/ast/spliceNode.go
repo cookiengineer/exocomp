@@ -16,4 +16,3 @@ func spliceNode(source []byte, fileset *token.FileSet, node ast.Node, replacemen
 	return result
 
 }
-

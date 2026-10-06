@@ -24,7 +24,7 @@ func FormatAgentName(input string) string {
 
 	if strings.Contains(tmp1, " ") {
 
-		tmp2    := strings.Split(tmp1, " ")
+		tmp2 := strings.Split(tmp1, " ")
 		prename := strings.ToUpper(tmp2[0][0:1]) + strings.ToLower(tmp2[0][1:])
 		surname := strings.ToUpper(tmp2[1][0:1]) + strings.ToLower(tmp2[1][1:])
 

@@ -10,15 +10,15 @@ import "strings"
 
 func ParseConfig(arguments []string) *types.Config {
 
-	name          := ""
-	role          := "planner"
-	debug         := false
-	model         := ""
+	name := ""
+	role := "planner"
+	debug := false
+	model := ""
 	playground, _ := os.Getwd()
-	prompt        := ""
-	sandbox, _    := os.Getwd()
-	temperature   := float64(0.0)
-	url, _        := net_url.Parse("http://localhost:11434/v1")
+	prompt := ""
+	sandbox, _ := os.Getwd()
+	temperature := float64(0.0)
+	url, _ := net_url.Parse("http://localhost:11434/v1")
 
 	for _, argument := range arguments {
 
@@ -29,11 +29,11 @@ func ParseConfig(arguments []string) *types.Config {
 			if len(flag) == 2 {
 
 				if strings.HasPrefix(flag[1], "\"") && strings.HasSuffix(flag[1], "\"") {
-					flag[1] = flag[1][1:len(flag[1]) - 1]
+					flag[1] = flag[1][1 : len(flag[1])-1]
 				}
 
 				if strings.HasPrefix(flag[1], "'") && strings.HasSuffix(flag[1], "'") {
-					flag[1] = flag[1][1:len(flag[1]) - 1]
+					flag[1] = flag[1][1 : len(flag[1])-1]
 				}
 
 				switch flag[0] {
@@ -128,7 +128,7 @@ func ParseConfig(arguments []string) *types.Config {
 
 	}
 
-	if playground == sandbox || strings.HasPrefix(sandbox, playground + string(os.PathSeparator)) {
+	if playground == sandbox || strings.HasPrefix(sandbox, playground+string(os.PathSeparator)) {
 
 		return types.NewConfig(
 			name,

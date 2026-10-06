@@ -24,7 +24,7 @@ func NewWebsites(methods []string, playground string, sandbox string) *Websites 
 		Methods:    methods,
 		Playground: playground,
 		Sandbox:    sandbox,
-		client:     &net_http.Client{
+		client: &net_http.Client{
 			Timeout: 30 * time.Second,
 		},
 	}
@@ -43,9 +43,9 @@ func (tool *Websites) Call(method string, arguments map[string]interface{}) (str
 
 		if method == "Fetch" {
 
-			url,        ok1 := arguments["url"].(string)
+			url, ok1 := arguments["url"].(string)
 			user_agent, ok2 := arguments["user_agent"].(string)
-			format,     ok3 := arguments["format"].(string)
+			format, ok3 := arguments["format"].(string)
 
 			if ok1 == true && ok2 == true && ok3 == true {
 				return tool.Fetch(url, user_agent, utils_fmt.FormatSingleLine(format))
@@ -71,7 +71,7 @@ func (tool *Websites) Call(method string, arguments map[string]interface{}) (str
 
 		} else if method == "Stat" {
 
-			url,        ok1 := arguments["url"].(string)
+			url, ok1 := arguments["url"].(string)
 			user_agent, ok2 := arguments["user_agent"].(string)
 
 			if ok1 == true && ok2 == true {
@@ -122,7 +122,7 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 
 					request.Header = useragent.Header()
 
-					accept          := request.Header.Get("Accept")
+					accept := request.Header.Get("Accept")
 					accept_language := request.Header.Get("Accept-Language")
 
 					if accept == "" {
@@ -133,7 +133,7 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 						accept_language = "en-US,en;q=0.9"
 					}
 
-					request.Header.Set("Accept",          accept)
+					request.Header.Set("Accept", accept)
 					request.Header.Set("Accept-Language", accept_language)
 
 					response, err3 := tool.client.Do(request)
@@ -298,7 +298,6 @@ func (tool *Websites) Stat(url_str string, user_agent string) (string, error) {
 							return "", fmt.Errorf("websites.Stat: URL \"%s\" is unreachable.", url.String())
 						}
 
-
 					} else {
 						return "", fmt.Errorf("websites.Stat: Invalid URL \"%s\".", url.String())
 					}
@@ -341,4 +340,3 @@ func (tool *Websites) Stat(url_str string, user_agent string) (string, error) {
 	}
 
 }
-

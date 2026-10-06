@@ -11,7 +11,7 @@ import "strings"
 func main() {
 
 	var config *types.Config = nil
-	var mode   string        = ""
+	var mode string = ""
 
 	if len(os.Args) > 1 {
 

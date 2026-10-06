@@ -19,7 +19,7 @@ func readBugs(tool *Bugs) error {
 			if err1 == nil {
 
 				contents := make(map[string]map[string]types.Bug)
-				err2     := json.Unmarshal(bytes, &contents)
+				err2 := json.Unmarshal(bytes, &contents)
 
 				if err2 == nil {
 

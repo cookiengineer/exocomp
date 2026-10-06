@@ -16,7 +16,7 @@ type Skill struct {
 	AllowedTools  []string          `json:"allowed-tools" yaml:"allowed-tools"`
 
 	// frontmatter: exocomp Specification
-	AllowedPrograms []string        `json:"allowed-programs" yaml:"allowed-programs"`
+	AllowedPrograms []string `json:"allowed-programs" yaml:"allowed-programs"`
 
 	// body
 	Body string `json:"body" yaml:"-"`
@@ -31,7 +31,7 @@ func ParseSkill(data []byte) (*Skill, error) {
 	if len(data) > 2 && data[0] == '{' && data[len(data)-1] == '}' {
 
 		skill := Skill{}
-		err   := json.Unmarshal(data, &skill)
+		err := json.Unmarshal(data, &skill)
 
 		if err == nil {
 
@@ -50,14 +50,14 @@ func ParseSkill(data []byte) (*Skill, error) {
 		text := strings.TrimSpace(string(data))
 
 		if strings.HasPrefix(text, "---\n") && strings.Contains(text, "\n---\n") {
-			
+
 			frontmatter := strings.TrimSpace(text[4:strings.Index(text, "\n---\n")])
-			body        := strings.TrimSpace(text[strings.Index(text, "\n---\n")+5:])
+			body := strings.TrimSpace(text[strings.Index(text, "\n---\n")+5:])
 
 			if len(frontmatter) > 0 && len(body) > 0 {
 
 				skill := Skill{}
-				err   := yaml.Unmarshal(data, &skill)
+				err := yaml.Unmarshal(data, &skill)
 
 				if err == nil {
 

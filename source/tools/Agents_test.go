@@ -17,7 +17,7 @@ func waitForAgent(tool *Agents, name string) bool {
 
 	go func() {
 
-		ticker  := time.NewTicker(10 * time.Second)
+		ticker := time.NewTicker(10 * time.Second)
 		timeout := time.After(5 * time.Minute)
 
 		for {
@@ -29,12 +29,12 @@ func waitForAgent(tool *Agents, name string) bool {
 				tool.mutex.Unlock()
 
 				if ok == false {
-					done<-true
+					done <- true
 					return
 				}
 
 			case <-timeout:
-				done<-false
+				done <- false
 				return
 			}
 		}
@@ -98,10 +98,10 @@ func executeTestProgram(sandbox string, program string, parameters []string) (st
 func TestAgents_Hire(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-agents-*")
-	sandbox       := filepath.Join(playground, "agents")
-	model         := "huihui_ai/Qwen3.6-abliterated:35b"
-	url,        _ := net_url.Parse("http://localhost:11434/v1")
-	tool          := NewAgents([]string{"Hire", "Await", "Fire", "Quit"}, playground, sandbox, model, url, true)
+	sandbox := filepath.Join(playground, "agents")
+	model := "huihui_ai/Qwen3.6-abliterated:35b"
+	url, _ := net_url.Parse("http://localhost:11434/v1")
+	tool := NewAgents([]string{"Hire", "Await", "Fire", "Quit"}, playground, sandbox, model, url, true)
 
 	if tool != nil {
 
@@ -139,12 +139,12 @@ func TestAgents_Hire(t *testing.T) {
 
 			if finished0 == true {
 
-				result1, err1 := executeTestProgram(sandbox + "/fibonacci", sandbox + "/fibonacci/main.go", []string{"1"})
-				result2, err2 := executeTestProgram(sandbox + "/fibonacci", sandbox + "/fibonacci/main.go", []string{"2"})
-				result3, err3 := executeTestProgram(sandbox + "/fibonacci", sandbox + "/fibonacci/main.go", []string{"3"})
-				result4, err4 := executeTestProgram(sandbox + "/fibonacci", sandbox + "/fibonacci/main.go", []string{"4"})
-				result5, err5 := executeTestProgram(sandbox + "/fibonacci", sandbox + "/fibonacci/main.go", []string{"5"})
-				result6, err6 := executeTestProgram(sandbox + "/fibonacci", sandbox + "/fibonacci/main.go", []string{"6"})
+				result1, err1 := executeTestProgram(sandbox+"/fibonacci", sandbox+"/fibonacci/main.go", []string{"1"})
+				result2, err2 := executeTestProgram(sandbox+"/fibonacci", sandbox+"/fibonacci/main.go", []string{"2"})
+				result3, err3 := executeTestProgram(sandbox+"/fibonacci", sandbox+"/fibonacci/main.go", []string{"3"})
+				result4, err4 := executeTestProgram(sandbox+"/fibonacci", sandbox+"/fibonacci/main.go", []string{"4"})
+				result5, err5 := executeTestProgram(sandbox+"/fibonacci", sandbox+"/fibonacci/main.go", []string{"5"})
+				result6, err6 := executeTestProgram(sandbox+"/fibonacci", sandbox+"/fibonacci/main.go", []string{"6"})
 
 				if result1 != "0" {
 					t.Errorf("Expected %s to be %s for step %d", result1, "0", 1)
@@ -153,7 +153,7 @@ func TestAgents_Hire(t *testing.T) {
 				if err1 != nil {
 					t.Errorf("Expected %v to be nil", err1)
 				}
-				
+
 				if result2 != "1" {
 					t.Errorf("Expected %s to be %s for step %d", result2, "1", 2)
 				}
@@ -217,4 +217,3 @@ func TestAgents_Hire(t *testing.T) {
 	})
 
 }
-

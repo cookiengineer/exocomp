@@ -5,26 +5,26 @@ import "testing"
 
 func TestResolveSandboxPath(t *testing.T) {
 
-	sandbox, _    := os.MkdirTemp("/tmp", "exocomp-test-resolvesandboxpath-*")
+	sandbox, _ := os.MkdirTemp("/tmp", "exocomp-test-resolvesandboxpath-*")
 	result1, err1 := resolveSandboxPath(sandbox, "./first")
 	result2, err2 := resolveSandboxPath(sandbox, "./first/second")
 	result3, err3 := resolveSandboxPath(sandbox, "./")
 	result4, err4 := resolveSandboxPath(sandbox, ".")
 	result5, err5 := resolveSandboxPath(sandbox, "")
 	result6, err6 := resolveSandboxPath(sandbox, sandbox)
-	result7, err7 := resolveSandboxPath(sandbox, sandbox + "/first")
-	result8, err8 := resolveSandboxPath(sandbox, sandbox + "/first/second")
+	result7, err7 := resolveSandboxPath(sandbox, sandbox+"/first")
+	result8, err8 := resolveSandboxPath(sandbox, sandbox+"/first/second")
 
-	if result1 != sandbox + "/first" {
-		t.Errorf("Expected \"%s\" to be \"%s\"", result1, sandbox + "/first")
+	if result1 != sandbox+"/first" {
+		t.Errorf("Expected \"%s\" to be \"%s\"", result1, sandbox+"/first")
 	}
 
 	if err1 != nil {
 		t.Errorf("Expected %v to be nil", err1)
 	}
 
-	if result2 != sandbox + "/first/second" {
-		t.Errorf("Expected \"%s\" to be \"%s\"", result2, sandbox + "/first/second")
+	if result2 != sandbox+"/first/second" {
+		t.Errorf("Expected \"%s\" to be \"%s\"", result2, sandbox+"/first/second")
 	}
 
 	if err2 != nil {
@@ -63,16 +63,16 @@ func TestResolveSandboxPath(t *testing.T) {
 		t.Errorf("Expected %v to be nil", err6)
 	}
 
-	if result7 != sandbox + "/first" {
-		t.Errorf("Expected \"%s\" to be \"%s\"", result7, sandbox + "/first")
+	if result7 != sandbox+"/first" {
+		t.Errorf("Expected \"%s\" to be \"%s\"", result7, sandbox+"/first")
 	}
 
 	if err7 != nil {
 		t.Errorf("Expected %v to be nil", err7)
 	}
 
-	if result8 != sandbox + "/first/second" {
-		t.Errorf("Expected \"%s\" to be \"%s\"", result8, sandbox + "/first/second")
+	if result8 != sandbox+"/first/second" {
+		t.Errorf("Expected \"%s\" to be \"%s\"", result8, sandbox+"/first/second")
 	}
 
 	if err8 != nil {
@@ -83,7 +83,7 @@ func TestResolveSandboxPath(t *testing.T) {
 
 func TestResolveSandboxPathEscapeAttempts(t *testing.T) {
 
-	sandbox, _    := os.MkdirTemp("/tmp", "exocomp-test-resolvesandboxpath-*")
+	sandbox, _ := os.MkdirTemp("/tmp", "exocomp-test-resolvesandboxpath-*")
 	result1, err1 := resolveSandboxPath(sandbox, "../")
 	result2, err2 := resolveSandboxPath(sandbox, "../../first/second")
 	result3, err3 := resolveSandboxPath(sandbox, "./../../../../../etc")

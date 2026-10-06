@@ -66,7 +66,7 @@ func show_usage(with_animations bool) {
 func main() {
 
 	var folder string = ""
-	var mode   string = ""
+	var mode string = ""
 
 	if len(os.Args) == 3 {
 
@@ -115,7 +115,7 @@ func main() {
 
 			if err0 == nil {
 
-				config  := utils_cli.ParseConfig([]string{
+				config := utils_cli.ParseConfig([]string{
 					"--name=AGIMUS",
 					"--role=planner",
 					fmt.Sprintf("--playground=\"%s\"", sandbox),

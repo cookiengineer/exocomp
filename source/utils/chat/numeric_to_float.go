@@ -11,4 +11,3 @@ func numeric_to_float(v reflect.Value) float64 {
 	return float64(v.Uint())
 
 }
-

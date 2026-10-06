@@ -11,11 +11,11 @@ func main() {
 
 	base_dir, err0 := utils.GetRoot()
 
-	build_linux          := true
-	build_darwin         := true
-	build_windows        := true
+	build_linux := true
+	build_darwin := true
+	build_windows := true
 	build_agent_programs := true
-	build_installer      := true
+	build_installer := true
 
 	if len(os.Args) > 1 {
 
@@ -23,13 +23,13 @@ func main() {
 
 		switch tmp1 {
 		case "linux":
-			build_darwin  = false
+			build_darwin = false
 			build_windows = false
 		case "darwin":
-			build_linux   = false
+			build_linux = false
 			build_windows = false
 		case "windows":
-			build_linux  = false
+			build_linux = false
 			build_darwin = false
 		case "--quick":
 
@@ -37,13 +37,13 @@ func main() {
 			build_installer = false
 
 			if runtime.GOOS == "linux" {
-				build_darwin  = false
+				build_darwin = false
 				build_windows = false
 			} else if runtime.GOOS == "darwin" {
-				build_linux   = false
+				build_linux = false
 				build_windows = false
 			} else if runtime.GOOS == "windows" {
-				build_linux  = false
+				build_linux = false
 				build_darwin = false
 			}
 
@@ -58,16 +58,16 @@ func main() {
 				flag := strings.TrimSpace(strings.ToLower(tmp))
 
 				switch flag {
-					case "--no-agent-programs":
-						build_agent_programs = false
-						break
-					case "--no-installer":
-						build_installer = false
-						break
-					case "--quick":
-						build_agent_programs = false
-						build_installer = false
-						break
+				case "--no-agent-programs":
+					build_agent_programs = false
+					break
+				case "--no-installer":
+					build_installer = false
+					break
+				case "--quick":
+					build_agent_programs = false
+					build_installer = false
+					break
 				}
 
 			}
@@ -146,4 +146,3 @@ func main() {
 	}
 
 }
-

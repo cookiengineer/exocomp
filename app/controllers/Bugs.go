@@ -22,6 +22,9 @@ type Bugs struct {
 	Filter     string
 	running    bool
 	generation int
+
+	toggleCollapseListener *components.EventListener
+	changeFilterListener   *components.EventListener
 }
 
 func NewBugs(main *app.Main, view interfaces.View) *Bugs {
@@ -70,8 +73,17 @@ func (bugs *Bugs) Leave() bool {
 	bugs.running = false
 
 	if bugs.Grid != nil && bugs.Grid.Footer != nil {
-		bugs.Grid.Footer.Component.RemoveEventListener("toggle-collapse", nil)
-		bugs.Grid.Footer.Component.RemoveEventListener("change-filter", nil)
+
+		if bugs.toggleCollapseListener != nil {
+			bugs.Grid.Footer.Component.RemoveEventListener("toggle-collapse", bugs.toggleCollapseListener)
+			bugs.toggleCollapseListener = nil
+		}
+
+		if bugs.changeFilterListener != nil {
+			bugs.Grid.Footer.Component.RemoveEventListener("change-filter", bugs.changeFilterListener)
+			bugs.changeFilterListener = nil
+		}
+
 	}
 
 	return true
@@ -114,22 +126,26 @@ func (bugs *Bugs) attach(component *components.Component) {
 		return
 	}
 
-	component.AddEventListener("toggle-collapse", components.ToEventListener(func(event string, attributes map[string]any) {
+	bugs.toggleCollapseListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		bugs.Collapsed = bugs.Collapsed != true
 
 		bugs.Render()
 
-	}, false))
+	}, false)
 
-	component.AddEventListener("change-filter", components.ToEventListener(func(event string, attributes map[string]any) {
+	component.AddEventListener("toggle-collapse", bugs.toggleCollapseListener)
+
+	bugs.changeFilterListener = components.ToEventListener(func(event string, attributes map[string]any) {
 
 		if value, ok := attributes["value"].(string); ok == true {
 			bugs.Filter = value
 			bugs.Render()
 		}
 
-	}, false))
+	}, false)
+
+	component.AddEventListener("change-filter", bugs.changeFilterListener)
 
 }
 

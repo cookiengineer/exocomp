@@ -5,7 +5,7 @@ import "path/filepath"
 
 func HasExocompSession(folder string) bool {
 
-	tmp         := filepath.Join(folder, ".exocomp", "session.json")
+	tmp := filepath.Join(folder, ".exocomp", "session.json")
 	stat, err := os.Stat(tmp)
 
 	if err == nil && stat.IsDir() == false {
@@ -15,4 +15,3 @@ func HasExocompSession(folder string) bool {
 	return false
 
 }
-

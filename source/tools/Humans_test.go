@@ -33,12 +33,12 @@ func TestHumans_Ask_Await_Blocks_Until_Answer(t *testing.T) {
 	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 
 	result_ch := make(chan string, 1)
-	err_ch    := make(chan error, 1)
+	err_ch := make(chan error, 1)
 
 	go func() {
 		result, err := tool.Ask("What is your name?")
 		result_ch <- result
-		err_ch    <- err
+		err_ch <- err
 	}()
 
 	id := waitForQuestion(t, tool, 1*time.Second)
@@ -88,12 +88,12 @@ func TestHumans_Choose_Persists_Options_And_Multiple(t *testing.T) {
 	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 
 	result_ch := make(chan string, 1)
-	err_ch    := make(chan error, 1)
+	err_ch := make(chan error, 1)
 
 	go func() {
 		result, err := tool.Choose("Which database?", []string{"PostgreSQL", "SQLite", "MongoDB"}, true)
 		result_ch <- result
-		err_ch    <- err
+		err_ch <- err
 	}()
 
 	id := waitForQuestion(t, tool, 1*time.Second)
@@ -236,12 +236,12 @@ func TestHumans_Call_Answer_Unblocks(t *testing.T) {
 	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 
 	result_ch := make(chan string, 1)
-	err_ch    := make(chan error, 1)
+	err_ch := make(chan error, 1)
 
 	go func() {
 		result, err := tool.Ask("What is your name?")
 		result_ch <- result
-		err_ch    <- err
+		err_ch <- err
 	}()
 
 	id := waitForQuestion(t, tool, 1*time.Second)

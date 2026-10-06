@@ -6,7 +6,7 @@ import "strings"
 func FormatFileBuffer(raw string) ([]byte, error) {
 
 	formatted := make([]byte, 0)
-	err       := error(nil)
+	err := error(nil)
 
 	lines := strings.Split(raw, "\n")
 

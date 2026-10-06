@@ -67,7 +67,7 @@ func (document *Document) Parse(bytes []byte) error {
 		return fmt.Errorf("nil document")
 	}
 
-	reader  := strings.NewReader(string(bytes))
+	reader := strings.NewReader(string(bytes))
 	node, err := html_tree.Parse(reader)
 
 	if err != nil {
@@ -75,7 +75,7 @@ func (document *Document) Parse(bytes []byte) error {
 	}
 
 	document.Errors = make([]error, 0)
-	document.Body   = make([]*Element, 0)
+	document.Body = make([]*Element, 0)
 
 	article := findArticleNode(node)
 

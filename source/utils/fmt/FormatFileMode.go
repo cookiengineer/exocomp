@@ -6,7 +6,7 @@ import "strings"
 
 func FormatFileMode(mode os.FileMode) string {
 
-	file_type   := ""
+	file_type := ""
 	permissions := []string{}
 
 	if mode&0400 != 0 {
@@ -35,4 +35,3 @@ func FormatFileMode(mode os.FileMode) string {
 	return fmt.Sprintf("%s (%s)", file_type, strings.Join(permissions, ", "))
 
 }
-

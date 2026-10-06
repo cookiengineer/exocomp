@@ -15,7 +15,7 @@ func encodeStruct(value reflect.Value) (*Node, error) {
 	for index := 0; index < value.NumField(); index++ {
 
 		field_value := value.Field(index)
-		field_type  := value_type.Field(index)
+		field_type := value_type.Field(index)
 
 		yaml_tag := parseYAMLTag(field_type.Tag.Get("yaml"))
 

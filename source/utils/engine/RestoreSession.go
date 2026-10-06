@@ -23,10 +23,10 @@ func RestoreSession(source string, config *types.Config) (*engine.Session, strin
 
 			if config != nil {
 
-				backup.Config.Name       = config.Name
-				backup.Config.Role       = config.Role
+				backup.Config.Name = config.Name
+				backup.Config.Role = config.Role
 				backup.Config.Playground = config.Playground
-				backup.Config.Sandbox    = config.Sandbox
+				backup.Config.Sandbox = config.Sandbox
 
 			}
 
@@ -41,4 +41,3 @@ func RestoreSession(source string, config *types.Config) (*engine.Session, strin
 	}
 
 }
-

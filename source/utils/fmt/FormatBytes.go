@@ -24,4 +24,3 @@ func FormatBytes(bytes uint64) string {
 	)
 
 }
-

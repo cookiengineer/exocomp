@@ -6,7 +6,7 @@ import "path/filepath"
 
 func ClearAssets(base_dir string) {
 
-	exocomps_dir   := filepath.Join(base_dir, "installer", "assets", "exocomps")
+	exocomps_dir := filepath.Join(base_dir, "installer", "assets", "exocomps")
 	entries1, err1 := os.ReadDir(exocomps_dir)
 
 	if err1 == nil {
@@ -21,8 +21,8 @@ func ClearAssets(base_dir string) {
 
 			} else {
 
-				binary  := filepath.Join(exocomps_dir, name)
-				err     := os.Remove(binary)
+				binary := filepath.Join(exocomps_dir, name)
+				err := os.Remove(binary)
 				path, _ := filepath.Rel(base_dir, binary)
 
 				if err == nil {
@@ -39,7 +39,7 @@ func ClearAssets(base_dir string) {
 		fmt.Fprintf(os.Stderr, "!! Error: %s\n", err1.Error())
 	}
 
-	programs_dir   := filepath.Join(base_dir, "installer", "assets", "programs")
+	programs_dir := filepath.Join(base_dir, "installer", "assets", "programs")
 	entries2, err2 := os.ReadDir(programs_dir)
 
 	if err2 == nil {
@@ -54,8 +54,8 @@ func ClearAssets(base_dir string) {
 
 			} else {
 
-				binary  := filepath.Join(programs_dir, name)
-				err     := os.Remove(binary)
+				binary := filepath.Join(programs_dir, name)
+				err := os.Remove(binary)
 				path, _ := filepath.Rel(base_dir, binary)
 
 				if err == nil {

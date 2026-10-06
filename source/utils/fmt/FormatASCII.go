@@ -36,7 +36,7 @@ func lookup(character uint16) string {
 
 func FormatASCII(value string) string {
 
-	tmp      := strings.TrimSpace(value)
+	tmp := strings.TrimSpace(value)
 	filtered := ""
 
 	for _, character := range tmp {

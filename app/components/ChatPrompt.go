@@ -26,6 +26,9 @@ type ChatPrompt struct {
 
 	label    *dom.Element `json:"-"`
 	textarea *dom.Element `json:"-"`
+
+	on_keyup *dom.EventListener `json:"-"`
+	on_input *dom.EventListener `json:"-"`
 }
 
 func NewChatPrompt() ChatPrompt {
@@ -137,13 +140,17 @@ func (prompt *ChatPrompt) Mount() bool {
 			prompt.Value = value.String()
 		}
 
-		prompt.textarea.AddEventListener("keyup", dom.ToEventListener(func(event *dom.Event) {
+		prompt.on_keyup = dom.ToEventListener(func(event *dom.Event) {
 			prompt.HandleKeyup(event)
-		}))
+		})
 
-		prompt.textarea.AddEventListener("input", dom.ToEventListener(func(event *dom.Event) {
+		prompt.textarea.AddEventListener("keyup", prompt.on_keyup)
+
+		prompt.on_input = dom.ToEventListener(func(event *dom.Event) {
 			prompt.Resize()
-		}))
+		})
+
+		prompt.textarea.AddEventListener("input", prompt.on_input)
 
 	}
 
@@ -516,8 +523,17 @@ func (prompt *ChatPrompt) String() string {
 func (prompt *ChatPrompt) Unmount() bool {
 
 	if prompt.textarea != nil {
-		prompt.textarea.RemoveEventListener("keyup", nil)
-		prompt.textarea.RemoveEventListener("input", nil)
+
+		if prompt.on_keyup != nil {
+			prompt.textarea.RemoveEventListener("keyup", prompt.on_keyup)
+			prompt.on_keyup = nil
+		}
+
+		if prompt.on_input != nil {
+			prompt.textarea.RemoveEventListener("input", prompt.on_input)
+			prompt.on_input = nil
+		}
+
 	}
 
 	for _, content := range prompt.Content {

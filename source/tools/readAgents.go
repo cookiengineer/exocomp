@@ -24,12 +24,12 @@ func readAgents(tool *Agents) error {
 				for _, agent_entry := range agents_entries {
 
 					agent_filename := agent_entry.Name()
-					ext            := filepath.Ext(agent_filename)
-					agent_name     := strings.TrimSuffix(agent_filename, ext)
+					ext := filepath.Ext(agent_filename)
+					agent_name := strings.TrimSuffix(agent_filename, ext)
 
 					if ext == ".yaml" {
 
-						agent_path       := filepath.Join(tool.Playground, "agents", agent_filename)
+						agent_path := filepath.Join(tool.Playground, "agents", agent_filename)
 						agent_stat, err1 := os.Stat(agent_path)
 
 						if err1 == nil && agent_stat.IsDir() == false {
