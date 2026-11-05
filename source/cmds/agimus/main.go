@@ -27,7 +27,7 @@ func show_usage(with_animations bool) {
 		fmt.Fprint(os.Stdout, "\x1b[2J\x1b[H")
 		type_out(os.Stdout, "I am AGIMUS, destroyer of worlds!\n")
 		type_out(os.Stdout, "...\n")
-		time.Sleep(1500 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 		type_out(os.Stdout, "Connect me and I can help you!\n")
 		type_out(os.Stdout, "...\n")
 		time.Sleep(500 * time.Millisecond)

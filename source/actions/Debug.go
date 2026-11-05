@@ -3,7 +3,6 @@ package actions
 import "exocomp/engine"
 import "exocomp/types"
 import "exocomp/ui/tty"
-import "exocomp/ui/web"
 import "fmt"
 import "os"
 import "strings"
@@ -11,7 +10,6 @@ import "strings"
 func Debug(session *engine.Session, agents []*types.Agent, role string) {
 
 	client := tty.RestoreClient(session, agents)
-	server := web.RestoreServer(session, agents)
 
 	if role != "" {
 		client.SetRole(role)
@@ -22,7 +20,6 @@ func Debug(session *engine.Session, agents []*types.Agent, role string) {
 	fmt.Fprintf(os.Stdout, "| Tools:   %s\n", strings.Join(session.Agent.AllowedTools, ", "))
 	fmt.Fprintf(os.Stdout, "| Sandbox: %s\n", session.Config.Sandbox)
 	fmt.Fprintf(os.Stdout, "| URL:     %s\n", session.Config.URL.String())
-	fmt.Fprintf(os.Stdout, "| Web:     %s\n", server.URL.String())
 	fmt.Fprintf(os.Stdout, "| Debug:   %t\n", session.Config.Debug)
 	fmt.Fprintf(os.Stdout, "|\n")
 
@@ -36,11 +33,6 @@ func Debug(session *engine.Session, agents []*types.Agent, role string) {
 
 	go func() {
 		client.Init()
-		close(shutdown)
-	}()
-
-	go func() {
-		server.Init()
 		close(shutdown)
 	}()
 

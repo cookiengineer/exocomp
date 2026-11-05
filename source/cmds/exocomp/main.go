@@ -28,10 +28,6 @@ func main() {
 			mode = "terminal"
 		case "terminal":
 			mode = "terminal"
-		case "web":
-			mode = "web"
-		case "webview":
-			mode = "webview"
 		}
 
 		config = cli.ParseConfig(os.Args[1:])
@@ -61,12 +57,8 @@ func main() {
 				actions.Config(agent, config)
 			case "terminal":
 				actions.Terminal(agent, config, "user")
-			case "web":
-				actions.Web(agent, config)
-			case "webview":
-				actions.Webview(agent, config)
 			default:
-				actions.Usage([]string{"agent", "config", "terminal", "web", "webview"})
+				actions.Usage([]string{"agent", "config", "terminal"})
 			}
 
 		} else {
@@ -78,7 +70,7 @@ func main() {
 
 	} else {
 
-		actions.Usage([]string{"agent", "config", "terminal", "web", "webview"})
+		actions.Usage([]string{"agent", "config", "terminal"})
 
 	}
 

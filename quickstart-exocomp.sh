@@ -16,7 +16,7 @@ quickstart_exocomp() {
 
 	echo "Starting exocomp ...";
 
-	exec go run cmds/exocomp/main.go web --role="${role}" --model="${model}";
+	exec go run cmds/exocomp/main.go tty --role="${role}" --model="${model}";
 
 }
 
