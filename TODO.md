@@ -3,9 +3,9 @@
 
 ## source/engine/Session
 
-- No retry/backoff. Session.infer_chat_completions does a single POST; transient 429/5xx and connection errors just fail the whole turn.
-- No finish_reason handling. schemas.Choice.FinishReason is parsed but never read. A length-truncated response with an incomplete tool_calls block is silently accepted. mini re-prompts with guidance.
-- No format-error feedback loop. In ReceiveChatResponse, an assistant message with no tool_calls just returns nil (dead-end), and malformed tool-call args are silently skipped (err0/err1… != nil → ignored).
+- No retry/backoff implemented. Session.infer_chat_completions does a single POST; transient 429/5xx and connection errors just fail the whole turn.
+- No finish_reason handling implemented. schemas.Choice.FinishReason is parsed but never read. A length-truncated response with an incomplete tool_calls block is silently accepted. mini re-prompts with guidance.
+- No format-error feedback loop implemented. In ReceiveChatResponse, an assistant message with no tool_calls just returns nil (dead-end), and malformed tool-call args are silently skipped (err0/err1… != nil → ignored).
 - Choices need to be correctly handled, currently exocomp handles only Choices[0]
 
 ## source/tools
@@ -29,27 +29,8 @@
 - [ ] Implement `requirements.Trace(file, symbol)` to trace which methods
       call or interact with the named symbol. Returns a list of relative package/file.go paths and symbols
 - [ ] Implement `tools/Vulnerabilities` to be able to search CVE dataset
-- [ ] Implement `tools/Websites.Search()` to be able to search the internet. Don't use google, find an LLM friendly free search API provider.
+- [ ] Implement `tools/Websites.Search()` to be able to search the internet. Don't use google which blocks us all the time, find an LLM friendly free search API provider.
 - [ ] Validate all properties of new agents in `readAgents()`
-
-## Agents
-
-Check other repos to find better system prompts for these roles:
-
-- [ ] Binary Reverse Engineer
-- [ ] Web Recon Analyst
-- [ ] Web Business Analyst
-- [ ] Web Subdomain Analyst
-- [ ] Researcher
-
-
-## Web UI
-
-- [ ] Migrate towards use of a WebSocket so that we don't need to poll /api/session/agents all the time
-- [ ] It would be really cool if server had a `ui/web/sockets/session/Agents` kind of wrapper for the `/api/session/agents` route
-
-- [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `nav` element to avoid setting `innerHTML`
-- [ ] `public/ui/Renderer.mjs` should implement lazy-rendering for `main` element to avoid setting `innerHTML`
 
 ### Chat View
 

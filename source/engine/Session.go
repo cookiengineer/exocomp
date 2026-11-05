@@ -996,6 +996,10 @@ func (session *Session) infer_chat_completions() error {
 
 				return fmt.Errorf("Server %s for Model %s usage quota exceeded", resolved_url.String(), resolved_model)
 
+			} else if err2 != nil {
+
+				return err2
+
 			} else {
 
 				var api_error schemas.Error
