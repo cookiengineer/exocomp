@@ -536,3 +536,82 @@ func TestChangelog_Search(t *testing.T) {
 	})
 
 }
+
+func TestChangelog_Snapshot(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-snapshot-*")
+	sandbox := filepath.Join(playground, "changelogs")
+	tool := NewChangelog([]string{"Add", "Change", "Fix", "List"}, playground, sandbox)
+
+	_, err1 := tool.Add("./path/to/Cache.go", "Store", "Added cache storage")
+	_, err2 := tool.Change("./path/to/Cache.go", "Store", "Changed cache storage")
+	_, err3 := tool.Fix("./path/to/Other.go", "Read", "Fixed cache read")
+
+	if err1 == nil && err2 == nil && err3 == nil {
+
+		entries, err4 := tool.Snapshot()
+
+		if err4 == nil {
+
+			if len(entries) != 3 {
+				t.Errorf("Expected 3 changelog entries, got %d", len(entries))
+			}
+
+			if strings.HasSuffix(entries[0].File, "/path/to/Cache.go") == false || entries[0].Type != "Add" {
+				t.Errorf("Expected first entry to be Cache.go Add, got %s %s", entries[0].File, entries[0].Type)
+			}
+
+			if entries[1].Type != "Change" {
+				t.Errorf("Expected second entry to be Change, got %s", entries[1].Type)
+			}
+
+			if strings.HasSuffix(entries[2].File, "/path/to/Other.go") == false || entries[2].Type != "Fix" {
+				t.Errorf("Expected third entry to be Other.go Fix, got %s %s", entries[2].File, entries[2].Type)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be nil", err4)
+		}
+
+	} else {
+		t.Errorf("Expected fixture entries to be created")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
+func TestChangelog_SnapshotInvalidJSON(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-changelog-snapshot-*")
+	sandbox := filepath.Join(playground, "changelogs")
+	tool := NewChangelog([]string{"List"}, playground, sandbox)
+
+	os.MkdirAll(filepath.Join(playground, ".exocomp"), 0755)
+	os.WriteFile(filepath.Join(playground, ".exocomp", "changelog.json"), []byte("{"), 0666)
+
+	entries, err := tool.Snapshot()
+
+	if err != nil {
+
+		if entries != nil {
+			t.Errorf("Expected entries to be nil on error")
+		}
+
+	} else {
+		t.Errorf("Expected invalid JSON to return an error")
+	}
+
+	t.Cleanup(func() {
+		os.RemoveAll(playground)
+	})
+
+}

@@ -224,3 +224,74 @@ func TestBugs_Search(t *testing.T) {
 
 	})
 }
+
+func TestBugs_Snapshot(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-snapshot-*")
+	sandbox := filepath.Join(playground, "bugs")
+	tool := NewBugs([]string{"List", "Add", "Fix"}, playground, sandbox)
+
+	_, err1 := tool.Add("./path/to/First.go", "Foo", "The Foo method is broken.")
+	_, err2 := tool.Add("./path/to/Second.go", "Bar", "The Bar method is broken.")
+	_, err3 := tool.Fix("./path/to/Second.go", "Bar")
+
+	if err1 == nil && err2 == nil && err3 == nil {
+
+		bugs, err4 := tool.Snapshot()
+
+		if err4 == nil {
+
+			if len(bugs) != 1 {
+				t.Errorf("Expected 1 open bug, got %d", len(bugs))
+			}
+
+			if strings.HasSuffix(bugs[0].File, "/path/to/First.go") == false || bugs[0].Symbol != "Foo" {
+				t.Errorf("Expected First.go#Foo, got %s#%s", bugs[0].File, bugs[0].Symbol)
+			}
+
+		} else {
+			t.Errorf("Expected %v to be nil", err4)
+		}
+
+	} else {
+		t.Errorf("Expected fixture bugs to be created")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}
+
+func TestBugs_SnapshotInvalidJSON(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-bugs-snapshot-*")
+	sandbox := filepath.Join(playground, "bugs")
+	tool := NewBugs([]string{"List"}, playground, sandbox)
+
+	os.MkdirAll(filepath.Join(playground, ".exocomp"), 0755)
+	os.WriteFile(filepath.Join(playground, ".exocomp", "bugs.json"), []byte("{"), 0666)
+
+	bugs, err := tool.Snapshot()
+
+	if err != nil {
+
+		if bugs != nil {
+			t.Errorf("Expected bugs to be nil on error")
+		}
+
+	} else {
+		t.Errorf("Expected invalid JSON to return an error")
+	}
+
+	t.Cleanup(func() {
+		os.RemoveAll(playground)
+	})
+
+}

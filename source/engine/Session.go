@@ -39,6 +39,7 @@ type Session struct {
 	mutex    *sync.RWMutex            `json:"-"`
 	adapters map[string]types.Adapter `json:"-"`
 	tools    map[string]types.Tool    `json:"-"`
+	changes  chan struct{}            `json:"-"`
 }
 
 func NewSession(agent *types.Agent, config *types.Config) *Session {
@@ -53,6 +54,7 @@ func NewSession(agent *types.Agent, config *types.Config) *Session {
 		mutex:    &sync.RWMutex{},
 		adapters: make(map[string]types.Adapter),
 		tools:    make(map[string]types.Tool),
+		changes:  make(chan struct{}, 1),
 	}
 
 	session.mutex.Lock()
@@ -110,6 +112,7 @@ func RestoreSession(playground string, backup Session) *Session {
 		mutex:    &sync.RWMutex{},
 		adapters: make(map[string]types.Adapter),
 		tools:    make(map[string]types.Tool),
+		changes:  make(chan struct{}, 1),
 	}
 
 	if backup.Console != nil {
@@ -144,6 +147,33 @@ func RestoreSession(playground string, backup Session) *Session {
 
 }
 
+func (session *Session) Changes() <-chan struct{} {
+	return session.changes
+}
+
+func (session *Session) IsWaiting() bool {
+
+	session.mutex.RLock()
+	waiting := session.Waiting
+	session.mutex.RUnlock()
+
+	return waiting
+
+}
+
+func (session *Session) notifyChange() {
+
+	if session.changes != nil {
+
+		select {
+		case session.changes <- struct{}{}:
+		default:
+		}
+
+	}
+
+}
+
 func (session *Session) Destroy() {
 
 	// NOTE: Only backup planner sessions, hired agents are backed up automatically
@@ -155,6 +185,8 @@ func (session *Session) Destroy() {
 
 func (session *Session) Init() error {
 
+	defer session.notifyChange()
+
 	// NOTE: First Message is System Prompt
 	if len(session.Agent.Messages) > 0 {
 		return session.infer_chat_completions()
@@ -165,6 +197,8 @@ func (session *Session) Init() error {
 }
 
 func (session *Session) CallTool(id string, name string, method string, arguments map[string]any) error {
+
+	defer session.notifyChange()
 
 	tool := session.GetTool(name)
 
@@ -493,6 +527,9 @@ func (session *Session) GetMessages(from int) []*schemas.Message {
 
 func (session *Session) GetTool(search string) types.Tool {
 
+	session.mutex.RLock()
+	defer session.mutex.RUnlock()
+
 	if strings.Contains(search, ".") == true {
 
 		tmp1 := strings.TrimSpace(search[0:strings.Index(search, ".")])
@@ -528,6 +565,9 @@ func (session *Session) GetTool(search string) types.Tool {
 
 func (session *Session) GetTools() []types.Tool {
 
+	session.mutex.RLock()
+	defer session.mutex.RUnlock()
+
 	result := make([]types.Tool, 0)
 
 	for _, tool := range session.tools {
@@ -539,6 +579,9 @@ func (session *Session) GetTools() []types.Tool {
 }
 
 func (session *Session) GetToolSchemas() []schemas.Tool {
+
+	session.mutex.RLock()
+	defer session.mutex.RUnlock()
 
 	result := make([]schemas.Tool, 0)
 
@@ -559,6 +602,8 @@ func (session *Session) GetToolSchemas() []schemas.Tool {
 }
 
 func (session *Session) LoadSkill(name string, skill *types.Skill) error {
+
+	defer session.notifyChange()
 
 	index := int(-1)
 	missing_programs := make([]string, 0)
@@ -664,6 +709,8 @@ func (session *Session) LoadSkill(name string, skill *types.Skill) error {
 
 func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
+	defer session.notifyChange()
+
 	if response.Role == "assistant" {
 
 		session.mutex.Lock()
@@ -759,11 +806,15 @@ func (session *Session) SendChatRequest(request schemas.Message) error {
 
 		session.mutex.Unlock()
 
+		session.notifyChange()
+
 		err := session.infer_chat_completions()
 
 		session.mutex.Lock()
 		session.Waiting = false
 		session.mutex.Unlock()
+
+		session.notifyChange()
 
 		if err == nil {
 			return nil
@@ -804,6 +855,9 @@ func (session *Session) SetAdapters(adapters []types.Adapter) {
 
 func (session *Session) SetTool(tool types.Tool) {
 
+	session.mutex.Lock()
+	defer session.mutex.Unlock()
+
 	if tool != nil {
 		session.tools[tool.Name()] = tool
 	}
@@ -828,6 +882,8 @@ func (session *Session) SetTools(tools []types.Tool) {
 }
 
 func (session *Session) SwitchAgent(agent *types.Agent, summary string) error {
+
+	defer session.notifyChange()
 
 	if agent == nil {
 		return fmt.Errorf("Session.SwitchAgent: Invalid agent.")
@@ -877,6 +933,8 @@ func (session *Session) SwitchAgent(agent *types.Agent, summary string) error {
 }
 
 func (session *Session) UnloadSkill(name string, skill *types.Skill) error {
+
+	defer session.notifyChange()
 
 	index := int(-1)
 

@@ -12,6 +12,7 @@ import "os"
 import "strings"
 import "sync"
 import "testing"
+import "time"
 
 func newTestSession() *Session {
 
@@ -31,6 +32,7 @@ func newTestSession() *Session {
 		mutex:    &sync.RWMutex{},
 		adapters: make(map[string]types.Adapter),
 		tools:    make(map[string]types.Tool),
+		changes:  make(chan struct{}, 1),
 	}
 
 }
@@ -234,3 +236,25 @@ func TestSession_InferChatCompletions_TracksTokensAndCost(t *testing.T) {
 	}
 
 }
+
+func TestSession_ChangesNotifyToolCalls(t *testing.T) {
+
+	session := newTestSession()
+	session.SetTool(&stubAgentsTool{})
+
+	err := session.CallTool("call_1", "agents", "Await", map[string]any{})
+
+	if err != nil {
+
+		select {
+		case <-session.Changes():
+		case <-time.After(100 * time.Millisecond):
+			t.Errorf("Expected a session change notification")
+		}
+
+	} else {
+		t.Errorf("Expected stub tool call to fail")
+	}
+
+}
+

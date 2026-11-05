@@ -237,13 +237,30 @@ if err == nil {
 }
 ```
 
+## Package and File Layout
+
+- Group multiple types or implementations into a subpackage. A `Foo` and `Bar`
+  implementation belong in `./subpackage/Foo.go` and `./subpackage/Bar.go`, not
+  as loose files beside each other.
+- Put every implementation in its own file named after its public or private
+  export name.
+- A function without a pointer receiver is named after the function:
+  `func Foo(what, ever *Else)` belongs in `Foo.go`.
+- A method with a pointer receiver is part of its type:
+  `func (receiver *Receiver) Bar()` belongs in `Receiver.go`, together with
+  `type Receiver struct`.
+- Unexported helpers that operate on types from the same package use a
+  lowercase name and a matching lowercase file, for example
+  `getAgentWorkReport.go`.
+- Helpers that operate on standard library types belong in `./source/utils`
+  (for example `utils/fmt`, `utils/strings`, `utils/fs`), not next to the
+  caller.
+
 ## Functions and Helpers
 
 - Keep functions focused on one responsibility.
-- Split large tools into helper files named after the helper, for example
-  `sanitizeSandboxPath.go`, `resolveSandboxPath.go`, `getAgentWorkReport.go`.
-- File names for primary types match the type name, for example `Agent.go`,
-  `Config.go`, `Session.go`.
+- Follow the file and package placement rules in
+  [Package and File Layout](#package-and-file-layout).
 - Prefer small helper functions over deeply nested inline logic, but keep the
   positive/error branch shape intact when extracting them.
 - Return the successful value from the deepest positive branch, and return the
