@@ -312,7 +312,7 @@ func (client *Client) OnSwitch(role string) (string, error) {
 
 							client.Session.SetAdapters(adapterset)
 
-							client.bindSwitchHook()
+							client.bindEvents()
 
 							if client.Renderer != nil {
 								client.Renderer.Reset()
