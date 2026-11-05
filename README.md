@@ -74,7 +74,7 @@ Check the unit tests on whether the Tools can be relied on or not.
 
 | Tool                                           | Unit Tests?                                | Description                                        | Agent Roles                                             |
 |:-----------------------------------------------|:------------------------------------------:|:---------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./source/tools/Agents.go)             | [Yes](./source/tools/Agents_test.go) [1]   | manages the lifecycle of contractor sub-agents     | `planner`                                               |
+| [Agents](./source/tools/Agents.go)             | [Yes](./source/tools/Agents_test.go) [1]   | manages contractor lifecycle and profile switch    | `planner`                                               |
 | [Bugs](./source/tools/Bugs.go)                 | [Yes](./source/tools/Bugs_test.go)         | manages documentation of discovered bugs           | `tester`                                                |
 | [Changelog](./source/tools/Changelog.go)       | [Yes](./source/tools/Changelog_test.go)    | manages documentation of development changelog     | `coder`                                                 |
 | Containers                                     |                                            | manages virtual containers                         | `redteamer`, `blueteamer`                               |

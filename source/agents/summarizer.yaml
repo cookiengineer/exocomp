@@ -8,6 +8,7 @@ allowed-programs:
   - gopls
 allowed-tools:
   - agents.Quit
+  - agents.Switch
   - programs.Execute
   - programs.List
   - programs.Stat

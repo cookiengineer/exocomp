@@ -35,6 +35,21 @@ func NewRenderer(session *engine.Session) *Renderer {
 
 }
 
+func (renderer *Renderer) Reset() {
+
+	resetline := ""
+
+	for r := 0; r < len(renderer.Session.Config.Model)+14; r++ {
+		resetline += " "
+	}
+
+	renderer.mutex.Lock()
+	renderer.rendered = 0
+	renderer.resetline = resetline
+	renderer.mutex.Unlock()
+
+}
+
 func (renderer *Renderer) ClearLine() {
 
 	fmt.Fprintf(os.Stdout, "\033[A")

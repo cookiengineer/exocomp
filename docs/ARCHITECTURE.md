@@ -120,6 +120,16 @@ context window with identical "still working" messages.
 This is called by the process child. The report is flushed synchronously
 to stdout before the process exits, so the parent reliably observes it.
 
+**agents.Switch(role)**:
+
+Switches the main TTY session to a different preconfigured agent profile. It is
+only wired in the TTY frontend; hired contractor subprocesses expose the tool
+but receive an error when they call it. Before switching, the previous
+conversation is summarized by a summarizer subprocess. The session then starts
+fresh with the target profile's system prompt and that summary as its first
+assistant message. Tools, programs and adapters are rebuilt from the target
+profile so switching cannot retain capabilities from the previous role.
+
 A liveness watchdog cancels a child that stops producing output for longer
 than `IdleTimeout` (default `5m`) and a hard `Timeout` (default `30m`) bounds
 the total lifetime. Both are fields on `Agents` with defaults set in `NewAgents`.

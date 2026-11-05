@@ -11,6 +11,7 @@ allowed-tools:
   - agents.Await
   - agents.List
   - agents.Roles
+  - agents.Switch
   - agents.Hire
   - agents.Fire
   - bugs.List

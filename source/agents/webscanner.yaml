@@ -16,6 +16,7 @@ allowed-programs:
   - subfinder
 allowed-tools:
   - agents.Quit
+  - agents.Switch
   - files.Copy
   - files.List
   - files.Read

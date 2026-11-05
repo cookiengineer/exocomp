@@ -32,9 +32,14 @@
 - [ ] Implement `tools/Websites.Search()` to be able to search the internet. Don't use google which blocks us all the time, find an LLM friendly free search API provider.
 - [ ] Validate all properties of new agents in `readAgents()`
 
+### Welcome View
+
+- [ ] Write a Welcome View for Exocomp, and offer a selection of available Agents with their descriptions.
+      A click on available agent profile will switch to this agent type using the `agents.Switch` tool.
+
 ### Chat View
 
-- [x] Show chats with agents
+- [ ] Show chats with agents
 
 ### Agents View
 

@@ -358,6 +358,11 @@ func (session *Session) CallTool(id string, name string, method string, argument
 				return nil
 			}
 
+		} else if name == "agents" && method == "Switch" && err0 == nil {
+
+			// NOTE: A successful switch already installed the fresh system prompt and history summary.
+			return nil
+
 		} else {
 
 			content := ""
@@ -780,11 +785,94 @@ func (session *Session) SetAdapter(adapter types.Adapter) {
 
 }
 
+func (session *Session) SetAdapters(adapters []types.Adapter) {
+
+	session.mutex.Lock()
+	session.adapters = make(map[string]types.Adapter)
+
+	for _, adapter := range adapters {
+
+		if adapter != nil {
+			session.adapters[adapter.Name()] = adapter
+		}
+
+	}
+
+	session.mutex.Unlock()
+
+}
+
 func (session *Session) SetTool(tool types.Tool) {
 
 	if tool != nil {
 		session.tools[tool.Name()] = tool
 	}
+
+}
+
+func (session *Session) SetTools(tools []types.Tool) {
+
+	session.mutex.Lock()
+	session.tools = make(map[string]types.Tool)
+
+	for _, tool := range tools {
+
+		if tool != nil {
+			session.tools[tool.Name()] = tool
+		}
+
+	}
+
+	session.mutex.Unlock()
+
+}
+
+func (session *Session) SwitchAgent(agent *types.Agent, summary string) error {
+
+	if agent == nil {
+		return fmt.Errorf("Session.SwitchAgent: Invalid agent.")
+	}
+
+	messages := make([]*schemas.Message, 0)
+
+	for _, message := range agent.Messages {
+
+		if message != nil && message.Role == "system" {
+			messages = append(messages, message)
+		}
+
+	}
+
+	if strings.TrimSpace(summary) != "" {
+
+		messages = append(messages, &schemas.Message{
+			Role:    "assistant",
+			Content: strings.TrimSpace(summary),
+			Created: schemas.NewDatetime(),
+		})
+
+	}
+
+	session.mutex.Lock()
+
+	agent.Messages = messages
+	session.Agent = agent
+
+	if session.Config != nil {
+
+		session.Config.Update(
+			agent.Name,
+			agent.Role,
+			agent.Model,
+			session.Config.Prompt,
+			agent.Temperature,
+		)
+
+	}
+
+	session.mutex.Unlock()
+
+	return nil
 
 }
 

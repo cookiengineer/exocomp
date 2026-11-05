@@ -43,6 +43,24 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "agents.Switch",
+			"description": "Switch the main session to a different preconfigured agent profile. Only available in the main TTY session, not in hired contractor sessions. The previous conversation is summarized and the session continues with the new agent profile.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"role": {
+						"type": "string",
+						"description": "The agent role to switch to, one of agents.Roles, e.g. \"architect\", \"coder\" or \"tester\".",
+						"enum": ["architect", "coder", "exploiter", "planner", "summarizer", "tester", "webscanner"]
+					}
+				},
+				"required": ["role"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "agents.Hire",
 			"description": "Spawn a new contractor agent subprocess that works on a task inside a sandbox. Returns the new agent's unique name, which is required for agents.Await, agents.Fire and agents.Inquire.",
 			"parameters": {

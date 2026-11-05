@@ -66,7 +66,8 @@ import "testing"
 
 ## Code Style
 
-The code base uses a deliberately spacious, verbose style. Follow it exactly:
+See [CODESTYLE.md](./CODESTYLE.md) for the general Go conventions. The code
+base uses a deliberately spacious, verbose style. Follow it exactly:
 
 - **Blank line after every statement block.** Loops, `if` branches and variable
   declarations are separated by blank lines, inside and outside of functions.
@@ -274,7 +275,7 @@ For each tool, confirm every method in its `Call()` switch is tested:
 - `requirements`: `List`, `DefineFunc`, `DefineInterface`, `DefineStruct`, `DefineType`, `Search`, `Signoff`
 - `bugs`: `List`, `Add`, `Fix`, `Search`
 - `changelog`: `Add`, `Change`, `Deprecate`, `Fix`, `List`, `Remove`, `Search`
-- `agents`: `Await`, `List`, `Roles`, `Hire`, `Fire`, `Inquire`, `Quit`
+- `agents`: `Await`, `List`, `Roles`, `Switch`, `Hire`, `Fire`, `Inquire`, `Quit`
 - `humans`: `Ask`, `Choose`, `Answer`
 - `programs`: `List`, `Execute`, `Stat`
 - `skills`: `List`, `Load`, `Unload`, `Execute`

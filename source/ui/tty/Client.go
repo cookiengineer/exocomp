@@ -1,10 +1,12 @@
 package tty
 
 import "exocomp/adapters"
+import "exocomp/agents"
 import "exocomp/engine"
 import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import "bufio"
 import "fmt"
 import "os"
@@ -102,11 +104,15 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 		session.Init()
 	}
 
-	return &Client{
+	client := &Client{
 		Renderer: renderer,
 		Session:  session,
 		Role:     "user",
 	}
+
+	client.bindEvents()
+
+	return client
 
 }
 
@@ -175,7 +181,168 @@ func RestoreClient(session *engine.Session, agents []*types.Agent) *Client {
 		Role:     "user",
 	}
 
+	client.bindEvents()
+
 	return client
+
+}
+
+func (client *Client) bindEvents() {
+
+	if client.Session != nil {
+
+		tool := client.Session.GetTool("agents.Switch")
+
+		if tool != nil {
+
+			agents_tool, ok := tool.(*tools.Agents)
+
+			if ok == true {
+				agents_tool.OnSwitch = client.OnSwitch
+			}
+
+		}
+
+	}
+
+}
+
+func (client *Client) OnSwitch(role string) (string, error) {
+
+	if client.Session != nil {
+
+		tool := client.Session.GetTool("agents.Switch")
+
+		if tool != nil {
+
+			agents_tool, ok0 := tool.(*tools.Agents)
+
+			if ok0 == true {
+
+				messages := client.Session.GetMessages(0)
+				history := make([]*schemas.Message, 0)
+
+				for m := 0; m < len(messages); m++ {
+
+					message := messages[m]
+
+					if message != nil && message.Role == "assistant" {
+
+						tool_calls, err := utils_chat.FindToolCalls(message, []string{"agents.Switch"})
+
+						if err == nil && len(tool_calls) > 0 {
+							break
+						}
+
+					}
+
+					history = append(history, message)
+
+				}
+
+				summary, err0 := agents_tool.Summarize(history)
+
+				if err0 == nil {
+
+					config := *client.Session.Config
+
+					config.Name = ""
+					config.Role = role
+					config.Model = ""
+					config.Prompt = ""
+					config.Temperature = 0.0
+					config.Providers = make(map[string]types.Provider)
+
+					for model, provider := range client.Session.Config.Providers {
+						config.Providers[model] = provider
+					}
+
+					if types.GlobalConfig != nil {
+
+						for model, provider := range types.GlobalConfig.Providers {
+
+							_, ok := config.Providers[model]
+
+							if ok == false {
+								config.Providers[model] = provider
+							}
+
+						}
+
+					}
+
+					new_agent := agents.NewAgent(&config)
+
+					if new_agent != nil {
+
+						if client.Session.Config.Providers == nil {
+							client.Session.Config.Providers = make(map[string]types.Provider)
+						}
+
+						for model, provider := range config.Providers {
+							client.Session.Config.Providers[model] = provider
+						}
+
+						err1 := client.Session.SwitchAgent(new_agent, summary)
+
+						if err1 == nil {
+
+							toolset := tools.Toolset(
+								client.Session.Config.Playground,
+								client.Session.Config.Sandbox,
+								new_agent.Model,
+								client.Session.Config.URL,
+								client.Session.Config.Debug,
+								new_agent.AllowedPrograms,
+								new_agent.AllowedTools,
+							)
+
+							client.Session.SetTools(toolset)
+
+							adapterset := make([]types.Adapter, 0)
+
+							if client.Session.Config.HasProvider(new_agent.Model) {
+
+								adapterset = adapters.Adapterset(
+									client.Session.Config.ResolveURL(new_agent.Model, ""),
+									client.Session.Config.ResolveModel(new_agent.Model),
+								)
+
+							}
+
+							client.Session.SetAdapters(adapterset)
+
+							client.bindSwitchHook()
+
+							if client.Renderer != nil {
+								client.Renderer.Reset()
+							}
+
+							return fmt.Sprintf("agents.Switch: Switched to agent role \"%s\".", new_agent.Role), nil
+
+						} else {
+							return "", fmt.Errorf("agents.Switch: %s", err1.Error())
+						}
+
+					} else {
+						return "", fmt.Errorf("agents.Switch: Unknown agent role \"%s\".", role)
+					}
+
+				} else {
+					return "", err0
+				}
+
+			} else {
+				return "", fmt.Errorf("agents.Switch: Tool does not exist.")
+			}
+
+		} else {
+			return "", fmt.Errorf("agents.Switch: Tool does not exist.")
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Switch: No session available.")
+	}
 
 }
 

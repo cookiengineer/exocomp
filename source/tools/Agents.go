@@ -165,6 +165,7 @@ type Agents struct {
 	Timeout     time.Duration
 	IdleTimeout time.Duration
 	OnQuit      func(report string, success bool)
+	OnSwitch    func(role string) (string, error)
 	mutex       *sync.Mutex
 	contents    map[string]*types.Agent
 	processes   map[string]*agent_process
@@ -182,6 +183,7 @@ func NewAgents(methods []string, playground string, sandbox string, model string
 		Timeout:     30 * time.Minute,
 		IdleTimeout: 5 * time.Minute,
 		OnQuit:      nil,
+		OnSwitch:    nil,
 		mutex:       &sync.Mutex{},
 		contents:    make(map[string]*types.Agent),
 		processes:   make(map[string]*agent_process),
@@ -219,6 +221,16 @@ func (tool *Agents) Call(method string, arguments map[string]interface{}) (strin
 		} else if method == "Roles" {
 
 			return tool.Roles()
+
+		} else if method == "Switch" {
+
+			role, ok1 := arguments["role"].(string)
+
+			if ok1 == true {
+				return tool.Switch(role)
+			} else {
+				return "", fmt.Errorf("agents.%s: %s", method, "Invalid parameter \"role\" is not a string.")
+			}
 
 		} else if method == "Hire" {
 
@@ -481,6 +493,26 @@ func (tool *Agents) Roles() (string, error) {
 
 }
 
+func (tool *Agents) Switch(role string) (string, error) {
+
+	role = utils_fmt.FormatAgentRole(role)
+
+	template, ok := agents.Roles[role]
+
+	if ok == true && template != nil {
+
+		if tool.OnSwitch != nil {
+			return tool.OnSwitch(role)
+		} else {
+			return "", fmt.Errorf("agents.Switch: Agent profiles can only be switched in the main session.")
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Switch: Unknown agent role \"%s\".", role)
+	}
+
+}
+
 func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, error) {
 
 	name := utils_rand.AgentName(role)
@@ -639,129 +671,168 @@ func (tool *Agents) Fire(name string) (string, error) {
 
 func (tool *Agents) Inquire(name string) (string, error) {
 
+	tool.mutex.Lock()
+	agent, ok0 := tool.contents[name]
+	tool.mutex.Unlock()
+
+	if ok0 == true {
+
+		tool.mutex.Lock()
+		messages := utils_chat.SummarizeMessages(agent.Messages, true, true, false)
+		tool.mutex.Unlock()
+
+		prompt := strings.Join([]string{
+			"Please summarize the following conversation, the latest messages are the newest ones.",
+			"",
+			messages,
+		}, "\n")
+
+		summary, err0 := tool.summarizeMessages(prompt)
+
+		if err0 == nil {
+
+			tool.mutex.Lock()
+			_, ok1 := tool.processes[name]
+			tool.mutex.Unlock()
+
+			if ok1 == true {
+
+				result := strings.Join([]string{
+					fmt.Sprintf("agents.Inquire: Summary of currently working agent \"%s\"'s work report:", name),
+					strings.TrimSpace(summary),
+				}, "\n")
+
+				return result, nil
+
+			} else {
+
+				result := strings.Join([]string{
+					fmt.Sprintf("agents.Inquire: Summary of already finished agent \"%s\"'s work report:", name),
+					strings.TrimSpace(summary),
+				}, "\n")
+
+				return result, nil
+
+			}
+
+		} else {
+			return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Inquire: Agent \"%s\" didn't work for us!", name)
+	}
+
+}
+
+func (tool *Agents) Summarize(messages []*schemas.Message) (string, error) {
+
+	prompt := strings.Join([]string{
+		"Please create a detailed technical summary of the following conversation.",
+		"Preserve the user's goals, decisions, important file paths, symbols, tool results and unfinished work.",
+		"The latest messages are the newest ones.",
+		"",
+		utils_chat.SummarizeMessages(messages, true, true, true),
+	}, "\n")
+
+	summary, err0 := tool.summarizeMessages(prompt)
+
+	if err0 == nil {
+		return summary, nil
+	} else {
+		return "", fmt.Errorf("agents.Switch: Failed to summarize previous conversation.")
+	}
+
+}
+
+func (tool *Agents) summarizeMessages(prompt string) (string, error) {
+
 	tmp, err0 := os.MkdirTemp("/tmp", "exocomp-summarizer-*")
 
 	if err0 == nil {
 
-		tool.mutex.Lock()
-		agent, ok0 := tool.contents[name]
-		tool.mutex.Unlock()
+		debug_flag := ""
 
-		if ok0 == true {
+		if tool.Debug == true {
+			debug_flag = "--debug"
+		}
 
-			tool.mutex.Lock()
-			messages := utils_chat.SummarizeMessages(agent.Messages, true, true, false)
-			tool.mutex.Unlock()
+		exe, _ := os.Executable()
 
-			prompt := strings.Join([]string{
-				"Please summarize the following conversation, the latest messages are the newest ones.",
-				"",
-				messages,
-			}, "\n")
+		if os.Getenv("EXOCOMP_AGENT") != "" {
+			exe = os.Getenv("EXOCOMP_AGENT")
+		}
 
-			debug_flag := ""
+		timeout := tool.Timeout
 
-			if tool.Debug == true {
-				debug_flag = "--debug"
-			}
+		if timeout <= 0 {
+			timeout = 30 * time.Minute
+		}
 
-			exe, _ := os.Executable()
+		resolved_url := ""
 
-			if os.Getenv("EXOCOMP_AGENT") != "" {
-				exe = os.Getenv("EXOCOMP_AGENT")
-			}
+		if tool.URL != nil {
+			resolved_url = tool.URL.String()
+		}
 
-			timeout := tool.Timeout
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
 
-			if timeout <= 0 {
-				timeout = 30 * time.Minute
-			}
+		cmd := exec.CommandContext(
+			ctx,
+			exe,
+			"agent",
+			fmt.Sprintf("--name=\"%s\"", utils_rand.AgentName("summarizer")),
+			fmt.Sprintf("--role=\"%s\"", "summarizer"),
+			fmt.Sprintf("--model=\"%s\"", tool.Model),
+			fmt.Sprintf("--prompt=\"%s\"", prompt),
+			// --temperature set by agent role
+			// --playground set by cmd.Dir
+			// --sandbox set by cmd.Dir
+			fmt.Sprintf("--url=\"%s\"", resolved_url),
+			debug_flag,
+		)
+		cmd.Dir = tmp
 
-			ctx, cancel := context.WithTimeout(context.Background(), timeout)
-			defer cancel()
+		stdout_buffer := bytes.Buffer{}
+		cmd.Stdout = &stdout_buffer
 
-			cmd := exec.CommandContext(
-				ctx,
-				exe,
-				"agent",
-				fmt.Sprintf("--name=\"%s\"", utils_rand.AgentName("summarizer")),
-				fmt.Sprintf("--role=\"%s\"", "summarizer"),
-				fmt.Sprintf("--model=\"%s\"", tool.Model),
-				fmt.Sprintf("--prompt=\"%s\"", prompt),
-				// --temperature set by agent role
-				// --playground set by cmd.Dir
-				// --sandbox set by cmd.Dir
-				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
-				debug_flag,
-			)
-			cmd.Dir = tmp
+		err1 := cmd.Run()
 
-			stdout_buffer := bytes.Buffer{}
-			cmd.Stdout = &stdout_buffer
+		if err1 == nil {
 
-			err1 := cmd.Run()
+			os.RemoveAll(tmp)
 
-			if err1 == nil {
+			lines := strings.Split(strings.TrimSpace(stdout_buffer.String()), "\n")
 
-				os.RemoveAll(tmp)
+			if len(lines) > 0 {
 
-				lines := strings.Split(strings.TrimSpace(stdout_buffer.String()), "\n")
+				line := strings.TrimSpace(lines[len(lines)-1])
+				summary := schemas.Message{}
 
-				if len(lines) > 0 {
+				if strings.HasPrefix(line, "schemas.Message:") {
+					line = strings.TrimSpace(line[16:])
+				}
 
-					line := strings.TrimSpace(lines[len(lines)-1])
-					summary := schemas.Message{}
+				err2 := json.Unmarshal([]byte(line), &summary)
 
-					if strings.HasPrefix(line, "schemas.Message:") {
-						line = strings.TrimSpace(line[16:])
-					}
-
-					err2 := json.Unmarshal([]byte(line), &summary)
-
-					if err2 == nil {
-
-						tool.mutex.Lock()
-						_, ok1 := tool.processes[name]
-						tool.mutex.Unlock()
-
-						if ok1 == true {
-
-							result := strings.Join([]string{
-								fmt.Sprintf("agents.Inquire: Summary of currently working agent \"%s\"'s work report:", name),
-								strings.TrimSpace(summary.Content),
-							}, "\n")
-
-							return result, nil
-
-						} else {
-
-							result := strings.Join([]string{
-								fmt.Sprintf("agents.Inquire: Summary of already finished agent \"%s\"'s work report:", name),
-								strings.TrimSpace(summary.Content),
-							}, "\n")
-
-							return result, nil
-
-						}
-
-					} else {
-						return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
-					}
-
+				if err2 == nil {
+					return strings.TrimSpace(summary.Content), nil
 				} else {
-					return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
+					return "", fmt.Errorf("Cannot parse summary")
 				}
 
 			} else {
-				return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
+				return "", fmt.Errorf("Cannot parse summary")
 			}
 
 		} else {
-			return "", fmt.Errorf("agents.Inquire: Agent \"%s\" didn't work for us!", name)
+			os.RemoveAll(tmp)
+			return "", fmt.Errorf("Cannot summarize messages")
 		}
 
 	} else {
-		return "", fmt.Errorf("agents.Inquire: Cannot create temporary workspace.")
+		return "", fmt.Errorf("Cannot create temporary workspace")
 	}
 
 }
@@ -799,15 +870,17 @@ func (tool *Agents) Schemas() []schemas.Tool {
 		for _, schema := range AgentsSchema {
 
 			// NOTE: Patch the JSON Schema based on available Agent Roles _at runtime_
-			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), "Hire") {
+			if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), "Hire") || schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), "Switch") {
 
 				roles := make([]string, 0)
 
 				for role, _ := range agents.Roles {
 
-					if role != "planner" {
-						roles = append(roles, role)
+					if schema.Function.Name == fmt.Sprintf("%s.%s", tool.Name(), "Hire") && role == "planner" {
+						continue
 					}
+
+					roles = append(roles, role)
 
 				}
 
