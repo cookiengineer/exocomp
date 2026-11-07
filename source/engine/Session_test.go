@@ -1,6 +1,7 @@
 package engine
 
 import "exocomp/schemas"
+import "exocomp/tools"
 import "exocomp/types"
 import "encoding/json"
 import "fmt"
@@ -258,3 +259,44 @@ func TestSession_ChangesNotifyToolCalls(t *testing.T) {
 
 }
 
+func TestSession_CallTool_HumansAnswer_NoPanic(t *testing.T) {
+
+	session := newTestSession()
+	tool := tools.NewHumans([]string{"Ask", "Choose"}, ".", ".")
+	session.SetTool(tool)
+
+	done := make(chan struct{})
+
+	go func() {
+		_, _ = tool.Ask("What is your name?")
+		close(done)
+	}()
+
+	deadline := time.Now().Add(1 * time.Second)
+
+	for time.Now().Before(deadline) {
+
+		if len(tool.Snapshot()) > 0 {
+			break
+		}
+
+		time.Sleep(5 * time.Millisecond)
+
+	}
+
+	err := session.CallTool("", "humans", "Answer", map[string]any{
+		"question": "What is your name?",
+		"answer":   "Alice",
+	})
+
+	if err != nil {
+		t.Fatalf("Expected %v to be nil", err)
+	}
+
+	select {
+	case <-done:
+	case <-time.After(1 * time.Second):
+		t.Fatalf("Expected Ask to return after the answer")
+	}
+
+}

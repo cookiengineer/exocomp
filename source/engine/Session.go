@@ -213,7 +213,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 
 			session.mutex.Lock()
 
-			for m := len(session.Agent.Messages); m >= 0; m-- {
+			for m := len(session.Agent.Messages) - 1; m >= 0; m-- {
 
 				message := session.Agent.Messages[m]
 
