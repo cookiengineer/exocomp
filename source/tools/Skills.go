@@ -4,7 +4,7 @@ import "exocomp/schemas"
 import "exocomp/types"
 import utils_bytes "exocomp/utils/bytes"
 import utils_fmt "exocomp/utils/fmt"
-import utils_landlock "exocomp/utils/landlock"
+import utils_sandbox "exocomp/utils/sandbox"
 import "context"
 import "fmt"
 import "os"
@@ -436,7 +436,7 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 					}()
 
 					scripts_dir := filepath.Join(tool.Playground, "skills", skill.Name, "scripts")
-					cmd, err2 := utils_landlock.CommandContext(ctx, tool.Sandbox, runtime, runtime_arguments, []string{scripts_dir})
+					cmd, err2 := utils_sandbox.CommandContext(ctx, tool.Sandbox, runtime, runtime_arguments, []string{scripts_dir})
 
 					if err2 == nil {
 

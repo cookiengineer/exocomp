@@ -1,11 +1,11 @@
-package landlock
+package sandbox
 
 import "strings"
 
-func setEnv(environment []string, name string, value string) []string {
+func unsetEnv(environment []string, name string) []string {
 
 	prefix := name + "="
-	result := make([]string, 0, len(environment)+1)
+	result := make([]string, 0, len(environment))
 
 	for _, entry := range environment {
 
@@ -14,8 +14,6 @@ func setEnv(environment []string, name string, value string) []string {
 		}
 
 	}
-
-	result = append(result, prefix+value)
 
 	return result
 

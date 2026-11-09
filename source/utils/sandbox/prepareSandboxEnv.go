@@ -1,14 +1,11 @@
-package landlock
+package sandbox
 
-import "errors"
-import "fmt"
-import "io/fs"
 import "os"
 import "path/filepath"
 
 func prepareSandboxEnv(sandbox string) ([]string, error) {
 
-	base := filepath.Join(sandbox, ".exocomp", "landlock")
+	base := filepath.Join(sandbox, ".exocomp", sandboxDirectory())
 	home := filepath.Join(base, "home")
 	tmp := filepath.Join(base, "tmp")
 	cache := filepath.Join(base, "cache")
@@ -63,27 +60,5 @@ func prepareSandboxEnv(sandbox string) ([]string, error) {
 	} else {
 		return nil, err0
 	}
-
-}
-
-func prepareSandboxDirectories(directories []string) error {
-
-	for _, directory := range directories {
-
-		err := os.MkdirAll(directory, 0755)
-
-		if err != nil {
-
-			if errors.Is(err, fs.ErrPermission) {
-				return fmt.Errorf("landlock.prepareSandboxDirectories: Permission denied.")
-			} else {
-				return fmt.Errorf("landlock.prepareSandboxDirectories: Cannot prepare sandbox.")
-			}
-
-		}
-
-	}
-
-	return nil
 
 }

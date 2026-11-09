@@ -1,6 +1,6 @@
 package tools
 
-import "exocomp/utils/landlock"
+import "exocomp/utils/sandbox"
 import "fmt"
 import "os"
 import "os/exec"
@@ -29,7 +29,7 @@ func buildSandboxExec(t *testing.T) string {
 
 		tools_dir := filepath.Dir(filename)
 		output := filepath.Join(os.TempDir(), "exocomp-sandbox-test")
-		cmd := exec.Command("go", "build", "-o", output, "../cmds/exocomp-sandbox/main.go")
+		cmd := exec.Command("go", "build", "-o", output, "../cmds/exocomp-sandbox")
 		cmd.Dir = tools_dir
 
 		data, err := cmd.CombinedOutput()
@@ -51,16 +51,12 @@ func buildSandboxExec(t *testing.T) string {
 
 }
 
-func requireLandlock(t *testing.T) {
+func requireSandbox(t *testing.T) {
 
 	t.Helper()
 
-	if runtime.GOOS != "linux" {
-		t.Skip("landlock is only supported on Linux")
-	}
-
-	if landlock.Supported() == false {
-		t.Skip("landlock is not available on this kernel")
+	if sandbox.Supported() == false {
+		t.Skip("sandboxing is not available on this system")
 	}
 
 	t.Setenv("EXOCOMP_SANDBOX", buildSandboxExec(t))

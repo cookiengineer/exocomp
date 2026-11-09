@@ -1,10 +1,10 @@
 package main
 
-import "exocomp/utils/landlock"
+import "exocomp/utils/sandbox"
 import "os"
 
 func main() {
 
-	os.Exit(landlock.Execute(os.Args[1:]))
+	os.Exit(sandbox.Execute(os.Args[1:]))
 
 }

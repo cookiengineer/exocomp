@@ -7,7 +7,7 @@ import "testing"
 
 func TestPrograms_Execute(t *testing.T) {
 
-	requireLandlock(t)
+	requireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -18,6 +18,8 @@ func TestPrograms_Execute(t *testing.T) {
 	if err0 != nil {
 		t.Errorf("Expected %v to be nil", err0)
 	}
+
+	resolved_sandbox, err_resolved := filepath.EvalSymlinks(sandbox)
 
 	if tool != nil {
 
@@ -55,7 +57,7 @@ func TestPrograms_Execute(t *testing.T) {
 				t.Errorf("Expected \"%s\" to be executed", "pwd")
 			}
 
-			if lines2[1] != sandbox {
+			if lines2[1] != sandbox && (err_resolved != nil || lines2[1] != resolved_sandbox) {
 				t.Errorf("Expected \"%s\" to be \"%s\"", lines2[1], sandbox)
 			}
 
@@ -131,7 +133,7 @@ func TestPrograms_Execute(t *testing.T) {
 
 func TestPrograms_ExecuteWithoutPermission(t *testing.T) {
 
-	requireLandlock(t)
+	requireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -382,7 +384,7 @@ func TestPrograms_StatWithoutProgram(t *testing.T) {
 
 func TestPrograms_Call_OptionalArguments(t *testing.T) {
 
-	requireLandlock(t)
+	requireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -450,7 +452,7 @@ func TestPrograms_Call_OptionalArguments(t *testing.T) {
 
 func TestPrograms_ExecuteSymlinks(t *testing.T) {
 
-	requireLandlock(t)
+	requireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-symlink-*")
 	sandbox := filepath.Join(playground, "programs")

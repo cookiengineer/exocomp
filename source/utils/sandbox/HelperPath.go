@@ -1,4 +1,4 @@
-package landlock
+package sandbox
 
 import "fmt"
 import "os"
@@ -26,7 +26,7 @@ func HelperPath() (string, error) {
 			}
 
 		} else {
-			return "", fmt.Errorf("landlock.HelperPath: Sandbox helper is not installed.")
+			return "", fmt.Errorf("sandbox.HelperPath: Sandbox helper is not installed.")
 		}
 
 	} else {
@@ -71,21 +71,9 @@ func HelperPath() (string, error) {
 			}
 
 		} else {
-			return "", fmt.Errorf("landlock.HelperPath: Sandbox helper is not installed.")
+			return "", fmt.Errorf("sandbox.HelperPath: Sandbox helper is not installed.")
 		}
 
-	}
-
-}
-
-func absolutePath(path string) (string, error) {
-
-	absolute, err := filepath.Abs(path)
-
-	if err == nil {
-		return absolute, nil
-	} else {
-		return "", fmt.Errorf("landlock.absolutePath: Cannot resolve helper path.")
 	}
 
 }

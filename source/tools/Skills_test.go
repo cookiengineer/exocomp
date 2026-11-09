@@ -132,7 +132,7 @@ func TestSkills_Load_Unload(t *testing.T) {
 
 func TestSkills_Execute(t *testing.T) {
 
-	requireLandlock(t)
+	requireSandbox(t)
 
 	tool := newTestSkills(t, "scan", "Scan websites for links")
 

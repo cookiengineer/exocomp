@@ -1,5 +1,3 @@
-//go:build linux
-
 package tools
 
 import "os"
@@ -7,11 +5,11 @@ import "path/filepath"
 import "strings"
 import "testing"
 
-func TestPrograms_ExecuteLandlock(t *testing.T) {
+func TestPrograms_ExecuteSandbox(t *testing.T) {
 
-	requireLandlock(t)
+	requireSandbox(t)
 
-	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-landlock-*")
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-sandbox-*")
 	sandbox := filepath.Join(playground, "programs")
 	outside := filepath.Join(playground, "outside")
 
@@ -120,11 +118,11 @@ func TestPrograms_ExecuteLandlock(t *testing.T) {
 
 }
 
-func TestPrograms_ExecuteLandlockMissingHelper(t *testing.T) {
+func TestPrograms_ExecuteSandboxMissingHelper(t *testing.T) {
 
-	requireLandlock(t)
+	requireSandbox(t)
 
-	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-landlock-*")
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-sandbox-*")
 	sandbox := filepath.Join(playground, "programs")
 
 	err0 := os.MkdirAll(sandbox, 0755)

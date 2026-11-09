@@ -42,42 +42,63 @@ searches and folder copies skip symlink entries entirely.
 
 `programs.Execute` applies the same validation to path-like arguments.
 
-### Process Confinement (Landlock)
+### Process Confinement (Landlock / Seatbelt)
 
 `programs.Execute` and `skills.Execute` run their subprocesses through the
 `exocomp-sandbox` helper. The helper is spawned with the target program and
-applies a Linux [landlock](https://docs.kernel.org/userspace-api/landlock.html)
-ruleset before `execve`:
+applies the platform sandbox before executing it:
+
+- On Linux, a [landlock](https://docs.kernel.org/userspace-api/landlock.html)
+  ruleset is applied before `execve`.
+- On macOS, an SBPL profile is generated and applied through
+  `/usr/bin/sandbox-exec -p`.
+
+Both backends share the same fixed filesystem and process policy:
 
 - The sandbox folder is the only writable location.
-- A read-only allowlist covers system binaries, libraries, configuration,
-  `/proc`, `/sys` and the resolved target program directory.
+- A read-only allowlist covers system binaries, libraries, configuration and
+  the resolved target program directory.
 - Basic device nodes (`/dev/null`, `/dev/zero`, `/dev/urandom`, ...) are
   readable and writable.
-- `PR_SET_NO_NEW_PRIVS` is set before restricting, which also blocks setuid
-  privilege escalation.
 - The read/write policy is fixed. There is no `off` switch and no fallback: if
-  landlock or the helper is unavailable, execution fails with a fixed error.
-  Because landlock is Linux-only, `programs.Execute` and `skills.Execute`
-  refuse to run on other operating systems.
+  the platform sandbox or the helper is unavailable, execution fails with a
+  fixed error.
+
+On Linux, `PR_SET_NO_NEW_PRIVS` is set before restricting, which also blocks
+setuid privilege escalation. Because landlock is Linux-only, the Linux backend
+refuses to run on other operating systems. Network access is not restricted by
+landlock, and `/proc` and `/sys` are readable for compatibility.
+
+On macOS, the generated SBPL profile is deny-by-default and denies network
+access. Paths are resolved through `filepath.EvalSymlinks` before being emitted
+because the kernel matches resolved vnodes. Both the original and resolved forms
+are included, which covers `/tmp` -> `/private/tmp`, `/var` -> `/private/var`
+and `/etc` -> `/private/etc`. The profile allows only the configured file,
+process, sysctl, signal, Mach lookup and POSIX semaphore operations.
+`sandbox-exec` is deprecated since macOS 10.8 but remains available and is used
+by Bazel, Nix, Homebrew, Claude Code and Codex. Using `sandbox-exec` instead of
+the cgo `sandbox_init` API keeps the whole project buildable with
+`CGO_ENABLED=0`.
 
 HOME, temp, runtime and Go cache directories are redirected into
-`<sandbox>/.exocomp/landlock/` so ordinary tools such as `go`, `gofmt` and `gcc`
-can write without leaving the sandbox. Credential and session sockets inherited
-from the agent environment (`SSH_AUTH_SOCK`, `GPG_AGENT_INFO`,
-`DBUS_SESSION_BUS_ADDRESS`, `KRB5CCNAME`, `DISPLAY`, ...) are removed from the
-child environment. `.exocomp` is hidden from `files.List` and ignored by the Go
-toolchain.
+`<sandbox>/.exocomp/landlock/` on Linux and `<sandbox>/.exocomp/seatbelt/` on
+macOS so ordinary tools such as `go`, `gofmt` and `gcc` can write without
+leaving the sandbox. Credential and session sockets inherited from the agent
+environment (`SSH_AUTH_SOCK`, `GPG_AGENT_INFO`, `DBUS_SESSION_BUS_ADDRESS`,
+`KRB5CCNAME`, `DISPLAY`, ...) are removed from the child environment.
+`.exocomp` is hidden from `files.List` and ignored by the Go toolchain.
 
 The helper is discovered next to the running `exocomp` binary (or via
 `EXOCOMP_SANDBOX` for development). The installer places it in the same `bin`
 folder as `exocomp` and `exocomp-agent`.
 
-Known limitations: network access is not restricted, `/proc` and `/sys` are
-readable for compatibility, landlock does not mediate every operation
-(metadata changes, ptrace, signals, already-open file descriptors), and programs
-that expect host configuration or caches outside the sandbox may need sandbox
-copies.
+Known limitations: on Linux, landlock does not restrict network access, `/proc`
+and `/sys` are readable for compatibility, and metadata changes, ptrace, signals
+and already-open file descriptors are not mediated. On macOS, the seatbelt
+profile denies network access by default, but the platform still does not
+mediate every operation and pre-opened file descriptors remain usable. On both
+platforms, programs that expect host configuration or caches outside the sandbox
+may need sandbox copies.
 
 ## Module Layout
 

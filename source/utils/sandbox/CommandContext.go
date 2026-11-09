@@ -1,4 +1,4 @@
-package landlock
+package sandbox
 
 import "context"
 import "fmt"
@@ -12,11 +12,11 @@ func CommandContext(ctx context.Context, sandbox string, program string, argumen
 	target, err0 := exec.LookPath(program)
 
 	if err0 != nil {
-		return nil, fmt.Errorf("landlock.CommandContext: Program doesn't exist.")
+		return nil, fmt.Errorf("sandbox.CommandContext: Program doesn't exist.")
 	}
 
 	if Supported() == false {
-		return nil, fmt.Errorf("landlock.CommandContext: Sandboxing is not supported on this system.")
+		return nil, fmt.Errorf("sandbox.CommandContext: Sandboxing is not supported on this system.")
 	}
 
 	helper, err1 := HelperPath()
@@ -28,13 +28,13 @@ func CommandContext(ctx context.Context, sandbox string, program string, argumen
 	sandbox_abs, err2 := filepath.Abs(sandbox)
 
 	if err2 != nil {
-		return nil, fmt.Errorf("landlock.CommandContext: Cannot resolve sandbox path.")
+		return nil, fmt.Errorf("sandbox.CommandContext: Cannot resolve sandbox path.")
 	}
 
 	target_abs, err3 := filepath.Abs(target)
 
 	if err3 != nil {
-		return nil, fmt.Errorf("landlock.CommandContext: Cannot resolve program path.")
+		return nil, fmt.Errorf("sandbox.CommandContext: Cannot resolve program path.")
 	}
 
 	environment, err4 := prepareSandboxEnv(sandbox_abs)
@@ -54,7 +54,7 @@ func CommandContext(ctx context.Context, sandbox string, program string, argumen
 		if err5 == nil {
 			helper_arguments = append(helper_arguments, "--read="+read_abs)
 		} else {
-			return nil, fmt.Errorf("landlock.CommandContext: Cannot resolve read path.")
+			return nil, fmt.Errorf("sandbox.CommandContext: Cannot resolve read path.")
 		}
 
 	}

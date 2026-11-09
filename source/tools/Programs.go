@@ -2,7 +2,7 @@ package tools
 
 import "exocomp/schemas"
 import utils_bytes "exocomp/utils/bytes"
-import utils_landlock "exocomp/utils/landlock"
+import utils_sandbox "exocomp/utils/sandbox"
 import "context"
 import "fmt"
 import "os/exec"
@@ -172,7 +172,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		}()
 
-		cmd, err2 := utils_landlock.CommandContext(ctx, tool.Sandbox, program, program_arguments, []string{})
+		cmd, err2 := utils_sandbox.CommandContext(ctx, tool.Sandbox, program, program_arguments, []string{})
 
 		if err2 == nil {
 
