@@ -84,7 +84,7 @@ Check the unit tests on whether the Tools can be relied on or not.
 | Findings                                       |                                            | reports findings of vulnerabilities and weaknesses | `pentester`                                             |
 | [Programs](./source/tools/Programs.go)         | [Yes](./source/tools/Programs_test.go)     | interacts with installed programs                  | `coder`, `tester`                                       |
 | [Requirements](./source/tools/Requirements.go) | [Yes](./source/tools/Requirements_test.go) | manages specifications of implementations          | `architect`, `coder`, `tester`                          |
-| [Skills](./source/tools/Skills.go)             |                                            | loads and Unloads Agent Skills [2]                 | `planner`, `architect`, `coder`, `tester`               |
+| [Skills](./source/tools/Skills.go)             | [Yes](./source/tools/Skills_test.go)       | loads and Unloads Agent Skills [2]                 | `planner`, `architect`, `coder`, `tester`               |
 | Kiwix                                          |                                            | researches knowledge from offline web archives     | `researcher`                                            |
 | Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `pentester`, `threathunter`                             |
 | [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode                    | `webscanner`, `exploiter`                               |
