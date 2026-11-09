@@ -5,37 +5,6 @@ import "slices"
 import "strings"
 import "time"
 
-func toConsoleMessageWords(message string) []string {
-
-	result := make([]string, 0)
-	chunk := ""
-
-	for m := 0; m < len(message); m++ {
-
-		chr := string(message[m])
-
-		if chr == " " {
-
-			if chunk != "" {
-				result = append(result, chunk)
-			}
-
-			chunk = ""
-
-		} else {
-			chunk += chr
-		}
-
-	}
-
-	if chunk != "" {
-		result = append(result, chunk)
-	}
-
-	return result
-
-}
-
 type ConsoleMessage struct {
 	Time   time.Time `json:"time"`
 	Method string    `json:"method"`
@@ -89,8 +58,8 @@ func (message *ConsoleMessage) IsSame(other ConsoleMessage) bool {
 
 		if strings.Contains(message.Value, " of ") && strings.Contains(other.Value, " of ") {
 
-			words1 := toConsoleMessageWords(message.Value)
-			words2 := toConsoleMessageWords(other.Value)
+			words1 := getConsoleMessageWords(message.Value)
+			words2 := getConsoleMessageWords(other.Value)
 
 			index1 := slices.Index(words1, "of")
 			index2 := slices.Index(words2, "of")
@@ -114,7 +83,7 @@ func (message *ConsoleMessage) IsSame(other ConsoleMessage) bool {
 
 		} else if strings.Contains(message.Value, " of ") && !strings.Contains(other.Value, " of ") {
 
-			words1 := toConsoleMessageWords(message.Value)
+			words1 := getConsoleMessageWords(message.Value)
 			index1 := slices.Index(words1, "of")
 
 			if index1 > 0 && index1 < len(words1)-1 {
@@ -132,7 +101,7 @@ func (message *ConsoleMessage) IsSame(other ConsoleMessage) bool {
 
 		} else if !strings.Contains(message.Value, " of ") && strings.Contains(other.Value, " of ") {
 
-			words2 := toConsoleMessageWords(message.Value)
+			words2 := getConsoleMessageWords(message.Value)
 			index2 := slices.Index(words2, "of")
 
 			if index2 > 0 && index2 < len(words2)-1 {

@@ -1,6 +1,10 @@
 
 # TODO
 
+## source/utils/tty
+
+- [ ] Refactor all Theme related things in source/ui/tty to use only utils/tty/Style instances directly, exported as variables
+
 ## source/engine/Session
 
 - No retry/backoff implemented. Session.infer_chat_completions does a single POST; transient 429/5xx and connection errors just fail the whole turn.
@@ -10,6 +14,10 @@
 
 ## source/tools
 
+(implement this AFTER ALL ELSE IS IMPLEMENTED)
+
+- watchtower.* tool to connect to watchtower instances
+- guard.* tool to connect to remote systems via watchtower (and watchtower tokens)
 - vulnerabilities.* tool to search CVEs
 - findings.* tool to store pentest findings in a strictly defined schema to finally generate a PDF report
 - requirements.Trace(file, symbol) to trace callers/callees of a Symbol (which would feed the Requirements graph view in the frontend).

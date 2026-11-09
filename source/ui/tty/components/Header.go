@@ -1,7 +1,6 @@
 package components
 
 import "exocomp/engine"
-import "exocomp/ui/tty/colors"
 import "exocomp/ui/tty/styles"
 import utils_fmt "exocomp/utils/fmt"
 import utils_tty "exocomp/utils/tty"

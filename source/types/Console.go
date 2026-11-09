@@ -5,24 +5,6 @@ import "os"
 import "strings"
 import "sync"
 
-func toConsoleIndent(offset int) string {
-
-	result := ""
-
-	if offset > 0 {
-
-		result = "|"
-
-		for o := 1; o < offset; o++ {
-			result += "|"
-		}
-
-	}
-
-	return result
-
-}
-
 type Console struct {
 	Messages   []ConsoleMessage `json:"messages"`
 	Stdout     *os.File         `json:"stdout"`
@@ -451,7 +433,7 @@ func (console *Console) Group(raw string) {
 
 	if enabled, _ := console.methods["Group"]; enabled == true {
 
-		indent := toConsoleIndent(console.offset)
+		indent := getConsoleIndent(console.offset)
 		lines := message.Lines()
 
 		if len(lines) == 1 && console.Stdout != nil {
@@ -491,7 +473,7 @@ func (console *Console) GroupEnd(raw string) {
 		}
 		console.mutex.Unlock()
 
-		indent := toConsoleIndent(console.offset)
+		indent := getConsoleIndent(console.offset)
 		lines := message.Lines()
 
 		if len(lines) == 1 && console.Stdout != nil {
@@ -518,7 +500,7 @@ func (console *Console) Log(raw string) {
 
 	if enabled, _ := console.methods["Log"]; enabled == true {
 
-		indent := toConsoleIndent(console.offset)
+		indent := getConsoleIndent(console.offset)
 		lines := message.Lines()
 
 		if len(lines) > 0 && console.Stdout != nil {
@@ -555,7 +537,7 @@ func (console *Console) Error(raw string) {
 
 	if enabled, _ := console.methods["Error"]; enabled == true {
 
-		indent := toConsoleIndent(console.offset)
+		indent := getConsoleIndent(console.offset)
 		lines := message.Lines()
 
 		if len(lines) > 0 && console.Stderr != nil {
@@ -592,7 +574,7 @@ func (console *Console) Info(raw string) {
 
 	if enabled, _ := console.methods["Info"]; enabled == true {
 
-		indent := toConsoleIndent(console.offset)
+		indent := getConsoleIndent(console.offset)
 		lines := message.Lines()
 
 		if len(lines) > 0 && console.Stdout != nil {
@@ -634,7 +616,7 @@ func (console *Console) Progress(raw string) {
 
 	if enabled, _ := console.methods["Progress"]; enabled == true {
 
-		indent := toConsoleIndent(console.offset)
+		indent := getConsoleIndent(console.offset)
 		lines := message.Lines()
 
 		if len(lines) == 1 {
@@ -736,7 +718,7 @@ func (console *Console) Warn(raw string) {
 
 	if enabled, _ := console.methods["Warn"]; enabled == true {
 
-		indent := toConsoleIndent(console.offset)
+		indent := getConsoleIndent(console.offset)
 		lines := message.Lines()
 
 		if len(lines) > 0 && console.Stdout != nil {

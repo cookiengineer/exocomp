@@ -7,18 +7,12 @@ import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
-import "bufio"
 import "fmt"
-import "os"
-import "os/signal"
-import "strings"
-import "syscall"
-import "time"
 
 type Client struct {
-	Renderer *Renderer
-	Session  *engine.Session
-	Role     string
+	App     *App
+	Session *engine.Session
+	Role    string
 }
 
 func NewClient(agent *types.Agent, config *types.Config) *Client {
@@ -41,8 +35,6 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 	} else {
 		session = engine.NewSession(agent, config)
 	}
-
-	renderer := NewRenderer(session)
 
 	if agent.HasTools() {
 
@@ -105,9 +97,9 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 	}
 
 	client := &Client{
-		Renderer: renderer,
-		Session:  session,
-		Role:     "user",
+		App:     NewApp(session),
+		Session: session,
+		Role:    "user",
 	}
 
 	client.bindEvents()
@@ -117,8 +109,6 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 }
 
 func RestoreClient(session *engine.Session, agents []*types.Agent) *Client {
-
-	renderer := NewRenderer(session)
 
 	if session.Agent.HasTools() {
 
@@ -176,9 +166,9 @@ func RestoreClient(session *engine.Session, agents []*types.Agent) *Client {
 	}
 
 	client := &Client{
-		Renderer: renderer,
-		Session:  session,
-		Role:     "user",
+		App:     NewApp(session),
+		Session: session,
+		Role:    "user",
 	}
 
 	client.bindEvents()
@@ -314,8 +304,9 @@ func (client *Client) OnSwitch(role string) (string, error) {
 
 							client.bindEvents()
 
-							if client.Renderer != nil {
-								client.Renderer.Reset()
+							if client.App != nil {
+								client.App.Transcript.Reset()
+								client.App.refresh()
 							}
 
 							return fmt.Sprintf("agents.Switch: Switched to agent role \"%s\".", new_agent.Role), nil
@@ -378,113 +369,18 @@ func (client *Client) Destroy() {
 
 	}
 
-	if client.Renderer != nil {
-		client.Renderer.Destroy()
+	if client.App != nil {
+		client.App.Destroy()
 	}
 
 }
 
 func (client *Client) Init() {
 
-	signals := make(chan os.Signal, 1)
+	if client.App != nil {
 
-	signal.Notify(
-		signals,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-	)
-
-	if client.Session != nil {
-		go client.Session.Init()
-	}
-
-	go func() {
-		client.InputLoop()
-		signals <- syscall.SIGINT
-	}()
-
-	if client.Renderer != nil {
-		go client.Renderer.RenderLoop()
-	}
-
-	select {
-	case sig := <-signals:
-
-		switch sig {
-		case syscall.SIGINT:
-
-			client.Destroy()
-			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGINT")
-
-			time.Sleep(1 * time.Second)
-			os.Exit(0)
-
-		case syscall.SIGTERM:
-
-			client.Destroy()
-			fmt.Fprintf(os.Stdout, "Received signal: %s\n", "SIGTERM")
-
-			time.Sleep(1 * time.Second)
-			os.Exit(0)
-
-		default:
-
-			client.Destroy()
-			fmt.Printf("Received signal: %s\n", sig.String())
-
-			time.Sleep(1 * time.Second)
-			os.Exit(0)
-
-		}
-
-	}
-
-}
-
-func (client *Client) InputLoop() {
-
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for scanner.Scan() {
-
-		role := client.Role
-		prompt := strings.TrimSpace(scanner.Text())
-
-		if prompt != "" && client.Session != nil {
-
-			if role == "user" || role == "assistant" {
-
-				if strings.HasPrefix(prompt, "/") && strings.Contains(prompt, " ") && !strings.Contains(prompt, "\n") {
-
-					command := types.ParseCommand(prompt)
-
-					if command != nil {
-						client.Session.CallTool("", command.Name, command.Method, command.Arguments)
-					}
-
-				} else {
-
-					go func() {
-
-						err := client.Session.SendChatRequest(schemas.Message{
-							Role:    role,
-							Content: prompt,
-						})
-
-						if err != nil {
-
-							fmt.Fprintf(os.Stderr, "\nFatal Error: %s\n", err.Error())
-							os.Exit(1)
-
-						}
-
-					}()
-
-				}
-
-			}
-
-		}
+		defer client.Destroy()
+		client.App.Init()
 
 	}
 
@@ -493,8 +389,13 @@ func (client *Client) InputLoop() {
 func (client *Client) SetRole(role string) {
 
 	if role == "user" || role == "assistant" {
+
 		client.Role = role
-		client.Renderer.Role = role
+
+		if client.App != nil {
+			client.App.SetRole(role)
+		}
+
 	}
 
 }

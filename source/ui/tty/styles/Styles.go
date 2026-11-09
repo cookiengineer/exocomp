@@ -18,6 +18,7 @@ var (
 	DialogBorder = utils_tty.NewStyle(colors.BorderBase, colors.BackgroundRaisedBase)
 	DialogTitle  = utils_tty.NewStyle(colors.TextFeedbackInfoBase, colors.BackgroundRaisedBase).WithAttributes(utils_tty.AttrBold)
 	DialogInput  = utils_tty.NewStyle(colors.TextBase, colors.BackgroundRaisedHigh)
+	DialogMuted  = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundRaisedBase)
 
 	Palette = utils_tty.NewStyle(colors.TextBase, colors.BackgroundRaisedHigh)
 
