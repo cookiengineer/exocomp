@@ -14,7 +14,7 @@ func main() {
 
 	if err0 == nil && err1 == nil {
 
-		err2 := utils.CheckModel(base_url, "huihui_ai/Qwen3.6-abliterated:35b")
+		err2 := utils.CheckModel(base_url, "huihui_ai/Qwen3.8-abliterated:27b")
 
 		fmt.Println(err2)
 
@@ -30,8 +30,8 @@ func main() {
 
 			server, err := utils.CreateServer(
 				base_url,
-				"huihui_ai/Qwen3.6-abliterated:35b",
-				"/opt/llama/models/Huihui-CyberStrike-OffSec-35B-abliterated-Q8_0.gguf",
+				"huihui_ai/Qwen3.8-abliterated:27b",
+				"/opt/llama/models/Huihui-Qwen3.8-27B-abliterated.Q4_K_M.gguf",
 			)
 
 			if err == nil && server != nil {

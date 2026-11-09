@@ -28,7 +28,6 @@ ollama serve;
 # Pull models
 ollama pull deepseek-v4-pro:cloud;
 ollama pull huihui_ai/Qwen3.8-abliterated:27b;
-ollama pull huihui_ai/Qwen3.6-abliterated:35b;
 ```
 
 ```bash
@@ -44,7 +43,7 @@ go run ./cmds/exocomp/main.go web --role=planner --url="http://ollama_server_ip:
 
 Recommended hardware requirements:
 
-- `48GB VRAM GPU` with at least `Vulkan` support
+- `32GB VRAM GPU` with at least `Vulkan` support
 - `80GB HDD space` for models
 
 ```bash

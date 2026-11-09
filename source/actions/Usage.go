@@ -21,7 +21,7 @@ func Usage(options_mode []string) {
 	options_role := make([]string, 0)
 	options_model := []string{
 		strconv.Quote("deepseek-v4-pro:cloud"),
-		strconv.Quote("huihui_ai/Qwen3.6-abliterated:35b"),
+		strconv.Quote("huihui_ai/Qwen3.8-abliterated:27b"),
 	}
 	options_temperature := []string{
 		strconv.FormatFloat(0.1, 'f', 1, 64),
@@ -74,7 +74,7 @@ func Usage(options_mode []string) {
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  # single-agent mode\n")
 	fmt.Fprint(os.Stdout, "  exocomp terminal --role=architect;\n")
-	fmt.Fprint(os.Stdout, "  exocomp web --role=architect --model=\"huihui_ai/Qwen3.6-abliterated:35b\" --temperature=\"0.5\";\n")
+	fmt.Fprint(os.Stdout, "  exocomp web --role=architect --model=\"huihui_ai/Qwen3.8-abliterated:27b\" --temperature=\"0.5\";\n")
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "  # multi-agent mode\n")
 	fmt.Fprint(os.Stdout, "  exocomp terminal --role=planner;\n")

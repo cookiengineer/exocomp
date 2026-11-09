@@ -1,7 +1,7 @@
 name: Peanut Architect
 role: architect
 description: defines software specifications
-model: huihui_ai/Qwen3.6-abliterated:35b
+model: huihui_ai/Qwen3.8-abliterated:27b
 temperature: 0.5
 allowed-images:
 allowed-programs:

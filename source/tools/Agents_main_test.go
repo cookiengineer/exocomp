@@ -82,8 +82,8 @@ func TestMain(main *testing.M) {
 
 		tools_path := getToolsPath()
 		server_path := filepath.Join(tools_path, "..", "third_party/llama", "llama-server")
-		model_name := "huihui_ai/Qwen3.6-abliterated:35b"
-		model_file := "Huihui-CyberStrike-OffSec-35B-abliterated-Q8_0.gguf"
+		model_name := "huihui_ai/Qwen3.8-abliterated:27b"
+		model_file := "Huihui-Qwen3.8-27B-abliterated.Q4_K_M.gguf"
 		model_path := filepath.Join(tools_path, "..", "third_party/models", model_file)
 
 		cmd := exec.Command(

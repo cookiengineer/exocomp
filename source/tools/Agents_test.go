@@ -99,7 +99,7 @@ func TestAgents_Hire(t *testing.T) {
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-agents-*")
 	sandbox := filepath.Join(playground, "agents")
-	model := "huihui_ai/Qwen3.6-abliterated:35b"
+	model := "huihui_ai/Qwen3.8-abliterated:27b"
 	url, _ := net_url.Parse("http://localhost:11434/v1")
 	tool := NewAgents([]string{"Hire", "Await", "Fire", "Quit"}, playground, sandbox, model, url, true)
 

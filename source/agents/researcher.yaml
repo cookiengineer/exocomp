@@ -1,7 +1,7 @@
 name: Peanut Researcher
 role: researcher
 description: researches git repositories, wikis, websites and API documentation
-model: huihui_ai/Qwen3.6-abliterated:35b
+model: huihui_ai/Qwen3.8-abliterated:27b
 temperature: 0.3
 allowed-images:
 allowed-programs:

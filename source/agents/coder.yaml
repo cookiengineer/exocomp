@@ -1,7 +1,7 @@
 name: Peanut Coder
 role: coder
 description: implements specifications into Go code
-model: huihui_ai/Qwen3.6-abliterated:35b
+model: huihui_ai/Qwen3.8-abliterated:27b
 temperature: 0.5
 allowed-images:
 allowed-programs:

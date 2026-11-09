@@ -3,7 +3,7 @@
 set -euo pipefail;
 
 OLLAMA_MODELS="${OLLAMA_MODELS:-${HOME}/.ollama/models}";
-REQUIRED_MODELS=("huihui_ai/Qwen3.6-abliterated:35b" "deepseek-v4-pro:cloud");
+REQUIRED_MODELS=("huihui_ai/Qwen3.8-abliterated:27b" "deepseek-v4-pro:cloud");
 
 echo "Checking Ollama models ...";
 
@@ -53,7 +53,7 @@ AVAILABLE_MB=$((AVAILABLE_KB / 1024));
 CONTEXT=0;
 
 #
-# ~24GB for qwen3.6/qwen3.8 model
+# ~17GB for qwen3.8 model
 #  ~8GB prompt cache
 #
 #  ~8GB for KV @ 64k

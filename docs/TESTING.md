@@ -12,8 +12,8 @@ Testing the live `agents` tool requires a [llama.cpp](https://github.com/ggml-or
 
 # Start llama.cpp server
 llama-server \
-	--model "Huihui-CyberStrike-OffSec-35B-abliterated-Q8_0.gguf" \
-	--alias "huihui_ai/Qwen3.6-abliterated:35b" \
+	--model "Huihui-Qwen3.8-27B-abliterated.Q4_K_M.gguf" \
+	--alias "huihui_ai/Qwen3.8-abliterated:27b" \
 	--gpu-layers all \
 	--ctx-size 32768 \
 	--batch-size 512 \

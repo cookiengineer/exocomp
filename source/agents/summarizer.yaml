@@ -1,7 +1,7 @@
 name: Peanut Summarizer
 role: summarizer
 description: summarizes long texts and conversations
-model: huihui_ai/Qwen3.6-abliterated:35b
+model: huihui_ai/Qwen3.8-abliterated:27b
 temperature: 0.3
 allowed-images:
 allowed-programs:

@@ -1,7 +1,7 @@
 name: Peanut Reverser
 role: reverser
 description: translates binaries or code into Go/CGo code
-model: huihui_ai/Qwen3.6-abliterated:35b
+model: huihui_ai/Qwen3.8-abliterated:27b
 temperature: 0.5
 allowed-images:
   - docker.io/library/alpine

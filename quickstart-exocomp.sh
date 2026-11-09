@@ -20,5 +20,5 @@ quickstart_exocomp() {
 
 }
 
-quickstart_exocomp "planner" "huihui_ai/Qwen3.6-abliterated:35b";
+quickstart_exocomp "planner" "huihui_ai/Qwen3.8-abliterated:27b";
 

@@ -41,20 +41,20 @@ Exocomp uses multiple [Agent Roles](./source/agents/Roles.go):
 | Role                                          | Lifecycle | Default Model                       | Description                                      |
 |:----------------------------------------------|:---------:|:-----------------------------------:|:-------------------------------------------------|
 | [planner](./source/agents/planner.yaml)       | long      | `deepseek-v4-pro:cloud`             | writes with humans and plans project phases      |
-| [architect](./source/agents/architect.yaml)   | short     | `huihui_ai/Qwen3.6-abliterated:35b` | defines software specifications                  |
-| [coder](./source/agents/coder.yaml)           | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements specifications into code              |
-| [researcher](./source/agents/researcher.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads git repositories, wikis, websites and docs |
-| [summarizer](./source/agents/summarizer.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads long texts and summarizes them             |
-| [tester](./source/agents/tester.yaml)         | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements unit tests, writes bug reports        |
+| [architect](./source/agents/architect.yaml)   | short     | `huihui_ai/Qwen3.8-abliterated:27b` | defines software specifications                  |
+| [coder](./source/agents/coder.yaml)           | short     | `huihui_ai/Qwen3.8-abliterated:27b` | implements specifications into code              |
+| [researcher](./source/agents/researcher.yaml) | short     | `huihui_ai/Qwen3.8-abliterated:27b` | reads git repositories, wikis, websites and docs |
+| [summarizer](./source/agents/summarizer.yaml) | short     | `huihui_ai/Qwen3.8-abliterated:27b` | reads long texts and summarizes them             |
+| [tester](./source/agents/tester.yaml)         | short     | `huihui_ai/Qwen3.8-abliterated:27b` | implements unit tests, writes bug reports        |
 
 *Pentesting*
 
 | Role                                              | Lifecycle | Default Model                       | Description                                   |
 |:--------------------------------------------------|:---------:|:-----------------------------------:|:----------------------------------------------|
-| [exploiter](./source/agents/exploiter.yaml)       | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements exploits in CGo                    |
-| [reverser](./source/agents/reverser.yaml)         | short     | `huihui_ai/Qwen3.6-abliterated:35b` | translates binaries or code into Go/CGo code  |
-| [threathunter](./source/agents/threathunter.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | discovers vulnerabilities in infrastructure   |
-| [webscanner](./source/agents/webscanner.yaml)     | short     | `huihui_ai/Qwen3.6-abliterated:35b` | discovers vulnerabilities in web applications |
+| [exploiter](./source/agents/exploiter.yaml)       | short     | `huihui_ai/Qwen3.8-abliterated:27b` | implements exploits in CGo                    |
+| [reverser](./source/agents/reverser.yaml)         | short     | `huihui_ai/Qwen3.8-abliterated:27b` | translates binaries or code into Go/CGo code  |
+| [threathunter](./source/agents/threathunter.yaml) | short     | `huihui_ai/Qwen3.8-abliterated:27b` | discovers vulnerabilities in infrastructure   |
+| [webscanner](./source/agents/webscanner.yaml)     | short     | `huihui_ai/Qwen3.8-abliterated:27b` | discovers vulnerabilities in web applications |
 
 Exocomp uses Tools to interact with the sandbox. Check the implementations to
 see which tools are allowed for which Agent role.
@@ -87,7 +87,7 @@ Check the unit tests on whether the Tools can be relied on or not.
 | Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `exploiter`, `threathunter`, `webscanner`               |
 | [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode                    | `researcher`, `exploiter`, `threathunter`, `webscanner` |
 
-- [1] Requires `llama.cpp` with `huihui_ai/Qwen3.6-abliterated:35b` at `Q8_0` quantization and 48GB VRAM GPU with `vulkan` support.
+- [1] Requires `llama.cpp` with `huihui_ai/Qwen3.8-abliterated:27b` at `Q4_K_M` quantization and 32GB VRAM GPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).
 
 
@@ -203,20 +203,16 @@ that supports the OpenAI compatible endpoints. Take a look at the
 
 Due to the nature of pentesting and cyber security related tasks, it is heavily
 recommended to use `deepseek-v4-pro:cloud` as the model for the `planner` agent
-and to use the following models for the hired short-lived contractor agents.
+and to use the following model for the hired short-lived contractor agents.
 
-Either one is probably fine, but `Qwen3.6-abliterated` is tested and verified to
-work with typical malware reverse engineering and exploit related development tasks.
-
-Qwen3.6:
-
-- [Qwen3.6-abliterated on ollama](https://ollama.com/huihui_ai/Qwen3.6-abliterated)
-- [Qwen3.6-abliterated on huggingface](https://huggingface.co/collections/huihui-ai/qwen36-abliterated)
+`Qwen3.8-abliterated` is tested and verified to work with typical malware reverse
+engineering and exploit related development tasks.
 
 Qwen3.8:
 
 - [Qwen3.8-abliterated on ollama](https://ollama.com/huihui_ai/Qwen3.8-abliterated)
 - [Qwen3.8-abliterated on huggingface](https://huggingface.co/collections/huihui-ai/qwen38-abliterated)
+- [Huihui-Qwen3.8-27B-abliterated GGUF on huggingface](https://huggingface.co/mradermacher/Huihui-Qwen3.8-27B-abliterated-GGUF)
 
 ### License
 
