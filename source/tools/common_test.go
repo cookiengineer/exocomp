@@ -14,7 +14,45 @@ var (
 	sandboxExecOnce sync.Once
 	sandboxExecPath string
 	sandboxExecErr  error
+	fakePodmanOnce  sync.Once
+	fakePodmanPath  string
+	fakePodmanErr   error
 )
+
+func buildFakePodman(t *testing.T) string {
+
+	fakePodmanOnce.Do(func() {
+
+		_, filename, _, ok := runtime.Caller(0)
+
+		if ok == false {
+			fakePodmanErr = fmt.Errorf("Cannot locate test file path")
+			return
+		}
+
+		tools_dir := filepath.Dir(filename)
+		output := filepath.Join(os.TempDir(), "exocomp-fakepodman-test")
+		cmd := exec.Command("go", "build", "-o", output, "./testdata/fakepodman")
+		cmd.Dir = tools_dir
+
+		data, err := cmd.CombinedOutput()
+
+		if err != nil {
+			fakePodmanErr = fmt.Errorf("Cannot build fakepodman: %v: %s", err, strings.TrimSpace(string(data)))
+			return
+		}
+
+		fakePodmanPath = output
+
+	})
+
+	if fakePodmanErr != nil {
+		t.Fatalf("%v", fakePodmanErr)
+	}
+
+	return fakePodmanPath
+
+}
 
 func buildSandboxExec(t *testing.T) string {
 

@@ -5,7 +5,7 @@ import _ "embed"
 import net_url "net/url"
 import "strings"
 
-func Toolset(playground string, sandbox string, model string, url *net_url.URL, debug bool, allowed_programs []string, allowed_tools []string) []types.Tool {
+func Toolset(playground string, sandbox string, model string, url *net_url.URL, debug bool, allowed_programs []string, allowed_images []string, allowed_tools []string) []types.Tool {
 
 	filtered_by_methods := make(map[string][]string, 0)
 	filtered_by_tool := make(map[string]types.Tool)
@@ -44,6 +44,8 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 			tool = NewBugs(allowed_methods, playground, sandbox)
 		case "changelog":
 			tool = NewChangelog(allowed_methods, playground, sandbox)
+		case "containers":
+			tool = NewContainers(allowed_methods, playground, sandbox, allowed_images)
 		case "files":
 			tool = NewFiles(allowed_methods, playground, sandbox)
 		case "humans":

@@ -47,6 +47,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 			config.URL,
 			config.Debug,
 			agent.AllowedPrograms,
+			agent.AllowedImages,
 			agent.AllowedTools,
 		)
 
@@ -217,6 +218,7 @@ func (client *Client) OnSwitch(role string) (string, error) {
 								client.Session.Config.URL,
 								client.Session.Config.Debug,
 								new_agent.AllowedPrograms,
+								new_agent.AllowedImages,
 								new_agent.AllowedTools,
 							)
 

@@ -77,16 +77,16 @@ Check the unit tests on whether the Tools can be relied on or not.
 | [Agents](./source/tools/Agents.go)             | [Yes](./source/tools/Agents_test.go) [1]   | manages contractor lifecycle and profile switch    | `planner`                                               |
 | [Bugs](./source/tools/Bugs.go)                 | [Yes](./source/tools/Bugs_test.go)         | manages documentation of discovered bugs           | `tester`                                                |
 | [Changelog](./source/tools/Changelog.go)       | [Yes](./source/tools/Changelog_test.go)    | manages documentation of development changelog     | `coder`                                                 |
-| Containers                                     |                                            | manages virtual containers                         | `redteamer`, `blueteamer`                               |
-| Exploits                                       |                                            | manages PoCs for CVEs from local dataset           | `pentester`, `reverser`                                 |
+| [Containers](./source/tools/Containers.go)     | [Yes](./source/tools/Containers_test.go)   | manages podman containers                          | `analyst`, `exploiter`, `reverser`, `threathunter`      |
+| Exploits                                       |                                            | manages PoCs for CVEs from local dataset           | `exploiter`, `reverser`                                 |
 | [Files](./source/tools/Files.go)               | [Yes](./source/tools/Files_test.go)        | interacts with files and folders                   | `planner`, `architect`, `coder`, `summarizer`, `tester` |
 | [Humans](./source/tools/Humans.go)             | [Yes](./source/tools/Humans_test.go)       | asks the human clarifying questions                | `planner`                                               |
-| Findings                                       |                                            | reports findings of vulnerabilities and weaknesses | `pentester`                                             |
+| Findings                                       |                                            | reports findings of vulnerabilities and weaknesses | `exploiter`                                             |
 | [Programs](./source/tools/Programs.go)         | [Yes](./source/tools/Programs_test.go)     | interacts with installed programs                  | `coder`, `tester`                                       |
 | [Requirements](./source/tools/Requirements.go) | [Yes](./source/tools/Requirements_test.go) | manages specifications of implementations          | `architect`, `coder`, `tester`                          |
 | [Skills](./source/tools/Skills.go)             | [Yes](./source/tools/Skills_test.go)       | loads and Unloads Agent Skills [2]                 | `planner`, `architect`, `coder`, `tester`               |
 | Kiwix                                          |                                            | researches knowledge from offline web archives     | `researcher`                                            |
-| Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `pentester`, `threathunter`                             |
+| Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `exploiter`, `threathunter`                             |
 | [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode                    | `webscanner`, `exploiter`                               |
 
 - [1] Requires `llama.cpp` with `huihui_ai/Qwen3.6-abliterated:35b` at `Q8_0` quantization and 48GB VRAM GPU with `vulkan` support.

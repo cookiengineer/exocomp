@@ -16,6 +16,7 @@ func RestoreClient(session *engine.Session, agents []*types.Agent) *Client {
 			session.Config.URL,
 			session.Config.Debug,
 			session.Agent.AllowedPrograms,
+			session.Agent.AllowedImages,
 			session.Agent.AllowedTools,
 		)
 

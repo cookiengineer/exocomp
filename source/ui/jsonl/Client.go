@@ -36,6 +36,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 			config.URL,
 			config.Debug,
 			agent.AllowedPrograms,
+			agent.AllowedImages,
 			agent.AllowedTools,
 		)
 

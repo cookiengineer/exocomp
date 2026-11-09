@@ -1,0 +1,191 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "containers.List",
+			"description": "List the containers that belong to this agent's sandbox.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "containers.Images",
+			"description": "List the locally available container images that are allowed for this agent.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "containers.Create",
+			"description": "Create and start a detached container, mounting the sandbox at /workspace. The image must be listed by containers.Images.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"image": {
+						"type": "string",
+						"description": "Allowed image reference, e.g. \"alpine:latest\" or \"docker.io/library/golang:1.27\"."
+					},
+					"name": {
+						"type": "string",
+						"description": "Unique container name using letters, digits, dots, underscores or dashes. Must not start with a dash."
+					},
+					"command": {
+						"type": "string",
+						"description": "Optional command to keep the container running. Defaults to \"sleep\" with the argument \"infinity\"."
+					},
+					"arguments": {
+						"type": "array",
+						"description": "Optional arguments for command. Only valid when command is set.",
+						"items": {
+							"type": "string"
+						},
+						"default": []
+					},
+					"network": {
+						"type": "string",
+						"description": "Container network mode. \"bridge\" provides outbound network access, \"none\" disables networking.",
+						"enum": ["bridge", "none"],
+						"default": "bridge"
+					}
+				},
+				"required": ["image", "name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "containers.Stat",
+			"description": "Show ID, image, state and start time for one container in this sandbox.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Container name, as returned by containers.List."
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "containers.Start",
+			"description": "Start a stopped container in this sandbox.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Container name, as returned by containers.List."
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "containers.Stop",
+			"description": "Stop a running container in this sandbox.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Container name, as returned by containers.List."
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "containers.Remove",
+			"description": "Force-remove a container in this sandbox.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Container name, as returned by containers.List."
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "containers.Exec",
+			"description": "Execute a command inside a running container and return its stdout and stderr. No shell is used.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Container name, as returned by containers.List."
+					},
+					"command": {
+						"type": "string",
+						"description": "Command to execute inside the container, e.g. \"sh\" or \"/bin/ls\"."
+					},
+					"arguments": {
+						"type": "array",
+						"description": "Optional array of string arguments for the command.",
+						"items": {
+							"type": "string"
+						},
+						"default": []
+					},
+					"workdir": {
+						"type": "string",
+						"description": "Absolute working directory inside the container.",
+						"default": "/workspace"
+					}
+				},
+				"required": ["name", "command"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "containers.Logs",
+			"description": "Return the most recent log lines from a container in this sandbox.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Container name, as returned by containers.List."
+					},
+					"tail": {
+						"type": "integer",
+						"description": "Number of recent log lines to return.",
+						"minimum": 1,
+						"maximum": 65536,
+						"default": 1024
+					}
+				},
+				"required": ["name"]
+			}
+		}
+	}
+]

@@ -50,6 +50,20 @@ it via `EXOCOMP_SANDBOX`. On other platforms, and without a usable platform
 sandbox, these execution tests are skipped because the sandboxed execution path
 intentionally refuses to run.
 
+The `containers` tests do not need a real podman installation. They build a
+[fake podman](../source/tools/testdata/fakepodman/main.go) binary once and inject
+it via `EXOCOMP_PODMAN`, so container argument construction, label scoping and
+error sanitization stay deterministic and offline. The fake also records its
+arguments through `EXOCOMP_FAKE_PODMAN_ARGS` for assertions.
+
+A real podman integration test is available but skipped by default. It pulls
+`docker.io/library/alpine:latest` and needs network access:
+
+```bash
+cd /path/to/exocomp/source/tools;
+EXOCOMP_PODMAN_TEST=1 go test -run TestContainers_Integration -v ./
+```
+
 ### Live Agents Tool
 
 Testing the live `agents` tool comes with certain limitations because of how the

@@ -100,6 +100,31 @@ mediate every operation and pre-opened file descriptors remain usable. On both
 platforms, programs that expect host configuration or caches outside the sandbox
 may need sandbox copies.
 
+### Container Execution (Podman)
+
+`containers.*` shells out to an externally installed `podman` binary. It does
+not use `exocomp-sandbox`: podman needs its rootless socket, runtime directories,
+user namespace helpers and network access, which the process sandbox does not
+grant. The go code stays buildable with `CGO_ENABLED=0` because there is no
+podman Go binding and no cgo dependency. On Windows the tool works with a podman
+machine installation, even though the host process sandbox is unavailable there.
+
+Container isolation is enforced by the tool itself:
+
+- Every container gets the label `io.exocomp.sandbox=<sha256(sandbox)[:16]>`.
+  `List` filters on this label and every lifecycle or exec operation verifies it
+  through `podman inspect`, so an agent cannot reach unrelated user containers.
+- The sandbox is mounted at `/workspace` and that is the default workdir. No
+  arbitrary volumes, port publishing, capabilities, privileged mode or host
+  namespaces are accepted from the model.
+- Images must appear in the role's `allowed-images` list. An empty list denies
+  all images.
+- The default network mode is `bridge`; `none` is opt-in and `host` is never
+  allowed.
+- Podman output that reaches the model goes through
+  `utils/podman`'s `sanitizeError`, so host paths and raw runtime errors are not
+  leaked.
+
 ## Module Layout
 
 ```
@@ -214,6 +239,7 @@ keyed by their namespace (the part before the first `.`).
 - Tool schema names are `namespace.Method` (e.g. `files.Read`, `requirements.DefineFunc`, `agents.Hire`).
 - `Session.CallTool` resolves the namespace, invokes the tool and appends the result (or `Error: ...`) as a `tool` message carrying the matching `tool_call_id`.
 - Sandbox-bound tools (files, programs, requirements, bugs, changelog) resolve all paths through `resolveSandboxPath`/`sanitizeSandboxPath` so a contractor cannot escape its sandbox.
+- `containers.*` mounts only the agent sandbox into podman containers and scopes every container to the sandbox label. `podman` must not be added to `allowed-programs`, otherwise `programs.Execute` could bypass these checks.
 
 Each tool's LLM-facing contract lives in its embedded JSON schema at `tools/*.json`
 with precise parameter descriptions and syntax examples.

@@ -79,6 +79,7 @@ func NewAgent(config *types.Config) *types.Agent {
 			Temperature:     temperature,
 			Messages:        renderMessages(prompt),
 			AllowedPrograms: template.AllowedPrograms,
+			AllowedImages:   template.AllowedImages,
 			AllowedTools:    template.AllowedTools,
 			Sandbox:         config.Sandbox,
 			Status:          status,
