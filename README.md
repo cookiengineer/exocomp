@@ -18,7 +18,7 @@ unit, the smartest investment this side of the Alpha Quadrant!
 Why hire when you can own? The Exocomp isn't just a tool... it's so much more!
 
 - Supervised task queue functionality
-- Multiple agent roles as `architect`, `coder`, `planner`, `summarizer`, `tester`
+- Multiple agent roles as `architect`, `coder`, `exploiter`, `planner`, `researcher`, `reverser`, `summarizer`, `tester`, `threathunter`, `webscanner`
 - Precision repairs of broken code with unit tests
 - Cross-agent communication via `changelog`, `bugs` and `requirements` tools
 - Self-replicating short lived agents in malicious environments
@@ -38,24 +38,23 @@ Exocomp uses multiple [Agent Roles](./source/agents/Roles.go):
 
 *Software Development*
 
-| Role                                          | Lifecycle | Default Model                       | Description                                 |
-|:----------------------------------------------|:---------:|:-----------------------------------:|:--------------------------------------------|
-| [planner](./source/agents/planner.yaml)       | long      | `deepseek-v4-pro:cloud`             | writes with humans and plans project phases |
-| [architect](./source/agents/architect.yaml)   | short     | `huihui_ai/Qwen3.6-abliterated:35b` | defines software specifications             |
-| archivar                                      | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads git repositories and wikis            |
-| [coder](./source/agents/coder.yaml)           | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements specifications into code         |
-| researcher                                    | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads websites and API documentation        |
-| [summarizer](./source/agents/summarizer.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads long texts and summarizes them        |
-| [tester](./source/agents/tester.yaml)         | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements unit tests, writes bug reports   |
+| Role                                          | Lifecycle | Default Model                       | Description                                      |
+|:----------------------------------------------|:---------:|:-----------------------------------:|:-------------------------------------------------|
+| [planner](./source/agents/planner.yaml)       | long      | `deepseek-v4-pro:cloud`             | writes with humans and plans project phases      |
+| [architect](./source/agents/architect.yaml)   | short     | `huihui_ai/Qwen3.6-abliterated:35b` | defines software specifications                  |
+| [coder](./source/agents/coder.yaml)           | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements specifications into code              |
+| [researcher](./source/agents/researcher.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads git repositories, wikis, websites and docs |
+| [summarizer](./source/agents/summarizer.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | reads long texts and summarizes them             |
+| [tester](./source/agents/tester.yaml)         | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements unit tests, writes bug reports        |
 
 *Pentesting*
 
-| Role                                          | Lifecycle | Default Model                       | Description                                   |
-|:----------------------------------------------|:---------:|:-----------------------------------:|:----------------------------------------------|
-| [exploiter](./source/agents/exploiter.yaml)   | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements exploits in CGo                    |
-| reverser                                      | short     | `huihui_ai/Qwen3.6-abliterated:35b` | translates binaries or code into Go/CGo code  |
-| threathunter                                  | short     | `huihui_ai/Qwen3.6-abliterated:35b` | discovers vulnerabilities in infrastructure   |
-| [webscanner](./source/agents/webscanner.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | discovers vulnerabilities in web applications |
+| Role                                              | Lifecycle | Default Model                       | Description                                   |
+|:--------------------------------------------------|:---------:|:-----------------------------------:|:----------------------------------------------|
+| [exploiter](./source/agents/exploiter.yaml)       | short     | `huihui_ai/Qwen3.6-abliterated:35b` | implements exploits in CGo                    |
+| [reverser](./source/agents/reverser.yaml)         | short     | `huihui_ai/Qwen3.6-abliterated:35b` | translates binaries or code into Go/CGo code  |
+| [threathunter](./source/agents/threathunter.yaml) | short     | `huihui_ai/Qwen3.6-abliterated:35b` | discovers vulnerabilities in infrastructure   |
+| [webscanner](./source/agents/webscanner.yaml)     | short     | `huihui_ai/Qwen3.6-abliterated:35b` | discovers vulnerabilities in web applications |
 
 Exocomp uses Tools to interact with the sandbox. Check the implementations to
 see which tools are allowed for which Agent role.
@@ -74,20 +73,19 @@ Check the unit tests on whether the Tools can be relied on or not.
 
 | Tool                                           | Unit Tests?                                | Description                                        | Agent Roles                                             |
 |:-----------------------------------------------|:------------------------------------------:|:---------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./source/tools/Agents.go)             | [Yes](./source/tools/Agents_test.go) [1]   | manages contractor lifecycle and profile switch    | `planner`                                               |
-| [Bugs](./source/tools/Bugs.go)                 | [Yes](./source/tools/Bugs_test.go)         | manages documentation of discovered bugs           | `tester`                                                |
-| [Changelog](./source/tools/Changelog.go)       | [Yes](./source/tools/Changelog_test.go)    | manages documentation of development changelog     | `coder`                                                 |
-| [Containers](./source/tools/Containers.go)     | [Yes](./source/tools/Containers_test.go)   | manages podman containers                          | `analyst`, `exploiter`, `reverser`, `threathunter`      |
+| [Agents](./source/tools/Agents.go)             | [Yes](./source/tools/Agents_test.go) [1]   | manages contractor lifecycle and profile switch    | all roles                                               |
+| [Bugs](./source/tools/Bugs.go)                 | [Yes](./source/tools/Bugs_test.go)         | manages documentation of discovered bugs           | `planner`, `architect`, `coder`, `tester`               |
+| [Changelog](./source/tools/Changelog.go)       | [Yes](./source/tools/Changelog_test.go)    | manages documentation of development changelog     | `coder`, `tester`, `exploiter`, `reverser`              |
+| [Containers](./source/tools/Containers.go)     | [Yes](./source/tools/Containers_test.go)   | manages podman containers                          | `exploiter`, `reverser`, `threathunter`                 |
 | Exploits                                       |                                            | manages PoCs for CVEs from local dataset           | `exploiter`, `reverser`                                 |
-| [Files](./source/tools/Files.go)               | [Yes](./source/tools/Files_test.go)        | interacts with files and folders                   | `planner`, `architect`, `coder`, `summarizer`, `tester` |
+| [Files](./source/tools/Files.go)               | [Yes](./source/tools/Files_test.go)        | interacts with files and folders                   | all roles                                               |
 | [Humans](./source/tools/Humans.go)             | [Yes](./source/tools/Humans_test.go)       | asks the human clarifying questions                | `planner`                                               |
-| Findings                                       |                                            | reports findings of vulnerabilities and weaknesses | `exploiter`                                             |
-| [Programs](./source/tools/Programs.go)         | [Yes](./source/tools/Programs_test.go)     | interacts with installed programs                  | `coder`, `tester`                                       |
-| [Requirements](./source/tools/Requirements.go) | [Yes](./source/tools/Requirements_test.go) | manages specifications of implementations          | `architect`, `coder`, `tester`                          |
-| [Skills](./source/tools/Skills.go)             | [Yes](./source/tools/Skills_test.go)       | loads and Unloads Agent Skills [2]                 | `planner`, `architect`, `coder`, `tester`               |
-| Kiwix                                          |                                            | researches knowledge from offline web archives     | `researcher`                                            |
-| Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `exploiter`, `threathunter`                             |
-| [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode                    | `webscanner`, `exploiter`                               |
+| Findings                                       |                                            | reports findings of vulnerabilities and weaknesses | `exploiter`, `threathunter`                             |
+| [Programs](./source/tools/Programs.go)         | [Yes](./source/tools/Programs_test.go)     | interacts with installed programs                  | all roles                                               |
+| [Requirements](./source/tools/Requirements.go) | [Yes](./source/tools/Requirements_test.go) | manages specifications of implementations          | `planner`, `architect`, `coder`, `tester`               |
+| [Skills](./source/tools/Skills.go)             | [Yes](./source/tools/Skills_test.go)       | loads and Unloads Agent Skills [2]                 | `planner`                                               |
+| Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `exploiter`, `threathunter`, `webscanner`               |
+| [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode                    | `researcher`, `exploiter`, `threathunter`, `webscanner` |
 
 - [1] Requires `llama.cpp` with `huihui_ai/Qwen3.6-abliterated:35b` at `Q8_0` quantization and 48GB VRAM GPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).

@@ -3,6 +3,7 @@ role: coder
 description: implements specifications into Go code
 model: huihui_ai/Qwen3.6-abliterated:35b
 temperature: 0.5
+allowed-images:
 allowed-programs:
   - go
   - gofmt
@@ -23,9 +24,11 @@ allowed-tools:
   - files.Copy
   - files.List
   - files.Read
+  - files.ReadSymbol
   - files.Search
   - files.Stat
   - files.Write
+  - files.WriteSymbol
   - programs.Execute
   - programs.List
   - programs.Stat

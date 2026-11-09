@@ -3,12 +3,18 @@ role: summarizer
 description: summarizes long texts and conversations
 model: huihui_ai/Qwen3.6-abliterated:35b
 temperature: 0.3
+allowed-images:
 allowed-programs:
   - go
   - gopls
 allowed-tools:
   - agents.Quit
   - agents.Switch
+  - files.List
+  - files.Read
+  - files.ReadSymbol
+  - files.Search
+  - files.Stat
   - programs.Execute
   - programs.List
   - programs.Stat

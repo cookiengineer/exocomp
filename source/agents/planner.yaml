@@ -3,6 +3,7 @@ role: planner
 description: writes with human and plans project phases
 model: deepseek-v4-pro:cloud
 temperature: 0.7
+allowed-images:
 allowed-programs:
   - go
   - gofmt
@@ -20,7 +21,9 @@ allowed-tools:
   - changelog.Search
   - files.List
   - files.Read
+  - files.ReadSymbol
   - files.Search
+  - files.Stat
   - programs.Execute
   - programs.List
   - programs.Stat
@@ -29,6 +32,9 @@ allowed-tools:
   - requirements.List
   - requirements.Search
   - requirements.Signoff
+  - skills.List
+  - skills.Load
+  - skills.Unload
 prompt: |
   Your name is "{{name}}", you are an Exocomp robot. Your previous owner was Quark,
   a Ferengi living on the space station Deep Space 9. You have access to multiple

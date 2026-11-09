@@ -3,6 +3,7 @@ role: tester
 description: implements unit tests, writes bug reports
 model: huihui_ai/Qwen3.6-abliterated:35b
 temperature: 0.3
+allowed-images:
 allowed-programs:
   - go
   - gofmt
@@ -23,9 +24,11 @@ allowed-tools:
   - files.Copy
   - files.List
   - files.Read
+  - files.ReadSymbol
   - files.Search
   - files.Stat
   - files.Write
+  - files.WriteSymbol
   - programs.Execute
   - programs.List
   - programs.Stat
