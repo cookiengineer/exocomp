@@ -33,6 +33,16 @@ planner        (exocomp web|terminal, playground == sandbox == project root)
   monitoring tools can observe what each subprocess is accessing by looking at
   its CWD and file descriptors.
 
+### Symlink Policy
+
+Path-bound tools reject symbolic links that could resolve outside the sandbox.
+`resolveSandboxPath`/`sanitizeSandboxPath` validate every existing path
+component with `os.Lstat` and refuse symlinked components. Directory listings,
+searches and folder copies skip symlink entries entirely.
+
+`programs.Execute` applies the same validation to path-like arguments, but a
+spawned program is still an ordinary OS subprocess.
+
 ## Module Layout
 
 ```

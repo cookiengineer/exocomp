@@ -4,7 +4,6 @@ import "exocomp/schemas"
 import utils_bytes "exocomp/utils/bytes"
 import "context"
 import "fmt"
-import "os"
 import "os/exec"
 import "path/filepath"
 import "slices"
@@ -103,11 +102,15 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 	if slices.Contains(tool.AllowedPrograms, program) {
 
+		if strings.ContainsAny(program, "/\\") {
+			return "", fmt.Errorf("programs.Execute: Invalid program \"%s\": Attempt to execute unallowed program", program)
+		}
+
 		program_arguments := make([]string, 0)
 
 		for a := 0; a < len(arguments); a++ {
 
-			if strings.Contains(arguments[a], string(os.PathSeparator)) {
+			if strings.ContainsAny(arguments[a], "/\\") {
 
 				resolved, err := sanitizeSandboxPath(tool.Sandbox, arguments[a])
 
@@ -118,7 +121,15 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 				}
 
 			} else {
-				program_arguments = append(program_arguments, arguments[a])
+
+				_, err := checkSandboxPath(tool.Sandbox, arguments[a])
+
+				if err == nil {
+					program_arguments = append(program_arguments, arguments[a])
+				} else {
+					return "", fmt.Errorf("programs.Execute: %s", err.Error())
+				}
+
 			}
 
 		}

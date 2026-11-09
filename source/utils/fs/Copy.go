@@ -1,15 +1,20 @@
 package fs
 
+import "fmt"
 import "io"
 import "os"
 
 func Copy(source string, target string) error {
 
-	stat, err := os.Stat(source)
+	stat, err := os.Lstat(source)
 
 	if err == nil {
 
-		if stat.IsDir() {
+		if stat.Mode()&os.ModeSymlink != 0 {
+
+			return fmt.Errorf("Symbolic links are not allowed.")
+
+		} else if stat.IsDir() {
 
 			return CopyAll(source, target)
 

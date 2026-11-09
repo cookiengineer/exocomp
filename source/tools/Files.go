@@ -162,11 +162,15 @@ func (tool *Files) Copy(from_path string, to_path string) (string, error) {
 
 		if err2 == nil {
 
-			stat, err3 := os.Stat(from_resolved)
+			stat, err3 := os.Lstat(from_resolved)
 
 			if err3 == nil {
 
-				if stat.IsDir() {
+				if stat.Mode()&os.ModeSymlink != 0 {
+
+					return "", fmt.Errorf("files.Copy: Invalid path \"%s\": Symbolic links are not allowed", from_path)
+
+				} else if stat.IsDir() {
 
 					err4 := utils_fs.CopyAll(from_resolved, to_resolved)
 
@@ -243,7 +247,7 @@ func (tool *Files) List(path string) (string, error) {
 						name := entry.Name()
 						path, err := sanitizeSandboxPath(tool.Sandbox, resolved+"/"+name)
 
-						if err == nil && strings.HasPrefix(name, ".") == false {
+						if err == nil && entry.Type()&os.ModeSymlink == 0 && strings.HasPrefix(name, ".") == false {
 
 							typ := "file"
 
@@ -338,6 +342,10 @@ func (tool *Files) Search(path string, query string) (string, error) {
 					if err3 == nil {
 
 						name := entry.Name()
+
+						if entry.Type()&os.ModeSymlink != 0 {
+							return nil
+						}
 
 						if strings.HasPrefix(name, ".") == false {
 

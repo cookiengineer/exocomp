@@ -672,3 +672,249 @@ func TestFiles_WriteSymbol(t *testing.T) {
 	})
 
 }
+
+func TestFiles_Symlinks(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-files-symlink-*")
+	sandbox := filepath.Join(playground, "files")
+	outside := filepath.Join(playground, "outside")
+
+	err0 := os.MkdirAll(sandbox, 0755)
+
+	if err0 != nil {
+		t.Errorf("Expected %v to be nil", err0)
+	}
+
+	err1 := os.MkdirAll(outside, 0755)
+
+	if err1 != nil {
+		t.Errorf("Expected %v to be nil", err1)
+	}
+
+	err2 := os.WriteFile(filepath.Join(outside, "secret.txt"), []byte("TOP SECRET"), 0644)
+
+	if err2 != nil {
+		t.Errorf("Expected %v to be nil", err2)
+	}
+
+	err3 := os.WriteFile(filepath.Join(outside, "secret.go"), []byte("package secret\n\nfunc LeakedSymbol() {\n\treturn\n}\n"), 0644)
+
+	if err3 != nil {
+		t.Errorf("Expected %v to be nil", err3)
+	}
+
+	err4 := os.WriteFile(filepath.Join(sandbox, "normal.txt"), []byte("normal content"), 0644)
+
+	if err4 != nil {
+		t.Errorf("Expected %v to be nil", err4)
+	}
+
+	err5 := os.WriteFile(filepath.Join(sandbox, "internal.go"), []byte("package files\n\nfunc InternalSymbol() {\n\treturn\n}\n"), 0644)
+
+	if err5 != nil {
+		t.Errorf("Expected %v to be nil", err5)
+	}
+
+	err6 := os.MkdirAll(filepath.Join(sandbox, "tree"), 0755)
+
+	if err6 != nil {
+		t.Errorf("Expected %v to be nil", err6)
+	}
+
+	err7 := os.WriteFile(filepath.Join(sandbox, "tree", "normal.txt"), []byte("tree normal"), 0644)
+
+	if err7 != nil {
+		t.Errorf("Expected %v to be nil", err7)
+	}
+
+	createTestSymlink(t, filepath.Join(outside, "secret.txt"), filepath.Join(sandbox, "leak.txt"))
+	createTestSymlink(t, filepath.Join(outside, "secret.go"), filepath.Join(sandbox, "leak.go"))
+	createTestSymlink(t, outside, filepath.Join(sandbox, "leakdir"))
+	createTestSymlink(t, "normal.txt", filepath.Join(sandbox, "internal_link.txt"))
+	createTestSymlink(t, filepath.Join(outside, "secret.txt"), filepath.Join(sandbox, "tree", "link_outside.txt"))
+	createTestSymlink(t, outside, filepath.Join(sandbox, "tree", "link_outside_dir"))
+	createTestSymlink(t, filepath.Join(sandbox, "normal.txt"), filepath.Join(sandbox, "tree", "link_internal.txt"))
+
+	tool := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Search", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
+
+	if tool == nil {
+		t.Fatalf("Expected tool to be not nil")
+	}
+
+	result1, err8 := tool.Read("./leak.txt")
+	result2, err9 := tool.Read("./leakdir/secret.txt")
+	result3, err10 := tool.Read("./internal_link.txt")
+	result4, err11 := tool.ReadSymbol("./leak.go", "LeakedSymbol")
+	result5, err12 := tool.Stat("./leak.txt")
+
+	if result1 != "" || err8 == nil {
+		t.Errorf("Expected outside file symlink to be rejected")
+	} else if strings.Contains(err8.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err8)
+	} else if strings.Contains(err8.Error(), outside) {
+		t.Errorf("Expected error not to leak outside path, got %v", err8)
+	}
+
+	if result2 != "" || err9 == nil {
+		t.Errorf("Expected outside dir symlink child to be rejected")
+	} else if strings.Contains(err9.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err9)
+	}
+
+	if result3 != "" || err10 == nil {
+		t.Errorf("Expected internal symlink to be rejected")
+	} else if strings.Contains(err10.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err10)
+	}
+
+	if result4 != "" || err11 == nil {
+		t.Errorf("Expected ReadSymbol on symlink to be rejected")
+	} else if strings.Contains(err11.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err11)
+	}
+
+	if result5 != "" || err12 == nil {
+		t.Errorf("Expected Stat on symlink to be rejected")
+	} else if strings.Contains(err12.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err12)
+	}
+
+	result6, err13 := tool.Write("./leak.txt", "pwned")
+
+	if result6 != "" || err13 == nil {
+		t.Errorf("Expected Write through outside file symlink to be rejected")
+	}
+
+	content1, err14 := os.ReadFile(filepath.Join(outside, "secret.txt"))
+
+	if err14 != nil {
+		t.Errorf("Expected %v to be nil", err14)
+	} else if string(content1) != "TOP SECRET" {
+		t.Errorf("Expected outside file to be unchanged, got %q", string(content1))
+	}
+
+	result7, err15 := tool.Write("./leakdir/new.txt", "pwned")
+
+	if result7 != "" || err15 == nil {
+		t.Errorf("Expected Write through outside dir symlink to be rejected")
+	}
+
+	_, err16 := os.Stat(filepath.Join(outside, "new.txt"))
+
+	if os.IsNotExist(err16) == false {
+		t.Errorf("Expected no file to be created outside the sandbox")
+	}
+
+	result8, err17 := tool.Write("./internal_link.txt", "pwned")
+
+	if result8 != "" || err17 == nil {
+		t.Errorf("Expected Write through internal symlink to be rejected")
+	}
+
+	content2, err18 := os.ReadFile(filepath.Join(sandbox, "normal.txt"))
+
+	if err18 != nil {
+		t.Errorf("Expected %v to be nil", err18)
+	} else if string(content2) != "normal content" {
+		t.Errorf("Expected internal file to be unchanged, got %q", string(content2))
+	}
+
+	result9, err19 := tool.WriteSymbol("./leak.go", "LeakedSymbol", "func LeakedSymbol() {\n\treturn\n}")
+
+	if result9 != "" || err19 == nil {
+		t.Errorf("Expected WriteSymbol on symlink to be rejected")
+	}
+
+	content3, err20 := os.ReadFile(filepath.Join(outside, "secret.go"))
+
+	if err20 != nil {
+		t.Errorf("Expected %v to be nil", err20)
+	} else if strings.Contains(string(content3), "pwned") {
+		t.Errorf("Expected outside Go file to be unchanged")
+	}
+
+	result10, err21 := tool.List(".")
+
+	if err21 != nil {
+		t.Errorf("Expected %v to be nil", err21)
+	} else if strings.Contains(result10, "leak.txt") || strings.Contains(result10, "leak.go") || strings.Contains(result10, "leakdir") || strings.Contains(result10, "internal_link.txt") {
+		t.Errorf("Expected List to skip symlinks, got %s", result10)
+	} else if strings.Contains(result10, "normal.txt") == false {
+		t.Errorf("Expected List to contain normal.txt, got %s", result10)
+	}
+
+	result11, err22 := tool.Search(".", "LeakedSymbol")
+
+	if err22 != nil {
+		t.Errorf("Expected %v to be nil", err22)
+	} else if strings.Contains(result11, "contains 0 matches.") == false {
+		t.Errorf("Expected Search to skip outside symlink, got %s", result11)
+	}
+
+	result12, err23 := tool.Copy("./leak.txt", "./copied.txt")
+
+	if result12 != "" || err23 == nil {
+		t.Errorf("Expected Copy of outside file symlink to be rejected")
+	}
+
+	_, err24 := os.Stat(filepath.Join(sandbox, "copied.txt"))
+
+	if os.IsNotExist(err24) == false {
+		t.Errorf("Expected no copy of outside file symlink")
+	}
+
+	result13, err25 := tool.Copy("./leakdir", "./copieddir")
+
+	if result13 != "" || err25 == nil {
+		t.Errorf("Expected Copy of outside dir symlink to be rejected")
+	}
+
+	_, err26 := os.Stat(filepath.Join(sandbox, "copieddir"))
+
+	if os.IsNotExist(err26) == false {
+		t.Errorf("Expected no copy of outside dir symlink")
+	}
+
+	result14, err27 := tool.Copy("./tree", "./tree_copy")
+
+	if err27 != nil {
+		t.Errorf("Expected %v to be nil, got %v", nil, err27)
+	} else if strings.Contains(result14, "copied") == false {
+		t.Errorf("Expected tree to be copied, got %s", result14)
+	}
+
+	_, err28 := os.Stat(filepath.Join(sandbox, "tree_copy", "normal.txt"))
+
+	if err28 != nil {
+		t.Errorf("Expected copied tree to contain normal.txt, got %v", err28)
+	}
+
+	_, err29 := os.Stat(filepath.Join(sandbox, "tree_copy", "link_outside.txt"))
+
+	if os.IsNotExist(err29) == false {
+		t.Errorf("Expected folder copy to skip symlink entries")
+	}
+
+	_, err30 := os.Stat(filepath.Join(sandbox, "tree_copy", "link_outside_dir"))
+
+	if os.IsNotExist(err30) == false {
+		t.Errorf("Expected folder copy to skip symlink directories")
+	}
+
+	_, err31 := os.Stat(filepath.Join(sandbox, "tree_copy", "link_internal.txt"))
+
+	if os.IsNotExist(err31) == false {
+		t.Errorf("Expected folder copy to skip internal symlinks")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}

@@ -441,3 +441,120 @@ func TestPrograms_Call_OptionalArguments(t *testing.T) {
 	})
 
 }
+
+func TestPrograms_ExecuteSymlinks(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-symlink-*")
+	sandbox := filepath.Join(playground, "programs")
+	outside := filepath.Join(playground, "outside")
+
+	err0 := os.MkdirAll(sandbox, 0755)
+
+	if err0 != nil {
+		t.Errorf("Expected %v to be nil", err0)
+	}
+
+	err1 := os.MkdirAll(outside, 0755)
+
+	if err1 != nil {
+		t.Errorf("Expected %v to be nil", err1)
+	}
+
+	err2 := os.WriteFile(filepath.Join(outside, "secret.txt"), []byte("TOP SECRET"), 0644)
+
+	if err2 != nil {
+		t.Errorf("Expected %v to be nil", err2)
+	}
+
+	err3 := os.WriteFile(filepath.Join(sandbox, "normal.txt"), []byte("normal content"), 0644)
+
+	if err3 != nil {
+		t.Errorf("Expected %v to be nil", err3)
+	}
+
+	createTestSymlink(t, filepath.Join(outside, "secret.txt"), filepath.Join(sandbox, "leak"))
+	createTestSymlink(t, outside, filepath.Join(sandbox, "leakdir"))
+
+	tool := NewPrograms([]string{"Execute", "List", "Stat"}, playground, sandbox, []string{"cat", "ls"})
+
+	if tool == nil {
+		t.Fatalf("Expected tool to be not nil")
+	}
+
+	result1, err4 := tool.Execute("cat", []string{"leak"})
+
+	if result1 != "" || err4 == nil {
+		t.Errorf("Expected bare symlink argument to be rejected")
+	} else if strings.Contains(err4.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err4)
+	} else if strings.Contains(err4.Error(), outside) {
+		t.Errorf("Expected error not to leak outside path, got %v", err4)
+	} else if strings.Contains(result1, "TOP SECRET") {
+		t.Errorf("Expected outside file not to be read, got %s", result1)
+	}
+
+	result2, err5 := tool.Execute("cat", []string{"./leak"})
+
+	if result2 != "" || err5 == nil {
+		t.Errorf("Expected path symlink argument to be rejected")
+	} else if strings.Contains(err5.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err5)
+	}
+
+	result3, err6 := tool.Execute("ls", []string{"leakdir"})
+
+	if result3 != "" || err6 == nil {
+		t.Errorf("Expected bare symlink directory argument to be rejected")
+	} else if strings.Contains(err6.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err6)
+	}
+
+	result4, err7 := tool.Execute("ls", []string{"./leakdir"})
+
+	if result4 != "" || err7 == nil {
+		t.Errorf("Expected path symlink directory argument to be rejected")
+	} else if strings.Contains(err7.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err7)
+	}
+
+	result5, err8 := tool.Execute("cat", []string{"normal.txt"})
+
+	if err8 != nil {
+		t.Errorf("Expected %v to be nil", err8)
+	} else if strings.Contains(result5, "normal content") == false {
+		t.Errorf("Expected normal file to be read, got %s", result5)
+	}
+
+	result6, err9 := tool.Execute("cat", []string{"./normal.txt"})
+
+	if err9 != nil {
+		t.Errorf("Expected %v to be nil", err9)
+	} else if strings.Contains(result6, "normal content") == false {
+		t.Errorf("Expected normal file to be read, got %s", result6)
+	}
+
+	program_tool := NewPrograms([]string{"Execute"}, playground, sandbox, []string{"/bin/cat"})
+
+	if program_tool == nil {
+		t.Fatalf("Expected tool to be not nil")
+	}
+
+	result7, err10 := program_tool.Execute("/bin/cat", []string{})
+
+	if result7 != "" || err10 == nil {
+		t.Errorf("Expected program name with path separator to be rejected")
+	} else if strings.Contains(err10.Error(), "Attempt to execute unallowed program") == false {
+		t.Errorf("Expected unallowed program error, got %v", err10)
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
+
+}

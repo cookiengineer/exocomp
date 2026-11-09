@@ -1,6 +1,8 @@
 package tools
 
 import "os"
+import "path/filepath"
+import "strings"
 import "testing"
 
 func TestSanitizeSandboxPath(t *testing.T) {
@@ -128,5 +130,68 @@ func TestSanitizeSandboxPathEscapeAttempts(t *testing.T) {
 	} else if err4.Error() != "Invalid path \"/etc/secret\": Attempt to escape sandbox" {
 		t.Errorf("Expected \"%s\" to be \"%s\"", err4.Error(), "Invalid path \"/etc/secret\": Attempt to escape sandbox")
 	}
+
+}
+
+func TestSanitizeSandboxPathSymlinks(t *testing.T) {
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-sanitizesymlinks-*")
+	sandbox := filepath.Join(playground, "sandbox")
+	outside := filepath.Join(playground, "outside")
+
+	err0 := os.MkdirAll(sandbox, 0755)
+
+	if err0 != nil {
+		t.Errorf("Expected %v to be nil", err0)
+	}
+
+	err1 := os.MkdirAll(outside, 0755)
+
+	if err1 != nil {
+		t.Errorf("Expected %v to be nil", err1)
+	}
+
+	createTestSymlink(t, outside, filepath.Join(sandbox, "link_outside_dir"))
+	createTestSymlink(t, outside, filepath.Join(sandbox, "link_nested_dir"))
+
+	result1, err2 := sanitizeSandboxPath(sandbox, "link_outside_dir/child")
+	result2, err3 := sanitizeSandboxPath(sandbox, "link_nested_dir/child")
+	result3, err4 := sanitizeSandboxPath(sandbox, "newdir/newfile.txt")
+
+	if result1 != "" || err2 == nil {
+		t.Errorf("Expected outside dir symlink to be rejected")
+	} else if strings.Contains(err2.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err2)
+	}
+
+	if result2 != "" || err3 == nil {
+		t.Errorf("Expected outside dir symlink to be rejected")
+	} else if strings.Contains(err3.Error(), "Symbolic links are not allowed") == false {
+		t.Errorf("Expected symlink error, got %v", err3)
+	}
+
+	if result3 != "./newdir/newfile.txt" {
+		t.Errorf("Expected \"%s\", got \"%s\"", "./newdir/newfile.txt", result3)
+	}
+
+	if err4 != nil {
+		t.Errorf("Expected %v to be nil", err4)
+	}
+
+	_, err5 := os.Stat(filepath.Join(sandbox, "newdir"))
+
+	if os.IsNotExist(err5) == false {
+		t.Errorf("Expected sanitizeSandboxPath not to create folders")
+	}
+
+	t.Cleanup(func() {
+
+		if t.Failed() == true {
+			t.Logf("Preserving folder %s for debugging.", playground)
+		} else {
+			os.RemoveAll(playground)
+		}
+
+	})
 
 }
