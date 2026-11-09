@@ -42,11 +42,11 @@ func (command *Command) Parse(prompt string) error {
 			return nil
 
 		} else {
-			return fmt.Errorf("invalid command tool name \"%s\"", name)
+			return fmt.Errorf("types.ParseCommand: Invalid command tool name \"%s\".", name)
 		}
 
 	} else {
-		return fmt.Errorf("invalid command prompt syntax")
+		return fmt.Errorf("types.ParseCommand: Invalid command prompt syntax.")
 	}
 
 }

@@ -17,10 +17,10 @@ func resolveURL(document *Document, ref string) string {
 
 	ref_url, err := net_url.Parse(ref)
 
-	if err != nil {
+	if err == nil {
+		return document.URL.ResolveReference(ref_url).String()
+	} else {
 		return ref
 	}
-
-	return document.URL.ResolveReference(ref_url).String()
 
 }

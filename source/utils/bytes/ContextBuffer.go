@@ -79,7 +79,7 @@ func (self *ContextBuffer) String() string {
 
 	result := self.buffer.String()
 
-	if self.truncated {
+	if self.truncated == true {
 		result += "\n[output truncated: limit exceeded]"
 	}
 

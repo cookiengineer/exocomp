@@ -6,7 +6,7 @@ import "strings"
 
 func getWebsiteText(url *net_url.URL, bytes []byte) string {
 
-	document, err := parser_html.Parse(url.String(), bytes)
+	document, err := parser_html.ParseDocument(url.String(), bytes)
 
 	if err == nil && document != nil {
 		return document.Text()

@@ -8,25 +8,29 @@ func createStem(role string) string {
 	role = strings.ReplaceAll(role, "-", "")
 	role = strings.ReplaceAll(role, " ", "")
 
-	for from, to := range compound_replacements {
+	for from, to := range compoundReplacements {
 
 		if role == from {
+
 			role = to
 			break
+
 		}
 
 	}
 
-	for _, suffix := range unwanted_suffixes {
+	for _, suffix := range unwantedSuffixes {
 
 		if strings.HasSuffix(role, suffix) && len(role) > len(suffix)+2 {
+
 			role = strings.TrimSuffix(role, suffix)
 			break
+
 		}
 
 	}
 
-	for from, to := range phonetic_stabilizers {
+	for from, to := range phoneticStabilizers {
 
 		if strings.Contains(role, from) {
 			role = strings.ReplaceAll(role, from, to)
@@ -35,6 +39,7 @@ func createStem(role string) string {
 	}
 
 	switch {
+
 	case strings.HasSuffix(role, "tt"):
 		role = role[:len(role)-1]
 
@@ -49,6 +54,7 @@ func createStem(role string) string {
 
 	case strings.HasSuffix(role, "rn"):
 		role += "e"
+
 	}
 
 	if len(role) > 7 {

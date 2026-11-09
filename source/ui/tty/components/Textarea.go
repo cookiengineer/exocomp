@@ -2,12 +2,6 @@ package components
 
 import "strings"
 
-type TextareaLine struct {
-	Text         string
-	CursorColumn int
-	CursorHere   bool
-}
-
 type Textarea struct {
 	runes  []rune
 	cursor int
@@ -204,9 +198,11 @@ func (textarea *Textarea) Wrap(width int) ([]TextareaLine, int, int) {
 	for index := 0; index <= len(textarea.runes); index++ {
 
 		if index == textarea.cursor {
+
 			cursor_line = len(lines)
 			cursor_column = line_width
 			found_cursor = true
+
 		}
 
 		if index == len(textarea.runes) {
@@ -254,8 +250,10 @@ func (textarea *Textarea) Wrap(width int) ([]TextareaLine, int, int) {
 	})
 
 	if found_cursor == false {
+
 		cursor_line = len(lines) - 1
 		cursor_column = line_width
+
 	}
 
 	if len(lines) == 0 {
@@ -267,8 +265,10 @@ func (textarea *Textarea) Wrap(width int) ([]TextareaLine, int, int) {
 	}
 
 	if cursor_line >= 0 && cursor_line < len(lines) {
+
 		lines[cursor_line].CursorColumn = cursor_column
 		lines[cursor_line].CursorHere = true
+
 	}
 
 	return lines, cursor_line, cursor_column

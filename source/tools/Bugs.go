@@ -325,11 +325,11 @@ func (tool *Bugs) MarshalJSON() ([]byte, error) {
 
 	err := readBugs(tool)
 
-	if err != nil {
+	if err == nil {
+		return json.Marshal(tool.contents)
+	} else {
 		return nil, err
 	}
-
-	return json.Marshal(tool.contents)
 
 }
 

@@ -19,8 +19,10 @@ func FindToolCalls(message *schemas.Message, search []string) ([]schemas.ToolCal
 			for _, keyword := range search {
 
 				if toolname == keyword {
+
 					matches = true
 					break
+
 				}
 
 			}
@@ -36,7 +38,7 @@ func FindToolCalls(message *schemas.Message, search []string) ([]schemas.ToolCal
 	if len(result) > 0 {
 		return result, nil
 	} else {
-		return result, fmt.Errorf("No tool calls matching \"%s\" found.", strings.Join(search, "\",\""))
+		return result, fmt.Errorf("chat.FindToolCalls: No tool calls matching \"%s\" found.", strings.Join(search, "\",\""))
 	}
 
 }

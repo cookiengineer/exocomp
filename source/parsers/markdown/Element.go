@@ -5,7 +5,7 @@ import "html"
 import "sort"
 import "strings"
 
-var markdown_line_width = 90
+var markdownLineWidth = 90
 
 type Element struct {
 	Line             int               `json:"line"`
@@ -28,6 +28,7 @@ func NewElement(typ string) *Element {
 
 	// There's no clean place to do this, as it's part of the CSS specification
 	switch typ {
+
 	case "div", "figure", "figcaption", "p":
 		element.is_block_element = true
 	case "pre":
@@ -36,6 +37,7 @@ func NewElement(typ string) *Element {
 		element.is_block_element = true
 	default:
 		element.is_block_element = false
+
 	}
 
 	return &element
@@ -575,7 +577,7 @@ func (element *Element) String() string {
 
 					current += word
 
-					if len(current) > markdown_line_width {
+					if len(current) > markdownLineWidth {
 
 						content = append(content, current)
 						current = ""
@@ -598,7 +600,7 @@ func (element *Element) String() string {
 
 				current += element.Children[c].String()
 
-				if len(current) > markdown_line_width {
+				if len(current) > markdownLineWidth {
 
 					content = append(content, current)
 					current = ""
@@ -616,8 +618,10 @@ func (element *Element) String() string {
 		}
 
 		if current != "" {
+
 			content = append(content, current)
 			current = ""
+
 		}
 
 		result = fmt.Sprintf("%s", strings.Join(content, "\n"))

@@ -22,7 +22,7 @@ func TestParse(t *testing.T) {
 </body>
 </html>`
 
-	document, err := Parse("https://example.com/", []byte(raw))
+	document, err := ParseDocument("https://example.com/", []byte(raw))
 
 	if err != nil {
 		t.Errorf("Expected %v to be nil", err)
@@ -60,7 +60,7 @@ func TestParse_SkipsNoise(t *testing.T) {
 
 	raw := `<html><body><script>var x = 1;</script><style>.x {}</style><p>Visible</p></body></html>`
 
-	document, err := Parse("https://example.com/", []byte(raw))
+	document, err := ParseDocument("https://example.com/", []byte(raw))
 
 	if err != nil {
 		t.Errorf("Expected %v to be nil", err)
@@ -86,7 +86,7 @@ func TestParse_CodeBlock(t *testing.T) {
 
 	raw := `<html><body><pre><code>fmt.Println("hi")</code></pre></body></html>`
 
-	document, err := Parse("https://example.com/", []byte(raw))
+	document, err := ParseDocument("https://example.com/", []byte(raw))
 
 	if err != nil {
 		t.Errorf("Expected %v to be nil", err)
@@ -108,7 +108,7 @@ func TestParse_Table(t *testing.T) {
 
 	raw := `<html><body><table><thead><tr><th>Name</th><th>Age</th></tr></thead><tbody><tr><td>Alice</td><td>30</td></tr></tbody></table></body></html>`
 
-	document, err := Parse("https://example.com/", []byte(raw))
+	document, err := ParseDocument("https://example.com/", []byte(raw))
 
 	if err != nil {
 		t.Errorf("Expected %v to be nil", err)
@@ -130,7 +130,7 @@ func TestParse_Text(t *testing.T) {
 
 	raw := `<html><body><h1>Heading</h1><p>Some text</p></body></html>`
 
-	document, err := Parse("https://example.com/", []byte(raw))
+	document, err := ParseDocument("https://example.com/", []byte(raw))
 
 	if err != nil {
 		t.Errorf("Expected %v to be nil", err)
@@ -169,7 +169,7 @@ func TestParse_ReaderMode(t *testing.T) {
 </body>
 </html>`
 
-	document, err := Parse("https://example.com/", []byte(raw))
+	document, err := ParseDocument("https://example.com/", []byte(raw))
 
 	if err != nil {
 		t.Errorf("Expected %v to be nil", err)

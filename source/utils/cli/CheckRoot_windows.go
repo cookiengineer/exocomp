@@ -2,8 +2,9 @@
 
 package cli
 
-import "golang.org/x/sys/windows"
 import "fmt"
+
+import "golang.org/x/sys/windows"
 
 func CheckRoot() error {
 
@@ -26,19 +27,19 @@ func CheckRoot() error {
 				if is_member == true {
 					return nil
 				} else {
-					return fmt.Errorf("Error: Run this program as admin")
+					return fmt.Errorf("cli.CheckRoot: Run this program as admin.")
 				}
 
 			} else {
-				return fmt.Errorf("Error: %s", err2.Error())
+				return fmt.Errorf("cli.CheckRoot: %s", err2.Error())
 			}
 
 		} else {
-			return fmt.Errorf("Error: %s", err1.Error())
+			return fmt.Errorf("cli.CheckRoot: %s", err1.Error())
 		}
 
 	} else {
-		return fmt.Errorf("Error: %s", err0.Error())
+		return fmt.Errorf("cli.CheckRoot: %s", err0.Error())
 	}
 
 }

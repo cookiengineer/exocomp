@@ -18,10 +18,12 @@ func main() {
 		tmp1 := strings.TrimSpace(os.Args[1])
 
 		switch tmp1 {
+
 		case "agent":
 			mode = "agent"
 		case "terminal":
 			mode = "terminal"
+
 		}
 
 		config = cli.ParseConfig(os.Args[1:])
@@ -45,6 +47,7 @@ func main() {
 		if err0 == nil {
 
 			switch mode {
+
 			case "agent":
 
 				actions.Agent(agent, config)

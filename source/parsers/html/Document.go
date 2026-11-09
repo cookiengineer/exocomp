@@ -40,6 +40,26 @@ func NewDocument(file string) *Document {
 
 }
 
+func ParseDocument(file string, bytes []byte) (*Document, error) {
+
+	document := NewDocument(file)
+
+	if document != nil {
+
+		err := document.Parse(bytes)
+
+		if err == nil {
+			return document, nil
+		} else {
+			return document, err
+		}
+
+	} else {
+		return nil, fmt.Errorf("Invalid URL \"%s\"", file)
+	}
+
+}
+
 func (document *Document) AddElement(element *Element) {
 
 	if document != nil && element != nil && element.Type != "" {
@@ -63,35 +83,39 @@ func (document *Document) MarshalText() ([]byte, error) {
 // reading a page.
 func (document *Document) Parse(bytes []byte) error {
 
-	if document == nil {
-		return fmt.Errorf("nil document")
+	if document != nil {
+
+		reader := strings.NewReader(string(bytes))
+		node, err := html_tree.Parse(reader)
+
+		if err == nil {
+
+			document.Errors = make([]error, 0)
+			document.Body = make([]*Element, 0)
+
+			article := findArticleNode(node)
+
+			if article == nil {
+				article = findBodyNode(node)
+			}
+
+			document.Title = extractTitle(node)
+
+			if document.Title == "" && article != nil {
+				document.Title = firstHeading(article)
+			}
+
+			document.buildBody(article)
+
+			return nil
+
+		} else {
+			return err
+		}
+
+	} else {
+		return fmt.Errorf("html.Document.Parse: Nil document.")
 	}
-
-	reader := strings.NewReader(string(bytes))
-	node, err := html_tree.Parse(reader)
-
-	if err != nil {
-		return err
-	}
-
-	document.Errors = make([]error, 0)
-	document.Body = make([]*Element, 0)
-
-	article := findArticleNode(node)
-
-	if article == nil {
-		article = findBodyNode(node)
-	}
-
-	document.Title = extractTitle(node)
-
-	if document.Title == "" && article != nil {
-		document.Title = firstHeading(article)
-	}
-
-	document.buildBody(article)
-
-	return nil
 
 }
 
@@ -108,8 +132,10 @@ func (document *Document) buildBody(article *html_tree.Node) {
 	name := strings.ToLower(strings.TrimSpace(article.Data))
 
 	if isTransparentElement(name) {
+
 		document.walk(article, nil)
 		return
+
 	}
 
 	if isBlockElement(name) {
@@ -135,8 +161,10 @@ func (document *Document) String() string {
 	lines := make([]string, 0)
 
 	if document.Title != "" {
+
 		lines = append(lines, "# "+strings.TrimSpace(document.Title))
 		lines = append(lines, "")
+
 	}
 
 	for _, element := range document.Body {
@@ -144,8 +172,10 @@ func (document *Document) String() string {
 		content := element.Render(document)
 
 		if strings.TrimSpace(content) != "" {
+
 			lines = append(lines, content)
 			lines = append(lines, "")
+
 		}
 
 	}
@@ -209,8 +239,10 @@ func (document *Document) walk(node *html_tree.Node, current *Element) {
 			}
 
 			if isTransparentElement(name) {
+
 				document.walk(child, current)
 				continue
+
 			}
 
 			element := NewElement(name)
@@ -249,114 +281,5 @@ func (document *Document) newParagraph() *Element {
 	document.AddElement(element)
 
 	return element
-
-}
-
-func extractTitle(node *html_tree.Node) string {
-
-	if node == nil {
-		return ""
-	}
-
-	if node.Type == html_tree.ElementNode && strings.EqualFold(node.Data, "title") {
-		return strings.TrimSpace(node.FirstChild.Data)
-	}
-
-	for child := node.FirstChild; child != nil; child = child.NextSibling {
-
-		title := extractTitle(child)
-
-		if title != "" {
-			return title
-		}
-
-	}
-
-	return ""
-
-}
-
-// normalizeText collapses runs of whitespace into a single space, keeping a
-// single leading/trailing space when the original text had one, so that
-// inline elements stay separated ("Hello <b>world</b>" -> "Hello **world**").
-func normalizeText(raw string) string {
-
-	collapsed := strings.Join(strings.Fields(raw), " ")
-
-	if collapsed == "" {
-		return ""
-	}
-
-	result := collapsed
-
-	if len(raw) > 0 && isWhitespace(raw[0]) {
-		result = " " + result
-	}
-
-	if len(raw) > 0 && isWhitespace(raw[len(raw)-1]) {
-		result = result + " "
-	}
-
-	return result
-
-}
-
-func isWhitespace(chr byte) bool {
-	return chr == ' ' || chr == '\t' || chr == '\n' || chr == '\r' || chr == '\f' || chr == '\v'
-}
-
-func copyAttributes(source *html_tree.Node, target *Element) {
-	for _, attribute := range source.Attr {
-
-		key := strings.ToLower(strings.TrimSpace(attribute.Key))
-		val := strings.TrimSpace(attribute.Val)
-
-		if key == "class" || key == "id" || key == "style" || key == "onclick" || key == "onload" || key == "onerror" {
-			continue
-		}
-
-		if key != "" && val != "" {
-			target.SetAttribute(key, val)
-		}
-
-	}
-
-}
-
-func isSkippedElement(name string) bool {
-
-	switch name {
-	case "script", "style", "noscript", "head", "meta", "link", "base", "title",
-		"iframe", "svg", "canvas", "template", "object", "embed", "audio", "video",
-		"form", "input", "button", "select", "option", "textarea", "label", "fieldset":
-		return true
-	default:
-		return false
-	}
-
-}
-
-func isBlockElement(name string) bool {
-
-	switch name {
-	case "h1", "h2", "h3", "h4", "h5", "h6", "p", "ul", "ol", "li",
-		"pre", "blockquote", "table", "tr", "td", "th", "hr":
-		return true
-	default:
-		return false
-	}
-
-}
-
-func isTransparentElement(name string) bool {
-
-	switch name {
-	case "html", "body", "div", "section", "article", "main", "aside", "header", "footer", "nav",
-		"figure", "figcaption", "address", "details", "summary", "dialog",
-		"thead", "tbody", "tfoot", "colgroup", "caption", "dl", "dt", "dd":
-		return true
-	default:
-		return false
-	}
 
 }

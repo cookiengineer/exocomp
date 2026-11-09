@@ -2,9 +2,9 @@ package colors
 
 import utils_tty "exocomp/utils/tty"
 
-func hex(value string) utils_tty.RGBA {
+func hex(value string) utils_tty.Color {
 
-	color, err := utils_tty.FromHex(value)
+	color, err := utils_tty.ColorFromHex(value)
 
 	if err == nil {
 		return color

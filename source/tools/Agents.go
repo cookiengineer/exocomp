@@ -6,12 +6,10 @@ import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
 import utils_fmt "exocomp/utils/fmt"
 import utils_rand "exocomp/utils/rand"
-import "bufio"
 import "bytes"
 import "context"
 import "encoding/json"
 import "fmt"
-import "io"
 import net_url "net/url"
 import "os"
 import "os/exec"
@@ -21,138 +19,11 @@ import "strings"
 import "sync"
 import "time"
 
-type agent_process struct {
+type agentProcess struct {
 	cmd        *exec.Cmd
 	cancel     context.CancelFunc
 	done       chan struct{}
 	last_write time.Time
-}
-
-func handle_process_json_line(tool *Agents, name string, line []byte) {
-
-	tool.mutex.Lock()
-	defer tool.mutex.Unlock()
-
-	process, ok := tool.processes[name]
-
-	if ok == true {
-		process.last_write = time.Now()
-	}
-
-	text := strings.TrimRight(string(line), "\n")
-
-	if strings.HasPrefix(text, "schemas.Message:") {
-
-		buffer := []byte(text[16:])
-		message := schemas.Message{}
-
-		err := json.Unmarshal(buffer, &message)
-
-		if err == nil {
-
-			agent, ok1 := tool.contents[name]
-
-			if ok1 == true {
-				agent.Messages = append(agent.Messages, &message)
-			}
-
-		}
-
-	} else if strings.HasPrefix(text, "types.ContextUsage:") {
-
-		buffer := []byte(text[19:])
-		usage := types.ContextUsage{}
-
-		err := json.Unmarshal(buffer, &usage)
-
-		if err == nil {
-
-			agent, ok1 := tool.contents[name]
-
-			if ok1 == true {
-				agent.ContextUsage.Length = usage.Length
-				agent.ContextUsage.Tokens = usage.Tokens
-			}
-
-		}
-
-	}
-
-}
-
-func read_process(tool *Agents, name string, process *agent_process, stdout_pipe io.ReadCloser) {
-
-	reader := bufio.NewReader(stdout_pipe)
-
-	for {
-
-		line, err := reader.ReadBytes('\n')
-
-		if len(line) > 0 {
-			handle_process_json_line(tool, name, line)
-		}
-
-		if err != nil {
-			break
-		}
-
-	}
-
-	stdout_pipe.Close()
-
-	process.cmd.Wait()
-
-	tool.mutex.Lock()
-
-	agent, ok := tool.contents[name]
-
-	if ok == true && agent.Status == "working" {
-
-		if getAgentWorkReport(agent) != "" {
-			agent.FinishedAt = schemas.NewDatetime()
-			agent.Status = "finished"
-		} else {
-			agent.FinishedAt = schemas.NewDatetime()
-			agent.Status = "failed"
-		}
-
-	}
-
-	delete(tool.processes, name)
-
-	tool.mutex.Unlock()
-
-	close(process.done)
-
-}
-
-func watch_process(tool *Agents, process *agent_process) {
-
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	for {
-
-		select {
-
-		case <-process.done:
-			return
-
-		case <-ticker.C:
-
-			tool.mutex.Lock()
-			stale := tool.IdleTimeout > 0 && time.Since(process.last_write) > tool.IdleTimeout
-			tool.mutex.Unlock()
-
-			if stale == true {
-				process.cancel()
-				return
-			}
-
-		}
-
-	}
-
 }
 
 type Agents struct {
@@ -168,7 +39,7 @@ type Agents struct {
 	OnSwitch    func(role string) (string, error)
 	mutex       *sync.Mutex
 	contents    map[string]*types.Agent
-	processes   map[string]*agent_process
+	processes   map[string]*agentProcess
 }
 
 func NewAgents(methods []string, playground string, sandbox string, model string, url *net_url.URL, debug bool) *Agents {
@@ -186,7 +57,7 @@ func NewAgents(methods []string, playground string, sandbox string, model string
 		OnSwitch:    nil,
 		mutex:       &sync.Mutex{},
 		contents:    make(map[string]*types.Agent),
-		processes:   make(map[string]*agent_process),
+		processes:   make(map[string]*agentProcess),
 	}
 
 	// NOTE: readAgents() allowed only at bootup time
@@ -327,8 +198,10 @@ func (tool *Agents) Await(name string) (string, error) {
 	status := ""
 
 	if ok == true {
+
 		report = getAgentWorkReport(agent)
 		status = agent.Status
+
 	}
 
 	tool.mutex.Unlock()
@@ -600,7 +473,7 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 						agent.Messages = make([]*schemas.Message, 0)
 					}
 
-					process := &agent_process{
+					process := &agentProcess{
 						cmd:        cmd,
 						cancel:     cancel,
 						done:       make(chan struct{}),
@@ -615,23 +488,27 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 					// NOTE: Single reader goroutine owns the child stdout lifecycle. It
 					// reads unbounded lines, appends messages, and on EOF reaps the
 					// process and finalizes the agent status.
-					go read_process(tool, name, process, stdout_pipe)
+					go readProcess(tool, name, process, stdout_pipe)
 
 					// NOTE: Liveness watchdog kills a child that stops producing output.
-					go watch_process(tool, process)
+					go watchProcess(tool, process)
 
 					sandbox_path, _ := sanitizeSandboxPath(tool.Sandbox, resolved)
 
 					return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work in \"%s\" on:\n%s", name, sandbox_path, prompt), nil
 
 				} else {
+
 					cancel()
 					return "", fmt.Errorf("agents.Hire: Cannot start agent \"%s\".", name)
+
 				}
 
 			} else {
+
 				cancel()
 				return "", fmt.Errorf("agents.Hire: Cannot capture agent output for \"%s\".", name)
+
 			}
 
 		} else {
@@ -819,20 +696,22 @@ func (tool *Agents) summarizeMessages(prompt string) (string, error) {
 				if err2 == nil {
 					return strings.TrimSpace(summary.Content), nil
 				} else {
-					return "", fmt.Errorf("Cannot parse summary")
+					return "", fmt.Errorf("agents.Summarize: Cannot parse summary.")
 				}
 
 			} else {
-				return "", fmt.Errorf("Cannot parse summary")
+				return "", fmt.Errorf("agents.Summarize: Cannot parse summary.")
 			}
 
 		} else {
+
 			os.RemoveAll(tmp)
-			return "", fmt.Errorf("Cannot summarize messages")
+			return "", fmt.Errorf("agents.Summarize: Cannot summarize messages.")
+
 		}
 
 	} else {
-		return "", fmt.Errorf("Cannot create temporary workspace")
+		return "", fmt.Errorf("agents.Summarize: Cannot create temporary workspace.")
 	}
 
 }
@@ -889,8 +768,10 @@ func (tool *Agents) Schemas() []schemas.Tool {
 				property, ok := schema.Function.Parameters.Properties["role"]
 
 				if ok == true {
+
 					property.Enum = roles
 					schema.Function.Parameters.Properties["role"] = property
+
 				}
 
 			}

@@ -9,13 +9,12 @@ func parseCommandArguments(raw string) map[string]any {
 
 	for index < len(raw) {
 
-		skipWhitespace(raw, &index)
+		utils_strings.SkipWhitespace(raw, &index)
 
 		if index >= len(raw) {
 			break
 		}
 
-		// key
 		key_start := index
 
 		for index < len(raw) && raw[index] != '=' {
@@ -28,14 +27,14 @@ func parseCommandArguments(raw string) map[string]any {
 
 		key := raw[key_start:index]
 
-		// Skip '='
 		index++
 
-		skipWhitespace(raw, &index)
+		utils_strings.SkipWhitespace(raw, &index)
 
 		value := make([]byte, 0)
 
 		switch raw[index] {
+
 		case '{':
 			value = utils_strings.SeekNested(raw, index, '{', '}')
 
@@ -49,13 +48,15 @@ func parseCommandArguments(raw string) map[string]any {
 			value = utils_strings.Seek(raw, index, '"')
 
 		default:
-			skipWhitespace(raw, &index)
+			utils_strings.SkipWhitespace(raw, &index)
 
 		}
 
 		if len(value) > 0 {
+
 			arguments[key] = parseCommandArgument(value)
 			index += len(value)
+
 		}
 
 	}
@@ -63,4 +64,3 @@ func parseCommandArguments(raw string) map[string]any {
 	return arguments
 
 }
-

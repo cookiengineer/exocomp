@@ -193,9 +193,11 @@ func (sidebar *Sidebar) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, el
 	}
 
 	if len(sidebar.lines) == 0 {
+
 		message := "No changelog or open bugs yet."
 		buffer.WriteString(rect.X+2, rect.Y, utils_tty.Truncate(message, rect.Width-2), styles.TextMuted)
 		return
+
 	}
 
 	if sidebar.Scroll > len(sidebar.lines)-rect.Height {

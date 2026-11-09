@@ -4,33 +4,10 @@ import "encoding/json"
 import "fmt"
 import "strings"
 
-func toUpperCase(raw string) string {
-
-	check := strings.ToLower(raw)
-
-	// NOTE: Dirty Hack for stupid LLMs
-	if strings.HasPrefix(check, "define") {
-
-		tmp2 := strings.TrimSpace(raw[6:])
-
-		return "Define" + strings.ToUpper(tmp2[0:1]) + strings.ToLower(tmp2[1:])
-
-	} else {
-		return strings.ToUpper(raw[0:1]) + strings.ToLower(raw[1:])
-	}
-
-}
-
 type ToolCall struct {
 	ID       string           `json:"id,omitempty" yaml:"id,omitempty"`
 	Type     string           `json:"type" yaml:"type"`
 	Function ToolCallFunction `json:"function" yaml:"function"`
-}
-
-type ToolCallFunction struct {
-	Name         string          `json:"name" yaml:"name"`
-	ArgumentsRaw json.RawMessage `json:"arguments" yaml:"arguments"` // some models return JSON string
-	// Arguments map[string]interface{} `json:"arguments"`
 }
 
 func (toolcall *ToolCall) GetID() (string, error) {
@@ -51,15 +28,15 @@ func (toolcall *ToolCall) GetName() (string, error) {
 			if tool != "" && method != "" {
 				return tool + "." + method, nil
 			} else {
-				return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", toolcall.Function.Name)
+				return "", fmt.Errorf("schemas.ToolCall.GetName: Invalid name \"%s\".", toolcall.Function.Name)
 			}
 
 		} else {
-			return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", toolcall.Function.Name)
+			return "", fmt.Errorf("schemas.ToolCall.GetName: Invalid name \"%s\".", toolcall.Function.Name)
 		}
 
 	} else {
-		return "", fmt.Errorf("Invalid Tool Call: Name \"%s\" is invalid.", toolcall.Function.Name)
+		return "", fmt.Errorf("schemas.ToolCall.GetName: Invalid name \"%s\".", toolcall.Function.Name)
 	}
 
 }
@@ -77,15 +54,15 @@ func (toolcall *ToolCall) GetMethod() (string, error) {
 			if method != "" {
 				return method, nil
 			} else {
-				return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", toolcall.Function.Name)
+				return "", fmt.Errorf("schemas.ToolCall.GetMethod: Invalid method from \"%s\".", toolcall.Function.Name)
 			}
 
 		} else {
-			return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", toolcall.Function.Name)
+			return "", fmt.Errorf("schemas.ToolCall.GetMethod: Invalid method from \"%s\".", toolcall.Function.Name)
 		}
 
 	} else {
-		return "", fmt.Errorf("Invalid Tool Call: Method from \"%s\" is invalid.", toolcall.Function.Name)
+		return "", fmt.Errorf("schemas.ToolCall.GetMethod: Invalid method from \"%s\".", toolcall.Function.Name)
 	}
 
 }

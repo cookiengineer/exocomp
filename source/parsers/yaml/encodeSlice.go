@@ -13,11 +13,11 @@ func encodeSlice(value reflect.Value) (*Node, error) {
 
 		child, err := encodeValue(value.Index(index))
 
-		if err != nil {
+		if err == nil {
+			node.ArrayChildren = append(node.ArrayChildren, child)
+		} else {
 			return nil, err
 		}
-
-		node.ArrayChildren = append(node.ArrayChildren, child)
 
 	}
 

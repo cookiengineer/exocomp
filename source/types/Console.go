@@ -1,9 +1,10 @@
 package types
 
-import "golang.org/x/term"
 import "os"
 import "strings"
 import "sync"
+
+import "golang.org/x/term"
 
 type Console struct {
 	Messages   []ConsoleMessage `json:"messages"`
@@ -45,11 +46,15 @@ func NewConsole(stdout *os.File, stderr *os.File, offset int) *Console {
 			width, height, err := term.GetSize(int(stdout.Fd()))
 
 			if err == nil {
+
 				console.width = width
 				console.height = height
+
 			} else {
+
 				console.width = 0
 				console.height = 0
+
 			}
 
 		}
@@ -130,8 +135,10 @@ func (console *Console) HasErrors() bool {
 	for _, message := range console.Messages {
 
 		if message.Method == "Error" {
+
 			result = true
 			break
+
 		}
 
 	}
@@ -149,8 +156,10 @@ func (console *Console) SetOffset(offset int) bool {
 	console.mutex.Lock()
 
 	if offset >= 0 {
+
 		console.offset = offset
 		result = true
+
 	}
 
 	console.mutex.Unlock()
@@ -202,8 +211,10 @@ func (console *Console) DisableMethod(method string) bool {
 	_, ok := console.methods[method]
 
 	if ok == true {
+
 		console.methods[method] = false
 		result = true
+
 	}
 
 	console.mutex.Unlock()
@@ -221,8 +232,10 @@ func (console *Console) EnableMethod(method string) bool {
 	_, ok := console.methods[method]
 
 	if ok == true {
+
 		console.methods[method] = true
 		result = true
+
 	}
 
 	console.mutex.Unlock()
@@ -336,8 +349,10 @@ func (console *Console) Clear(raw string) {
 		if message.Method == "Group" {
 
 			if strings.HasPrefix(message.Value, raw) {
+
 				found_start = m
 				break
+
 			}
 
 		}
@@ -353,8 +368,10 @@ func (console *Console) Clear(raw string) {
 			if message.Method == "GroupEnd" {
 
 				if m > found_start && strings.HasPrefix(message.Value, raw) {
+
 					found_end = m
 					break
+
 				}
 
 			}
@@ -630,8 +647,10 @@ func (console *Console) Progress(raw string) {
 				for m := len(console.Messages) - 1; m >= 0; m-- {
 
 					if console.Messages[m].Method == "Progress" {
+
 						last_progress = m
 						break
+
 					}
 
 				}
@@ -645,11 +664,15 @@ func (console *Console) Progress(raw string) {
 						if console.Stdout != nil {
 
 							if console.use_colors == true {
+
 								console.Stdout.WriteString("\033[A\033[2K\r")
 								console.Stdout.WriteString("\u001b[40m" + indent + lines[0] + "\u001b[K\u001b[0m\n")
+
 							} else {
+
 								console.Stdout.WriteString("\033[A\033[2K\r")
 								console.Stdout.WriteString(indent + lines[0] + "\n")
+
 							}
 
 						}

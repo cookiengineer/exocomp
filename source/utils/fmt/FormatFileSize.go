@@ -13,8 +13,10 @@ func FormatFileSize(bytes int64) string {
 	div, exp := int64(unit), 0
 
 	for n := bytes / unit; n >= unit; n /= unit {
+
 		div *= unit
 		exp++
+
 	}
 
 	units := "kMGTPE"

@@ -241,8 +241,10 @@ func (tool *Skills) Load(name string) (string, error) {
 				for _, program := range tool.AllowedPrograms {
 
 					if program == program_name {
+
 						found = true
 						break
+
 					}
 
 				}
@@ -264,8 +266,10 @@ func (tool *Skills) Load(name string) (string, error) {
 				for _, tool := range tool.AllowedTools {
 
 					if tool == tool_name {
+
 						found = true
 						break
+
 					}
 
 				}
@@ -351,8 +355,10 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 			for _, program := range tool.AllowedPrograms {
 
 				if program == runtime {
+
 					found = true
 					break
+
 				}
 
 			}
@@ -366,8 +372,10 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 					runtime_arguments := make([]string, 0)
 
 					if runtime == "go" {
+
 						runtime_arguments = append(runtime_arguments, "run")
 						runtime_arguments = append(runtime_arguments, script_path)
+
 					} else {
 						runtime_arguments = append(runtime_arguments, script_path)
 					}

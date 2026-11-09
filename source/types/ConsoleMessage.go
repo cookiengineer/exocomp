@@ -25,8 +25,7 @@ func NewConsoleMessage(method string, value string) ConsoleMessage {
 	message.Method = method
 	message.Value = value
 
-	// skip NewMessage()
-	// skip console.<Method>()
+	// NOTE: Caller depth 2 skips NewMessage() and console.<Method>().
 	_, file, line, ok := runtime.Caller(2)
 
 	if ok == true {
@@ -99,7 +98,7 @@ func (message *ConsoleMessage) IsSame(other ConsoleMessage) bool {
 
 			}
 
-		} else if !strings.Contains(message.Value, " of ") && strings.Contains(other.Value, " of ") {
+		} else if strings.Contains(message.Value, " of ") == false && strings.Contains(other.Value, " of ") == true {
 
 			words2 := getConsoleMessageWords(message.Value)
 			index2 := slices.Index(words2, "of")

@@ -17,4 +17,3 @@ func getConsoleIndent(offset int) string {
 	return result
 
 }
-

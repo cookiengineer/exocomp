@@ -38,7 +38,7 @@ func (datetime *Datetime) UnmarshalJSON(data []byte) error {
 			return nil
 
 		} else {
-			return fmt.Errorf("invalid datetime format: %w", err1)
+			return fmt.Errorf("schemas.Datetime.UnmarshalJSON: Invalid datetime format: %s.", err1.Error())
 		}
 
 	} else {
@@ -69,11 +69,11 @@ func (datetime *Datetime) UnmarshalYAML(node *yaml.Node) error {
 			return nil
 
 		} else {
-			return fmt.Errorf("invalid datetime format: %w", err1)
+			return fmt.Errorf("schemas.Datetime.UnmarshalYAML: Invalid datetime format: %s.", err1.Error())
 		}
 
 	} else {
-		return fmt.Errorf("invalid yaml datetime format: expected ScalarNode, got %v", node.Kind)
+		return fmt.Errorf("schemas.Datetime.UnmarshalYAML: Expected ScalarNode, got %v.", node.Kind)
 	}
 
 }

@@ -18,7 +18,6 @@ type Skill struct {
 	// frontmatter: exocomp Specification
 	AllowedPrograms []string `json:"allowed-programs" yaml:"allowed-programs"`
 
-	// body
 	Body string `json:"body" yaml:"-"`
 
 	// Internal Properties
@@ -74,11 +73,11 @@ func ParseSkill(data []byte) (*Skill, error) {
 				}
 
 			} else {
-				return nil, errors.New("unsupported frontmatter syntax")
+				return nil, errors.New("types.ParseSkill: Unsupported frontmatter syntax.")
 			}
 
 		} else {
-			return nil, errors.New("unsupported frontmatter syntax")
+			return nil, errors.New("types.ParseSkill: Unsupported frontmatter syntax.")
 		}
 
 	}

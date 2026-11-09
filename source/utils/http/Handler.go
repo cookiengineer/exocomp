@@ -3,7 +3,7 @@ package http
 import "net/http"
 import "sync/atomic"
 
-type handler_value struct {
+type handlerValue struct {
 	handler http.Handler
 }
 
@@ -14,7 +14,7 @@ type Handler struct {
 func NewHandler(http_handler http.Handler) *Handler {
 
 	handler := &Handler{}
-	handler.value.Store(&handler_value{
+	handler.value.Store(&handlerValue{
 		handler: http_handler,
 	})
 
@@ -24,14 +24,14 @@ func NewHandler(http_handler http.Handler) *Handler {
 
 func (handler *Handler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 
-	value := handler.value.Load().(*handler_value)
+	value := handler.value.Load().(*handlerValue)
 	value.handler.ServeHTTP(response, request)
 
 }
 
 func (handler *Handler) Set(http_handler http.Handler) {
 
-	handler.value.Store(&handler_value{
+	handler.value.Store(&handlerValue{
 		handler: http_handler,
 	})
 

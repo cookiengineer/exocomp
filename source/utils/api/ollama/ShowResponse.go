@@ -18,12 +18,14 @@ func (response *ShowResponse) ContextLength() int {
 			if strings.Contains(key, ".context_length") {
 
 				switch tmp := raw_value.(type) {
+
 				case int:
 					result = tmp
 				case int64:
 					result = int(tmp)
 				case float64:
 					result = int(tmp)
+
 				}
 
 			}
@@ -47,12 +49,14 @@ func (response *ShowResponse) EmbeddingLength() int {
 			if strings.Contains(key, ".embedding_length") {
 
 				switch tmp := raw_value.(type) {
+
 				case int:
 					result = tmp
 				case int64:
 					result = int(tmp)
 				case float64:
 					result = int(tmp)
+
 				}
 
 			}

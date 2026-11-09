@@ -15,8 +15,10 @@ func IsNumber(value string) bool {
 		} else if character == "E" || character == "e" {
 			continue
 		} else {
+
 			result = false
 			break
+
 		}
 
 	}

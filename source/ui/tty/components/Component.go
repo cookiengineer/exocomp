@@ -1,7 +1,7 @@
 package components
 
-import "time"
 import utils_tty "exocomp/utils/tty"
+import "time"
 
 type Component interface {
 	Width(width int) int

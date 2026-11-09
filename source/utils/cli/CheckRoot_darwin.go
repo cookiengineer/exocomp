@@ -14,10 +14,12 @@ func CheckRoot() error {
 	} else {
 
 		if sudo_user := os.Getenv("SUDO_USER"); sudo_user != "" {
+
 			exe, _ := os.Executable()
-			return fmt.Errorf("Error: Run this program with sudo %s", exe)
+			return fmt.Errorf("cli.CheckRoot: Run this program with sudo %s.", exe)
+
 		} else {
-			return fmt.Errorf("Error: Run this program as root")
+			return fmt.Errorf("cli.CheckRoot: Run this program as root.")
 		}
 
 	}

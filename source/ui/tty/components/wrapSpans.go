@@ -32,9 +32,11 @@ func wrapSpans(spans []transcriptSpan, width int) [][]transcriptSpan {
 	current_width := 0
 
 	flush := func() {
+
 		lines = append(lines, current)
 		current = make([]styledRune, 0)
 		current_width = 0
+
 	}
 
 	for _, item := range runes {
@@ -44,8 +46,10 @@ func wrapSpans(spans []transcriptSpan, width int) [][]transcriptSpan {
 		}
 
 		if item.Rune == '\n' {
+
 			flush()
 			continue
+
 		}
 
 		item_width := utils_tty.RuneWidth(item.Rune)
@@ -67,8 +71,10 @@ func wrapSpans(spans []transcriptSpan, width int) [][]transcriptSpan {
 			for index := len(current) - 1; index >= 0; index-- {
 
 				if current[index].Rune == ' ' {
+
 					break_at = index
 					break
+
 				}
 
 			}
@@ -125,14 +131,18 @@ func wrapSpans(spans []transcriptSpan, width int) [][]transcriptSpan {
 		for _, item := range line {
 
 			if has_style == false {
+
 				current_style = item.Style
 				has_style = true
+
 			}
 
 			if item.Style.Equals(current_style) == false {
+
 				line_result = append(line_result, transcriptSpan{Text: builder.String(), Style: current_style})
 				builder.Reset()
 				current_style = item.Style
+
 			}
 
 			builder.WriteRune(item.Rune)

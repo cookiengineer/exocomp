@@ -40,8 +40,10 @@ func ParseValue(raw string, property *schemas.ToolFunctionParameterProperty) (an
 			for _, option := range property.Enum {
 
 				if option == value {
+
 					found = true
 					break
+
 				}
 
 			}
@@ -112,54 +114,5 @@ func ParseValue(raw string, property *schemas.ToolFunctionParameterProperty) (an
 	}
 
 	return parseSchemaLess(value)
-
-}
-
-func parseSchemaLess(value string) (any, error) {
-
-	if value == "" {
-		return "", nil
-	}
-
-	if value == "true" {
-		return true, nil
-	}
-
-	if value == "false" {
-		return false, nil
-	}
-
-	if value == "null" {
-		return nil, nil
-	}
-
-	var decoded any
-	err := json.Unmarshal([]byte(value), &decoded)
-
-	if err == nil {
-		return decoded, nil
-	} else {
-		return unquote(value), nil
-	}
-
-}
-
-func unquote(value string) string {
-
-	if len(value) >= 2 && value[0] == '"' && value[len(value)-1] == '"' {
-
-		unquoted, err := strconv.Unquote(value)
-
-		if err == nil {
-			return unquoted
-		}
-
-	}
-
-	if len(value) >= 2 && value[0] == '\'' && value[len(value)-1] == '\'' {
-		return value[1 : len(value)-1]
-	}
-
-	return value
 
 }

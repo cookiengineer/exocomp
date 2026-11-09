@@ -2,26 +2,15 @@ package tty
 
 import "strings"
 
-type Attribute uint8
-
-const (
-	AttrBold Attribute = 1 << iota
-	AttrDim
-	AttrItalic
-	AttrUnderline
-	AttrReverse
-	AttrStrikethrough
-)
-
 type Style struct {
-	Foreground    RGBA
-	Background    RGBA
+	Foreground    Color
+	Background    Color
 	Attributes    Attribute
 	HasForeground bool
 	HasBackground bool
 }
 
-func NewStyle(foreground RGBA, background RGBA) Style {
+func NewStyle(foreground Color, background Color) Style {
 
 	return Style{
 		Foreground:    foreground,
@@ -32,7 +21,7 @@ func NewStyle(foreground RGBA, background RGBA) Style {
 
 }
 
-func (style Style) WithForeground(color RGBA) Style {
+func (style Style) WithForeground(color Color) Style {
 
 	style.Foreground = color
 	style.HasForeground = true
@@ -41,7 +30,7 @@ func (style Style) WithForeground(color RGBA) Style {
 
 }
 
-func (style Style) WithBackground(color RGBA) Style {
+func (style Style) WithBackground(color Color) Style {
 
 	style.Background = color
 	style.HasBackground = true
@@ -108,11 +97,11 @@ func (style Style) Sequence(profile ColorProfile) string {
 		builder.WriteString("\033[9m")
 	}
 
-	if style.HasForeground {
+	if style.HasForeground == true {
 		builder.WriteString(style.Foreground.Foreground(profile))
 	}
 
-	if style.HasBackground {
+	if style.HasBackground == true {
 		builder.WriteString(style.Background.Background(profile))
 	}
 

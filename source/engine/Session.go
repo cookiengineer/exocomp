@@ -9,25 +9,9 @@ import "fmt"
 import "io"
 import net_http "net/http"
 import "os"
-import "path/filepath"
 import "sort"
 import "strings"
 import "sync"
-
-func log_response_error(console *types.Console, response *net_http.Response) {
-
-	var api_error schemas.Error
-
-	response_payload, _ := io.ReadAll(response.Body)
-	err1 := json.Unmarshal(response_payload, &api_error)
-
-	if err1 == nil {
-		console.Error(fmt.Sprintf("> API Error: %s", api_error.Error()))
-	} else {
-		console.Error(fmt.Sprintf("> Unknown Error: \n%s\n", string(response_payload)))
-	}
-
-}
 
 type Session struct {
 	Agent    *types.Agent             `json:"agent"`
@@ -95,55 +79,8 @@ func ParseSession(data []byte) (*Session, error) {
 		}
 
 	} else {
-		return nil, fmt.Errorf("Unsupported data format")
+		return nil, fmt.Errorf("Session.ParseSession: Unsupported data format.")
 	}
-
-}
-
-func RestoreSession(playground string, backup Session) *Session {
-
-	session := &Session{
-		Agent:    backup.Agent,
-		Config:   backup.Config,
-		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
-		Recovery: NewRecovery(playground),
-		Waiting:  false,
-		client:   &net_http.Client{},
-		mutex:    &sync.RWMutex{},
-		adapters: make(map[string]types.Adapter),
-		tools:    make(map[string]types.Tool),
-		changes:  make(chan struct{}, 1),
-	}
-
-	if backup.Console != nil {
-		session.Console.Messages = backup.Console.Messages
-	}
-
-	if backup.Config != nil {
-
-		if backup.Config.Playground == backup.Config.Sandbox {
-
-			session.Config.Playground = playground
-			session.Config.Sandbox = playground
-
-		} else {
-
-			relative_sandbox, err3 := filepath.Rel(backup.Config.Playground, backup.Config.Sandbox)
-
-			if err3 == nil {
-				session.Config.Playground = playground
-				session.Config.Sandbox = filepath.Join(playground, relative_sandbox)
-			}
-
-		}
-
-	}
-
-	if session.Agent != nil && session.Config != nil {
-		session.Agent.Sandbox = session.Config.Sandbox
-	}
-
-	return session
 
 }
 
@@ -166,8 +103,10 @@ func (session *Session) notifyChange() {
 	if session.changes != nil {
 
 		select {
+
 		case session.changes <- struct{}{}:
 		default:
+
 		}
 
 	}
@@ -189,10 +128,10 @@ func (session *Session) Init() error {
 
 	// NOTE: First Message is System Prompt
 	if len(session.Agent.Messages) > 0 {
-		return session.infer_chat_completions()
+		return session.inferChatCompletions()
 	}
 
-	return fmt.Errorf("Session is empty, waiting for LLM system prompt ...")
+	return fmt.Errorf("Session.Init: Session is empty, waiting for LLM system prompt.")
 
 }
 
@@ -262,8 +201,10 @@ func (session *Session) CallTool(id string, name string, method string, argument
 								message := session.Agent.Messages[m]
 
 								if message.Role == "tool" && message.ToolCallID == tool_call_id {
+
 									found_answer = true
 									break
+
 								}
 
 							}
@@ -452,7 +393,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 		session.Agent.Messages = append(session.Agent.Messages, tmp)
 		session.mutex.Unlock()
 
-		return fmt.Errorf("Error: %s.%s: Tool does not exist or is not allowed.", name, method)
+		return fmt.Errorf("Session.CallTool: %s.%s: Tool does not exist or is not allowed.", name, method)
 
 	}
 
@@ -614,8 +555,10 @@ func (session *Session) LoadSkill(name string, skill *types.Skill) error {
 	for m, message := range session.Agent.Messages {
 
 		if message.Role == "system" && message.Content == skill.Body {
+
 			index = m
 			break
+
 		}
 
 	}
@@ -631,8 +574,10 @@ func (session *Session) LoadSkill(name string, skill *types.Skill) error {
 			for _, program := range session.Agent.AllowedPrograms {
 
 				if program == program_name {
+
 					found = true
 					break
+
 				}
 
 			}
@@ -653,8 +598,10 @@ func (session *Session) LoadSkill(name string, skill *types.Skill) error {
 			for _, tool := range session.Agent.AllowedTools {
 
 				if tool == tool_name {
+
 					found = true
 					break
+
 				}
 
 			}
@@ -750,7 +697,7 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 				session.Recovery.BackupSession(session)
 			}
 
-			return session.infer_chat_completions()
+			return session.inferChatCompletions()
 
 		} else {
 
@@ -808,7 +755,7 @@ func (session *Session) SendChatRequest(request schemas.Message) error {
 
 		session.notifyChange()
 
-		err := session.infer_chat_completions()
+		err := session.inferChatCompletions()
 
 		session.mutex.Lock()
 		session.Waiting = false
@@ -823,7 +770,7 @@ func (session *Session) SendChatRequest(request schemas.Message) error {
 		}
 
 	} else {
-		return fmt.Errorf("Session is busy, waiting for LLM response ...")
+		return fmt.Errorf("Session.SendChatRequest: Session is busy, waiting for LLM response.")
 	}
 
 }
@@ -943,8 +890,10 @@ func (session *Session) UnloadSkill(name string, skill *types.Skill) error {
 	for m, message := range session.Agent.Messages {
 
 		if message.Role == "system" && message.Content == skill.Body {
+
 			index = m
 			break
+
 		}
 
 	}
@@ -984,7 +933,7 @@ func (session *Session) UnloadSkill(name string, skill *types.Skill) error {
 
 }
 
-func (session *Session) infer_chat_completions() error {
+func (session *Session) inferChatCompletions() error {
 
 	// NOTE: Resolve provider-specific URLs, model aliases and tokens
 	resolved_url := session.Config.ResolveURL(session.Agent.Model, "/chat/completions")
@@ -1099,7 +1048,7 @@ func (session *Session) infer_chat_completions() error {
 						if len(chat_response.Choices) > 0 {
 							return session.ReceiveChatResponse(chat_response.Choices[0].Message)
 						} else {
-							return fmt.Errorf("Empty choices, maybe incompatible API?")
+							return fmt.Errorf("Session.InferChatCompletions: Empty choices, maybe incompatible API?")
 						}
 
 					} else {
@@ -1112,35 +1061,35 @@ func (session *Session) infer_chat_completions() error {
 
 			} else if err2 == nil && response.StatusCode == 400 {
 
-				log_response_error(session.Console, response)
+				logResponseError(session.Console, response)
 
-				return fmt.Errorf("Server %s for Model %s is incompatible with OpenAPI /v1 schema", resolved_url.String(), resolved_model)
+				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s is incompatible with OpenAPI /v1 schema.", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 401 {
 
-				log_response_error(session.Console, response)
+				logResponseError(session.Console, response)
 
-				return fmt.Errorf("Server %s for Model %s has invalid authentication token", resolved_url.String(), resolved_model)
+				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s has invalid authentication token.", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 402 {
 
-				log_response_error(session.Console, response)
+				logResponseError(session.Console, response)
 
-				return fmt.Errorf("Server %s for Model %s requires a subscription", resolved_url.String(), resolved_model)
+				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s requires a subscription.", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 403 {
 
-				log_response_error(session.Console, response)
+				logResponseError(session.Console, response)
 
-				return fmt.Errorf("Server %s for Model %s requires a valid authentication token", resolved_url.String(), resolved_model)
+				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s requires a valid authentication token.", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 404 {
 
-				return fmt.Errorf("Server %s for Model %s does not recognize the model name", resolved_url.String(), resolved_model)
+				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s does not recognize the model name.", resolved_url.String(), resolved_model)
 
 			} else if err2 == nil && response.StatusCode == 429 {
 
-				return fmt.Errorf("Server %s for Model %s usage quota exceeded", resolved_url.String(), resolved_model)
+				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s usage quota exceeded.", resolved_url.String(), resolved_model)
 
 			} else if err2 != nil {
 
@@ -1154,9 +1103,9 @@ func (session *Session) infer_chat_completions() error {
 				json.Unmarshal(response_payload, &api_error)
 
 				if api_error.Error() != "" {
-					return fmt.Errorf("Server %s returned unexpected HTTP error %d with message %s", resolved_url.String(), response.StatusCode, api_error.Error())
+					return fmt.Errorf("Session.InferChatCompletions: Server %s returned unexpected HTTP error %d with message %s.", resolved_url.String(), response.StatusCode, api_error.Error())
 				} else {
-					return fmt.Errorf("Server %s returned unexpected HTTP error %d", resolved_url.String(), response.StatusCode)
+					return fmt.Errorf("Session.InferChatCompletions: Server %s returned unexpected HTTP error %d.", resolved_url.String(), response.StatusCode)
 				}
 
 			}

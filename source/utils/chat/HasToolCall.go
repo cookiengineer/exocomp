@@ -13,8 +13,10 @@ func HasToolCall(message *schemas.Message, toolname string) bool {
 			for _, toolcall := range message.ToolCalls {
 
 				if toolcall.Function.Name == toolname {
+
 					found = true
 					break
+
 				}
 
 			}

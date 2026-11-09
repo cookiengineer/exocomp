@@ -152,8 +152,10 @@ func stringTable(element *Element) string {
 		for _, length := range lengths {
 
 			if length+2 > len(whitespace) {
+
 				border = strings.Repeat("-", length+2)
 				whitespace = strings.Repeat(" ", length+2)
+
 			}
 
 		}

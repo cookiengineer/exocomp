@@ -11,8 +11,10 @@ func (response *RunningModelsResponse) ContextLength(model_name string) int {
 	for _, model := range response.Models {
 
 		if model.Name == model_name || model.Model == model_name {
+
 			result = model.ContextLength
 			break
+
 		}
 
 	}

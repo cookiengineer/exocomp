@@ -12,33 +12,17 @@ import "strings"
 import "sync"
 import "time"
 
-type question_state struct {
+type questionState struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 	done   chan struct{}
-}
-
-func watch_question(tool *Humans, question string, state *question_state) {
-
-	<-state.ctx.Done()
-
-	tool.mutex.Lock()
-	defer tool.mutex.Unlock()
-
-	_, still_waiting := tool.states[question]
-
-	if still_waiting == true {
-		delete(tool.states, question)
-		close(state.done)
-	}
-
 }
 
 type Humans struct {
 	Methods  []string
 	Timeout  time.Duration
 	contents map[string]*types.Question
-	states   map[string]*question_state
+	states   map[string]*questionState
 	mutex    *sync.RWMutex
 }
 
@@ -48,7 +32,7 @@ func NewHumans(methods []string, playground string, sandbox string) *Humans {
 		Methods:  methods,
 		Timeout:  15 * time.Minute,
 		contents: make(map[string]*types.Question),
-		states:   make(map[string]*question_state),
+		states:   make(map[string]*questionState),
 		mutex:    &sync.RWMutex{},
 	}
 
@@ -184,7 +168,7 @@ func (tool *Humans) Ask(text string) (string, error) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), tool.Timeout)
-	state := &question_state{
+	state := &questionState{
 		ctx:    ctx,
 		cancel: cancel,
 		done:   make(chan struct{}),
@@ -195,7 +179,7 @@ func (tool *Humans) Ask(text string) (string, error) {
 	tool.states[question.Question] = state
 	tool.mutex.Unlock()
 
-	go watch_question(tool, question.Question, state)
+	go watchQuestion(tool, question.Question, state)
 
 	return tool.Await(question.Question)
 
@@ -212,7 +196,7 @@ func (tool *Humans) Choose(text string, options []string, multiple bool) (string
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), tool.Timeout)
-	state := &question_state{
+	state := &questionState{
 		ctx:    ctx,
 		cancel: cancel,
 		done:   make(chan struct{}),
@@ -223,7 +207,7 @@ func (tool *Humans) Choose(text string, options []string, multiple bool) (string
 	tool.states[question.Question] = state
 	tool.mutex.Unlock()
 
-	go watch_question(tool, question.Question, state)
+	go watchQuestion(tool, question.Question, state)
 
 	return tool.Await(question.Question)
 
@@ -331,7 +315,7 @@ func (tool *Humans) Schemas() []schemas.Tool {
 // agents.Await deliberately: the planner model would otherwise poll in a hot
 // loop and blow up its limited context window with identical "still waiting"
 // tool messages. The lifecycle guarantees the done channel always closes
-// (answer received -> Answer() -> close, or timeout -> watch_question ->
+// (answer received -> Answer() -> close, or timeout -> watchQuestion ->
 // close), so Await never blocks forever.
 func (tool *Humans) Await(reference string) (string, error) {
 

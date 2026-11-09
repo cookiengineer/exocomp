@@ -237,18 +237,18 @@ var Abbreviations map[string]string = map[string]string{
 	"YARA": "Yet Another Recursive Acronym",
 }
 
-var abbreviation_keys []string
+var abbreviationKeys []string
 
 func init() {
 
-	abbreviation_keys = make([]string, 0, len(Abbreviations))
+	abbreviationKeys = make([]string, 0, len(Abbreviations))
 
 	for key, _ := range Abbreviations {
-		abbreviation_keys = append(abbreviation_keys, key)
+		abbreviationKeys = append(abbreviationKeys, key)
 	}
 
-	sort.Slice(abbreviation_keys, func(a int, b int) bool {
-		return len(abbreviation_keys[a]) > len(abbreviation_keys[b])
+	sort.Slice(abbreviationKeys, func(a int, b int) bool {
+		return len(abbreviationKeys[a]) > len(abbreviationKeys[b])
 	})
 
 }

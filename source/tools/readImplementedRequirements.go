@@ -37,7 +37,7 @@ func readImplementedRequirements(tool *Requirements) error {
 					}
 
 				} else {
-					return fmt.Errorf("readImplementedRequirements: %s", err1.Error())
+					return fmt.Errorf("requirements.ReadImplemented: %s", err1.Error())
 				}
 
 			}
@@ -45,11 +45,11 @@ func readImplementedRequirements(tool *Requirements) error {
 			return nil
 
 		} else {
-			return fmt.Errorf("readImplementedRequirements: %s", err0.Error())
+			return fmt.Errorf("requirements.ReadImplemented: %s", err0.Error())
 		}
 
 	} else {
-		return fmt.Errorf("readImplementedRequirements: Invalid tool playground")
+		return fmt.Errorf("requirements.ReadImplemented: Invalid tool playground.")
 	}
 
 }

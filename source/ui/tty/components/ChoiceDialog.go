@@ -86,8 +86,10 @@ func (dialog *ChoiceDialog) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect
 		style := styles.Dialog
 
 		if selected == true {
+
 			style = styles.Selection
 			buffer.Fill(utils_tty.Rect{X: rect.X + 2, Y: row, Width: rect.Width - 4, Height: 1}, ' ', style)
+
 		}
 
 		text := marker + " " + option

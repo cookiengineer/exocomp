@@ -3,24 +3,17 @@ package tty
 import "math"
 import "time"
 
-type ActivityStyle int
-
-const (
-	ActivityBlocks ActivityStyle = iota
-	ActivityDiamonds
-)
-
 type Activity struct {
 	Style      ActivityStyle
-	Color      RGBA
-	Background RGBA
+	Color      Color
+	Background Color
 	TrailSteps int
 	HoldStart  int
 	HoldEnd    int
 	Interval   time.Duration
 }
 
-func NewActivity(color RGBA, background RGBA) Activity {
+func NewActivity(color Color, background Color) Activity {
 
 	return Activity{
 		Style:      ActivityBlocks,
@@ -96,10 +89,10 @@ func (activity Activity) Render(buffer *Buffer, x int, y int, width int, elapsed
 
 }
 
-func (activity Activity) trailColors() []RGBA {
+func (activity Activity) trailColors() []Color {
 
 	steps := max(activity.TrailSteps, 2)
-	result := make([]RGBA, steps)
+	result := make([]Color, steps)
 
 	for index := 0; index < steps; index++ {
 
@@ -109,13 +102,15 @@ func (activity Activity) trailColors() []RGBA {
 		if index == 0 {
 			alpha = 1.0
 		} else if index == 1 {
+
 			alpha = 0.9
 			brightness = 1.15
+
 		} else {
 			alpha = math.Pow(0.65, float64(index-1))
 		}
 
-		result[index] = NewRGBA(
+		result[index] = NewColor(
 			math.Min(1.0, activity.Color.R*brightness),
 			math.Min(1.0, activity.Color.G*brightness),
 			math.Min(1.0, activity.Color.B*brightness),
@@ -185,8 +180,10 @@ func (activity Activity) activePosition(frame int, width int) int {
 	} else if position < forward+hold_end {
 		return width - 1
 	} else if position < forward+hold_end+backward {
+
 		index := position - forward - hold_end
 		return width - 2 - index
+
 	} else {
 		return 0
 	}

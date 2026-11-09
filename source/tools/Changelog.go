@@ -297,11 +297,11 @@ func (tool *Changelog) MarshalJSON() ([]byte, error) {
 
 	err := readChangelog(tool)
 
-	if err != nil {
+	if err == nil {
+		return json.Marshal(tool.contents)
+	} else {
 		return nil, err
 	}
-
-	return json.Marshal(tool.contents)
 
 }
 
@@ -554,8 +554,10 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 			for _, entry := range tool.contents[internal_path][symbol] {
 
 				if entry.Type == method && entry.File == internal_path && entry.Symbol == symbol && entry.Description == description {
+
 					found = &entry
 					break
+
 				}
 
 			}

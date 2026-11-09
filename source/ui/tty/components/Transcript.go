@@ -129,6 +129,7 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 			role_style := styles.TranscriptTool
 
 			switch message.Role {
+
 			case "user":
 				role_style = styles.TranscriptUser
 			case "assistant":
@@ -137,6 +138,7 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 				role_style = styles.TranscriptTool
 			case "system":
 				role_style = styles.TranscriptSystem
+
 			}
 
 			result = append(result, transcriptLine{
@@ -160,8 +162,10 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 			}
 
 			if strings.TrimSpace(content) != "" {
+
 				rendered := renderMarkdown(content, rect.Width)
 				result = append(result, rendered...)
+
 			}
 
 		}
@@ -175,9 +179,11 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 	}
 
 	if len(lines) == 0 {
+
 		message := "No messages yet. Ask the agent something, or type / to run a tool call."
 		buffer.WriteString(rect.X+1, rect.Y, utils_tty.Truncate(message, rect.Width-2), styles.TextMuted)
 		return
+
 	}
 
 	if transcript.Scroll > len(lines)-rect.Height {

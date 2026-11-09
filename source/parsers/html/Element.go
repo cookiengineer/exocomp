@@ -209,8 +209,10 @@ func (element *Element) Render(document *Document) string {
 		for _, child := range element.Children {
 
 			if child.Type == "li" {
+
 				lines = append(lines, fmt.Sprintf("%d. %s", index, strings.TrimSpace(child.renderChildrenInline(document))))
 				index++
+
 			}
 
 		}

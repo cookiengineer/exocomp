@@ -98,27 +98,35 @@ func (screen *Screen) Flush() error {
 			previous := screen.previous.Get(x, y)
 
 			if cell.Width == 0 {
+
 				x++
 				continue
+
 			}
 
 			if cell.Equals(previous) {
+
 				x += max(1, cell.Width)
 				continue
+
 			}
 
 			changed = true
 
 			if current_x != x || current_y != y {
+
 				output.WriteString(fmt.Sprintf("\033[%d;%dH", y+1, x+1))
 				current_x = x
 				current_y = y
+
 			}
 
 			if has_style == false || current_style.Equals(cell.Style) == false {
+
 				output.WriteString(cell.Style.Sequence(screen.profile))
 				current_style = cell.Style
 				has_style = true
+
 			}
 
 			if cell.Text == "" {
@@ -142,7 +150,7 @@ func (screen *Screen) Flush() error {
 		output.WriteString("\033[0m")
 	}
 
-	if screen.cursorVisible {
+	if screen.cursorVisible == true {
 
 		output.WriteString(fmt.Sprintf("\033[%d;%dH", screen.cursorY+1, screen.cursorX+1))
 		output.WriteString("\033[?25h")

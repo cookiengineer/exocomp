@@ -15,7 +15,7 @@ func getWebsiteUserAgent(id string) (*types.UserAgent, error) {
 	if useragent != nil {
 		return useragent, nil
 	} else {
-		return nil, fmt.Errorf("Invalid User-Agent \"%s\"", id)
+		return nil, fmt.Errorf("websites.GetUserAgent: Invalid User-Agent \"%s\".", id)
 	}
 
 }

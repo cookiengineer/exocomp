@@ -7,7 +7,7 @@ import "sync"
 import "time"
 import "unicode/utf8"
 
-const escape_timeout = 25 * time.Millisecond
+const escapeTimeout = 25 * time.Millisecond
 
 type Input struct {
 	terminal *Terminal
@@ -56,9 +56,11 @@ func (input *Input) start() {
 				for index := 0; index < count; index++ {
 
 					select {
+
 					case input.bytes <- buffer[index]:
 					case <-input.closed:
 						return
+
 					}
 
 				}
@@ -68,8 +70,10 @@ func (input *Input) start() {
 			if err != nil {
 
 				select {
+
 				case input.errors <- err:
 				default:
+
 				}
 
 				return
@@ -153,7 +157,7 @@ func (input *Input) readUTF8(first byte) (Key, error) {
 
 	for len(buffer) < length {
 
-		next, err := input.next(escape_timeout)
+		next, err := input.next(escapeTimeout)
 
 		if err != nil {
 			return Key{Type: KeyUnknown}, nil
@@ -164,8 +168,10 @@ func (input *Input) readUTF8(first byte) (Key, error) {
 	}
 
 	if utf8.Valid(buffer) {
+
 		value, _ := utf8.DecodeRune(buffer)
 		return Key{Type: KeyRune, Rune: value}, nil
+
 	} else {
 		return Key{Type: KeyUnknown}, nil
 	}
@@ -174,7 +180,7 @@ func (input *Input) readUTF8(first byte) (Key, error) {
 
 func (input *Input) readEscape() (Key, error) {
 
-	next, err := input.next(escape_timeout)
+	next, err := input.next(escapeTimeout)
 
 	if err != nil {
 		return Key{Type: KeyEscape}, nil
@@ -191,8 +197,10 @@ func (input *Input) readEscape() (Key, error) {
 	key, err0 := input.readSimple(next)
 
 	if err0 == nil {
+
 		key.Alt = true
 		return key, nil
+
 	} else {
 		return Key{Type: KeyEscape}, nil
 	}
@@ -206,7 +214,7 @@ func (input *Input) readCSI() (Key, error) {
 
 	for {
 
-		next, err := input.next(escape_timeout)
+		next, err := input.next(escapeTimeout)
 
 		if err != nil {
 			return Key{Type: KeyEscape}, nil
@@ -228,13 +236,14 @@ func (input *Input) readCSI() (Key, error) {
 
 func (input *Input) readSS3() (Key, error) {
 
-	next, err := input.next(escape_timeout)
+	next, err := input.next(escapeTimeout)
 
 	if err != nil {
 		return Key{Type: KeyEscape}, nil
 	}
 
 	switch next {
+
 	case 'A':
 		return Key{Type: KeyArrowUp}, nil
 	case 'B':
@@ -249,6 +258,7 @@ func (input *Input) readSS3() (Key, error) {
 		return Key{Type: KeyEnd}, nil
 	default:
 		return Key{Type: KeyUnknown}, nil
+
 	}
 
 }
@@ -270,6 +280,7 @@ func (input *Input) decodeCSI(parameters string, intermediate byte, final byte) 
 		if err == nil {
 
 			switch code {
+
 			case 1, 7:
 				return Key{Type: KeyHome}, nil
 			case 2:
@@ -284,6 +295,7 @@ func (input *Input) decodeCSI(parameters string, intermediate byte, final byte) 
 				return Key{Type: KeyPageDown}, nil
 			default:
 				return Key{Type: KeyUnknown}, nil
+
 			}
 
 		} else {
@@ -300,15 +312,18 @@ func (input *Input) decodeCSI(parameters string, intermediate byte, final byte) 
 	modifier := 0
 
 	if len(parts) > 1 {
+
 		parsed, err := strconv.Atoi(parts[1])
 		if err == nil {
 			modifier = parsed
 		}
+
 	}
 
 	shift, alt, ctrl := decodeModifier(modifier)
 
 	switch final {
+
 	case 'A':
 		return Key{Type: KeyArrowUp, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
 	case 'B':
@@ -325,84 +340,8 @@ func (input *Input) decodeCSI(parameters string, intermediate byte, final byte) 
 		return Key{Type: KeyTab, Shift: true}, nil
 	default:
 		return Key{Type: KeyUnknown}, nil
-	}
-
-}
-
-func decodeCSIU(parameters string) (Key, error) {
-
-	parts := strings.Split(parameters, ";")
-	code, err := strconv.Atoi(parts[0])
-
-	if err != nil {
-		return Key{Type: KeyUnknown}, nil
-	}
-
-	modifier := 1
-
-	if len(parts) > 1 {
-		parsed, err1 := strconv.Atoi(parts[1])
-		if err1 == nil {
-			modifier = parsed
-		}
-	}
-
-	shift, alt, ctrl := decodeModifier(modifier)
-
-	switch code {
-	case 9:
-		return Key{Type: KeyTab, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
-	case 13:
-		return Key{Type: KeyEnter, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
-	case 27:
-		return Key{Type: KeyEscape, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
-	case 127:
-		return Key{Type: KeyBackspace, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
-	default:
-		return Key{Type: KeyRune, Rune: rune(code), Shift: shift, Alt: alt, Ctrl: ctrl}, nil
-	}
-
-}
-
-func decodeModifyOtherKeys(parameters string) (Key, error) {
-
-	parts := strings.Split(parameters, ";")
-
-	if len(parts) >= 3 {
-
-		modifier, err1 := strconv.Atoi(parts[1])
-		code, err2 := strconv.Atoi(parts[2])
-
-		if err1 == nil && err2 == nil {
-
-			shift, alt, ctrl := decodeModifier(modifier)
-
-			switch code {
-			case 9:
-				return Key{Type: KeyTab, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
-			case 13:
-				return Key{Type: KeyEnter, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
-			default:
-				return Key{Type: KeyRune, Rune: rune(code), Shift: shift, Alt: alt, Ctrl: ctrl}, nil
-			}
-
-		}
 
 	}
-
-	return Key{Type: KeyUnknown}, nil
-
-}
-
-func decodeModifier(value int) (bool, bool, bool) {
-
-	if value <= 0 {
-		return false, false, false
-	}
-
-	bits := value - 1
-
-	return bits&1 != 0, bits&2 != 0, bits&4 != 0
 
 }
 
@@ -445,12 +384,14 @@ func (input *Input) next(timeout time.Duration) (byte, error) {
 	if timeout <= 0 {
 
 		select {
+
 		case value := <-input.bytes:
 			return value, nil
 		case err := <-input.errors:
 			return 0, err
 		case <-input.closed:
-			return 0, fmt.Errorf("Input closed")
+			return 0, fmt.Errorf("tty.Input.next: Input closed.")
+
 		}
 
 	}
@@ -459,14 +400,16 @@ func (input *Input) next(timeout time.Duration) (byte, error) {
 	defer timer.Stop()
 
 	select {
+
 	case value := <-input.bytes:
 		return value, nil
 	case err := <-input.errors:
 		return 0, err
 	case <-timer.C:
-		return 0, fmt.Errorf("Input timeout")
+		return 0, fmt.Errorf("tty.Input.next: Input timeout.")
 	case <-input.closed:
-		return 0, fmt.Errorf("Input closed")
+		return 0, fmt.Errorf("tty.Input.next: Input closed.")
+
 	}
 
 }

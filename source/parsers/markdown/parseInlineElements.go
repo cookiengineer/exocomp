@@ -3,28 +3,6 @@ package markdown
 import "fmt"
 import "strings"
 
-func getTokenPosition(value string, remaining string) int {
-	return len(strings.TrimSpace(value)) - len(remaining)
-}
-
-func getLastElement(result []*Element, typ string) *Element {
-
-	var pointer *Element = nil
-
-	if len(result) > 0 {
-
-		tmp := result[len(result)-1]
-
-		if tmp.Type == typ {
-			pointer = tmp
-		}
-
-	}
-
-	return pointer
-
-}
-
 func parseInlineElements(value string, line int, with_abbreviations bool) ([]*Element, error) {
 
 	result := make([]*Element, 0)
@@ -43,7 +21,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 		is_em := strings.HasPrefix(remaining, "*")
 		is_del := strings.HasPrefix(remaining, "~")
 
-		if is_emoji {
+		if is_emoji == true {
 
 			remaining = remaining[1:]
 
@@ -96,7 +74,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 
 			}
 
-		} else if is_media {
+		} else if is_media == true {
 
 			remaining = remaining[2:]
 
@@ -144,7 +122,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "](", getTokenPosition(value, remaining))
 			}
 
-		} else if is_a {
+		} else if is_a == true {
 
 			remaining = remaining[1:]
 
@@ -175,7 +153,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "](", getTokenPosition(value, remaining))
 			}
 
-		} else if is_a_footnote {
+		} else if is_a_footnote == true {
 
 			remaining = remaining[2:]
 
@@ -203,7 +181,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "]", getTokenPosition(value, remaining))
 			}
 
-		} else if is_footnote {
+		} else if is_footnote == true {
 
 			remaining = remaining[1:]
 
@@ -231,7 +209,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "]", getTokenPosition(value, remaining))
 			}
 
-		} else if is_abbr {
+		} else if is_abbr == true {
 
 			remaining = remaining[1:]
 
@@ -262,7 +240,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "]{", getTokenPosition(value, remaining))
 			}
 
-		} else if is_b {
+		} else if is_b == true {
 
 			remaining = remaining[2:]
 
@@ -298,7 +276,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 
 			}
 
-		} else if is_code {
+		} else if is_code == true {
 
 			remaining = remaining[1:]
 
@@ -319,7 +297,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "`", getTokenPosition(value, remaining))
 			}
 
-		} else if is_em {
+		} else if is_em == true {
 
 			remaining = remaining[1:]
 
@@ -356,7 +334,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 
 			}
 
-		} else if is_del {
+		} else if is_del == true {
 
 			remaining = remaining[1:]
 
@@ -474,7 +452,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 
 			if element.Type == "#text" {
 
-				for _, abbreviation := range abbreviation_keys {
+				for _, abbreviation := range abbreviationKeys {
 
 					index := strings.Index(element.Text, abbreviation)
 

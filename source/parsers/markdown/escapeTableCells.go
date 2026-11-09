@@ -10,8 +10,10 @@ func escapeTableCells(cell string) string {
 		ch := cell[i]
 
 		if ch == '`' {
+
 			in_code = !in_code
 			result += string(ch)
+
 		} else if ch == '|' && !in_code {
 			result += "\\|"
 		} else {

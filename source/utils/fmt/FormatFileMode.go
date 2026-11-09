@@ -20,12 +20,14 @@ func FormatFileMode(mode os.FileMode) string {
 	}
 
 	switch {
+
 	case mode.IsDir():
 		file_type = "directory"
 	case mode&os.ModeSymlink != 0:
 		file_type = "symlink"
 	default:
 		file_type = "file"
+
 	}
 
 	if len(permissions) == 0 {

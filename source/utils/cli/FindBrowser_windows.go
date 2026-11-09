@@ -45,6 +45,6 @@ func FindBrowser() (string, error) {
 
 	}
 
-	return "", fmt.Errorf("Error: No supported Browser (Chrome/Edge/Chromium) installed.")
+	return "", fmt.Errorf("cli.FindBrowser: No supported Browser (Chrome/Edge/Chromium) installed.")
 
 }

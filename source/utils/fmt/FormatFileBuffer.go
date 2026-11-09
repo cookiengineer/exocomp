@@ -21,6 +21,7 @@ func FormatFileBuffer(raw string) ([]byte, error) {
 			if line[p] <= 127 {
 
 				switch {
+
 				// digits
 				case chr >= '0' && chr <= '9':
 					formatted = append(formatted, byte(chr))
@@ -59,13 +60,16 @@ func FormatFileBuffer(raw string) ([]byte, error) {
 				case chr == '?' || chr == '~' || chr == '@' || chr == '$':
 					formatted = append(formatted, byte(chr))
 				default:
-					err = fmt.Errorf("Invalid character %s at line %d position %d", string(chr), l+1, p+1)
+					err = fmt.Errorf("fmt.FormatFileBuffer: Invalid character %s at line %d position %d.", string(chr), l+1, p+1)
 					break
+
 				}
 
 			} else {
-				err = fmt.Errorf("Invalid character %s at line %d position %d", string(chr), l+1, p+1)
+
+				err = fmt.Errorf("fmt.FormatFileBuffer: Invalid character %s at line %d position %d.", string(chr), l+1, p+1)
 				break
+
 			}
 
 		}

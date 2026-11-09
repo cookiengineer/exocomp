@@ -34,7 +34,7 @@ func readBugs(tool *Bugs) error {
 					return nil
 
 				} else {
-					return fmt.Errorf("readBugs: Cannot parse bug reports")
+					return fmt.Errorf("bugs.Read: Cannot parse bug reports.")
 				}
 
 			} else if os.IsNotExist(err1) {
@@ -43,15 +43,15 @@ func readBugs(tool *Bugs) error {
 				return nil
 
 			} else {
-				return fmt.Errorf("readBugs: Cannot read bug reports")
+				return fmt.Errorf("bugs.Read: Cannot read bug reports.")
 			}
 
 		} else {
-			return fmt.Errorf("readBugs: %s", err0.Error())
+			return fmt.Errorf("bugs.Read: %s", err0.Error())
 		}
 
 	} else {
-		return fmt.Errorf("readBugs: Invalid tool playground")
+		return fmt.Errorf("bugs.Read: Invalid tool playground.")
 	}
 
 }

@@ -99,11 +99,13 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 	format = strings.ToLower(strings.TrimSpace(format))
 
 	switch format {
+
 	case "markdown", "text", "html":
 	case "":
 		format = "markdown"
 	default:
 		format = ""
+
 	}
 
 	if format != "" {
@@ -149,12 +151,14 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 							content := ""
 
 							switch format {
+
 							case "html":
 								content = string(bytes)
 							case "text":
 								content = getWebsiteText(url, bytes)
 							default:
 								content = getWebsiteMarkdown(url, bytes)
+
 							}
 
 							return strings.Join([]string{

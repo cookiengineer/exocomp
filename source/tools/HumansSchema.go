@@ -5,14 +5,14 @@ import "encoding/json"
 import _ "embed"
 
 //go:embed Humans.json
-var humans_json []byte
+var humansJSON []byte
 
 var HumansSchema []schemas.Tool
 
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err := json.Unmarshal(humans_json, &schema)
+	err := json.Unmarshal(humansJSON, &schema)
 
 	if err == nil {
 		HumansSchema = schema

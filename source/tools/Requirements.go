@@ -272,11 +272,11 @@ func (tool *Requirements) MarshalJSON() ([]byte, error) {
 
 	err := readRequirements(tool)
 
-	if err != nil {
+	if err == nil {
+		return json.Marshal(tool.contents)
+	} else {
 		return nil, err
 	}
-
-	return json.Marshal(tool.contents)
 
 }
 
@@ -630,6 +630,7 @@ func (tool *Requirements) DefineType(path string, symbol string, declaration str
 }
 
 func (tool *Requirements) Search(path string, symbol string) (string, error) {
+
 	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
 
 	if err1 == nil {

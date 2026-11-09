@@ -65,9 +65,11 @@ func (app *App) Init() {
 func (app *App) SetRole(role string) {
 
 	if role == "user" || role == "assistant" {
+
 		app.Role = role
 		app.Header.Role = role
 		app.Footer.Role = role
+
 	}
 
 }
@@ -104,8 +106,10 @@ func (app *App) Run() error {
 				if err != nil {
 
 					select {
+
 					case keys <- utils_tty.Key{Type: utils_tty.KeyEOF}:
 					default:
+
 					}
 
 					return
@@ -223,6 +227,7 @@ func (app *App) checkHuman() {
 				}
 
 				app.Footer.Focused = false
+
 			}
 
 		}
@@ -234,8 +239,10 @@ func (app *App) checkHuman() {
 func (app *App) handleKey(key utils_tty.Key) {
 
 	if key.Type == utils_tty.KeyEOF {
+
 		app.stop()
 		return
+
 	}
 
 	if app.Human != nil {
@@ -290,8 +297,10 @@ func (app *App) handleKey(key utils_tty.Key) {
 		case 'c':
 
 			if strings.TrimSpace(app.Footer.GetText()) != "" {
+
 				app.Footer.Clear()
 				return
+
 			}
 
 			app.setStatus("Press Ctrl+Q to quit.")
@@ -311,29 +320,37 @@ func (app *App) handleKey(key utils_tty.Key) {
 	case utils_tty.KeyArrowUp:
 
 		if key.Ctrl == true || key.Alt == true {
+
 			app.Transcript.ScrollBy(1)
 			return
+
 		}
 
 	case utils_tty.KeyArrowDown:
 
 		if key.Ctrl == true || key.Alt == true {
+
 			app.Transcript.ScrollBy(-1)
 			return
+
 		}
 
 	case utils_tty.KeyHome:
 
 		if key.Ctrl == true {
+
 			app.Transcript.ScrollToTop()
 			return
+
 		}
 
 	case utils_tty.KeyEnd:
 
 		if key.Ctrl == true {
+
 			app.Transcript.ScrollToBottom()
 			return
+
 		}
 
 	case utils_tty.KeyPageUp:
@@ -367,8 +384,6 @@ func (app *App) submit(text string) {
 	if trimmed == "" {
 		return
 	}
-
-	app.Footer.AddHistory(trimmed)
 
 	if strings.HasPrefix(trimmed, "/") == true {
 
@@ -405,8 +420,10 @@ func (app *App) submit(text string) {
 	}
 
 	if app.Session.IsWaiting() == true {
+
 		app.setStatus("Session is busy, waiting for the LLM response.")
 		return
+
 	}
 
 	app.Footer.Clear()

@@ -11,7 +11,7 @@ func GetSymbolType(source []byte, symbol string) (string, error) {
 	file, err := parser.ParseFile(fileset, "", source, 0)
 
 	if err != nil {
-		return "", fmt.Errorf("Invalid Go syntax. \"type %s <type>\" must be defined!", symbol)
+		return "", fmt.Errorf("ast.GetSymbolType: Invalid Go syntax. \"type %s <type>\" must be defined.", symbol)
 	}
 
 	for _, decl := range file.Decls {
@@ -28,7 +28,7 @@ func GetSymbolType(source []byte, symbol string) (string, error) {
 				if ok3 == true && type_spec.Name != nil && type_spec.Name.Name == symbol {
 
 					if isBasicType(type_spec.Type) == false {
-						return "", fmt.Errorf("Invalid type for symbol \"%s\". Only basic types and composites of basic types are supported.", symbol)
+						return "", fmt.Errorf("ast.GetSymbolType: Invalid type for symbol \"%s\". Only basic types and composites of basic types are supported.", symbol)
 					}
 
 					return typeName(fileset, type_spec.Type), nil
@@ -55,6 +55,6 @@ func GetSymbolType(source []byte, symbol string) (string, error) {
 
 	}
 
-	return "", fmt.Errorf("Invalid Go syntax. \"type %s <type>\" must be defined!", symbol)
+	return "", fmt.Errorf("ast.GetSymbolType: Invalid Go syntax. \"type %s <type>\" must be defined.", symbol)
 
 }

@@ -62,7 +62,7 @@ func NewAgent(config *types.Config) *types.Agent {
 			temperature = template.Temperature
 		}
 
-		prompt := render_prompt(name, role, template.Prompt)
+		prompt := renderPrompt(name, role, template.Prompt)
 		status := ""
 
 		if role == "planner" {
@@ -77,7 +77,7 @@ func NewAgent(config *types.Config) *types.Agent {
 			Model:           model,
 			Prompt:          prompt,
 			Temperature:     temperature,
-			Messages:        render_messages(prompt),
+			Messages:        renderMessages(prompt),
 			AllowedPrograms: template.AllowedPrograms,
 			AllowedTools:    template.AllowedTools,
 			Sandbox:         config.Sandbox,

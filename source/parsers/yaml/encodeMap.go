@@ -15,7 +15,7 @@ func encodeMap(value reflect.Value) (*Node, error) {
 		if map_key.Kind() != reflect.String {
 
 			return nil, fmt.Errorf(
-				"unsupported map key type: %s",
+				"yaml.EncodeMap: Unsupported map key type: %s.",
 				map_key.Kind(),
 			)
 
@@ -24,11 +24,11 @@ func encodeMap(value reflect.Value) (*Node, error) {
 		map_value := value.MapIndex(map_key)
 		child_node, err := encodeValue(map_value)
 
-		if err != nil {
+		if err == nil {
+			node.ObjectChildren[map_key.String()] = child_node
+		} else {
 			return nil, err
 		}
-
-		node.ObjectChildren[map_key.String()] = child_node
 
 	}
 

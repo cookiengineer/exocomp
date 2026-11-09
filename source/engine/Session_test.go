@@ -196,7 +196,7 @@ func TestSession_InferChatCompletions_TracksTokensAndCost(t *testing.T) {
 		},
 	}
 
-	err0 := session.infer_chat_completions()
+	err0 := session.inferChatCompletions()
 
 	if err0 != nil {
 		t.Errorf("Expected %v to be nil", err0)

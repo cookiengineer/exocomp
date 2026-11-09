@@ -14,8 +14,10 @@ func SeekNested(raw string, start int, start_token byte, close_token byte) []byt
 		chr := raw[index]
 
 		if chr == '\\' && in_string && escaped == false {
+
 			escaped = true
 			continue
+
 		}
 
 		if chr == '"' && escaped == false {
@@ -47,5 +49,3 @@ func SeekNested(raw string, start int, start_token byte, close_token byte) []byt
 	return result
 
 }
-
-

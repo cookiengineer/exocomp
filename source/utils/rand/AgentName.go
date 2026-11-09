@@ -10,7 +10,7 @@ func AgentName(role string) string {
 	randomizer := rand.New(rand.NewSource(time.Now().UnixNano()))
 	surname_stem := createStem(role)
 	surname_stem = mutateStem(surname_stem, randomizer)
-	surname_suffix := surname_suffixes[randomizer.Intn(len(surname_suffixes))]
+	surname_suffix := surnameSuffixes[randomizer.Intn(len(surnameSuffixes))]
 
 	prename := prenames[randomizer.Intn(len(prenames))]
 	surname := cleanupName(surname_stem + surname_suffix)

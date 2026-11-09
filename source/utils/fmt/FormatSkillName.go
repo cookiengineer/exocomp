@@ -23,8 +23,10 @@ func FormatSkillName(input string) string {
 			if i >= 1 && i < len(input)-1 {
 
 				if last_was_dash == false {
+
 					formatted = append(formatted, byte(chr))
 					last_was_dash = true
+
 				}
 
 			}

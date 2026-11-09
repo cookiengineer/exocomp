@@ -6,29 +6,16 @@ import utils_tty "exocomp/utils/tty"
 import "strings"
 import "time"
 
-type Builtin struct {
-	Name        string
-	Description string
-}
-
-var Builtins = []Builtin{
-	{Name: "/help", Description: "show available commands"},
-	{Name: "/clear", Description: "clear the transcript view"},
-	{Name: "/copy", Description: "copy the composer through OSC52"},
-	{Name: "/sidebar", Description: "toggle the changelog/bug sidebar"},
-	{Name: "/quit", Description: "exit exocomp"},
-}
-
 type Footer struct {
-	Catalog      *commands.Catalog
-	Textarea     *Textarea
-	Palette      *Palette
-	Status       string
-	Role         string
-	Focused      bool
-	cursorX      int
-	cursorY      int
-	cursorShown  bool
+	Catalog     *commands.Catalog
+	Textarea    *Textarea
+	Palette     *Palette
+	Status      string
+	Role        string
+	Focused     bool
+	cursorX     int
+	cursorY     int
+	cursorShown bool
 }
 
 func NewFooter(catalog *commands.Catalog) *Footer {
@@ -232,6 +219,7 @@ func (footer *Footer) HandleKey(key utils_tty.Key) bool {
 	if footer.Palette.Visible == true {
 
 		switch key.Type {
+
 		case utils_tty.KeyArrowUp:
 			footer.Palette.Move(-1)
 			return false
@@ -247,6 +235,7 @@ func (footer *Footer) HandleKey(key utils_tty.Key) bool {
 		case utils_tty.KeyEnter:
 			footer.AcceptSuggestion()
 			return false
+
 		}
 
 	}
@@ -265,8 +254,10 @@ func (footer *Footer) HandleKey(key utils_tty.Key) bool {
 		if footer.Palette.Visible == true {
 			footer.AcceptSuggestion()
 		} else {
+
 			footer.Textarea.Insert("    ")
 			footer.RefreshSuggestions()
+
 		}
 
 	case utils_tty.KeyBackspace:
@@ -305,13 +296,17 @@ func (footer *Footer) HandleKey(key utils_tty.Key) bool {
 		if key.Ctrl == true {
 
 			if key.Rune == 'j' {
+
 				footer.Textarea.InsertNewline()
 				footer.RefreshSuggestions()
+
 			}
 
 		} else {
+
 			footer.Textarea.Insert(string(key.Rune))
 			footer.RefreshSuggestions()
+
 		}
 
 	}
@@ -325,8 +320,10 @@ func (footer *Footer) RefreshSuggestions() {
 	text := footer.Textarea.GetText()
 
 	if footer.Catalog == nil || strings.HasPrefix(text, "/") == false {
+
 		footer.Palette.Hide()
 		return
+
 	}
 
 	if strings.ContainsAny(strings.TrimPrefix(text, "/"), " \t\n") == true {

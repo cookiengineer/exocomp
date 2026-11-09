@@ -15,8 +15,10 @@ func compactSpans(spans []transcriptSpan) []transcriptSpan {
 			last := result[len(result)-1]
 
 			if last.Style.Equals(span.Style) == true {
+
 				result[len(result)-1].Text += span.Text
 				continue
+
 			}
 
 		}

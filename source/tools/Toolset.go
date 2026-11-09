@@ -37,6 +37,7 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 		var tool types.Tool = nil
 
 		switch tool_name {
+
 		case "agents":
 			tool = NewAgents(allowed_methods, playground, sandbox, model, url, debug)
 		case "bugs":
@@ -55,6 +56,7 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 			tool = NewSkills(allowed_methods, playground, sandbox, allowed_programs, allowed_tools)
 		case "websites":
 			tool = NewWebsites(allowed_methods, playground, sandbox)
+
 		}
 
 		if tool != nil {

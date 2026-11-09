@@ -5,7 +5,7 @@ import "testing"
 
 func TestParse(t *testing.T) {
 
-	// t.Run("Parse(images)", func(t *testing.T) {
+	// t.Run("ParseDocument(images)", func(t *testing.T) {
 
 	// 	bytes := []byte(strings.Join([]string{
 	// 		"===",
@@ -22,7 +22,7 @@ func TestParse(t *testing.T) {
 	// 		"",
 	// 	}, "\n"))
 
-	// 	document := Parse("/articles/examples/example-title.md", bytes)
+	// 	document := ParseDocument("/articles/examples/example-title.md", bytes)
 
 	// 	if len(document.Body) == 4 {
 
@@ -56,7 +56,7 @@ func TestParse(t *testing.T) {
 
 	// })
 
-	// t.Run("Parse(lists)", func(t *testing.T) {
+	// t.Run("ParseDocument(lists)", func(t *testing.T) {
 
 	// 	bytes := []byte(strings.Join([]string{
 	// 		"===",
@@ -78,7 +78,7 @@ func TestParse(t *testing.T) {
 	// 		"",
 	// 	}, "\n"))
 
-	// 	document := Parse("/articles/examples/example-title.md", bytes)
+	// 	document := ParseDocument("/articles/examples/example-title.md", bytes)
 
 	// 	if document.IsValid() != true {
 	// 		t.Errorf("Expected %v to be %v", document.IsValid(), true)
@@ -124,7 +124,7 @@ func TestParse(t *testing.T) {
 
 	// })
 
-	// t.Run("Parse(html elements)", func(t *testing.T) {
+	// t.Run("ParseDocument(html elements)", func(t *testing.T) {
 
 	// 	bytes := []byte(strings.Join([]string{
 	// 		"===",
@@ -145,7 +145,7 @@ func TestParse(t *testing.T) {
 	// 		"",
 	// 	}, "\n"))
 
-	// 	document := Parse("/articles/example-title.md", bytes)
+	// 	document := ParseDocument("/articles/example-title.md", bytes)
 
 	// 	if document.IsValid() != true {
 	// 		t.Errorf("Expected %v to be %v", document.IsValid(), true)
@@ -229,7 +229,7 @@ func TestParse(t *testing.T) {
 
 	// })
 
-	// t.Run("Parse(unclosed html elements)", func(t *testing.T) {
+	// t.Run("ParseDocument(unclosed html elements)", func(t *testing.T) {
 
 	// 	bytes := []byte(strings.Join([]string{
 	// 		"===",
@@ -250,7 +250,7 @@ func TestParse(t *testing.T) {
 	// 		"",
 	// 	}, "\n"))
 
-	// 	document := Parse("/articles/example-title.md", bytes)
+	// 	document := ParseDocument("/articles/example-title.md", bytes)
 
 	// 	if document.IsValid() != true {
 	// 		t.Errorf("Expected %v to be %v", document.IsValid(), true)
@@ -326,7 +326,7 @@ func TestParse(t *testing.T) {
 
 	// })
 
-	// t.Run("Parse(selfclosed html elements)", func(t *testing.T) {
+	// t.Run("ParseDocument(selfclosed html elements)", func(t *testing.T) {
 
 	// 	bytes := []byte(strings.Join([]string{
 	// 		"===",
@@ -343,7 +343,7 @@ func TestParse(t *testing.T) {
 	// 		"",
 	// 	}, "\n"))
 
-	// 	document := Parse("/articles/example-title.md", bytes)
+	// 	document := ParseDocument("/articles/example-title.md", bytes)
 
 	// 	if document.IsValid() != true {
 	// 		t.Errorf("Expected %v to be %v", document.IsValid(), true)
@@ -401,7 +401,7 @@ func TestParse(t *testing.T) {
 
 	// })
 
-	// t.Run("Parse(inlined unsorted lists)", func(t *testing.T) {
+	// t.Run("ParseDocument(inlined unsorted lists)", func(t *testing.T) {
 
 	// 	bytes := []byte(strings.Join([]string{
 	// 		"===",
@@ -420,7 +420,7 @@ func TestParse(t *testing.T) {
 	// 		"",
 	// 	}, "\n"))
 
-	// 	document := Parse("/articles/examples/example-title.md", bytes)
+	// 	document := ParseDocument("/articles/examples/example-title.md", bytes)
 
 	// 	if len(document.Body) == 3 {
 
@@ -456,7 +456,7 @@ func TestParse(t *testing.T) {
 
 	// })
 
-	// t.Run("Parse(inlined sorted lists)", func(t *testing.T) {
+	// t.Run("ParseDocument(inlined sorted lists)", func(t *testing.T) {
 
 	// 	bytes := []byte(strings.Join([]string{
 	// 		"===",
@@ -476,7 +476,7 @@ func TestParse(t *testing.T) {
 	// 		"",
 	// 	}, "\n"))
 
-	// 	document := Parse("/articles/examples/example-title.md", bytes)
+	// 	document := ParseDocument("/articles/examples/example-title.md", bytes)
 
 	// 	if len(document.Body) == 3 {
 

@@ -54,6 +54,26 @@ func NewDocument(file string) *Document {
 
 }
 
+func ParseDocument(file string, bytes []byte) (*Document, error) {
+
+	document := NewDocument(file)
+
+	if document != nil {
+
+		err := document.UnmarshalMarkdown(bytes)
+
+		if err == nil {
+			return document, nil
+		} else {
+			return document, err
+		}
+
+	} else {
+		return document, fmt.Errorf("Invalid file path \"%s\"", file)
+	}
+
+}
+
 func (document *Document) AddElement(element *Element) {
 
 	if element != nil && element.Type != "" {
@@ -208,8 +228,10 @@ func (document *Document) ParseMeta(value string) []error {
 					date, err := time.Parse("2006-01-02", val)
 
 					if err == nil {
+
 						document.SetDate(date)
 						found["date"] = true
+
 					}
 
 				} else if key == "tags" {
@@ -217,8 +239,10 @@ func (document *Document) ParseMeta(value string) []error {
 					values := strings.Split(val, ",")
 
 					if len(values) > 0 && values[0] != "" {
+
 						document.SetTags(values)
 						found["tags"] = true
+
 					}
 
 				} else if key == "image" {
@@ -271,8 +295,10 @@ func (document *Document) ParseBody(value string) []error {
 			line := strings.TrimSpace(lines[l])
 
 			if line == "===" {
+
 				first_line = l + 1
 				break
+
 			}
 
 		}
@@ -316,8 +342,10 @@ func (document *Document) ParseBody(value string) []error {
 			} else if pointer.Type == "table" {
 				document.CloseElement()
 			} else if pointer != nil {
+
 				document.CloseElement()
 				pointer = nil
+
 			}
 
 		} else if strings.HasPrefix(line, "![") && strings.Contains(line, "](") && strings.HasSuffix(line, ")") {
@@ -884,8 +912,10 @@ func (document *Document) Render(indent string) string {
 	for e, element := range document.Body {
 
 		if element.Type == "h3" {
+
 			first_section_at = e
 			break
+
 		}
 
 	}
@@ -901,8 +931,10 @@ func (document *Document) Render(indent string) string {
 			if first_section_at == e {
 				result = append(result, indent+"\t<section>")
 			} else {
+
 				result = append(result, indent+"\t</section>")
 				result = append(result, indent+"\t<section>")
+
 			}
 
 			result = append(result, element.RenderInto(document, indent+"\t\t"))

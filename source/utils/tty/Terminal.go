@@ -74,8 +74,10 @@ func (terminal *Terminal) Leave() {
 	terminal.Output.Sync()
 
 	if terminal.state != nil {
+
 		term.Restore(int(terminal.Input.Fd()), terminal.state)
 		terminal.state = nil
+
 	}
 
 	terminal.entered = false
@@ -96,8 +98,10 @@ func (terminal *Terminal) Size() (int, int) {
 	} else {
 
 		if terminal.width < 0 || terminal.height < 0 {
+
 			terminal.width = 80
 			terminal.height = 24
+
 		}
 
 		return terminal.width, terminal.height

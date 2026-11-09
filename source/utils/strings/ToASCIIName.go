@@ -14,8 +14,10 @@ func ToASCIIName(value string) string {
 		if chunk == 32 || chunk == 45 || chunk == 58 || chunk == 59 || chunk == 95 {
 
 			if last_was_dash == false {
+
 				filtered += "-"
 				last_was_dash = true
+
 			}
 
 		} else if chunk >= 33 && chunk <= 47 {

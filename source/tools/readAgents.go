@@ -68,22 +68,22 @@ func readAgents(tool *Agents) error {
 						error_messages = append(error_messages, strings.TrimSpace(err.Error()))
 					}
 
-					return fmt.Errorf("readAgents: %s", strings.Join(error_messages, " | "))
+					return fmt.Errorf("agents.Read: %s", strings.Join(error_messages, " | "))
 
 				} else {
 					return nil
 				}
 
 			} else {
-				return fmt.Errorf("readAgents: Cannot list agents folder")
+				return fmt.Errorf("agents.Read: Cannot list agents folder.")
 			}
 
 		} else {
-			return fmt.Errorf("readAgents: %s", err0.Error())
+			return fmt.Errorf("agents.Read: %s", err0.Error())
 		}
 
 	} else {
-		return fmt.Errorf("readAgents: Invalid tool playground")
+		return fmt.Errorf("agents.Read: Invalid tool playground.")
 	}
 
 }

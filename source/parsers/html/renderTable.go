@@ -66,12 +66,3 @@ func renderTable(table *Element, document *Document) string {
 	return strings.Join(lines, "\n")
 
 }
-
-func escapeTableCell(value string) string {
-
-	value = strings.ReplaceAll(value, "|", "\\|")
-	value = strings.ReplaceAll(value, "\n", " ")
-
-	return strings.TrimSpace(value)
-
-}

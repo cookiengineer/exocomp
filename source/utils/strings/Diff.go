@@ -39,27 +39,37 @@ func Diff(a []string, b []string) string {
 	for i < n && j < m {
 
 		if a[i] == b[j] {
+
 			result = append(result, "  "+a[i])
 			i++
 			j++
+
 		} else if table[i+1][j] >= table[i][j+1] {
+
 			result = append(result, "- "+a[i])
 			i++
+
 		} else {
+
 			result = append(result, "+ "+b[j])
 			j++
+
 		}
 
 	}
 
 	for i < n {
+
 		result = append(result, "- "+a[i])
 		i++
+
 	}
 
 	for j < m {
+
 		result = append(result, "+ "+b[j])
 		j++
+
 	}
 
 	return strings.Join(result, "\n")

@@ -28,8 +28,10 @@ func SummarizeMessages(chat []*schemas.Message, user bool, assistant bool, tool 
 				lines := strings.Split(message.Content, "\n")
 
 				if len(lines) > 0 {
+
 					content := strings.TrimSpace(lines[0])
 					result = append(result, fmt.Sprintf("Tool executed: %s", content))
+
 				}
 
 			} else if message.Role == "system" {

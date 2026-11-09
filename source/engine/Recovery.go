@@ -52,7 +52,7 @@ func (recovery *Recovery) BackupAgent(agent *types.Agent) error {
 		}
 
 	} else {
-		return fmt.Errorf("Invalid agent name \"%s\"", agent.Name)
+		return fmt.Errorf("Recovery.BackupAgent: Invalid agent name \"%s\".", agent.Name)
 	}
 
 }
@@ -257,7 +257,7 @@ func (recovery *Recovery) Snapshot(name string, raw any) error {
 		}
 
 	} else {
-		return fmt.Errorf("invalid name \"%s\"", name)
+		return fmt.Errorf("Recovery.Snapshot: Invalid name \"%s\".", name)
 	}
 
 }
@@ -302,7 +302,7 @@ func (recovery *Recovery) SnapshotBytes(name string, raw []byte) error {
 		}
 
 	} else {
-		return fmt.Errorf("invalid name \"%s\"", name)
+		return fmt.Errorf("Recovery.SnapshotBytes: Invalid name \"%s\".", name)
 	}
 
 }

@@ -26,7 +26,9 @@ func decodeStruct(node *Node, target reflect.Value) error {
 
 				err := decodeValue(child, target_field)
 
-				if err != nil {
+				if err == nil {
+					continue
+				} else {
 					return err
 				}
 

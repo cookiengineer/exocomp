@@ -22,19 +22,19 @@ func writeChangelog(tool *Changelog) error {
 				if err2 == nil {
 					return nil
 				} else {
-					return fmt.Errorf("writeChangelog: Cannot persist changelog")
+					return fmt.Errorf("changelog.Write: Cannot persist changelog.")
 				}
 
 			} else {
-				return fmt.Errorf("writeChangelog: Cannot serialize changelog")
+				return fmt.Errorf("changelog.Write: Cannot serialize changelog.")
 			}
 
 		} else {
-			return fmt.Errorf("writeChangelog: %s", err0.Error())
+			return fmt.Errorf("changelog.Write: %s", err0.Error())
 		}
 
 	} else {
-		return fmt.Errorf("writeChangelog: Invalid tool playground")
+		return fmt.Errorf("changelog.Write: Invalid tool playground.")
 	}
 
 }

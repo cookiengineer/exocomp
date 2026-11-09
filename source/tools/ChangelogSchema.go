@@ -5,14 +5,14 @@ import "encoding/json"
 import _ "embed"
 
 //go:embed Changelog.json
-var changelog_json []byte
+var changelogJSON []byte
 
 var ChangelogSchema []schemas.Tool
 
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err := json.Unmarshal(changelog_json, &schema)
+	err := json.Unmarshal(changelogJSON, &schema)
 
 	if err == nil {
 		ChangelogSchema = schema

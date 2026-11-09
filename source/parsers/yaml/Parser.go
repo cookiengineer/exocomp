@@ -5,7 +5,7 @@ import "fmt"
 import "strings"
 
 type Parser struct {
-	lines []parser_line
+	lines []parserLine
 	index int
 	root  *Node
 	err   error
@@ -13,7 +13,7 @@ type Parser struct {
 
 func NewParser(data []byte) *Parser {
 
-	lines := parse_lines(string(data))
+	lines := parseLines(string(data))
 	parser := &Parser{
 		index: 0,
 		lines: lines,
@@ -23,10 +23,10 @@ func NewParser(data []byte) *Parser {
 
 	node, err := parser.ParseObject(0)
 
-	if err != nil {
-		parser.err = err
-	} else {
+	if err == nil {
 		parser.root = node
+	} else {
+		parser.err = err
 	}
 
 	return parser
@@ -49,7 +49,7 @@ func (parser *Parser) ParseArray(expected_indent int) (*Node, error) {
 		} else if line.Indent > expected_indent {
 			return nil, ParseError{
 				Line:    line.Number,
-				Message: fmt.Sprintf("Unexpected indentation %d instead of %d", line.Indent, expected_indent),
+				Message: fmt.Sprintf("yaml.ParseArray: Unexpected indentation %d instead of %d.", line.Indent, expected_indent),
 			}
 		} else if isSequenceItem(line.Text) == false {
 			break
@@ -57,11 +57,11 @@ func (parser *Parser) ParseArray(expected_indent int) (*Node, error) {
 
 		child, err := parser.parseSequenceEntry(expected_indent)
 
-		if err != nil {
+		if err == nil {
+			result.ArrayChildren = append(result.ArrayChildren, child)
+		} else {
 			return nil, err
 		}
-
-		result.ArrayChildren = append(result.ArrayChildren, child)
 
 	}
 
@@ -107,7 +107,7 @@ func (parser *Parser) ParseObject(expected_indent int) (*Node, error) {
 		} else if line.Indent > expected_indent {
 			return nil, ParseError{
 				Line:    line.Number,
-				Message: fmt.Sprintf("Unexpected indentation %d instead of %d", line.Indent, expected_indent),
+				Message: fmt.Sprintf("yaml.ParseArray: Unexpected indentation %d instead of %d.", line.Indent, expected_indent),
 			}
 		}
 
@@ -141,18 +141,20 @@ func (parser *Parser) ParseObject(expected_indent int) (*Node, error) {
 
 		child, err := parser.parseNestedBlock(line.Indent)
 
-		if err != nil {
+		if err == nil {
+
+			if child == nil {
+				child = &Node{
+					Kind:           ObjectNode,
+					ObjectChildren: map[string]*Node{},
+				}
+			}
+
+			result.ObjectChildren[key] = child
+
+		} else {
 			return nil, err
 		}
-
-		if child == nil {
-			child = &Node{
-				Kind:           ObjectNode,
-				ObjectChildren: map[string]*Node{},
-			}
-		}
-
-		result.ObjectChildren[key] = child
 
 	}
 
@@ -257,18 +259,20 @@ func (parser *Parser) parseSequenceItem(expected_indent int, content string) (*N
 
 		child, err := parser.parseNestedBlock(expected_indent)
 
-		if err != nil {
+		if err == nil {
+
+			if child == nil {
+				return &Node{
+					Kind:  ScalarNode,
+					Value: "",
+				}, nil
+			}
+
+			return child, nil
+
+		} else {
 			return nil, err
 		}
-
-		if child == nil {
-			return &Node{
-				Kind:  ScalarNode,
-				Value: "",
-			}, nil
-		}
-
-		return child, nil
 
 	}
 
@@ -301,18 +305,20 @@ func (parser *Parser) parseSequenceItem(expected_indent int, content string) (*N
 
 		child, err := parser.parseNestedBlock(expected_indent)
 
-		if err != nil {
+		if err == nil {
+
+			if child == nil {
+				child = &Node{
+					Kind:           ObjectNode,
+					ObjectChildren: map[string]*Node{},
+				}
+			}
+
+			object.ObjectChildren[key] = child
+
+		} else {
 			return nil, err
 		}
-
-		if child == nil {
-			child = &Node{
-				Kind:           ObjectNode,
-				ObjectChildren: map[string]*Node{},
-			}
-		}
-
-		object.ObjectChildren[key] = child
 
 	}
 
@@ -336,11 +342,11 @@ func (parser *Parser) parseInlineSequence(expected_indent int, content string) (
 
 	first_item, err := parser.parseSequenceItem(inner_indent, first_content)
 
-	if err != nil {
+	if err == nil {
+		result.ArrayChildren = append(result.ArrayChildren, first_item)
+	} else {
 		return nil, err
 	}
-
-	result.ArrayChildren = append(result.ArrayChildren, first_item)
 
 	for parser.index < len(parser.lines) {
 
@@ -351,7 +357,7 @@ func (parser *Parser) parseInlineSequence(expected_indent int, content string) (
 		} else if line.Indent > inner_indent {
 			return nil, ParseError{
 				Line:    line.Number,
-				Message: fmt.Sprintf("Unexpected indentation %d instead of %d", line.Indent, inner_indent),
+				Message: fmt.Sprintf("yaml.ParseArray: Unexpected indentation %d instead of %d.", line.Indent, inner_indent),
 			}
 		} else if isSequenceItem(line.Text) == false {
 			break
@@ -359,11 +365,11 @@ func (parser *Parser) parseInlineSequence(expected_indent int, content string) (
 
 		item, err := parser.parseSequenceEntry(inner_indent)
 
-		if err != nil {
+		if err == nil {
+			result.ArrayChildren = append(result.ArrayChildren, item)
+		} else {
 			return nil, err
 		}
-
-		result.ArrayChildren = append(result.ArrayChildren, item)
 
 	}
 
@@ -387,26 +393,18 @@ func (parser *Parser) consumeMappingFields(expected_indent int, object *Node) er
 
 		child, err := parser.ParseObject(line.Indent)
 
-		if err != nil {
-			return err
-		}
+		if err == nil {
 
-		for key, value := range child.ObjectChildren {
-			object.ObjectChildren[key] = value
+			for key, value := range child.ObjectChildren {
+				object.ObjectChildren[key] = value
+			}
+
+		} else {
+			return err
 		}
 
 	}
 
 	return nil
-
-}
-
-func isSequenceItem(text string) bool {
-
-	if strings.HasPrefix(text, "- ") {
-		return true
-	}
-
-	return text == "-"
 
 }

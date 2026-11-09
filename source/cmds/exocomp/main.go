@@ -18,6 +18,7 @@ func main() {
 		tmp1 := strings.TrimSpace(os.Args[1])
 
 		switch tmp1 {
+
 		case "config":
 			mode = "config"
 		case "agent":
@@ -28,6 +29,7 @@ func main() {
 			mode = "terminal"
 		case "terminal":
 			mode = "terminal"
+
 		}
 
 		config = cli.ParseConfig(os.Args[1:])
@@ -51,6 +53,7 @@ func main() {
 		if err0 == nil {
 
 			switch mode {
+
 			case "agent":
 				actions.Agent(agent, config)
 			case "config":
@@ -59,6 +62,7 @@ func main() {
 				actions.Terminal(agent, config, "user")
 			default:
 				actions.Usage([]string{"agent", "config", "terminal"})
+
 			}
 
 		} else {

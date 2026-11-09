@@ -16,7 +16,7 @@ func decodeValue(node *Node, target reflect.Value) error {
 
 	}
 
-	if target.Type() == net_url_type || target.Type() == net_url_pointer_type {
+	if target.Type() == netURLType || target.Type() == netURLPointerType {
 		return decodeURL(node, target)
 	}
 
@@ -27,8 +27,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseBool(node.Value)
 
 		if err == nil {
+
 			target.SetBool(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -38,8 +40,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseInt(node.Value, 10, 64)
 
 		if err == nil {
+
 			target.SetInt(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -49,8 +53,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseInt(node.Value, 10, 8)
 
 		if err == nil {
+
 			target.SetInt(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -60,8 +66,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseInt(node.Value, 10, 16)
 
 		if err == nil {
+
 			target.SetInt(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -71,8 +79,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseInt(node.Value, 10, 32)
 
 		if err == nil {
+
 			target.SetInt(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -82,8 +92,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseInt(node.Value, 10, 64)
 
 		if err == nil {
+
 			target.SetInt(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -93,8 +105,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseUint(node.Value, 10, 64)
 
 		if err == nil {
+
 			target.SetUint(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -104,8 +118,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseUint(node.Value, 10, 8)
 
 		if err == nil {
+
 			target.SetUint(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -115,8 +131,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseUint(node.Value, 10, 16)
 
 		if err == nil {
+
 			target.SetUint(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -126,8 +144,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseUint(node.Value, 10, 32)
 
 		if err == nil {
+
 			target.SetUint(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -137,8 +157,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseUint(node.Value, 10, 64)
 
 		if err == nil {
+
 			target.SetUint(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -148,8 +170,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseFloat(node.Value, 32)
 
 		if err == nil {
+
 			target.SetFloat(tmp)
 			return nil
+
 		} else {
 			return err
 		}
@@ -159,8 +183,10 @@ func decodeValue(node *Node, target reflect.Value) error {
 		tmp, err := strconv.ParseFloat(node.Value, 64)
 
 		if err == nil {
+
 			target.SetFloat(tmp)
 			return nil
+
 		} else {
 			return err
 		}

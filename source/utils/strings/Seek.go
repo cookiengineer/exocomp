@@ -12,8 +12,10 @@ func Seek(raw string, start int, token byte) []byte {
 		chr := raw[index]
 
 		if chr == '\\' && escaped == false {
+
 			escaped = true
 			continue
+
 		}
 
 		if chr == token && escaped == false {
@@ -27,4 +29,3 @@ func Seek(raw string, start int, token byte) []byte {
 	return result
 
 }
-

@@ -25,11 +25,11 @@ func encodeStruct(value reflect.Value) (*Node, error) {
 
 		child_node, err := encodeValue(field_value)
 
-		if err != nil {
+		if err == nil {
+			node.ObjectChildren[yaml_tag] = child_node
+		} else {
 			return nil, err
 		}
-
-		node.ObjectChildren[yaml_tag] = child_node
 
 	}
 

@@ -7,7 +7,7 @@ import "net/http"
 
 func GetContextLength(base_url *url.URL, model string) int {
 
-	_, ok := context_lengths[model]
+	_, ok := contextLengths[model]
 
 	if ok == false {
 
@@ -37,7 +37,7 @@ func GetContextLength(base_url *url.URL, model string) int {
 						err4 := json.Unmarshal(response_payload, &schema)
 
 						if err4 == nil {
-							context_lengths[model] = schema.ContextLength(model)
+							contextLengths[model] = schema.ContextLength(model)
 						}
 
 					}
@@ -50,6 +50,6 @@ func GetContextLength(base_url *url.URL, model string) int {
 
 	}
 
-	return context_lengths[model]
+	return contextLengths[model]
 
 }

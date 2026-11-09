@@ -29,6 +29,7 @@ func writeRequirements(tool *Requirements) error {
 						}
 
 						contents[resolved][symbol] = specification
+
 					}
 
 				}
@@ -44,19 +45,19 @@ func writeRequirements(tool *Requirements) error {
 				if err2 == nil {
 					return nil
 				} else {
-					return fmt.Errorf("writeRequirements: Cannot persist requirements")
+					return fmt.Errorf("requirements.Write: Cannot persist requirements.")
 				}
 
 			} else {
-				return fmt.Errorf("writeRequirements: Cannot serialize requirements")
+				return fmt.Errorf("requirements.Write: Cannot serialize requirements.")
 			}
 
 		} else {
-			return fmt.Errorf("writeRequirements: %s", err0.Error())
+			return fmt.Errorf("requirements.Write: %s", err0.Error())
 		}
 
 	} else {
-		return fmt.Errorf("writeRequirements: Invalid tool playground")
+		return fmt.Errorf("requirements.Write: Invalid tool playground.")
 	}
 
 }

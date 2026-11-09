@@ -9,6 +9,7 @@ func isBasicType(expr ast.Expr) bool {
 	case *ast.Ident:
 
 		switch value.Name {
+
 		case "bool",
 			"int", "int8", "int16", "int32", "int64",
 			"uint", "uint8", "uint16", "uint32", "uint64",
@@ -20,6 +21,7 @@ func isBasicType(expr ast.Expr) bool {
 			return true
 		default:
 			return false
+
 		}
 
 	case *ast.ArrayType:

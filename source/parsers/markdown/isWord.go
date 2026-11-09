@@ -11,8 +11,10 @@ func isWord(raw string) bool {
 		} else if chr >= 'A' && chr <= 'Z' {
 			// Do Nothing
 		} else {
+
 			result = false
 			break
+
 		}
 
 	}

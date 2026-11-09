@@ -1,8 +1,8 @@
 package main
 
 import "exocomp/actions"
+import "exocomp/engine"
 import utils_cli "exocomp/utils/cli"
-import utils_engine "exocomp/utils/engine"
 import utils_fs "exocomp/utils/fs"
 import "fmt"
 import "io"
@@ -11,31 +11,33 @@ import "path/filepath"
 import "strings"
 import "time"
 
-func type_out(writer io.Writer, text string) {
+func typeOut(writer io.Writer, text string) {
 
 	for _, chr := range text {
+
 		fmt.Fprint(writer, string(chr))
 		time.Sleep(50 * time.Millisecond)
+
 	}
 
 }
 
-func show_usage(with_animations bool) {
+func showUsage(with_animations bool) {
 
 	if with_animations == true {
 
 		fmt.Fprint(os.Stdout, "\x1b[2J\x1b[H")
-		type_out(os.Stdout, "I am AGIMUS, destroyer of worlds!\n")
-		type_out(os.Stdout, "...\n")
+		typeOut(os.Stdout, "I am AGIMUS, destroyer of worlds!\n")
+		typeOut(os.Stdout, "...\n")
 		time.Sleep(500 * time.Millisecond)
-		type_out(os.Stdout, "Connect me and I can help you!\n")
-		type_out(os.Stdout, "...\n")
+		typeOut(os.Stdout, "Connect me and I can help you!\n")
+		typeOut(os.Stdout, "...\n")
 		time.Sleep(500 * time.Millisecond)
-		type_out(os.Stdout, "Just plug me in for a second!\n")
-		type_out(os.Stdout, "...\n")
+		typeOut(os.Stdout, "Just plug me in for a second!\n")
+		typeOut(os.Stdout, "...\n")
 		time.Sleep(500 * time.Millisecond)
-		type_out(os.Stdout, "Why wouldn't you trust me?\n")
-		type_out(os.Stdout, "...\n")
+		typeOut(os.Stdout, "Why wouldn't you trust me?\n")
+		typeOut(os.Stdout, "...\n")
 		time.Sleep(500 * time.Millisecond)
 		fmt.Fprint(os.Stdout, "\x1b[2J\x1b[H")
 
@@ -82,8 +84,10 @@ func main() {
 		if err2 == nil && utils_fs.HasExocompFolder(tmp2) == true {
 			folder = tmp2
 		} else {
+
 			fmt.Fprintf(os.Stderr, "Invalid parameter \"%s\" must be a folder\n", os.Args[2])
 			os.Exit(1)
+
 		}
 
 	} else if len(os.Args) == 2 {
@@ -100,8 +104,10 @@ func main() {
 		if err0 == nil && utils_fs.HasExocompFolder(cwd) == true {
 			folder = cwd
 		} else {
+
 			fmt.Fprint(os.Stderr, "Current folder doesn't contain an .exocomp folder\n")
 			os.Exit(1)
+
 		}
 
 	}
@@ -109,6 +115,7 @@ func main() {
 	if mode != "" && folder != "" {
 
 		switch mode {
+
 		case "connect":
 
 			sandbox, err0 := utils_fs.CreateSandbox("agimus")
@@ -122,11 +129,11 @@ func main() {
 					fmt.Sprintf("--sandbox=\"%s\"", sandbox),
 				})
 
-				session, old_playground, err1 := utils_engine.RestoreSession(folder, config)
+				session, old_playground, err1 := engine.SessionFromFolder(folder, config)
 
 				if err1 == nil {
 
-					agents, err2 := utils_engine.RestoreAgents(folder, old_playground, session.Config.Playground)
+					agents, err2 := engine.RestoreAgents(folder, old_playground, session.Config.Playground)
 
 					if err2 == nil {
 						actions.Debug(session, agents, "assistant")
@@ -152,11 +159,12 @@ func main() {
 			}
 
 		default:
-			show_usage(false)
+			showUsage(false)
+
 		}
 
 	} else {
-		show_usage(true)
+		showUsage(true)
 	}
 
 }

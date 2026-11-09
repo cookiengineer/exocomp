@@ -4,7 +4,7 @@ import "testing"
 
 func TestFromHex(t *testing.T) {
 
-	color, err := FromHex("#fab283")
+	color, err := ColorFromHex("#fab283")
 
 	if err == nil {
 		if color.Hex() != "#fab283" {
@@ -31,7 +31,7 @@ func TestStringWidth(t *testing.T) {
 func TestBufferWriteString(t *testing.T) {
 
 	buffer := NewBuffer(8, 1)
-	style := NewStyle(FromInts(255, 255, 255, 255), FromInts(0, 0, 0, 255))
+	style := NewStyle(ColorFromInts(255, 255, 255, 255), ColorFromInts(0, 0, 0, 255))
 
 	buffer.WriteString(0, 0, "hello", style)
 
@@ -47,7 +47,7 @@ func TestBufferWriteString(t *testing.T) {
 
 func TestActivityFrames(t *testing.T) {
 
-	activity := NewActivity(FromInts(250, 178, 131, 255), FromInts(10, 10, 10, 255))
+	activity := NewActivity(ColorFromInts(250, 178, 131, 255), ColorFromInts(10, 10, 10, 255))
 	frames := activity.Frames(4)
 
 	if len(frames) == 0 {

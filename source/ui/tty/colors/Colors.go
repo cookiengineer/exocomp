@@ -34,11 +34,11 @@ var (
 	BackgroundRaisedHigh = hex("#1e1e1e")
 	BackgroundRaisedMax  = hex("#4c4c4c")
 
-	BackgroundActionPrimaryBase     = utils_tty.NewRGBA(0.0, 0.0, 0.0, 0.0)
+	BackgroundActionPrimaryBase     = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
 	BackgroundActionPrimaryHovered  = hex("#141414")
 	BackgroundActionPrimaryFocused  = hex("#fab283")
-	BackgroundActionPrimarySelected = utils_tty.NewRGBA(0.0, 0.0, 0.0, 0.0)
-	BackgroundActionSecondaryBase   = utils_tty.NewRGBA(0.0, 0.0, 0.0, 0.0)
+	BackgroundActionPrimarySelected = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
+	BackgroundActionSecondaryBase   = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
 	BackgroundActionDestructiveBase = hex("#e06c75")
 
 	BackgroundFormFieldBase = hex("#0a0a0a")

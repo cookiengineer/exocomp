@@ -8,7 +8,7 @@ func decodeMap(node *Node, target reflect.Value) error {
 	if node.Kind != ObjectNode {
 
 		return fmt.Errorf(
-			"cannot decode %v into map",
+			"yaml.DecodeMap: Cannot decode %v into map.",
 			node.Kind,
 		)
 
@@ -17,7 +17,7 @@ func decodeMap(node *Node, target reflect.Value) error {
 	if target.Kind() != reflect.Map {
 
 		return fmt.Errorf(
-			"target is not a map: %s",
+			"yaml.DecodeMap: Target is not a map: %s.",
 			target.Kind(),
 		)
 
@@ -26,7 +26,7 @@ func decodeMap(node *Node, target reflect.Value) error {
 	if target.Type().Key().Kind() != reflect.String {
 
 		return fmt.Errorf(
-			"unsupported map key type: %s",
+			"yaml.DecodeMap: Unsupported map key type: %s.",
 			target.Type().Key().Kind(),
 		)
 
@@ -48,14 +48,14 @@ func decodeMap(node *Node, target reflect.Value) error {
 
 		err := decodeValue(child, map_value)
 
-		if err != nil {
+		if err == nil {
+			target.SetMapIndex(
+				reflect.ValueOf(key),
+				map_value,
+			)
+		} else {
 			return err
 		}
-
-		target.SetMapIndex(
-			reflect.ValueOf(key),
-			map_value,
-		)
 
 	}
 

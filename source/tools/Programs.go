@@ -264,8 +264,10 @@ func (tool *Programs) Stat(program string) (string, error) {
 	for _, name := range tool.AllowedPrograms {
 
 		if name == program {
+
 			found = true
 			break
+
 		}
 
 	}
