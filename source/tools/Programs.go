@@ -2,6 +2,7 @@ package tools
 
 import "exocomp/schemas"
 import utils_bytes "exocomp/utils/bytes"
+import utils_landlock "exocomp/utils/landlock"
 import "context"
 import "fmt"
 import "os/exec"
@@ -171,42 +172,47 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		}()
 
-		cmd := exec.CommandContext(ctx, program, program_arguments...)
-		cmd.Dir = tool.Sandbox
+		cmd, err2 := utils_landlock.CommandContext(ctx, tool.Sandbox, program, program_arguments, []string{})
 
-		cmd.Stdin = strings.NewReader("")
-		cmd.Stdout = buffer
-		cmd.Stderr = buffer
+		if err2 == nil {
 
-		result := ""
-		err2 := cmd.Run()
+			cmd.Stdin = strings.NewReader("")
+			cmd.Stdout = buffer
+			cmd.Stderr = buffer
 
-		if len(program_arguments) > 0 {
-			result = strings.Join([]string{
-				fmt.Sprintf("programs.Execute: %s %s", program, strings.Join(program_arguments, " ")),
-				buffer.String(),
-			}, "\n")
+			result := ""
+			err3 := cmd.Run()
+
+			if len(program_arguments) > 0 {
+				result = strings.Join([]string{
+					fmt.Sprintf("programs.Execute: %s %s", program, strings.Join(program_arguments, " ")),
+					buffer.String(),
+				}, "\n")
+			} else {
+				result = strings.Join([]string{
+					fmt.Sprintf("programs.Execute: %s", program),
+					buffer.String(),
+				}, "\n")
+			}
+
+			if ctx.Err() == context.Canceled && buffer.IsTruncated() {
+
+				return result, fmt.Errorf("programs.Execute: Program output exceeded 16MB limit")
+
+			} else if ctx.Err() == context.DeadlineExceeded {
+
+				return result, fmt.Errorf("programs.Execute: Program timeout exceeded 10mins limit")
+
+			} else if err3 == nil {
+
+				return result, nil
+
+			} else {
+				return sanitizeExecutionError("programs", "Execute", "program", program, result, err3)
+			}
+
 		} else {
-			result = strings.Join([]string{
-				fmt.Sprintf("programs.Execute: %s", program),
-				buffer.String(),
-			}, "\n")
-		}
-
-		if ctx.Err() == context.Canceled && buffer.IsTruncated() {
-
-			return result, fmt.Errorf("programs.Execute: Program output exceeded 16MB limit")
-
-		} else if ctx.Err() == context.DeadlineExceeded {
-
-			return result, fmt.Errorf("programs.Execute: Program timeout exceeded 10mins limit")
-
-		} else if err2 == nil {
-
-			return result, nil
-
-		} else {
-			return sanitizeExecutionError("programs", "Execute", "program", program, result, err2)
+			return "", fmt.Errorf("programs.Execute: %s", err2.Error())
 		}
 
 	} else {

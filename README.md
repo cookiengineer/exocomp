@@ -101,8 +101,13 @@ so they can be used without any dynamically linked dependencies.
 - [agimus](./source/cmds/agimus/main.go) which is used for testing `assistant` sandboxes.
 - [exocomp](./source/cmds/exocomp/main.go) which supports all UIs.
 - [exocomp-agent](./source/cmds/exocomp-agent/main.go) which supports only the `agent` and `terminal` UI.
+- [exocomp-sandbox](./source/cmds/exocomp-sandbox/main.go) which applies landlock confinement before executing agent programs.
 - [exocomp-web](./source/cmds/exocomp-web/main.go) which supports only the `agent` and `web` UI.
 - [exocomp-installer](./installer/cmds/exocomp-installer/main.go) that bundles all exocomp builds and required agent programs.
+
+Sandboxed program execution requires Linux with landlock. The installer places
+`exocomp-sandbox` next to the other exocomp binaries; without it,
+`programs.Execute` and `skills.Execute` refuse to run.
 
 
 ```bash

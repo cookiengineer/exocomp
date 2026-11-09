@@ -43,6 +43,12 @@ inject it via the `EXOCOMP_AGENT` environment variable, so the parent-side
 `agents.Hire` / `agents.Await` / `agents.Fire` lifecycle is exercised without a
 live LLM.
 
+The `programs` and `skills` execution tests require Linux with landlock support.
+They build the [exocomp-sandbox](../source/cmds/exocomp-sandbox/main.go) helper
+once and inject it via `EXOCOMP_SANDBOX`. On other platforms, and on kernels
+without landlock, these execution tests are skipped because the sandboxed
+execution path intentionally refuses to run.
+
 ### Live Agents Tool
 
 Testing the live `agents` tool comes with certain limitations because of how the

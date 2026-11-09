@@ -7,11 +7,13 @@ import "testing"
 
 func TestPrograms_Execute(t *testing.T) {
 
+	requireLandlock(t)
+
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox := filepath.Join(playground, "programs")
 	tool := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"cat", "ls", "pwd"})
 
-	err0 := os.MkdirAll(sandbox, 0755)
+	err0 := os.MkdirAll(filepath.Join(sandbox, "probe"), 0755)
 
 	if err0 != nil {
 		t.Errorf("Expected %v to be nil", err0)
@@ -19,7 +21,7 @@ func TestPrograms_Execute(t *testing.T) {
 
 	if tool != nil {
 
-		result1, err1 := tool.Execute("ls", []string{"-la"})
+		result1, err1 := tool.Execute("ls", []string{"-la", "./probe"})
 		result2, err2 := tool.Execute("pwd", []string{})
 		result3, err3 := tool.Execute("cat", []string{"./../../../file.txt"})
 		result4, err4 := tool.Execute("cat", []string{"/etc/passwd"})
@@ -29,8 +31,8 @@ func TestPrograms_Execute(t *testing.T) {
 
 		if len(lines1) == 5 {
 
-			if lines1[0] != "programs.Execute: ls -la" {
-				t.Errorf("Expected \"%s\" to be executed", "ls -la")
+			if lines1[0] != "programs.Execute: ls -la ./probe" {
+				t.Errorf("Expected \"%s\" to be executed", "ls -la ./probe")
 			}
 
 			if lines1[1] != "total 0" {
@@ -128,6 +130,8 @@ func TestPrograms_Execute(t *testing.T) {
 }
 
 func TestPrograms_ExecuteWithoutPermission(t *testing.T) {
+
+	requireLandlock(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -378,6 +382,8 @@ func TestPrograms_StatWithoutProgram(t *testing.T) {
 
 func TestPrograms_Call_OptionalArguments(t *testing.T) {
 
+	requireLandlock(t)
+
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox := filepath.Join(playground, "programs")
 	tool := NewPrograms([]string{"List", "Execute", "Stat"}, playground, sandbox, []string{"pwd"})
@@ -443,6 +449,8 @@ func TestPrograms_Call_OptionalArguments(t *testing.T) {
 }
 
 func TestPrograms_ExecuteSymlinks(t *testing.T) {
+
+	requireLandlock(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-symlink-*")
 	sandbox := filepath.Join(playground, "programs")

@@ -62,6 +62,31 @@ func InstallExocomp(prefix string) error {
 			return err20
 		}
 
+		stat3, err30 := fs.Stat(assets.FS, "exocomps/exocomp-sandbox")
+
+		if err30 == nil && stat3.IsDir() == false {
+
+			buffer3, err31 := fs.ReadFile(assets.FS, "exocomps/exocomp-sandbox")
+
+			if err31 == nil {
+
+				path := filepath.Join(prefix, "bin", "exocomp-sandbox")
+				err32 := os.WriteFile(path, buffer3, 0755)
+
+				if err32 == nil {
+					fmt.Fprintf(os.Stdout, "-> Installed %s\n", path)
+				} else {
+					return err32
+				}
+
+			} else {
+				return err31
+			}
+
+		} else {
+			return err30
+		}
+
 	} else {
 		return err0
 	}

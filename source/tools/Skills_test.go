@@ -132,6 +132,8 @@ func TestSkills_Load_Unload(t *testing.T) {
 
 func TestSkills_Execute(t *testing.T) {
 
+	requireLandlock(t)
+
 	tool := newTestSkills(t, "scan", "Scan websites for links")
 
 	result1, err1 := tool.Execute("scan", "main.go", []string{})

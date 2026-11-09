@@ -318,6 +318,9 @@ if err == nil {
   are exempt from the one-implementation-per-file rule.
 - Platform-specific files keep their `_GOOS` or `_GOARCH` suffix, for example
   `CheckRoot_linux.go`.
+- `source/utils/landlock/landlock_linux.go` is a documented exception to the
+  one-function-per-file rule. It groups the low-level landlock syscall
+  primitives, which are one cohesive implementation detail.
 - Do not create a `utils/<name>` package that mirrors or duplicates an existing
   top-level package. Shared helpers have exactly one home.
 - `init()` is allowed for package-level tables and registries. Keep it in the

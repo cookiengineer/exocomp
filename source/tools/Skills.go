@@ -4,10 +4,10 @@ import "exocomp/schemas"
 import "exocomp/types"
 import utils_bytes "exocomp/utils/bytes"
 import utils_fmt "exocomp/utils/fmt"
+import utils_landlock "exocomp/utils/landlock"
 import "context"
 import "fmt"
 import "os"
-import "os/exec"
 import "path/filepath"
 import "slices"
 import "sort"
@@ -435,33 +435,39 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 					}()
 
-					cmd := exec.CommandContext(ctx, runtime, runtime_arguments...)
-					cmd.Dir = tool.Sandbox
+					scripts_dir := filepath.Join(tool.Playground, "skills", skill.Name, "scripts")
+					cmd, err2 := utils_landlock.CommandContext(ctx, tool.Sandbox, runtime, runtime_arguments, []string{scripts_dir})
 
-					cmd.Stdin = strings.NewReader("")
-					cmd.Stdout = buffer
-					cmd.Stderr = buffer
+					if err2 == nil {
 
-					err2 := cmd.Run()
-					result := strings.Join([]string{
-						fmt.Sprintf("skills.Execute: %s %s", runtime, strings.Join(runtime_arguments, " ")),
-						buffer.String(),
-					}, "\n")
+						cmd.Stdin = strings.NewReader("")
+						cmd.Stdout = buffer
+						cmd.Stderr = buffer
 
-					if ctx.Err() == context.Canceled && buffer.IsTruncated() {
+						err3 := cmd.Run()
+						result := strings.Join([]string{
+							fmt.Sprintf("skills.Execute: %s %s", runtime, strings.Join(runtime_arguments, " ")),
+							buffer.String(),
+						}, "\n")
 
-						return result, fmt.Errorf("skills.Execute: Script output exceeded 16MB limit")
+						if ctx.Err() == context.Canceled && buffer.IsTruncated() {
 
-					} else if ctx.Err() == context.DeadlineExceeded {
+							return result, fmt.Errorf("skills.Execute: Script output exceeded 16MB limit")
 
-						return result, fmt.Errorf("skills.Execute: Script timeout exceeded 10mins limit")
+						} else if ctx.Err() == context.DeadlineExceeded {
 
-					} else if err2 == nil {
+							return result, fmt.Errorf("skills.Execute: Script timeout exceeded 10mins limit")
 
-						return result, nil
+						} else if err3 == nil {
+
+							return result, nil
+
+						} else {
+							return sanitizeExecutionError("skills", "Execute", "runtime", runtime, result, err3)
+						}
 
 					} else {
-						return sanitizeExecutionError("skills", "Execute", "runtime", runtime, result, err2)
+						return "", fmt.Errorf("skills.Execute: %s", err2.Error())
 					}
 
 				} else {

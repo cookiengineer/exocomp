@@ -37,6 +37,11 @@ func BuildExocomps(base_dir string, operating_system string) {
 				source: "./cmds/agimus/main.go",
 			},
 			{
+				name:   "exocomp-sandbox",
+				output: filepath.Join(exocomps_dir, "exocomp-sandbox"),
+				source: "./cmds/exocomp-sandbox/main.go",
+			},
+			{
 				name:   "exocomp",
 				output: filepath.Join(build_dir, operating_system, "exocomp"),
 				source: "./cmds/exocomp/main.go",
@@ -50,6 +55,11 @@ func BuildExocomps(base_dir string, operating_system string) {
 				name:   "agimus",
 				output: filepath.Join(build_dir, operating_system, "agimus"),
 				source: "./cmds/agimus/main.go",
+			},
+			{
+				name:   "exocomp-sandbox",
+				output: filepath.Join(build_dir, operating_system, "exocomp-sandbox"),
+				source: "./cmds/exocomp-sandbox/main.go",
 			},
 		}
 

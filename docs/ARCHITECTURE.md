@@ -40,8 +40,44 @@ Path-bound tools reject symbolic links that could resolve outside the sandbox.
 component with `os.Lstat` and refuse symlinked components. Directory listings,
 searches and folder copies skip symlink entries entirely.
 
-`programs.Execute` applies the same validation to path-like arguments, but a
-spawned program is still an ordinary OS subprocess.
+`programs.Execute` applies the same validation to path-like arguments.
+
+### Process Confinement (Landlock)
+
+`programs.Execute` and `skills.Execute` run their subprocesses through the
+`exocomp-sandbox` helper. The helper is spawned with the target program and
+applies a Linux [landlock](https://docs.kernel.org/userspace-api/landlock.html)
+ruleset before `execve`:
+
+- The sandbox folder is the only writable location.
+- A read-only allowlist covers system binaries, libraries, configuration,
+  `/proc`, `/sys` and the resolved target program directory.
+- Basic device nodes (`/dev/null`, `/dev/zero`, `/dev/urandom`, ...) are
+  readable and writable.
+- `PR_SET_NO_NEW_PRIVS` is set before restricting, which also blocks setuid
+  privilege escalation.
+- The read/write policy is fixed. There is no `off` switch and no fallback: if
+  landlock or the helper is unavailable, execution fails with a fixed error.
+  Because landlock is Linux-only, `programs.Execute` and `skills.Execute`
+  refuse to run on other operating systems.
+
+HOME, temp, runtime and Go cache directories are redirected into
+`<sandbox>/.exocomp/landlock/` so ordinary tools such as `go`, `gofmt` and `gcc`
+can write without leaving the sandbox. Credential and session sockets inherited
+from the agent environment (`SSH_AUTH_SOCK`, `GPG_AGENT_INFO`,
+`DBUS_SESSION_BUS_ADDRESS`, `KRB5CCNAME`, `DISPLAY`, ...) are removed from the
+child environment. `.exocomp` is hidden from `files.List` and ignored by the Go
+toolchain.
+
+The helper is discovered next to the running `exocomp` binary (or via
+`EXOCOMP_SANDBOX` for development). The installer places it in the same `bin`
+folder as `exocomp` and `exocomp-agent`.
+
+Known limitations: network access is not restricted, `/proc` and `/sys` are
+readable for compatibility, landlock does not mediate every operation
+(metadata changes, ptrace, signals, already-open file descriptors), and programs
+that expect host configuration or caches outside the sandbox may need sandbox
+copies.
 
 ## Module Layout
 
