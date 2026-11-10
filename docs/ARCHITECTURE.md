@@ -303,10 +303,15 @@ DNS names and IPs).
 request/response loop:
 
 1. `SendChatRequest` appends the user message and calls
-   `infer_chat_completions` (one HTTP POST to `/v1/chat/completions`).
+   `inferChatCompletions` (HTTP POSTs to `/v1/chat/completions`).
+   Transient failures (transport errors, `408`, `409`, `425`, `429`, `500`,
+   `502`, `503`, `504` and `529`) are retried up to four times with exponential
+   backoff and jitter. A `Retry-After` header is honored up to 60 seconds, and a
+   full call is bounded by a 10 minute timeout. Authentication, payment,
+   permission, schema and model errors are not retried.
 2. `ReceiveChatResponse` appends the assistant message; if it contains
    `tool_calls`, each is executed via `CallTool` and then the loop recurses into
-   `infer_chat_completions`.
+   `inferChatCompletions`.
    - `agents.Await` blocks until the hired agent finishes.
    - `humans.Ask` and `humans.Choose` block until a human answers. The answer is
      submitted through `/api/session/calltool` as a `humans.Answer` and appends

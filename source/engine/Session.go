@@ -6,7 +6,6 @@ import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
-import "bytes"
 import "encoding/json"
 import "fmt"
 import "io"
@@ -32,13 +31,17 @@ type Session struct {
 
 func NewSession(agent *types.Agent, config *types.Config) *Session {
 
+	client := &net_http.Client{
+		Timeout: utils_chat.RetryRequestTimeout,
+	}
+
 	session := &Session{
 		Agent:    agent,
 		Config:   config,
 		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
 		Recovery: NewRecovery(config.Playground),
 		Waiting:  false,
-		client:   &net_http.Client{},
+		client:   client,
 		mutex:    &sync.RWMutex{},
 		adapters: make(map[string]types.Adapter),
 		tools:    make(map[string]types.Tool),
@@ -1213,150 +1216,182 @@ func (session *Session) inferChatCompletions() error {
 
 	if err0 == nil {
 
-		request, err1 := net_http.NewRequest(
-			net_http.MethodPost,
+		response, err2 := utils_chat.ChatRequestWithRetry(
+			session.client,
+			request_payload,
 			resolved_url.String(),
-			bytes.NewReader(request_payload),
+			resolved_token,
 		)
 
-		if err1 == nil {
+		if err2 == nil && response.StatusCode == 200 {
 
-			request.Header.Set("Content-Type", "application/json")
-			request.Header.Set("Accept", "application/json")
+			response_payload, err3 := io.ReadAll(response.Body)
+			response.Body.Close()
 
-			if resolved_token != "" {
-				request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", resolved_token))
-			}
+			if err3 == nil {
 
-			response, err2 := session.client.Do(request)
+				if session.Config.Debug == true {
+					session.Recovery.SnapshotBytes("response", response_payload)
+				}
 
-			if err2 == nil && response.StatusCode == 200 {
+				var chat_response schemas.ChatResponse
 
-				response_payload, err3 := io.ReadAll(response.Body)
+				err4 := json.Unmarshal(response_payload, &chat_response)
 
-				if err3 == nil {
+				// NOTE: Transform Responses via provider-specific Adapters
+				for _, adapter := range session.GetAdapters() {
+					chat_response = adapter.TransformResponse(chat_response)
+				}
 
-					if session.Config.Debug == true {
-						session.Recovery.SnapshotBytes("response", response_payload)
-					}
+				if err4 == nil {
 
-					var chat_response schemas.ChatResponse
+					session.mutex.Lock()
 
-					err4 := json.Unmarshal(response_payload, &chat_response)
+					if chat_response.Usage != nil && chat_response.Usage.TotalTokens != 0 {
 
-					// NOTE: Transform Responses via provider-specific Adapters
-					for _, adapter := range session.GetAdapters() {
-						chat_response = adapter.TransformResponse(chat_response)
-					}
+						session.Agent.ContextUsage.Tokens = chat_response.Usage.PromptTokens
+						session.Agent.ContextUsage.PromptTokens += chat_response.Usage.PromptTokens
+						session.Agent.ContextUsage.CompletionTokens += chat_response.Usage.CompletionTokens
+						session.Agent.ContextUsage.TotalTokens += chat_response.Usage.TotalTokens
 
-					if err4 == nil {
+						pricing, has_pricing := session.Config.ResolvePricing(session.Agent.Model)
 
-						session.mutex.Lock()
+						if has_pricing == true {
 
-						if chat_response.Usage != nil && chat_response.Usage.TotalTokens != 0 {
+							cached_tokens := chat_response.Usage.PromptTokensDetails.CachedTokens
+							input_tokens := chat_response.Usage.PromptTokens
+							output_tokens := chat_response.Usage.CompletionTokens
+							cost := 0.0
 
-							session.Agent.ContextUsage.Tokens = chat_response.Usage.PromptTokens
-							session.Agent.ContextUsage.PromptTokens += chat_response.Usage.PromptTokens
-							session.Agent.ContextUsage.CompletionTokens += chat_response.Usage.CompletionTokens
-							session.Agent.ContextUsage.TotalTokens += chat_response.Usage.TotalTokens
+							if cached_tokens > 0 && pricing.CachedInputPrice > 0 {
 
-							pricing, has_pricing := session.Config.ResolvePricing(session.Agent.Model)
+								cost += float64(cached_tokens) * pricing.CachedInputPrice
+								cost += float64(input_tokens-cached_tokens) * pricing.InputPrice
 
-							if has_pricing == true {
-
-								cached_tokens := chat_response.Usage.PromptTokensDetails.CachedTokens
-								input_tokens := chat_response.Usage.PromptTokens
-								output_tokens := chat_response.Usage.CompletionTokens
-								cost := 0.0
-
-								if cached_tokens > 0 && pricing.CachedInputPrice > 0 {
-
-									cost += float64(cached_tokens) * pricing.CachedInputPrice
-									cost += float64(input_tokens-cached_tokens) * pricing.InputPrice
-
-								} else {
-									cost += float64(input_tokens) * pricing.InputPrice
-								}
-
-								cost += float64(output_tokens) * pricing.OutputPrice
-
-								session.Agent.ContextUsage.Cost += cost / 1000000.0
-
+							} else {
+								cost += float64(input_tokens) * pricing.InputPrice
 							}
 
-						} else {
-							session.Agent.ContextUsage.Tokens = utils_chat.CalculateTokens(session.Agent.Messages)
-						}
+							cost += float64(output_tokens) * pricing.OutputPrice
 
-						session.mutex.Unlock()
+							session.Agent.ContextUsage.Cost += cost / 1000000.0
 
-						if len(chat_response.Choices) > 0 {
-							return session.ReceiveChatResponse(chat_response.Choices[0].Message)
-						} else {
-							return fmt.Errorf("Session.InferChatCompletions: Empty choices, maybe incompatible API?")
 						}
 
 					} else {
-						return err4
+						session.Agent.ContextUsage.Tokens = utils_chat.CalculateTokens(session.Agent.Messages)
+					}
+
+					session.mutex.Unlock()
+
+					if len(chat_response.Choices) > 0 {
+						return session.ReceiveChatResponse(chat_response.Choices[0].Message)
+					} else {
+						return fmt.Errorf("Session.InferChatCompletions: Empty choices, maybe incompatible API?")
 					}
 
 				} else {
-					return err3
+					return err4
 				}
-
-			} else if err2 == nil && response.StatusCode == 400 {
-
-				logResponseError(session.Console, response)
-
-				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s is incompatible with OpenAPI /v1 schema.", resolved_url.String(), resolved_model)
-
-			} else if err2 == nil && response.StatusCode == 401 {
-
-				logResponseError(session.Console, response)
-
-				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s has invalid authentication token.", resolved_url.String(), resolved_model)
-
-			} else if err2 == nil && response.StatusCode == 402 {
-
-				logResponseError(session.Console, response)
-
-				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s requires a subscription.", resolved_url.String(), resolved_model)
-
-			} else if err2 == nil && response.StatusCode == 403 {
-
-				logResponseError(session.Console, response)
-
-				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s requires a valid authentication token.", resolved_url.String(), resolved_model)
-
-			} else if err2 == nil && response.StatusCode == 404 {
-
-				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s does not recognize the model name.", resolved_url.String(), resolved_model)
-
-			} else if err2 == nil && response.StatusCode == 429 {
-
-				return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s usage quota exceeded.", resolved_url.String(), resolved_model)
-
-			} else if err2 != nil {
-
-				return err2
 
 			} else {
-
-				var api_error schemas.Error
-
-				response_payload, _ := io.ReadAll(response.Body)
-				json.Unmarshal(response_payload, &api_error)
-
-				if api_error.Error() != "" {
-					return fmt.Errorf("Session.InferChatCompletions: Server %s returned unexpected HTTP error %d with message %s.", resolved_url.String(), response.StatusCode, api_error.Error())
-				} else {
-					return fmt.Errorf("Session.InferChatCompletions: Server %s returned unexpected HTTP error %d.", resolved_url.String(), response.StatusCode)
-				}
-
+				return err3
 			}
 
+		} else if err2 == nil && response.StatusCode == 400 {
+
+			response_payload, _ := io.ReadAll(response.Body)
+			response.Body.Close()
+
+			api_error := schemas.Error{}
+			err3 := json.Unmarshal(response_payload, &api_error)
+
+			if err3 == nil {
+				session.Console.Error(fmt.Sprintf("> API Error: %s", api_error.Error()))
+			} else {
+				session.Console.Error(fmt.Sprintf("> Unknown Error: \n%s\n", string(response_payload)))
+			}
+
+			return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s is incompatible with OpenAPI /v1 schema.", resolved_url.String(), resolved_model)
+
+		} else if err2 == nil && response.StatusCode == 401 {
+
+			response_payload, _ := io.ReadAll(response.Body)
+			response.Body.Close()
+
+			api_error := schemas.Error{}
+			err3 := json.Unmarshal(response_payload, &api_error)
+
+			if err3 == nil {
+				session.Console.Error(fmt.Sprintf("> API Error: %s", api_error.Error()))
+			} else {
+				session.Console.Error(fmt.Sprintf("> Unknown Error: \n%s\n", string(response_payload)))
+			}
+
+			return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s has invalid authentication token.", resolved_url.String(), resolved_model)
+
+		} else if err2 == nil && response.StatusCode == 402 {
+
+			response_payload, _ := io.ReadAll(response.Body)
+			response.Body.Close()
+
+			api_error := schemas.Error{}
+			err3 := json.Unmarshal(response_payload, &api_error)
+
+			if err3 == nil {
+				session.Console.Error(fmt.Sprintf("> API Error: %s", api_error.Error()))
+			} else {
+				session.Console.Error(fmt.Sprintf("> Unknown Error: \n%s\n", string(response_payload)))
+			}
+
+			return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s requires a subscription.", resolved_url.String(), resolved_model)
+
+		} else if err2 == nil && response.StatusCode == 403 {
+
+			response_payload, _ := io.ReadAll(response.Body)
+			response.Body.Close()
+
+			api_error := schemas.Error{}
+			err3 := json.Unmarshal(response_payload, &api_error)
+
+			if err3 == nil {
+				session.Console.Error(fmt.Sprintf("> API Error: %s", api_error.Error()))
+			} else {
+				session.Console.Error(fmt.Sprintf("> Unknown Error: \n%s\n", string(response_payload)))
+			}
+
+			return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s requires a valid authentication token.", resolved_url.String(), resolved_model)
+
+		} else if err2 == nil && response.StatusCode == 404 {
+
+			response.Body.Close()
+
+			return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s does not recognize the model name.", resolved_url.String(), resolved_model)
+
+		} else if err2 == nil && response.StatusCode == 429 {
+
+			response.Body.Close()
+
+			return fmt.Errorf("Session.InferChatCompletions: Server %s for Model %s usage quota exceeded.", resolved_url.String(), resolved_model)
+
+		} else if err2 != nil {
+
+			return err2
+
 		} else {
-			return err1
+
+			var api_error schemas.Error
+
+			response_payload, _ := io.ReadAll(response.Body)
+			response.Body.Close()
+			json.Unmarshal(response_payload, &api_error)
+
+			if api_error.Error() != "" {
+				return fmt.Errorf("Session.InferChatCompletions: Server %s returned unexpected HTTP error %d with message %s.", resolved_url.String(), response.StatusCode, api_error.Error())
+			} else {
+				return fmt.Errorf("Session.InferChatCompletions: Server %s returned unexpected HTTP error %d.", resolved_url.String(), response.StatusCode)
+			}
+
 		}
 
 	} else {
@@ -1384,4 +1419,3 @@ func (session *Session) rebindAgentsTool() {
 	}
 
 }
-

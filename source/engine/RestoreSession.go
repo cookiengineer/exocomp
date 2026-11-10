@@ -1,6 +1,7 @@
 package engine
 
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import net_http "net/http"
 import "os"
 import "path/filepath"
@@ -8,13 +9,17 @@ import "sync"
 
 func RestoreSession(playground string, backup Session) *Session {
 
+	client := &net_http.Client{
+		Timeout: utils_chat.RetryRequestTimeout,
+	}
+
 	session := &Session{
 		Agent:    backup.Agent,
 		Config:   backup.Config,
 		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
 		Recovery: NewRecovery(playground),
 		Waiting:  false,
-		client:   &net_http.Client{},
+		client:   client,
 		mutex:    &sync.RWMutex{},
 		adapters: make(map[string]types.Adapter),
 		tools:    make(map[string]types.Tool),
