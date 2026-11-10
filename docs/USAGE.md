@@ -7,15 +7,14 @@ There are several User Interfaces implemented in Exocomp:
 
 - `exocomp agent` uses line-separated JSON messages to communicate via `stdin` and `stdout`. Used for cross-agent communication.
 - `exocomp terminal` uses the [tty/Client](../source/ui/tty/Client.go)
-- `exocomp web` spawns the [web/Server](../source/ui/web/Server.go) on port `3000` that serves the [Web UI](../source/ui/web/public/).
-- `exocomp webview` spawns a [web/Server](../source/ui/web/Server.go) on port `3000` and opens a [webview/Client](../source/ui/webview/Client.go) window.
+- `exocomp-web web` spawns the [web/Server](../source/ui/web/Server.go) on port `3000` that serves the [Web UI](../source/ui/web/public/).
 
 Common flags: `--name`, `--role`, `--model`, `--temperature`, `--prompt`,
 `--sandbox`, `--url`, `--debug`. Examples:
 
 ```bash
 exocomp terminal --role=architect --model="codestral:22b" --temperature=0.5;
-exocomp web --role=planner --model="codestral:22b" --temperature=0.7;
+exocomp-web web --role=planner --model="codestral:22b" --temperature=0.7;
 ```
 
 ### Multi-Agent Usage
@@ -48,7 +47,7 @@ This is what the Human interacts with:
 
 ```bash
 cd /path/to/project;
-exocomp web --role=planner;
+exocomp-web web --role=planner;
 ```
 
 This is what the Planner agent spawns behind the scenes as sub processes:

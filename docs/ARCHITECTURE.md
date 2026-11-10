@@ -19,7 +19,7 @@ Communication between the human, the planner and the contractor agents is a
 strict subprocess tree:
 
 ```
-planner        (exocomp web|terminal, playground == sandbox == project root)
+planner        (exocomp-web web | exocomp terminal, playground == sandbox == project root)
 |-> architect  (exocomp agent, sandbox == project root)
 |-> coder      (exocomp agent, sandbox == project/utils)
 |-> tester     (exocomp agent, sandbox == project/utils)
@@ -142,9 +142,9 @@ source/
     tty/         Interactive terminal frontend (the human's planner)
     web/         Web frontend + REST API (the human's planner)
   cmds/
-    exocomp/         UI dispatcher (agent | terminal | web | webview)
+    exocomp/         UI dispatcher (agent | config | terminal)
     exocomp-agent/   Child-process entry point (exocomp agent)
-    exocomp-web/     Web server entry point
+    exocomp-web/     Web server entry point (agent | config | web)
 ```
 
 ## JSONL Protocol

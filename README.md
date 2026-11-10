@@ -97,10 +97,10 @@ The `exocomp` project comes in several variants. All programs support `CGO_ENABL
 so they can be used without any dynamically linked dependencies.
 
 - [agimus](./source/cmds/agimus/main.go) which is used for testing `assistant` sandboxes.
-- [exocomp](./source/cmds/exocomp/main.go) which supports all UIs.
+- [exocomp](./source/cmds/exocomp/main.go) which supports the `agent`, `config` and `terminal` UIs.
 - [exocomp-agent](./source/cmds/exocomp-agent/main.go) which supports only the `agent` and `terminal` UI.
 - [exocomp-sandbox](./source/cmds/exocomp-sandbox/main.go) which applies landlock (Linux) or seatbelt (macOS) confinement before executing agent programs.
-- [exocomp-web](./source/cmds/exocomp-web/main.go) which supports only the `agent` and `web` UI.
+- [exocomp-web](./source/cmds/exocomp-web/main.go) which supports the `agent`, `config` and `web` UIs.
 - [exocomp-installer](./installer/cmds/exocomp-installer/main.go) that bundles all exocomp builds and required agent programs.
 
 Sandboxed program execution requires Linux with landlock, or macOS with
@@ -108,17 +108,33 @@ Sandboxed program execution requires Linux with landlock, or macOS with
 other exocomp binaries; without it, `programs.Execute` and `skills.Execute`
 refuse to run.
 
+#### Production Builds
 
 ```bash
-# Build exocomp and exocomp-installer
-cd path/to/exocomp/toolchain;
-go run build.go;
+cd /path/to/exocomp;
+
+# Build only for the current platform target
+make quick;
+
+# Build all exocomp helper programs, the WASM Web App, exocomp binaries, and the exocomp installer
+make;
 
 # Show exocomp usage instructions
-cd /path/to/exocomp/build;
-./linux/exocomp;
+./build/linux/exocomp;
 ```
 
+#### Development Builds
+
+```
+cd /path/to/exocomp;
+
+# Build only the WASM Web App
+make webapp;
+
+# Start Exocomp Web UI
+cd ./source;
+go run cmds/exocomp-web/main.go web;
+```
 
 ### Configuring
 
@@ -186,7 +202,7 @@ working for the agent you're talking with.
 cd /path/to/project-root;
 
 # Agent type planner is defaulted
-exocomp webview --role=planner;
+exocomp-web web --role=planner;
 ```
 
 Take a look at the [USAGE.md](./docs/USAGE.md) for more details.

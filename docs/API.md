@@ -1,7 +1,7 @@
 
 # API
 
-The web frontend (`exocomp web`) exposes a REST API on port `3000`. All routes
+The web frontend (`exocomp-web web`) exposes a REST API on port `3000`. All routes
 serve the planner's [Session](../source/engine/Session.go) state.
 
 ## Parameters
