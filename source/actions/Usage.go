@@ -3,11 +3,34 @@ package actions
 import "exocomp/agents"
 import "fmt"
 import "os"
+import "path/filepath"
+import "slices"
 import "sort"
 import "strconv"
 import "strings"
 
 func Usage(options_mode []string) {
+
+	program := filepath.Base(os.Args[0])
+
+	if program == "" {
+		program = "exocomp"
+	}
+
+	example_mode := ""
+
+	for _, mode := range []string{"web", "terminal", "agent"} {
+
+		if slices.Contains(options_mode, mode) == true {
+			example_mode = mode
+			break
+		}
+
+	}
+
+	if example_mode == "" && len(options_mode) > 0 {
+		example_mode = options_mode[0]
+	}
 
 	default_mode := "unset"
 	default_name := strconv.Quote("Peanut Hamper")
@@ -36,7 +59,7 @@ func Usage(options_mode []string) {
 	sort.Strings(options_model)
 
 	fmt.Fprint(os.Stdout, "\n")
-	fmt.Fprint(os.Stdout, "Usage: exocomp <mode> [flags]\n")
+	fmt.Fprintf(os.Stdout, "Usage: %s <mode> [flags]\n", program)
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprint(os.Stdout, "Arguments:\n")
 	fmt.Fprint(os.Stdout, "\n")
@@ -70,16 +93,21 @@ func Usage(options_mode []string) {
 	fmt.Fprint(os.Stdout, "  --url string           OpenAI API endpoint for LLM backend\n")
 	fmt.Fprint(os.Stdout, "                         (default: "+default_url+")\n")
 	fmt.Fprint(os.Stdout, "\n")
-	fmt.Fprint(os.Stdout, "Examples:\n")
-	fmt.Fprint(os.Stdout, "\n")
-	fmt.Fprint(os.Stdout, "  # single-agent mode\n")
-	fmt.Fprint(os.Stdout, "  exocomp terminal --role=architect;\n")
-	fmt.Fprint(os.Stdout, "  exocomp web --role=architect --model=\"huihui_ai/Qwen3.8-abliterated:27b\" --temperature=\"0.5\";\n")
-	fmt.Fprint(os.Stdout, "\n")
-	fmt.Fprint(os.Stdout, "  # multi-agent mode\n")
-	fmt.Fprint(os.Stdout, "  exocomp terminal --role=planner;\n")
-	fmt.Fprint(os.Stdout, "  exocomp web --role=planner --model=\"deepseek-v4-pro:cloud\" --temperature=\"0.7\";\n")
-	fmt.Fprint(os.Stdout, "\n")
+
+	if program != "" && example_mode != "" {
+
+		fmt.Fprint(os.Stdout, "Examples:\n")
+		fmt.Fprint(os.Stdout, "\n")
+		fmt.Fprint(os.Stdout, "  # single-agent mode\n")
+		fmt.Fprintf(os.Stdout, "  %s %s --role=architect;\n", program, example_mode)
+		fmt.Fprintf(os.Stdout, "  %s %s --role=architect --model=\"huihui_ai/Qwen3.8-abliterated:27b\" --temperature=\"0.5\";\n", program, example_mode)
+		fmt.Fprint(os.Stdout, "\n")
+		fmt.Fprint(os.Stdout, "  # multi-agent mode\n")
+		fmt.Fprintf(os.Stdout, "  %s %s --role=planner;\n", program, example_mode)
+		fmt.Fprintf(os.Stdout, "  %s %s --role=planner --model=\"deepseek-v4-pro:cloud\" --temperature=\"0.7\";\n", program, example_mode)
+		fmt.Fprint(os.Stdout, "\n")
+
+	}
 
 	os.Exit(1)
 

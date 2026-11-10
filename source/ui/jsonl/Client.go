@@ -1,6 +1,5 @@
 package jsonl
 
-import "exocomp/adapters"
 import "exocomp/engine"
 import "exocomp/schemas"
 import "exocomp/tools"
@@ -27,45 +26,8 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 	session := engine.NewSession(agent, config)
 	renderer := NewRenderer(session)
 
-	if agent.HasTools() {
-
-		toolset := tools.Toolset(
-			config.Playground,
-			config.Sandbox,
-			config.Model,
-			config.URL,
-			config.Debug,
-			agent.AllowedPrograms,
-			agent.AllowedImages,
-			agent.AllowedTools,
-		)
-
-		if len(toolset) > 0 {
-
-			for _, tool := range toolset {
-				session.SetTool(tool)
-			}
-
-		}
-
-	}
-
-	if config.HasProvider(agent.Model) {
-
-		adapterset := adapters.Adapterset(
-			config.ResolveURL(agent.Model, ""),
-			config.ResolveModel(agent.Model),
-		)
-
-		if len(adapterset) > 0 {
-
-			for _, adapter := range adapterset {
-				session.SetAdapter(adapter)
-			}
-
-		}
-
-	}
+	session.InstallTools()
+	session.InstallAdapters()
 
 	// NOTE: Agent Recovery managed by Agents Tool
 

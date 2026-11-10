@@ -1,6 +1,9 @@
 package engine
 
+import "exocomp/adapters"
+import "exocomp/agents"
 import "exocomp/schemas"
+import "exocomp/tools"
 import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
 import "bytes"
@@ -24,6 +27,7 @@ type Session struct {
 	adapters map[string]types.Adapter `json:"-"`
 	tools    map[string]types.Tool    `json:"-"`
 	changes  chan struct{}            `json:"-"`
+	onSwitch func(string) (string, error)
 }
 
 func NewSession(agent *types.Agent, config *types.Config) *Session {
@@ -65,6 +69,34 @@ func NewSession(agent *types.Agent, config *types.Config) *Session {
 
 }
 
+// NewSessionWithRecovery creates a fresh Session or restores the last session
+// backup from the configured playground.
+func NewSessionWithRecovery(agent *types.Agent, config *types.Config) (*Session, bool) {
+
+	var session *Session = nil
+
+	recovery := NewRecovery(config.Playground)
+
+	if recovery.HasBackup() {
+
+		session = recovery.RestoreSession()
+
+		if session != nil {
+			session.Console.Info("Restored Session from Backup")
+			return session, true
+		}
+
+		session = NewSession(agent, config)
+		session.Console.Warn("Could not restore Session from Backup")
+
+	} else {
+		session = NewSession(agent, config)
+	}
+
+	return session, false
+
+}
+
 func ParseSession(data []byte) (*Session, error) {
 
 	if len(data) > 2 && data[0] == '{' && data[len(data)-1] == '}' {
@@ -84,8 +116,107 @@ func ParseSession(data []byte) (*Session, error) {
 
 }
 
+// Backup persists the session and its hired agents to the recovery folder.
+func (session *Session) Backup() {
+
+	if session != nil && session.Recovery != nil {
+		session.Recovery.BackupSession(session)
+	}
+
+}
+
+// BindAgents binds the agent switch hook to the agents tool. The hook is
+// retained so it can be rebound after SwitchRole replaces the tool set.
+func (session *Session) BindAgents(onSwitch func(role string) (string, error)) {
+
+	if session != nil && onSwitch != nil {
+		session.onSwitch = onSwitch
+		session.rebindAgentsTool()
+	}
+
+}
+
 func (session *Session) Changes() <-chan struct{} {
 	return session.changes
+}
+
+// InstallAdapters installs the provider adapters for the current agent model.
+func (session *Session) InstallAdapters() {
+
+	if session != nil && session.Agent != nil && session.Config != nil {
+
+		adapterset := make([]types.Adapter, 0)
+
+		if session.Config.HasProvider(session.Agent.Model) {
+
+			adapterset = adapters.Adapterset(
+				session.Config.ResolveURL(session.Agent.Model, ""),
+				session.Config.ResolveModel(session.Agent.Model),
+			)
+
+		}
+
+		session.SetAdapters(adapterset)
+
+	}
+
+}
+
+// InstallAgents adds restored agents to the agents tool.
+func (session *Session) InstallAgents(agents []*types.Agent) {
+
+	if session != nil && len(agents) > 0 {
+
+		tool := session.GetTool("agents.List")
+
+		if tool != nil {
+
+			agents_tool, ok := tool.(*tools.Agents)
+
+			if ok == true {
+
+				for _, agent := range agents {
+
+					if agent != nil {
+						agents_tool.SetAgent(agent)
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+
+}
+
+// InstallTools installs the tool set allowed by the current agent.
+func (session *Session) InstallTools() {
+
+	if session != nil && session.Agent != nil && session.Config != nil {
+
+		toolset := make([]types.Tool, 0)
+
+		if session.Agent.HasTools() {
+
+			toolset = tools.Toolset(
+				session.Config.Playground,
+				session.Config.Sandbox,
+				session.Config.Model,
+				session.Config.URL,
+				session.Config.Debug,
+				session.Agent.AllowedPrograms,
+				session.Agent.AllowedImages,
+				session.Agent.AllowedTools,
+			)
+
+		}
+
+		session.SetTools(toolset)
+
+	}
+
 }
 
 func (session *Session) IsWaiting() bool {
@@ -879,6 +1010,120 @@ func (session *Session) SwitchAgent(agent *types.Agent, summary string) error {
 
 }
 
+// SwitchRole summarizes the current conversation, switches to the requested
+// agent role and reinstalls the role-specific tools and adapters.
+func (session *Session) SwitchRole(role string) (string, error) {
+
+	if session != nil && session.Config != nil {
+
+		tool := session.GetTool("agents.Switch")
+
+		if tool != nil {
+
+			agents_tool, ok := tool.(*tools.Agents)
+
+			if ok == true {
+
+				messages := session.GetMessages(0)
+				history := make([]*schemas.Message, 0)
+
+				for m := 0; m < len(messages); m++ {
+
+					message := messages[m]
+
+					if message != nil && message.Role == "assistant" {
+
+						tool_calls, err := utils_chat.FindToolCalls(message, []string{"agents.Switch"})
+
+						if err == nil && len(tool_calls) > 0 {
+							break
+						}
+
+					}
+
+					history = append(history, message)
+
+				}
+
+				summary, err0 := agents_tool.Summarize(history)
+
+				if err0 == nil {
+
+					config := *session.Config
+
+					config.Name = ""
+					config.Role = role
+					config.Model = ""
+					config.Prompt = ""
+					config.Temperature = 0.0
+					config.Providers = make(map[string]types.Provider)
+
+					for model, provider := range session.Config.Providers {
+						config.Providers[model] = provider
+					}
+
+					if types.GlobalConfig != nil {
+
+						for model, provider := range types.GlobalConfig.Providers {
+
+							_, ok := config.Providers[model]
+
+							if ok == false {
+								config.Providers[model] = provider
+							}
+
+						}
+
+					}
+
+					new_agent := agents.NewAgent(&config)
+
+					if new_agent != nil {
+
+						if session.Config.Providers == nil {
+							session.Config.Providers = make(map[string]types.Provider)
+						}
+
+						for model, provider := range config.Providers {
+							session.Config.Providers[model] = provider
+						}
+
+						err1 := session.SwitchAgent(new_agent, summary)
+
+						if err1 == nil {
+
+							session.InstallTools()
+							session.InstallAdapters()
+							session.rebindAgentsTool()
+
+							return fmt.Sprintf("agents.Switch: Switched to agent role \"%s\".", new_agent.Role), nil
+
+						} else {
+							return "", fmt.Errorf("agents.Switch: %s", err1.Error())
+						}
+
+					} else {
+						return "", fmt.Errorf("agents.Switch: Unknown agent role \"%s\".", role)
+					}
+
+				} else {
+					return "", err0
+				}
+
+			} else {
+				return "", fmt.Errorf("agents.Switch: Tool does not exist.")
+			}
+
+		} else {
+			return "", fmt.Errorf("agents.Switch: Tool does not exist.")
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Switch: No session available.")
+	}
+
+}
+
 func (session *Session) UnloadSkill(name string, skill *types.Skill) error {
 
 	defer session.notifyChange()
@@ -1119,3 +1364,24 @@ func (session *Session) inferChatCompletions() error {
 	}
 
 }
+
+func (session *Session) rebindAgentsTool() {
+
+	if session != nil && session.onSwitch != nil {
+
+		tool := session.GetTool("agents.Switch")
+
+		if tool != nil {
+
+			agents_tool, ok := tool.(*tools.Agents)
+
+			if ok == true {
+				agents_tool.OnSwitch = session.onSwitch
+			}
+
+		}
+
+	}
+
+}
+
