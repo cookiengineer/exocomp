@@ -1,0 +1,17 @@
+
+/*
+ * MessageList component - scrollable chat history.
+ */
+
+message-list {
+	display: block;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	left: 200px;
+	margin: 0px;
+	padding: 16px;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
