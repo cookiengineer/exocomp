@@ -9,7 +9,7 @@ import "runtime"
 func InstallExocomp(base_dir string) {
 
 	build_dir := filepath.Join(base_dir, "build")
-	programs := []string{"exocomp", "exocomp-agent", "agimus"}
+	programs := []string{"exocomp", "exocomp-agent", "exocomp-sandbox", "exocomp-web", "agimus"}
 
 	if runtime.GOOS == "darwin" {
 
@@ -21,7 +21,9 @@ func InstallExocomp(base_dir string) {
 
 			err := utils.CopyFile(build, target)
 
-			if err != nil {
+			if err == nil {
+				fmt.Fprintf(os.Stdout, "-> Installed %s\n", target)
+			} else {
 				fmt.Fprintf(os.Stderr, "!! Error: %s\n", err.Error())
 			}
 
@@ -55,8 +57,8 @@ func InstallExocomp(base_dir string) {
 				prefix = "C:\\Program Files (x86)"
 			}
 
-			build := filepath.Join(build_dir, "linux", fmt.Sprintf("%s.exe", program))
-			target := filepath.Join(prefix, program)
+			build := filepath.Join(build_dir, "windows", fmt.Sprintf("%s.exe", program))
+			target := filepath.Join(prefix, fmt.Sprintf("%s.exe", program))
 
 			err := utils.CopyFile(build, target)
 

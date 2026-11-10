@@ -42,6 +42,11 @@ func BuildExocomps(base_dir string, operating_system string) {
 				source: "./cmds/exocomp-sandbox/main.go",
 			},
 			{
+				name:   "exocomp-web",
+				output: filepath.Join(exocomps_dir, "exocomp-web"),
+				source: "./cmds/exocomp-web/main.go",
+			},
+			{
 				name:   "exocomp",
 				output: filepath.Join(build_dir, operating_system, "exocomp"),
 				source: "./cmds/exocomp/main.go",
@@ -60,6 +65,11 @@ func BuildExocomps(base_dir string, operating_system string) {
 				name:   "exocomp-sandbox",
 				output: filepath.Join(build_dir, operating_system, "exocomp-sandbox"),
 				source: "./cmds/exocomp-sandbox/main.go",
+			},
+			{
+				name:   "exocomp-web",
+				output: filepath.Join(build_dir, operating_system, "exocomp-web"),
+				source: "./cmds/exocomp-web/main.go",
 			},
 		}
 

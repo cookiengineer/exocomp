@@ -78,6 +78,11 @@ func main() {
 
 	if err0 == nil {
 
+		fmt.Fprint(os.Stdout, "\n")
+		fmt.Fprint(os.Stdout, "== Build Web App ==\n")
+
+		actions.BuildWebApp(base_dir)
+
 		if build_agent_programs == true {
 
 			fmt.Fprint(os.Stdout, "\n")
