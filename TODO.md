@@ -1,13 +1,8 @@
 
 # TODO
 
-## source/utils/tty
-
-- [ ] Refactor all Theme related things in source/ui/tty to use only utils/tty/Style instances directly, exported as variables
-
 ## source/engine/Session
 
-- No retry/backoff implemented. Session.infer_chat_completions does a single POST; transient 429/5xx and connection errors just fail the whole turn.
 - No finish_reason handling implemented. schemas.Choice.FinishReason is parsed but never read. A length-truncated response with an incomplete tool_calls block is silently accepted. mini re-prompts with guidance.
 - No format-error feedback loop implemented. In ReceiveChatResponse, an assistant message with no tool_calls just returns nil (dead-end), and malformed tool-call args are silently skipped (err0/err1… != nil → ignored).
 - Choices need to be correctly handled, currently exocomp handles only Choices[0]
