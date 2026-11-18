@@ -334,6 +334,133 @@ source/utils/tty/Color.go     // type Color, NewColor, ColorFromInts, methods
 source/tools/Agents.go        // type Agents, methods, private agentProcess
 ```
 
+## Utility Ownership: Capabilities and Shell Helpers
+
+When adding a helper, first decide whether it is a data type, a generic utility,
+or tool-specific behavior.
+
+| Concern | Owner |
+|:--------|:------|
+| Wire and data types such as `Capability` and `Question` | `source/types` |
+| Capability validation, path matching, network matching, and the capability `Set` | `source/utils/capabilities` |
+| Generic shell parsing, formatting, terminal filtering, process groups, signals, and shell environments | `source/utils/shell` |
+| Tool result formatting and tool-specific path adapters | `source/tools` |
+| Sandbox process execution and shared sandbox path validation | `source/utils/sandbox` |
+
+### Capabilities
+
+`source/types/Capability.go` owns only the `Capability` data type, its constants,
+and pure data methods such as `Key()` and `Label()`.
+
+`source/utils/capabilities` owns all capability behavior:
+
+- `Set` and its methods (`Grant`, `Missing`, `Covers`, `CanRead`, `CanWrite`,
+  `CanConnect`, `SandboxPaths`, `Clear`)
+- `Normalize`
+- `CanonicalPath`
+- `IsCanonicalPath`
+- `IsPathWithin`
+- `IsPathDenied`
+- `IsValidDomain`
+- `NetworkContains`
+- `UniquePaths`
+- `Parse` and `ParseAnswer` for permission tool arguments
+
+Do not put this behavior into `types`, because `types` must not import
+`utils/capabilities`. Do not put it into `tools` either; tools should only
+adapt the capability API to a specific tool.
+
+Examples:
+
+- `capabilities.IsPathWithin(scope, path)` belongs in
+  `utils/capabilities/IsPathWithin.go`.
+- `capabilities.IsPathDenied(path)` belongs in
+  `utils/capabilities/IsPathDenied.go`.
+- `capabilities.Parse(raw)` belongs in `utils/capabilities/Parse.go`.
+- `tools.resolveFilesPath(...)` stays in `tools`, because it combines sandbox
+  path resolution with the capability API.
+
+### Shell helpers
+
+`source/utils/shell` owns generic shell and process helpers that are not tied to
+a specific tool result:
+
+- `ParseArguments`
+- `ParseInt`
+- `ArgumentBytes`
+- `FormatArguments`
+- `FormatExitCode`
+- `SetEnv`
+- `TerminalFilter`
+- `PrepareProcess`
+- `SendSignalByName`
+- `KillProcess`
+
+The `Shell` tool itself, its PTY session lifecycle, session state, and
+`shellSession` type stay in `source/tools/Shell.go`.
+
+`tools/sanitizeShellArguments.go` also stays in `tools`, because it bridges
+capability-aware program argument rules with the shell tool.
+
+### Dependency direction
+
+Utilities must not import `tools`.
+
+```text
+types
+  ↑
+utils/capabilities
+  ↑
+utils/shell ──> utils/sandbox
+  ↑
+tools
+  ↑
+engine
+```
+
+`tools` may import `utils/capabilities`, `utils/shell`, and `utils/sandbox`.
+`engine` may import `utils/capabilities`.
+`utils/capabilities` should only depend on `types` and the standard library.
+`utils/sandbox` owns sandbox paths and process execution and must not import
+`utils/shell` or `tools`.
+`utils/shell` may depend on `utils/capabilities` or `utils/sandbox` when needed.
+
+If a utility needs behavior from `tools`, that behavior is either misplaced or
+belongs behind a small interface/callback rather than a reverse import.
+
+### Sandbox path helpers
+
+`source/utils/sandbox` owns generic sandbox path validation:
+
+- `CheckPath`
+- `CheckSymlinks`
+- `ResolvePath`
+- `SanitizePath`
+
+`tools` must not add another sandbox path resolver. Tool-specific adapters such
+as `tools.resolveFilesPath`, `tools.displayFilesPath`, and
+`tools.sanitizeProgramArgument` call the `utils/sandbox` helpers and combine
+them with their own tool behavior.
+
+`utils/shell.ResolveWorkdir` uses `utils_sandbox.CheckPath`.
+
+### Review checklist
+
+Before merging a helper, check:
+
+- Does it define a serialized or wire type? Put it in `types`.
+- Does it operate only on `Capability` and standard-library path/network values?
+  Put it in `utils/capabilities`.
+- Does it parse, format, or manage shell input/output, terminals, process
+  groups, signals, or shell environments? Put it in `utils/shell`.
+- Does it know a tool name, tool result prefix, tool schema, or tool-specific
+  error message? Keep it in `tools`.
+- Does a utility import `tools`? Move the dependency or introduce a small
+  interface.
+- Is the file named after the function or type it contains?
+- Are platform-specific helpers suffixed with `_linux`, `_windows`, or `_other`?
+- Are the tests next to the package they test?
+
 ## Functions and Helpers
 
 - Keep functions focused on one responsibility.

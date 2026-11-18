@@ -79,7 +79,7 @@ Check the unit tests on whether the Tools can be relied on or not.
 | [Containers](./source/tools/Containers.go)     | [Yes](./source/tools/Containers_test.go)   | manages podman containers                           | `exploiter`, `reverser`, `threathunter`                 |
 | Exploits                                       |                                            | manages PoCs for CVEs from local dataset            | `exploiter`, `reverser`                                 |
 | [Files](./source/tools/Files.go)               | [Yes](./source/tools/Files_test.go)        | interacts with files and folders                    | all roles                                               |
-| [Humans](./source/tools/Humans.go)             | [Yes](./source/tools/Humans_test.go)       | asks the human clarifying questions                 | `planner`                                               |
+| [Humans](./source/tools/Humans.go)             | [Yes](./source/tools/Humans_test.go)       | asks questions and requests temporary capabilities  | all roles                                               |
 | Findings                                       |                                            | reports findings of vulnerabilities and weaknesses  | `exploiter`, `threathunter`                             |
 | [Programs](./source/tools/Programs.go)         | [Yes](./source/tools/Programs_test.go)     | interacts with installed programs                   | all roles                                               |
 | [Requirements](./source/tools/Requirements.go) | [Yes](./source/tools/Requirements_test.go) | manages specifications of implementations           | `planner`, `architect`, `coder`, `tester`               |

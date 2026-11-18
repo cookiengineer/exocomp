@@ -36,7 +36,7 @@ planner        (exocomp-web web | exocomp terminal, playground == sandbox == pro
 ### Symlink Policy
 
 Path-bound tools reject symbolic links that could resolve outside the sandbox.
-`resolveSandboxPath`/`sanitizeSandboxPath` validate every existing path
+`utils_sandbox.ResolvePath`/`utils_sandbox.SanitizePath` validate every existing path
 component with `os.Lstat` and refuse symlinked components. Directory listings,
 searches and folder copies skip symlink entries entirely.
 
@@ -44,8 +44,8 @@ searches and folder copies skip symlink entries entirely.
 
 ### Process Confinement (Landlock / Seatbelt)
 
-`programs.Execute` and `skills.Execute` run their subprocesses through the
-`exocomp-sandbox` helper. The helper is spawned with the target program and
+`programs.Execute`, `shell.*` and `skills.Execute` run their subprocesses
+through the `exocomp-sandbox` helper. The helper is spawned with the target program and
 applies the platform sandbox before executing it:
 
 - On Linux, a [landlock](https://docs.kernel.org/userspace-api/landlock.html)
@@ -60,9 +60,10 @@ Both backends share the same fixed filesystem and process policy:
   the resolved target program directory.
 - Basic device nodes (`/dev/null`, `/dev/zero`, `/dev/urandom`, ...) are
   readable and writable.
-- The read/write policy is fixed. There is no `off` switch and no fallback: if
-  the platform sandbox or the helper is unavailable, execution fails with a
-  fixed error.
+- The default read/write policy is fixed. Temporary `humans.AskPermission`
+  grants can add read-only or read-write paths to the policy. There is no `off`
+  switch and no fallback: if the platform sandbox or the helper is unavailable,
+  execution fails with a fixed error.
 
 On Linux, `PR_SET_NO_NEW_PRIVS` is set before restricting, which also blocks
 setuid privilege escalation. Because landlock is Linux-only, the Linux backend
@@ -91,6 +92,31 @@ environment (`SSH_AUTH_SOCK`, `GPG_AGENT_INFO`, `DBUS_SESSION_BUS_ADDRESS`,
 The helper is discovered next to the running `exocomp` binary (or via
 `EXOCOMP_SANDBOX` for development). The installer places it in the same `bin`
 folder as `exocomp` and `exocomp-agent`.
+
+### Temporary Capabilities
+
+`humans.AskPermission` lets an agent request temporary capabilities from the
+human. A request contains a reason and a list of `types.Capability` entries:
+
+- `files.Read` with an absolute path or folder
+- `files.Write` with an absolute path or folder (implies read access)
+- `network.Connect` with an exact domain, exact IP, or CIDR
+
+The human selects capabilities individually. Granted capabilities live in
+`engine.Session.Capabilities` with `json:"-"`, so they are never written to the
+config, recovery backup, or any other on-disk state. They are cleared when the
+session ends or the agent role switches, and they are not inherited by hired
+child agents.
+
+`files.Read` and `files.Write` are enforced by the OS sandbox: the paths are
+added to the landlock/seatbelt policy for subsequent `files.*`,
+`programs.Execute`, `shell.*`, and `skills.Execute` calls.
+
+`network.Connect` is enforced at the tool boundary for `websites.*` and future
+`scans.*`/`http.*` tools. It is not a domain/IP firewall for arbitrary programs:
+landlock network rules are port-based, and seatbelt can only allow or deny
+network as a whole. Raw network programs such as `curl`, `nmap`, `nc`, or `ssh`
+are therefore not domain-filtered by this capability.
 
 Known limitations: on Linux, landlock does not restrict network access, `/proc`
 and `/sys` are readable for compatibility, and metadata changes, ptrace, signals
@@ -238,7 +264,7 @@ keyed by their namespace (the part before the first `.`).
 
 - Tool schema names are `namespace.Method` (e.g. `files.Read`, `requirements.DefineFunc`, `agents.Hire`).
 - `Session.CallTool` resolves the namespace, invokes the tool and appends the result (or `Error: ...`) as a `tool` message carrying the matching `tool_call_id`.
-- Sandbox-bound tools (files, programs, requirements, bugs, changelog) resolve all paths through `resolveSandboxPath`/`sanitizeSandboxPath` so a contractor cannot escape its sandbox.
+- Sandbox-bound tools (files, programs, requirements, bugs, changelog) resolve all paths through `utils_sandbox.ResolvePath`/`utils_sandbox.SanitizePath` so a contractor cannot escape its sandbox.
 - `containers.*` mounts only the agent sandbox into podman containers and scopes every container to the sandbox label. `podman` must not be added to `allowed-programs`, otherwise `programs.Execute` could bypass these checks.
 
 Each tool's LLM-facing contract lives in its embedded JSON schema at `tools/*.json`
@@ -262,7 +288,7 @@ For example, `os.Stat`'s `*PathError` embeds the **absolute** path it was given:
 files.Stat: stat /home/alice/projects/secret/...: no such file or directory
 ```
 
-Because `resolveSandboxPath`/`sanitizeSandboxPath` resolve every path to an
+Because `utils_sandbox.ResolvePath`/`utils_sandbox.SanitizePath` resolve every path to an
 absolute location internally, passing `err.Error()` straight back to the model
 leaks the host's absolute directory layout. The same applies to
 `os.Executable()` paths in `agents.Hire`, the `/tmp/...` temp dir in
@@ -288,7 +314,7 @@ DNS names and IPs).
 
 ### How to add a tool
 
-1. Resolve/sanitize every path via `resolveSandboxPath` / `sanitizeSandboxPath`.
+1. Resolve/sanitize every path via `utils_sandbox.ResolvePath` / `utils_sandbox.SanitizePath`.
 2. On any `os.*` call failure, return
    `sanitizeFilesystemError(namespace, method, kind, relativePath, err)`.
 3. On any subprocess failure, return
