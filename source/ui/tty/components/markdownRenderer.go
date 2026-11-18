@@ -258,6 +258,7 @@ func (renderer *markdownRenderer) inlineTextOrChildren(element *parser_markdown.
 func (renderer *markdownRenderer) renderDocument(document *parser_markdown.Document) {
 
 	last_line := 0
+	previous_heading := false
 
 	for _, element := range document.Body {
 
@@ -273,12 +274,17 @@ func (renderer *markdownRenderer) renderDocument(document *parser_markdown.Docum
 			gap = element.Line - last_line - 1
 		}
 
+		if last_line > 0 && (previous_heading == true || isMarkdownHeading(element) == true) {
+			gap = max(gap, 1)
+		}
+
 		for index := 0; index < gap; index++ {
 			renderer.lines = append(renderer.lines, transcriptLine{})
 		}
 
 		renderer.renderBlock(element)
 		last_line = markdownEndLine(element)
+		previous_heading = isMarkdownHeading(element)
 
 	}
 

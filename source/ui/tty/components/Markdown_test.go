@@ -185,6 +185,74 @@ func TestRenderMarkdownLink(t *testing.T) {
 
 }
 
+func TestRenderMarkdownBlankLinesAroundHeading(t *testing.T) {
+
+	lines := renderMarkdown("foobar\n## test\nfoobar", 60)
+	expected := []string{"foobar", "", "test", "", "foobar"}
+
+	if len(lines) != len(expected) {
+		t.Fatalf("Expected %d lines, got %d", len(expected), len(lines))
+	}
+
+	for index, text := range expected {
+		if markdownText(lines[index]) != text {
+			t.Errorf("Expected line %d to be %q, got %q", index, text, markdownText(lines[index]))
+		}
+	}
+
+}
+
+func TestRenderMarkdownHeadingAtStart(t *testing.T) {
+
+	lines := renderMarkdown("## test\nfoobar", 60)
+	expected := []string{"test", "", "foobar"}
+
+	if len(lines) != len(expected) {
+		t.Fatalf("Expected %d lines, got %d", len(expected), len(lines))
+	}
+
+	for index, text := range expected {
+		if markdownText(lines[index]) != text {
+			t.Errorf("Expected line %d to be %q, got %q", index, text, markdownText(lines[index]))
+		}
+	}
+
+}
+
+func TestRenderMarkdownHeadingDoesNotDuplicateBlankLines(t *testing.T) {
+
+	lines := renderMarkdown("foobar\n\n## test\n\nfoobar", 60)
+	expected := []string{"foobar", "", "test", "", "foobar"}
+
+	if len(lines) != len(expected) {
+		t.Fatalf("Expected %d lines, got %d", len(expected), len(lines))
+	}
+
+	for index, text := range expected {
+		if markdownText(lines[index]) != text {
+			t.Errorf("Expected line %d to be %q, got %q", index, text, markdownText(lines[index]))
+		}
+	}
+
+}
+
+func TestRenderMarkdownConsecutiveHeadings(t *testing.T) {
+
+	lines := renderMarkdown("## one\n## two", 60)
+	expected := []string{"one", "", "two"}
+
+	if len(lines) != len(expected) {
+		t.Fatalf("Expected %d lines, got %d", len(expected), len(lines))
+	}
+
+	for index, text := range expected {
+		if markdownText(lines[index]) != text {
+			t.Errorf("Expected line %d to be %q, got %q", index, text, markdownText(lines[index]))
+		}
+	}
+
+}
+
 func TestRenderMarkdownLineBreak(t *testing.T) {
 
 	lines := renderMarkdown("First\nSecond", 40)
