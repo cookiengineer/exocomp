@@ -20,6 +20,7 @@ serve the planner's [Session](../source/engine/Session.go) state.
 | `GET`  | `/api/session/bugs`          |                  | `[]`[types.Bug](../source/types/Bug.go) (sorted by file, then symbol)            |
 | `GET`  | `/api/session/changelog`     |                  | `[]`[types.ChangelogEntry](../source/types/ChangelogEntry.go) (sorted by file, symbol, date) |
 | `GET`  | `/api/session/requirements`  |                  | `[]`[types.Requirement](../source/types/Requirement.go) (sorted by file, then symbol) |
+| `GET`  | `/api/session/findings`      |                  | `[]`[types.FindingSummary](../source/types/FindingSummary.go) (sorted by severity, then update time) |
 | `GET`  | `/api/session/config`        |                  | [types.Config](../source/types/Config.go)            |
 | `GET`  | `/api/session/config/{name}` |                  | [types.Config](../source/types/Config.go)            |
 | `GET`  | `/api/session/console`       |                  | `[]types.ConsoleMessage`                             |

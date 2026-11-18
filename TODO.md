@@ -14,7 +14,6 @@
 - watchtower.* tool to connect to watchtower instances
 - guard.* tool to connect to remote systems via watchtower (and watchtower tokens)
 - vulnerabilities.* tool to search CVEs
-- findings.* tool to store pentest findings in a strictly defined schema to finally generate a PDF report
 - requirements.Trace(file, symbol) to trace callers/callees of a Symbol (which would feed the Requirements graph view in the frontend).
 
 ## Agents Workflow

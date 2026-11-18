@@ -344,6 +344,7 @@ or tool-specific behavior.
 | Wire and data types such as `Capability` and `Question` | `source/types` |
 | Capability validation, path matching, network matching, and the capability `Set` | `source/utils/capabilities` |
 | Generic shell parsing, formatting, terminal filtering, process groups, signals, and shell environments | `source/utils/shell` |
+| Finding IDs, text limits, redaction, sorting, query matching, evidence storage, index persistence, and report rendering | `source/utils/findings` |
 | Tool result formatting and tool-specific path adapters | `source/tools` |
 | Sandbox process execution and shared sandbox path validation | `source/utils/sandbox` |
 
@@ -402,27 +403,45 @@ The `Shell` tool itself, its PTY session lifecycle, session state, and
 `tools/sanitizeShellArguments.go` also stays in `tools`, because it bridges
 capability-aware program argument rules with the shell tool.
 
+### Findings helpers
+
+`source/utils/findings` owns finding domain logic and persistence:
+
+- `NewFindingID` and `NewEvidenceID`
+- `LimitText`, `LimitIdentifiers` and `RedactSecrets`
+- `SeverityRank`, `SortSummaries`, `MatchesQuery` and `BuildReport`
+- `ReadIndex`, `WriteIndex`, `ReadFinding`, `WriteFinding` and `ReadAll`
+- `EvidenceArtifactPath`, `WriteEvidenceContent` and `CopyEvidenceFile`
+
+The `Findings` tool, its argument parsing, cache, mutex, result formatting and
+`findings.*` error prefixes stay in `source/tools/Findings.go` and its tool
+helpers. `utils/findings` must not import `tools` or know the tool name.
+
 ### Dependency direction
 
 Utilities must not import `tools`.
 
 ```text
 types
-  ↑
+  ^
 utils/capabilities
-  ↑
-utils/shell ──> utils/sandbox
-  ↑
+  ^
+utils/findings --> utils/sandbox
+  ^
+utils/shell --> utils/sandbox
+  ^
 tools
-  ↑
+  ^
 engine
 ```
 
-`tools` may import `utils/capabilities`, `utils/shell`, and `utils/sandbox`.
+`tools` may import `utils/capabilities`, `utils/findings`, `utils/shell`, and
+`utils/sandbox`.
 `engine` may import `utils/capabilities`.
 `utils/capabilities` should only depend on `types` and the standard library.
 `utils/sandbox` owns sandbox paths and process execution and must not import
-`utils/shell` or `tools`.
+`utils/findings`, `utils/shell` or `tools`.
+`utils/findings` may depend on `types` and `utils/sandbox` when needed.
 `utils/shell` may depend on `utils/capabilities` or `utils/sandbox` when needed.
 
 If a utility needs behavior from `tools`, that behavior is either misplaced or
@@ -453,6 +472,8 @@ Before merging a helper, check:
   Put it in `utils/capabilities`.
 - Does it parse, format, or manage shell input/output, terminals, process
   groups, signals, or shell environments? Put it in `utils/shell`.
+- Does it manage finding IDs, redaction, evidence files, finding indexes or
+  reports? Put it in `utils/findings`.
 - Does it know a tool name, tool result prefix, tool schema, or tool-specific
   error message? Keep it in `tools`.
 - Does a utility import `tools`? Move the dependency or introduce a small

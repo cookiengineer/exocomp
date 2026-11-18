@@ -160,9 +160,9 @@ source/
     html/        HTML to markdown/text conversion
     markdown/    Shared markdown parser for the web and TTY frontends
   tools/         Tool implementations and JSON schemas
-  types/         Shared types (Agent, Config, Bug, ChangelogEntry, Requirement, ...)
+  types/         Shared types (Agent, Config, Bug, ChangelogEntry, Finding, Requirement, ...)
   schemas/       Wire types (Message, ToolCall, ChatRequest/Response, ...)
-  utils/         Shared helpers (ast, chat, cli, fmt, fs, http, api adapters, ...)
+  utils/         Shared helpers (ast, chat, cli, findings, fmt, fs, http, api adapters, ...)
   ui/
     jsonl/       Child-process frontend with JSONL over stdin/stdout
     tty/         Interactive terminal frontend (the human's planner)
@@ -269,8 +269,9 @@ keyed by their namespace (the part before the first `.`).
 
 - Tool schema names are `namespace.Method` (e.g. `files.Read`, `requirements.DefineFunc`, `agents.Hire`).
 - `Session.CallTool` resolves the namespace, invokes the tool and appends the result (or `Error: ...`) as a `tool` message carrying the matching `tool_call_id`.
-- Sandbox-bound tools (files, programs, requirements, bugs, changelog) resolve all paths through `utils_sandbox.ResolvePath`/`utils_sandbox.SanitizePath` so a contractor cannot escape its sandbox.
+- Sandbox-bound tools (files, programs, requirements, bugs, changelog, findings) resolve all paths through `utils_sandbox.ResolvePath`/`utils_sandbox.SanitizePath` so a contractor cannot escape its sandbox.
 - `containers.*` mounts only the agent sandbox into podman containers and scopes every container to the sandbox label. `podman` must not be added to `allowed-programs`, otherwise `programs.Execute` could bypass these checks.
+- `findings.*` stores one JSON file per finding plus an index under `<playground>/.exocomp/findings/`. Evidence artifacts live under `<playground>/.exocomp/evidence/<finding-id>/` with SHA-256 hashes. Inline evidence is redacted and capped; artifact contents are never returned through the tool.
 
 Each tool's LLM-facing contract lives in its embedded JSON schema at `tools/*.json`
 with precise parameter descriptions and syntax examples.
