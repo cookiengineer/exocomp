@@ -36,6 +36,15 @@ allowed-tools:
   - programs.Execute
   - programs.List
   - programs.Stat
+  - shell.Close
+  - shell.List
+  - shell.Log
+  - shell.Open
+  - shell.Read
+  - shell.Resize
+  - shell.Signal
+  - shell.Stat
+  - shell.Write
   - websites.Fetch
   - websites.List
   - websites.Stat

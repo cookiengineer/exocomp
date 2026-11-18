@@ -54,6 +54,8 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 			tool = NewPrograms(allowed_methods, playground, sandbox, allowed_programs)
 		case "requirements":
 			tool = NewRequirements(allowed_methods, playground, sandbox)
+		case "shell":
+			tool = NewShell(allowed_methods, playground, sandbox, allowed_programs)
 		case "skills":
 			tool = NewSkills(allowed_methods, playground, sandbox, allowed_programs, allowed_tools)
 		case "websites":

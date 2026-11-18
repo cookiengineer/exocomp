@@ -249,9 +249,36 @@ func (session *Session) notifyChange() {
 
 func (session *Session) Destroy() {
 
+	session.DestroyTools()
+
 	// NOTE: Only backup planner sessions, hired agents are backed up automatically
 	if session.Recovery != nil && session.Agent.Role == "planner" {
 		session.Recovery.BackupSession(session)
+	}
+
+}
+
+// DestroyTools releases tools that own OS resources, such as interactive shell
+// sessions, before the session or tool set is replaced.
+func (session *Session) DestroyTools() {
+
+	session.mutex.Lock()
+	previous := session.tools
+	session.tools = make(map[string]types.Tool)
+	session.mutex.Unlock()
+
+	session.destroyTools(previous)
+
+}
+
+func (session *Session) destroyTools(tools map[string]types.Tool) {
+
+	for _, tool := range tools {
+
+		if destroyable, ok := tool.(interface{ Destroy() }); ok == true {
+			destroyable.Destroy()
+		}
+
 	}
 
 }
@@ -948,6 +975,7 @@ func (session *Session) SetTool(tool types.Tool) {
 func (session *Session) SetTools(tools []types.Tool) {
 
 	session.mutex.Lock()
+	previous := session.tools
 	session.tools = make(map[string]types.Tool)
 
 	for _, tool := range tools {
@@ -959,6 +987,8 @@ func (session *Session) SetTools(tools []types.Tool) {
 	}
 
 	session.mutex.Unlock()
+
+	session.destroyTools(previous)
 
 }
 

@@ -71,21 +71,22 @@ to beat the context length and agent memory limitations of locally run models.
 
 Check the unit tests on whether the Tools can be relied on or not.
 
-| Tool                                           | Unit Tests?                                | Description                                        | Agent Roles                                             |
-|:-----------------------------------------------|:------------------------------------------:|:---------------------------------------------------|:-------------------------------------------------------:|
-| [Agents](./source/tools/Agents.go)             | [Yes](./source/tools/Agents_test.go) [1]   | manages contractor lifecycle and profile switch    | all roles                                               |
-| [Bugs](./source/tools/Bugs.go)                 | [Yes](./source/tools/Bugs_test.go)         | manages documentation of discovered bugs           | `planner`, `architect`, `coder`, `tester`               |
-| [Changelog](./source/tools/Changelog.go)       | [Yes](./source/tools/Changelog_test.go)    | manages documentation of development changelog     | `coder`, `tester`, `exploiter`, `reverser`              |
-| [Containers](./source/tools/Containers.go)     | [Yes](./source/tools/Containers_test.go)   | manages podman containers                          | `exploiter`, `reverser`, `threathunter`                 |
-| Exploits                                       |                                            | manages PoCs for CVEs from local dataset           | `exploiter`, `reverser`                                 |
-| [Files](./source/tools/Files.go)               | [Yes](./source/tools/Files_test.go)        | interacts with files and folders                   | all roles                                               |
-| [Humans](./source/tools/Humans.go)             | [Yes](./source/tools/Humans_test.go)       | asks the human clarifying questions                | `planner`                                               |
-| Findings                                       |                                            | reports findings of vulnerabilities and weaknesses | `exploiter`, `threathunter`                             |
-| [Programs](./source/tools/Programs.go)         | [Yes](./source/tools/Programs_test.go)     | interacts with installed programs                  | all roles                                               |
-| [Requirements](./source/tools/Requirements.go) | [Yes](./source/tools/Requirements_test.go) | manages specifications of implementations          | `planner`, `architect`, `coder`, `tester`               |
-| [Skills](./source/tools/Skills.go)             | [Yes](./source/tools/Skills_test.go)       | loads and Unloads Agent Skills [2]                 | `planner`                                               |
-| Vulnerabilities                                |                                            | manages vulnerabilities from local dataset         | `exploiter`, `threathunter`, `webscanner`               |
-| [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode                    | `researcher`, `exploiter`, `threathunter`, `webscanner` |
+| Tool                                           | Unit Tests?                                | Description                                         | Agent Roles                                             |
+|:-----------------------------------------------|:------------------------------------------:|:----------------------------------------------------|:-------------------------------------------------------:|
+| [Agents](./source/tools/Agents.go)             | [Yes](./source/tools/Agents_test.go) [1]   | manages contractor lifecycle and profile switch     | all roles                                               |
+| [Bugs](./source/tools/Bugs.go)                 | [Yes](./source/tools/Bugs_test.go)         | manages documentation of discovered bugs            | `planner`, `architect`, `coder`, `tester`               |
+| [Changelog](./source/tools/Changelog.go)       | [Yes](./source/tools/Changelog_test.go)    | manages documentation of development changelog      | `coder`, `tester`, `exploiter`, `reverser`              |
+| [Containers](./source/tools/Containers.go)     | [Yes](./source/tools/Containers_test.go)   | manages podman containers                           | `exploiter`, `reverser`, `threathunter`                 |
+| Exploits                                       |                                            | manages PoCs for CVEs from local dataset            | `exploiter`, `reverser`                                 |
+| [Files](./source/tools/Files.go)               | [Yes](./source/tools/Files_test.go)        | interacts with files and folders                    | all roles                                               |
+| [Humans](./source/tools/Humans.go)             | [Yes](./source/tools/Humans_test.go)       | asks the human clarifying questions                 | `planner`                                               |
+| Findings                                       |                                            | reports findings of vulnerabilities and weaknesses  | `exploiter`, `threathunter`                             |
+| [Programs](./source/tools/Programs.go)         | [Yes](./source/tools/Programs_test.go)     | interacts with installed programs                   | all roles                                               |
+| [Requirements](./source/tools/Requirements.go) | [Yes](./source/tools/Requirements_test.go) | manages specifications of implementations           | `planner`, `architect`, `coder`, `tester`               |
+| [Shell](./source/tools/Shell.go)               | [Yes](./source/tools/Shell_test.go)        | manages interactive PTY sessions inside the sandbox | `exploiter`, `reverser`, `threathunter`, `webscanner`   |
+| [Skills](./source/tools/Skills.go)             | [Yes](./source/tools/Skills_test.go)       | loads and Unloads Agent Skills [2]                  | `planner`                                               |
+| Vulnerabilities                                |                                            | manages vulnerabilities from local dataset          | `exploiter`, `threathunter`, `webscanner`               |
+| [Websites](./source/tools/Websites.go)         | [Yes](./source/tools/Websites_test.go)     | fetches websites in Reader Mode                     | `researcher`, `exploiter`, `threathunter`, `webscanner` |
 
 - [1] Requires `llama.cpp` with `huihui_ai/Qwen3.8-abliterated:27b` at `Q4_K_M` quantization and 32GB VRAM GPU with `vulkan` support.
 - [2] Implements `SKILL.md` support, in compliance with [agentskills.io/specification](https://agentskills.io/specification).

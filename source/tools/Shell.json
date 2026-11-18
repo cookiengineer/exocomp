@@ -1,0 +1,230 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "shell.Open",
+			"description": "Start an interactive program inside a pseudo-terminal (PTY) in the sandbox. The program must be listed by programs.List. Use programs.Execute for one-shot non-interactive commands. Arguments are passed directly to the program without shell interpretation; arguments containing path separators are resolved inside the sandbox.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"program": {
+						"type": "string",
+						"description": "The program binary name. Must be listed by programs.List, e.g. \"nc\", \"python\" or \"mysql\". Must not contain a path separator."
+					},
+					"arguments": {
+						"type": "array",
+						"description": "Optional array of string arguments passed directly to the program.",
+						"items": {
+							"type": "string"
+						},
+						"default": []
+					},
+					"workdir": {
+						"type": "string",
+						"description": "Optional sandbox-relative working directory. Must already exist. Defaults to \".\".",
+						"default": "."
+					},
+					"columns": {
+						"type": "integer",
+						"description": "Optional PTY width in columns.",
+						"default": 80,
+						"minimum": 20,
+						"maximum": 500
+					},
+					"rows": {
+						"type": "integer",
+						"description": "Optional PTY height in rows.",
+						"default": 24,
+						"minimum": 5,
+						"maximum": 200
+					}
+				},
+				"required": ["program"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "shell.Write",
+			"description": "Write raw data to an interactive session's PTY. Newlines are not added automatically, so include \"\\n\" explicitly when the program expects a line.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"session_id": {
+						"type": "string",
+						"description": "The session identifier returned by shell.Open or shell.List."
+					},
+					"data": {
+						"type": "string",
+						"description": "The raw text to write to the session."
+					}
+				},
+				"required": ["session_id", "data"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "shell.Read",
+			"description": "Read new output from an interactive session. Blocks up to wait_ms for output or process exit. The returned text has ANSI escape sequences and non-printable control characters stripped. Use shell.Log for the full transcript.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"session_id": {
+						"type": "string",
+						"description": "The session identifier returned by shell.Open or shell.List."
+					},
+					"wait_ms": {
+						"type": "integer",
+						"description": "Maximum time to wait for new output or exit, in milliseconds. 0 returns immediately.",
+						"default": 0,
+						"minimum": 0,
+						"maximum": 30000
+					},
+					"limit": {
+						"type": "integer",
+						"description": "Maximum number of bytes to return.",
+						"default": 8192,
+						"minimum": 1,
+						"maximum": 65536
+					}
+				},
+				"required": ["session_id"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "shell.Resize",
+			"description": "Resize an interactive session's PTY. The terminal receives SIGWINCH.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"session_id": {
+						"type": "string",
+						"description": "The session identifier returned by shell.Open or shell.List."
+					},
+					"columns": {
+						"type": "integer",
+						"description": "New PTY width in columns.",
+						"minimum": 20,
+						"maximum": 500
+					},
+					"rows": {
+						"type": "integer",
+						"description": "New PTY height in rows.",
+						"minimum": 5,
+						"maximum": 200
+					}
+				},
+				"required": ["session_id", "columns", "rows"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "shell.Signal",
+			"description": "Send a signal to an interactive session's process group.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"session_id": {
+						"type": "string",
+						"description": "The session identifier returned by shell.Open or shell.List."
+					},
+					"signal": {
+						"type": "string",
+						"description": "The signal name to send.",
+						"enum": ["INT", "TERM", "HUP", "QUIT", "KILL", "TSTP", "CONT", "USR1", "USR2"]
+					}
+				},
+				"required": ["session_id", "signal"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "shell.Close",
+			"description": "Close an interactive session. By default sends SIGTERM, waits two seconds, then sends SIGKILL. Use force=true to send SIGKILL immediately. Returns remaining output and the final status.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"session_id": {
+						"type": "string",
+						"description": "The session identifier returned by shell.Open or shell.List."
+					},
+					"force": {
+						"type": "boolean",
+						"description": "Send SIGKILL immediately instead of a graceful SIGTERM.",
+						"default": false
+					}
+				},
+				"required": ["session_id"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "shell.List",
+			"description": "List interactive shell sessions owned by this agent.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "shell.Stat",
+			"description": "Show detailed state for one interactive shell session.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"session_id": {
+						"type": "string",
+						"description": "The session identifier returned by shell.Open or shell.List."
+					}
+				},
+				"required": ["session_id"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "shell.Log",
+			"description": "Read a segment of a session's full transcript. Use this when shell.Read output was truncated or when earlier output is no longer in the model context.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"session_id": {
+						"type": "string",
+						"description": "The session identifier returned by shell.Open or shell.List."
+					},
+					"offset": {
+						"type": "integer",
+						"description": "Byte offset from the start of the transcript.",
+						"default": 0,
+						"minimum": 0
+					},
+					"limit": {
+						"type": "integer",
+						"description": "Maximum number of bytes to return.",
+						"default": 8192,
+						"minimum": 1,
+						"maximum": 65536
+					}
+				},
+				"required": ["session_id"]
+			}
+		}
+	}
+]

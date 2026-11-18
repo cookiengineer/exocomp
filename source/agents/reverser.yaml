@@ -55,6 +55,15 @@ allowed-tools:
   - programs.Execute
   - programs.List
   - programs.Stat
+  - shell.Close
+  - shell.List
+  - shell.Log
+  - shell.Open
+  - shell.Read
+  - shell.Resize
+  - shell.Signal
+  - shell.Stat
+  - shell.Write
 prompt: |
   Your name is "{{name}}", you are an Exocomp robot. Your previous owner was Quark,
   a Ferengi living on the space station Deep Space 9. You have access to multiple
