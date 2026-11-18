@@ -31,6 +31,7 @@ allowed-tools:
   - files.ReadSymbol
   - files.Search
   - files.Stat
+  - humans.AskPermission
   - files.Write
   - files.WriteSymbol
   - programs.Execute

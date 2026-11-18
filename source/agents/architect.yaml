@@ -18,6 +18,7 @@ allowed-tools:
   - files.ReadSymbol
   - files.Search
   - files.Stat
+  - humans.AskPermission
   - programs.Execute
   - programs.List
   - programs.Stat
