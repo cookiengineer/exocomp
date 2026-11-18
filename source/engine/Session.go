@@ -5,6 +5,7 @@ import "exocomp/agents"
 import "exocomp/schemas"
 import "exocomp/tools"
 import "exocomp/types"
+import utils_capabilities "exocomp/utils/capabilities"
 import utils_chat "exocomp/utils/chat"
 import "encoding/json"
 import "fmt"
@@ -16,17 +17,18 @@ import "strings"
 import "sync"
 
 type Session struct {
-	Agent    *types.Agent             `json:"agent"`
-	Config   *types.Config            `json:"config"`
-	Console  *types.Console           `json:"console"`
-	Recovery *Recovery                `json:"-"`
-	Waiting  bool                     `json:"waiting"`
-	client   *net_http.Client         `json:"-"`
-	mutex    *sync.RWMutex            `json:"-"`
-	adapters map[string]types.Adapter `json:"-"`
-	tools    map[string]types.Tool    `json:"-"`
-	changes  chan struct{}            `json:"-"`
-	onSwitch func(string) (string, error)
+	Agent        *types.Agent             `json:"agent"`
+	Config       *types.Config            `json:"config"`
+	Console      *types.Console           `json:"console"`
+	Capabilities *utils_capabilities.Set  `json:"-"`
+	Recovery     *Recovery                `json:"-"`
+	Waiting      bool                     `json:"waiting"`
+	client       *net_http.Client         `json:"-"`
+	mutex        *sync.RWMutex            `json:"-"`
+	adapters     map[string]types.Adapter `json:"-"`
+	tools        map[string]types.Tool    `json:"-"`
+	changes      chan struct{}            `json:"-"`
+	onSwitch     func(string) (string, error)
 }
 
 func NewSession(agent *types.Agent, config *types.Config) *Session {
@@ -36,16 +38,17 @@ func NewSession(agent *types.Agent, config *types.Config) *Session {
 	}
 
 	session := &Session{
-		Agent:    agent,
-		Config:   config,
-		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
-		Recovery: NewRecovery(config.Playground),
-		Waiting:  false,
-		client:   client,
-		mutex:    &sync.RWMutex{},
-		adapters: make(map[string]types.Adapter),
-		tools:    make(map[string]types.Tool),
-		changes:  make(chan struct{}, 1),
+		Agent:        agent,
+		Config:       config,
+		Console:      types.NewConsole(os.Stdout, os.Stderr, 0),
+		Capabilities: utils_capabilities.NewSet(),
+		Recovery:     NewRecovery(config.Playground),
+		Waiting:      false,
+		client:       client,
+		mutex:        &sync.RWMutex{},
+		adapters:     make(map[string]types.Adapter),
+		tools:        make(map[string]types.Tool),
+		changes:      make(chan struct{}, 1),
 	}
 
 	session.mutex.Lock()
@@ -201,6 +204,10 @@ func (session *Session) InstallTools() {
 
 		toolset := make([]types.Tool, 0)
 
+		if session.Capabilities == nil {
+			session.Capabilities = utils_capabilities.NewSet()
+		}
+
 		if session.Agent.HasTools() {
 
 			toolset = tools.Toolset(
@@ -212,6 +219,8 @@ func (session *Session) InstallTools() {
 				session.Agent.AllowedPrograms,
 				session.Agent.AllowedImages,
 				session.Agent.AllowedTools,
+				session.Agent.Name,
+				session.Capabilities,
 			)
 
 		}
@@ -250,6 +259,10 @@ func (session *Session) notifyChange() {
 func (session *Session) Destroy() {
 
 	session.DestroyTools()
+
+	if session.Capabilities != nil {
+		session.Capabilities.Clear()
+	}
 
 	// NOTE: Only backup planner sessions, hired agents are backed up automatically
 	if session.Recovery != nil && session.Agent.Role == "planner" {
@@ -322,6 +335,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 					tool_calls, err := utils_chat.FindToolCalls(message, []string{
 						"humans.Ask",
 						"humans.Choose",
+						"humans.AskPermission",
 					})
 
 					if err == nil {
@@ -1038,6 +1052,10 @@ func (session *Session) SwitchAgent(agent *types.Agent, summary string) error {
 	}
 
 	session.mutex.Unlock()
+
+	if session.Capabilities != nil {
+		session.Capabilities.Clear()
+	}
 
 	return nil
 
