@@ -227,6 +227,10 @@ func (server *Server) Listen() error {
 		routes_session.Requirements(server.Session, request, response)
 	})
 
+	http.HandleFunc("/api/session/findings", func(response http.ResponseWriter, request *http.Request) {
+		routes_session.Findings(server.Session, request, response)
+	})
+
 	http.HandleFunc("/api/session/console", func(response http.ResponseWriter, request *http.Request) {
 		routes_session.Console(server.Session, request, response)
 	})

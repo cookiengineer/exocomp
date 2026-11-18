@@ -60,6 +60,8 @@ func Toolset(
 			tool = NewContainers(allowed_methods, playground, sandbox, allowed_images)
 		case "files":
 			tool = NewFilesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
+		case "findings":
+			tool = NewFindings(allowed_methods, playground, sandbox, agent_name)
 		case "humans":
 			tool = NewHumansWithCapabilities(allowed_methods, playground, sandbox, agent_name, capabilities)
 		case "programs":

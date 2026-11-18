@@ -1,0 +1,377 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "findings.Add",
+			"description": "Create a candidate finding. Add evidence with findings.BindEvidence and prove it with findings.Verify or findings.Retest.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"title": {
+						"type": "string",
+						"description": "Short finding title, e.g. \"Authentication bypass on admin API\"."
+					},
+					"severity": {
+						"type": "string",
+						"enum": ["critical", "high", "medium", "low", "info"],
+						"description": "Finding severity."
+					},
+					"cvss": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 10,
+						"description": "Optional CVSS score between 0 and 10."
+					},
+					"cwe": {
+						"type": "string",
+						"description": "Optional CWE identifier, e.g. \"CWE-287\"."
+					},
+					"owasp": {
+						"type": "string",
+						"description": "Optional OWASP category, e.g. \"A01:2021\"."
+					},
+					"asset_ids": {
+						"type": "array",
+						"items": {"type": "string"},
+						"description": "Optional asset identifiers affected by the finding."
+					},
+					"endpoint": {
+						"type": "string",
+						"description": "Optional target endpoint, URL or host."
+					},
+					"parameter": {
+						"type": "string",
+						"description": "Optional vulnerable parameter or input name."
+					},
+					"preconditions": {
+						"type": "string",
+						"description": "Optional setup required to reproduce the finding."
+					},
+					"reproduction": {
+						"type": "string",
+						"description": "Optional human-readable reproduction steps."
+					},
+					"impact": {
+						"type": "string",
+						"description": "Optional impact description."
+					},
+					"remediation": {
+						"type": "string",
+						"description": "Optional remediation guidance."
+					},
+					"counterevidence": {
+						"type": "string",
+						"description": "Optional evidence or observations that contradict the finding."
+					},
+					"source_scan_id": {
+						"type": "string",
+						"description": "Optional scan identifier that produced this candidate."
+					}
+				},
+				"required": ["title", "severity"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "findings.List",
+			"description": "List findings with compact summaries, newest and most severe first.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"severity": {
+						"type": "string",
+						"enum": ["critical", "high", "medium", "low", "info"],
+						"description": "Optional severity filter."
+					},
+					"status": {
+						"type": "string",
+						"enum": ["candidate", "verified", "fixed", "false_positive", "accepted_risk"],
+						"description": "Optional status filter."
+					},
+					"confidence": {
+						"type": "string",
+						"enum": ["observed", "inferred", "unverified"],
+						"description": "Optional confidence filter."
+					},
+					"endpoint": {
+						"type": "string",
+						"description": "Optional endpoint substring filter."
+					},
+					"asset_id": {
+						"type": "string",
+						"description": "Optional asset identifier filter."
+					},
+					"limit": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 200,
+						"description": "Maximum number of findings to return. Defaults to 50."
+					}
+				},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "findings.Search",
+			"description": "Search findings across titles, endpoints, parameters, reproduction text and evidence.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"description": "Case-insensitive search text."
+					},
+					"severity": {
+						"type": "string",
+						"enum": ["critical", "high", "medium", "low", "info"],
+						"description": "Optional severity filter."
+					},
+					"status": {
+						"type": "string",
+						"enum": ["candidate", "verified", "fixed", "false_positive", "accepted_risk"],
+						"description": "Optional status filter."
+					},
+					"limit": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 200,
+						"description": "Maximum number of matches to return. Defaults to 50."
+					}
+				},
+				"required": ["query"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "findings.Get",
+			"description": "Return one finding as structured JSON, including evidence metadata and artifact hashes.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Finding identifier, e.g. \"fnd_4a91c2e0\"."
+					}
+				},
+				"required": ["id"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "findings.Update",
+			"description": "Update descriptive finding fields. Status and evidence must be changed with findings.Retest, findings.Verify or findings.BindEvidence.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Finding identifier."
+					},
+					"title": {"type": "string", "description": "Optional new title."},
+					"severity": {
+						"type": "string",
+						"enum": ["critical", "high", "medium", "low", "info"],
+						"description": "Optional new severity."
+					},
+					"cvss": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 10,
+						"description": "Optional new CVSS score."
+					},
+					"cwe": {"type": "string", "description": "Optional CWE identifier."},
+					"owasp": {"type": "string", "description": "Optional OWASP category."},
+					"asset_ids": {
+						"type": "array",
+						"items": {"type": "string"},
+						"description": "Optional replacement asset list."
+					},
+					"endpoint": {"type": "string", "description": "Optional endpoint."},
+					"parameter": {"type": "string", "description": "Optional parameter."},
+					"preconditions": {"type": "string", "description": "Optional preconditions."},
+					"reproduction": {"type": "string", "description": "Optional reproduction steps."},
+					"impact": {"type": "string", "description": "Optional impact description."},
+					"remediation": {"type": "string", "description": "Optional remediation guidance."},
+					"counterevidence": {"type": "string", "description": "Optional counterevidence."}
+				},
+				"required": ["id"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "findings.BindEvidence",
+			"description": "Attach evidence to a finding. Provide exactly one of content or artifact. Content is redacted and hashed; artifact is copied from the sandbox and hashed.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Finding identifier."
+					},
+					"kind": {
+						"type": "string",
+						"enum": ["command_output", "http_request", "http_response", "artifact", "note", "unit_test", "poc", "test_run"],
+						"description": "Evidence kind."
+					},
+					"title": {
+						"type": "string",
+						"description": "Optional short evidence title."
+					},
+					"source": {
+						"type": "string",
+						"description": "Optional source tool, program or agent."
+					},
+					"command": {
+						"type": "string",
+						"description": "Optional command used to produce the evidence."
+					},
+					"exit_code": {
+						"type": "integer",
+						"description": "Optional command or test exit code."
+					},
+					"environment": {
+						"type": "object",
+						"additionalProperties": {"type": "string"},
+						"description": "Optional environment variables required to reproduce."
+					},
+					"content": {
+						"type": "string",
+						"description": "Inline evidence content. Secrets are redacted and content is capped."
+					},
+					"artifact": {
+						"type": "string",
+						"description": "Path to an existing file inside the sandbox, e.g. \"./findings/fnd_4a91c2e0/proof_test.go\"."
+					},
+					"content_type": {
+						"type": "string",
+						"description": "Optional MIME type for the evidence artifact."
+					}
+				},
+				"required": ["id", "kind"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "findings.Verify",
+			"description": "Mark a finding as verified. Requires executed_live or executed_lab proof and at least one evidence entry. Use require_reproduction for a Go unit test or PoC plus a successful test run.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Finding identifier."
+					},
+					"proof_basis": {
+						"type": "string",
+						"enum": ["executed_live", "executed_lab"],
+						"description": "How the finding was proven."
+					},
+					"evidence": {
+						"type": "object",
+						"description": "Optional evidence object using the same fields as findings.BindEvidence.",
+						"properties": {
+							"kind": {"type": "string"},
+							"title": {"type": "string"},
+							"source": {"type": "string"},
+							"command": {"type": "string"},
+							"exit_code": {"type": "integer"},
+							"environment": {"type": "object", "additionalProperties": {"type": "string"}},
+							"content": {"type": "string"},
+							"artifact": {"type": "string"},
+							"content_type": {"type": "string"}
+						},
+						"required": ["kind"]
+					},
+					"require_reproduction": {
+						"type": "boolean",
+						"description": "Require a unit_test or poc artifact, a successful test_run, and environment or preconditions."
+					}
+				},
+				"required": ["id", "proof_basis"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "findings.Retest",
+			"description": "Change a finding status after a retest, optionally attaching new evidence or counterevidence.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Finding identifier."
+					},
+					"status": {
+						"type": "string",
+						"enum": ["verified", "fixed", "false_positive", "accepted_risk"],
+						"description": "New finding status."
+					},
+					"proof_basis": {
+						"type": "string",
+						"enum": ["executed_live", "executed_lab", "static_unexecuted"],
+						"description": "Optional updated proof basis."
+					},
+					"evidence": {
+						"type": "object",
+						"description": "Optional new evidence object using the same fields as findings.BindEvidence.",
+						"properties": {
+							"kind": {"type": "string"},
+							"title": {"type": "string"},
+							"source": {"type": "string"},
+							"command": {"type": "string"},
+							"exit_code": {"type": "integer"},
+							"environment": {"type": "object", "additionalProperties": {"type": "string"}},
+							"content": {"type": "string"},
+							"artifact": {"type": "string"},
+							"content_type": {"type": "string"}
+						},
+						"required": ["kind"]
+					},
+					"counterevidence": {
+						"type": "string",
+						"description": "Optional evidence that the finding is fixed or false."
+					}
+				},
+				"required": ["id", "status"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "findings.Report",
+			"description": "Write a Markdown findings report to .exocomp/findings/report.md and return its relative path and finding count.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"severity": {
+						"type": "string",
+						"enum": ["critical", "high", "medium", "low", "info"],
+						"description": "Optional severity filter."
+					},
+					"status": {
+						"type": "string",
+						"enum": ["candidate", "verified", "fixed", "false_positive", "accepted_risk"],
+						"description": "Optional status filter."
+					}
+				},
+				"required": []
+			}
+		}
+	}
+]

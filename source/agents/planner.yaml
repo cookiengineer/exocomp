@@ -24,6 +24,10 @@ allowed-tools:
   - files.ReadSymbol
   - files.Search
   - files.Stat
+  - findings.Get
+  - findings.List
+  - findings.Report
+  - findings.Search
   - humans.AskPermission
   - programs.Execute
   - programs.List
