@@ -33,6 +33,7 @@ func BuildPrograms(base_dir string, operating_system string, architecture string
 				cache_output := filepath.Join(cache_dir, binary_name)
 				asset_output := filepath.Join(programs_dir, binary_name)
 				stamp_path := cache_output + ".version"
+				cache_path, _ := filepath.Rel(base_dir, cache_output)
 				path, _ := filepath.Rel(base_dir, asset_output)
 
 				if isProgramCached(cache_output, program.Version) == true {
@@ -40,7 +41,8 @@ func BuildPrograms(base_dir string, operating_system string, architecture string
 					err2 := copyProgram(cache_output, asset_output)
 
 					if err2 == nil {
-						fmt.Fprintf(os.Stdout, "-> Cached %s\n", path)
+						fmt.Fprintf(os.Stdout, "-> Cached %s\n", cache_path)
+						fmt.Fprintf(os.Stdout, "-> Copied %s\n", path)
 					} else {
 						return err2
 					}
@@ -58,7 +60,8 @@ func BuildPrograms(base_dir string, operating_system string, architecture string
 							err4 := copyProgram(cache_output, asset_output)
 
 							if err4 == nil {
-								fmt.Fprintf(os.Stdout, "-> Built %s\n", path)
+								fmt.Fprintf(os.Stdout, "-> Built %s\n", cache_path)
+								fmt.Fprintf(os.Stdout, "-> Copied %s\n", path)
 							} else {
 								return err4
 							}
