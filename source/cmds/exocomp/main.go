@@ -3,6 +3,7 @@ package main
 import "exocomp/actions"
 import "exocomp/agents"
 import "exocomp/types"
+import "exocomp/ui/tty"
 import "exocomp/utils/cli"
 import "fmt"
 import "os"
@@ -21,12 +22,13 @@ func main() {
 
 		case "config":
 			mode = "config"
-		case "agent":
-			mode = "agent"
+
 		case "tty":
 			mode = "terminal"
+
 		case "term":
 			mode = "terminal"
+
 		case "terminal":
 			mode = "terminal"
 
@@ -54,14 +56,14 @@ func main() {
 
 			switch mode {
 
-			case "agent":
-				actions.Agent(agent, config)
 			case "config":
 				actions.Config(agent, config)
+
 			case "terminal":
-				actions.Terminal(agent, config, "user")
+				tty.Run(agent, config, "user")
+
 			default:
-				actions.Usage([]string{"agent", "config", "terminal"})
+				actions.Usage([]string{"config", "terminal"})
 
 			}
 
@@ -74,7 +76,7 @@ func main() {
 
 	} else {
 
-		actions.Usage([]string{"agent", "config", "terminal"})
+		actions.Usage([]string{"config", "terminal"})
 
 	}
 

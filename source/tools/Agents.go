@@ -4,6 +4,7 @@ import "exocomp/agents"
 import "exocomp/schemas"
 import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
+import utils_cli "exocomp/utils/cli"
 import utils_fmt "exocomp/utils/fmt"
 import utils_rand "exocomp/utils/rand"
 import utils_sandbox "exocomp/utils/sandbox"
@@ -409,107 +410,105 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 				os.MkdirAll(resolved, 0755)
 			}
 
-			debug_flag := ""
-
-			if tool.Debug == true {
-				debug_flag = "--debug"
-			}
-
-			exe, _ := os.Executable()
-
-			if os.Getenv("EXOCOMP_AGENT") != "" {
-				exe = os.Getenv("EXOCOMP_AGENT")
-			}
-
-			timeout := tool.Timeout
-
-			if timeout <= 0 {
-				timeout = 30 * time.Minute
-			}
-
-			// NOTE: child's playground is parent's sandbox
-			ctx, cancel := context.WithTimeout(context.Background(), timeout)
-			cmd := exec.CommandContext(
-				ctx,
-				exe,
-				"agent",
-				fmt.Sprintf("--name=\"%s\"", name),
-				fmt.Sprintf("--role=\"%s\"", role),
-				fmt.Sprintf("--prompt=\"%s\"", prompt),
-				// --temperature set by agent role
-				fmt.Sprintf("--playground=\"%s\"", tool.Sandbox),
-				fmt.Sprintf("--sandbox=\"%s\"", resolved),
-				fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
-				debug_flag,
-			)
-			cmd.Dir = resolved
-
-			cmd.Stdin = strings.NewReader("")
-
-			// XXX: Use this for debugging
-			// cmd.Stderr = os.Stderr
-
-			stdout_pipe, err2 := cmd.StdoutPipe()
+			exe, err2 := utils_cli.FindAgentBinary()
 
 			if err2 == nil {
 
-				err3 := cmd.Start()
+				arguments := []string{
+					fmt.Sprintf("--name=\"%s\"", name),
+					fmt.Sprintf("--role=\"%s\"", role),
+					fmt.Sprintf("--prompt=\"%s\"", prompt),
+					// --temperature set by agent role
+					fmt.Sprintf("--playground=\"%s\"", tool.Sandbox),
+					fmt.Sprintf("--sandbox=\"%s\"", resolved),
+					fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
+				}
+
+				if tool.Debug == true {
+					arguments = append(arguments, "--debug")
+				}
+
+				timeout := tool.Timeout
+
+				if timeout <= 0 {
+					timeout = 30 * time.Minute
+				}
+
+				// NOTE: child's playground is parent's sandbox
+				ctx, cancel := context.WithTimeout(context.Background(), timeout)
+				cmd := exec.CommandContext(ctx, exe, arguments...)
+				cmd.Dir = resolved
+
+				cmd.Stdin = strings.NewReader("")
+
+				// XXX: Use this for debugging
+				// cmd.Stderr = os.Stderr
+
+				stdout_pipe, err3 := cmd.StdoutPipe()
 
 				if err3 == nil {
 
-					agent := agents.NewAgent(types.NewConfig(
-						name,
-						role,
-						tool.Model,
-						prompt,
-						0.0, // Don't change temperature
-						tool.Sandbox,
-						resolved,
-						tool.URL,
-						false,
-					))
+					err4 := cmd.Start()
 
-					if debug_flag != "" {
-						// NOTE: "exocomp agent" prints first system message
-						agent.Messages = make([]*schemas.Message, 0)
+					if err4 == nil {
+
+						agent := agents.NewAgent(types.NewConfig(
+							name,
+							role,
+							tool.Model,
+							prompt,
+							0.0, // Don't change temperature
+							tool.Sandbox,
+							resolved,
+							tool.URL,
+							false,
+						))
+
+						if tool.Debug == true {
+							// NOTE: exocomp-agent prints the first system message
+							agent.Messages = make([]*schemas.Message, 0)
+						}
+
+						process := &agentProcess{
+							cmd:        cmd,
+							cancel:     cancel,
+							done:       make(chan struct{}),
+							last_write: time.Now(),
+						}
+
+						tool.mutex.Lock()
+						tool.contents[name] = agent
+						tool.processes[name] = process
+						tool.mutex.Unlock()
+
+						// NOTE: Single reader goroutine owns the child stdout lifecycle. It
+						// reads unbounded lines, appends messages, and on EOF reaps the
+						// process and finalizes the agent status.
+						go readProcess(tool, name, process, stdout_pipe)
+
+						// NOTE: Liveness watchdog kills a child that stops producing output.
+						go watchProcess(tool, process)
+
+						sandbox_path, _ := utils_sandbox.SanitizePath(tool.Sandbox, resolved)
+
+						return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work in \"%s\" on:\n%s", name, sandbox_path, prompt), nil
+
+					} else {
+
+						cancel()
+						return "", fmt.Errorf("agents.Hire: Cannot start agent \"%s\".", name)
+
 					}
-
-					process := &agentProcess{
-						cmd:        cmd,
-						cancel:     cancel,
-						done:       make(chan struct{}),
-						last_write: time.Now(),
-					}
-
-					tool.mutex.Lock()
-					tool.contents[name] = agent
-					tool.processes[name] = process
-					tool.mutex.Unlock()
-
-					// NOTE: Single reader goroutine owns the child stdout lifecycle. It
-					// reads unbounded lines, appends messages, and on EOF reaps the
-					// process and finalizes the agent status.
-					go readProcess(tool, name, process, stdout_pipe)
-
-					// NOTE: Liveness watchdog kills a child that stops producing output.
-					go watchProcess(tool, process)
-
-					sandbox_path, _ := utils_sandbox.SanitizePath(tool.Sandbox, resolved)
-
-					return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work in \"%s\" on:\n%s", name, sandbox_path, prompt), nil
 
 				} else {
 
 					cancel()
-					return "", fmt.Errorf("agents.Hire: Cannot start agent \"%s\".", name)
+					return "", fmt.Errorf("agents.Hire: Cannot capture agent output for \"%s\".", name)
 
 				}
 
 			} else {
-
-				cancel()
-				return "", fmt.Errorf("agents.Hire: Cannot capture agent output for \"%s\".", name)
-
+				return "", fmt.Errorf("agents.Hire: exocomp-agent is not installed.")
 			}
 
 		} else {
@@ -629,85 +628,86 @@ func (tool *Agents) summarizeMessages(prompt string) (string, error) {
 
 	if err0 == nil {
 
-		debug_flag := ""
-
-		if tool.Debug == true {
-			debug_flag = "--debug"
-		}
-
-		exe, _ := os.Executable()
-
-		if os.Getenv("EXOCOMP_AGENT") != "" {
-			exe = os.Getenv("EXOCOMP_AGENT")
-		}
-
-		timeout := tool.Timeout
-
-		if timeout <= 0 {
-			timeout = 30 * time.Minute
-		}
-
-		resolved_url := ""
-
-		if tool.URL != nil {
-			resolved_url = tool.URL.String()
-		}
-
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		cmd := exec.CommandContext(
-			ctx,
-			exe,
-			"agent",
-			fmt.Sprintf("--name=\"%s\"", utils_rand.AgentName("summarizer")),
-			fmt.Sprintf("--role=\"%s\"", "summarizer"),
-			fmt.Sprintf("--model=\"%s\"", tool.Model),
-			fmt.Sprintf("--prompt=\"%s\"", prompt),
-			// --temperature set by agent role
-			// --playground set by cmd.Dir
-			// --sandbox set by cmd.Dir
-			fmt.Sprintf("--url=\"%s\"", resolved_url),
-			debug_flag,
-		)
-		cmd.Dir = tmp
-
-		stdout_buffer := bytes.Buffer{}
-		cmd.Stdout = &stdout_buffer
-
-		err1 := cmd.Run()
+		exe, err1 := utils_cli.FindAgentBinary()
 
 		if err1 == nil {
 
-			os.RemoveAll(tmp)
+			timeout := tool.Timeout
 
-			lines := strings.Split(strings.TrimSpace(stdout_buffer.String()), "\n")
+			if timeout <= 0 {
+				timeout = 30 * time.Minute
+			}
 
-			if len(lines) > 0 {
+			resolved_url := ""
 
-				line := strings.TrimSpace(lines[len(lines)-1])
-				summary := schemas.Message{}
+			if tool.URL != nil {
+				resolved_url = tool.URL.String()
+			}
 
-				if strings.HasPrefix(line, "schemas.Message:") {
-					line = strings.TrimSpace(line[16:])
-				}
+			arguments := []string{
+				fmt.Sprintf("--name=\"%s\"", utils_rand.AgentName("summarizer")),
+				fmt.Sprintf("--role=\"%s\"", "summarizer"),
+				fmt.Sprintf("--model=\"%s\"", tool.Model),
+				fmt.Sprintf("--prompt=\"%s\"", prompt),
+				// --temperature set by agent role
+				// --playground set by cmd.Dir
+				// --sandbox set by cmd.Dir
+				fmt.Sprintf("--url=\"%s\"", resolved_url),
+			}
 
-				err2 := json.Unmarshal([]byte(line), &summary)
+			if tool.Debug == true {
+				arguments = append(arguments, "--debug")
+			}
 
-				if err2 == nil {
-					return strings.TrimSpace(summary.Content), nil
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
+			defer cancel()
+
+			cmd := exec.CommandContext(ctx, exe, arguments...)
+			cmd.Dir = tmp
+
+			stdout_buffer := bytes.Buffer{}
+			cmd.Stdout = &stdout_buffer
+
+			err2 := cmd.Run()
+
+			if err2 == nil {
+
+				os.RemoveAll(tmp)
+
+				lines := strings.Split(strings.TrimSpace(stdout_buffer.String()), "\n")
+
+				if len(lines) > 0 {
+
+					line := strings.TrimSpace(lines[len(lines)-1])
+					summary := schemas.Message{}
+
+					if strings.HasPrefix(line, "schemas.Message:") {
+						line = strings.TrimSpace(line[16:])
+					}
+
+					err3 := json.Unmarshal([]byte(line), &summary)
+
+					if err3 == nil {
+						return strings.TrimSpace(summary.Content), nil
+					} else {
+						return "", fmt.Errorf("agents.Summarize: Cannot parse summary.")
+					}
+
 				} else {
 					return "", fmt.Errorf("agents.Summarize: Cannot parse summary.")
 				}
 
 			} else {
-				return "", fmt.Errorf("agents.Summarize: Cannot parse summary.")
+
+				os.RemoveAll(tmp)
+				return "", fmt.Errorf("agents.Summarize: Cannot summarize messages.")
+
 			}
 
 		} else {
 
 			os.RemoveAll(tmp)
-			return "", fmt.Errorf("agents.Summarize: Cannot summarize messages.")
+			return "", fmt.Errorf("agents.Summarize: exocomp-agent is not installed.")
 
 		}
 

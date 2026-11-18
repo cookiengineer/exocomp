@@ -63,19 +63,19 @@ func watchServerOutput(pipe io.Reader, ready chan bool, errors chan error) {
 
 func TestMain(main *testing.M) {
 
-	exe := filepath.Join(os.TempDir(), "exocomp-for-agents")
+	exe := filepath.Join(os.TempDir(), "exocomp-agent-for-agents")
 	cmd := exec.Command(
 		"go",
 		"build",
 		"-o", exe,
-		"../cmds/exocomp/main.go",
+		"../cmds/exocomp-agent/main.go",
 	)
 
 	err0 := cmd.Run()
 
 	if err0 == nil {
 
-		os.Setenv("EXOCOMP_FOR_AGENTS", exe)
+		os.Setenv("EXOCOMP_AGENT", exe)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()

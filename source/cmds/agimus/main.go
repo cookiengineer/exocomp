@@ -1,7 +1,7 @@
 package main
 
-import "exocomp/actions"
 import "exocomp/engine"
+import "exocomp/ui/tty"
 import utils_cli "exocomp/utils/cli"
 import utils_fs "exocomp/utils/fs"
 import "fmt"
@@ -136,7 +136,7 @@ func main() {
 					agents, err2 := engine.RestoreAgents(folder, old_playground, session.Config.Playground)
 
 					if err2 == nil {
-						actions.Debug(session, agents, "assistant")
+						tty.RunRestore(session, agents, "assistant")
 					} else {
 
 						fmt.Fprintf(os.Stderr, "Cannot recover Agents: %s", err2.Error())

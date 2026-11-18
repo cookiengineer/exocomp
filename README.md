@@ -98,10 +98,10 @@ The `exocomp` project comes in several variants. All programs support `CGO_ENABL
 so they can be used without any dynamically linked dependencies.
 
 - [agimus](./source/cmds/agimus/main.go) which is used for testing `assistant` sandboxes.
-- [exocomp](./source/cmds/exocomp/main.go) which supports the `agent`, `config` and `terminal` UIs.
-- [exocomp-agent](./source/cmds/exocomp-agent/main.go) which supports only the `agent` and `terminal` UI.
+- [exocomp](./source/cmds/exocomp/main.go) which supports the `config` and `terminal` UIs.
+- [exocomp-agent](./source/cmds/exocomp-agent/main.go) which is the JSONL child-process entry point hired through `agents.Hire`.
 - [exocomp-sandbox](./source/cmds/exocomp-sandbox/main.go) which applies landlock (Linux) or seatbelt (macOS) confinement before executing agent programs.
-- [exocomp-web](./source/cmds/exocomp-web/main.go) which supports the `agent`, `config` and `web` UIs.
+- [exocomp-web](./source/cmds/exocomp-web/main.go) which supports the `config` and `web` UIs.
 - [exocomp-installer](./installer/cmds/exocomp-installer/main.go) that bundles all exocomp builds and required agent programs.
 
 Sandboxed program execution requires Linux with landlock, or macOS with
@@ -132,9 +132,12 @@ cd /path/to/exocomp;
 # Build only the WASM Web App
 make webapp;
 
-# Start Exocomp Web UI
+# Build the JSONL child-process binary used by agents.Hire
 cd ./source;
-go run cmds/exocomp-web/main.go web;
+go build -o /tmp/exocomp-agent ./cmds/exocomp-agent;
+
+# Start Exocomp Web UI
+EXOCOMP_AGENT=/tmp/exocomp-agent go run ./cmds/exocomp-web/main.go web;
 ```
 
 ### Configuring

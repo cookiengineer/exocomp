@@ -5,9 +5,9 @@
 
 There are several User Interfaces implemented in Exocomp:
 
-- `exocomp agent` uses line-separated JSON messages to communicate via `stdin` and `stdout`. Used for cross-agent communication.
 - `exocomp terminal` uses the [tty/Client](../source/ui/tty/Client.go)
 - `exocomp-web web` spawns the [web/Server](../source/ui/web/Server.go) on port `3000` that serves the [Web UI](../source/ui/web/public/).
+- `exocomp-agent` uses line-separated JSON messages to communicate via `stdin` and `stdout`. It is the child-process entry point used for cross-agent communication and has no UI mode.
 
 Common flags: `--name`, `--role`, `--model`, `--temperature`, `--prompt`,
 `--sandbox`, `--url`, `--debug`. Examples:
@@ -54,14 +54,17 @@ This is what the Planner agent spawns behind the scenes as sub processes:
 
 ```bash
 # cd /path/to/project;
-# exocomp agent --role=architect --prompt="Implement a utils package and specify the CalculateFibonacci method signature.";
+# exocomp-agent --role=architect --prompt="Implement a utils package and specify the CalculateFibonacci method signature.";
 
 # cd /path/to/project/utils;
-# exocomp agent --role=coder --prompt="Implement a public method called CalculateFibonacci(step int) int that calculates the fibonacci numbers.";
+# exocomp-agent --role=coder --prompt="Implement a public method called CalculateFibonacci(step int) int that calculates the fibonacci numbers.";
 
 # cd /path/to/project/utils;
-# exocomp agent --role=tester --prompt="Implement the unit tests for the CalculateFibonacci method.";
+# exocomp-agent --role=tester --prompt="Implement the unit tests for the CalculateFibonacci method.";
 
 # cd /path/to/project/cmds/fibonacci;
-# exocomp agent --role=coder --prompt="Implement a main.go that calculates fibonacci numbers. Use the first CLI parameter as the step or sequence argument.";
+# exocomp-agent --role=coder --prompt="Implement a main.go that calculates fibonacci numbers. Use the first CLI parameter as the step or sequence argument.";
 ```
+
+The planner looks for `exocomp-agent` next to its own binary first, then on
+`PATH`. Set `EXOCOMP_AGENT` to override the lookup during development.

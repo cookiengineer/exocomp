@@ -55,6 +55,17 @@ func main() {
 		emitMessage("assistant", "The agent implemented the feature successfully.")
 		os.Exit(0)
 
+	case "args":
+
+		data, err := json.Marshal(os.Args[1:])
+
+		if err == nil {
+			emitMessage("tool", "args:"+string(data))
+		}
+
+		emitQuit("my work is done: implemented the feature")
+		os.Exit(0)
+
 	default:
 		emitMessage("system", "hello")
 		emitQuit("my work is done: implemented the feature")

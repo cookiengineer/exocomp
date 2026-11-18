@@ -1,12 +1,11 @@
-package actions
+package jsonl
 
 import "exocomp/types"
-import "exocomp/ui/jsonl"
 import "fmt"
 import "os"
 import "strings"
 
-func Agent(agent *types.Agent, config *types.Config) {
+func Run(agent *types.Agent, config *types.Config) {
 
 	fmt.Fprintf(os.Stderr, "[config]:\n")
 	fmt.Fprintf(os.Stderr, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Role, agent.Model, agent.Temperature)
@@ -19,7 +18,7 @@ func Agent(agent *types.Agent, config *types.Config) {
 	os.Stdout.Sync()
 	os.Stderr.Sync()
 
-	client := jsonl.NewClient(agent, config)
+	client := NewClient(agent, config)
 	client.SetRole("user")
 
 	result := client.Init()

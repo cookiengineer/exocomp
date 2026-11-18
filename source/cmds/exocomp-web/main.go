@@ -3,6 +3,7 @@ package main
 import "exocomp/actions"
 import "exocomp/agents"
 import "exocomp/types"
+import "exocomp/ui/web"
 import "exocomp/utils/cli"
 import "fmt"
 import "os"
@@ -18,12 +19,13 @@ func main() {
 		tmp1 := strings.TrimSpace(os.Args[1])
 
 		switch tmp1 {
-		case "agent":
-			mode = "agent"
+
 		case "config":
 			mode = "config"
+
 		case "web":
 			mode = "web"
+
 		}
 
 		config = cli.ParseConfig(os.Args[1:])
@@ -47,14 +49,16 @@ func main() {
 		if err0 == nil {
 
 			switch mode {
-			case "agent":
-				actions.Agent(agent, config)
+
 			case "config":
 				actions.Config(agent, config)
+
 			case "web":
-				actions.Web(agent, config)
+				web.Run(agent, config)
+
 			default:
-				actions.Usage([]string{"agent", "config", "web"})
+				actions.Usage([]string{"config", "web"})
+
 			}
 
 		} else {
@@ -66,7 +70,7 @@ func main() {
 
 	} else {
 
-		actions.Usage([]string{"agent", "config", "web"})
+		actions.Usage([]string{"config", "web"})
 
 	}
 

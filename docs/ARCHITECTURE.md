@@ -20,10 +20,10 @@ strict subprocess tree:
 
 ```
 planner        (exocomp-web web | exocomp terminal, playground == sandbox == project root)
-|-> architect  (exocomp agent, sandbox == project root)
-|-> coder      (exocomp agent, sandbox == project/utils)
-|-> tester     (exocomp agent, sandbox == project/utils)
-|-> coder      (exocomp agent, sandbox == project/cmds/fibonacci)
+|-> architect  (exocomp-agent, sandbox == project root)
+|-> coder      (exocomp-agent, sandbox == project/utils)
+|-> tester     (exocomp-agent, sandbox == project/utils)
+|-> coder      (exocomp-agent, sandbox == project/cmds/fibonacci)
 ```
 
 - A child's `--playground` is always its parent's `--sandbox`.
@@ -128,6 +128,11 @@ The helper is discovered next to the running `exocomp` binary (or via
 `EXOCOMP_SANDBOX` for development). The installer places it in the same `bin`
 folder as `exocomp` and `exocomp-agent`.
 
+`exocomp-agent` is the only JSONL child-process binary. `agents.Hire` and the
+session summarizer look for it next to the running binary first, then on
+`PATH`; `EXOCOMP_AGENT` overrides both for development. `exocomp` and
+`exocomp-web` expose only their own frontend and have no `agent` mode.
+
 ### Temporary Capabilities
 
 `humans.AskPermission` lets an agent request temporary capabilities from the
@@ -214,9 +219,9 @@ source/
     tty/         Interactive terminal frontend (the human's planner)
     web/         Web frontend + REST API (the human's planner)
   cmds/
-    exocomp/         UI dispatcher (agent | config | terminal)
-    exocomp-agent/   Child-process entry point (exocomp agent)
-    exocomp-web/     Web server entry point (agent | config | web)
+    exocomp/         UI dispatcher (config | terminal)
+    exocomp-agent/   Child-process entry point (JSONL only)
+    exocomp-web/     Web server entry point (config | web)
 ```
 
 `parsers/markdown` owns only syntax and the `Document`/`Element` AST. The web
@@ -226,7 +231,7 @@ the same parser.
 
 ## JSONL Protocol
 
-A hired agent runs `exocomp agent` and talks to its parent exclusively through
+A hired agent runs `exocomp-agent` and talks to its parent exclusively through
 line-delimited JSON on `stdout`. The `stderr` is free-form logging. Every line
 is formatted as `<prefix>:<json>\n`:
 
@@ -259,7 +264,7 @@ Lifecycle is owned by the [Agents tool](../source/tools/Agents.go):
 
 1. generates a name
 2. resolves the sandbox
-3. spawns `exocomp agent --name ... --prompt ... --sandbox ...`
+3. spawns `exocomp-agent --name ... --prompt ... --sandbox ...`
 4. records the `*types.Agent` as `working` and starts a single reader goroutine.
 
 **Reader**:

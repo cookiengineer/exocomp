@@ -1,6 +1,7 @@
 package tools
 
 import net_url "net/url"
+import "encoding/json"
 import "fmt"
 import "os"
 import "os/exec"
@@ -85,6 +86,68 @@ func hireTestAgent(t *testing.T, tool *Agents, scenario string) string {
 	}
 
 	return names[0]
+
+}
+
+func TestAgents_Hire_Arguments(t *testing.T) {
+
+	tool := newTestAgents(t, "args")
+	name := hireTestAgent(t, tool, "args")
+
+	_, err0 := tool.Await(name)
+
+	if err0 != nil {
+		t.Errorf("Expected %v to be nil", err0)
+	}
+
+	agent := tool.GetAgent(name)
+
+	if agent == nil {
+		t.Fatalf("Expected agent %s to exist", name)
+	}
+
+	seen := false
+
+	for _, message := range agent.Messages {
+
+		if strings.HasPrefix(message.Content, "args:") == true {
+
+			arguments := make([]string, 0)
+			err1 := json.Unmarshal([]byte(strings.TrimPrefix(message.Content, "args:")), &arguments)
+
+			if err1 == nil {
+
+				seen = true
+
+				if len(arguments) > 0 {
+
+					if strings.HasPrefix(arguments[0], "--name=") == false {
+						t.Errorf("Expected first argument to be --name, got %q", arguments[0])
+					}
+
+					for _, argument := range arguments {
+
+						if argument == "agent" {
+							t.Errorf("Expected no agent mode argument, got %q", arguments)
+						}
+
+					}
+
+				} else {
+					t.Errorf("Expected agent arguments, got none")
+				}
+
+			} else {
+				t.Errorf("Expected arguments to be valid JSON, got %v", err1)
+			}
+
+		}
+
+	}
+
+	if seen == false {
+		t.Errorf("Expected the fake agent to echo its arguments")
+	}
 
 }
 

@@ -1,14 +1,13 @@
-package actions
+package web
 
 import "exocomp/types"
-import "exocomp/ui/web"
 import "fmt"
 import "os"
 import "strings"
 
-func Web(agent *types.Agent, config *types.Config) {
+func Run(agent *types.Agent, config *types.Config) {
 
-	server := web.NewServer(agent, config)
+	server := NewServer(agent, config)
 
 	fmt.Fprintf(os.Stdout, "[config]:\n")
 	fmt.Fprintf(os.Stdout, "| Agent:   %s | %s | %s | %.2f\n", agent.Name, agent.Role, agent.Model, agent.Temperature)

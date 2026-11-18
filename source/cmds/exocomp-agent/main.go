@@ -2,7 +2,7 @@ package main
 
 import "exocomp/actions"
 import "exocomp/agents"
-import "exocomp/types"
+import "exocomp/ui/jsonl"
 import "exocomp/utils/cli"
 import "fmt"
 import "os"
@@ -10,68 +10,62 @@ import "strings"
 
 func main() {
 
-	var config *types.Config = nil
-	var mode string = ""
+	arguments := os.Args[1:]
+	show_usage := false
 
-	if len(os.Args) > 1 {
+	if len(arguments) == 0 {
+		show_usage = true
+	}
 
-		tmp1 := strings.TrimSpace(os.Args[1])
+	for _, argument := range arguments {
 
-		switch tmp1 {
+		tmp := strings.TrimSpace(argument)
 
-		case "agent":
-			mode = "agent"
-		case "terminal":
-			mode = "terminal"
-
+		if strings.HasPrefix(tmp, "--") == false || tmp == "--help" {
+			show_usage = true
+			break
 		}
-
-		config = cli.ParseConfig(os.Args[1:])
 
 	}
 
-	if mode != "" && config != nil {
+	if show_usage == false {
 
-		agent := agents.NewAgent(config)
+		config := cli.ParseConfig(arguments)
 
-		config.Update(
-			agent.Name,
-			agent.Role,
-			agent.Model,
-			config.Prompt,
-			agent.Temperature,
-		)
+		if config != nil {
 
-		err0 := os.MkdirAll(config.Sandbox, 0755)
+			agent := agents.NewAgent(config)
 
-		if err0 == nil {
+			config.Update(
+				agent.Name,
+				agent.Role,
+				agent.Model,
+				config.Prompt,
+				agent.Temperature,
+			)
 
-			switch mode {
+			err0 := os.MkdirAll(config.Sandbox, 0755)
 
-			case "agent":
+			if err0 == nil {
 
-				actions.Agent(agent, config)
+				jsonl.Run(agent, config)
 
-			case "terminal":
+			} else {
 
-				actions.Terminal(agent, config, "user")
-
-			default:
-
-				actions.Usage([]string{"agent", "terminal"})
+				fmt.Fprintf(os.Stderr, "Error: %s", err0.Error())
+				os.Exit(1)
 
 			}
 
 		} else {
 
-			fmt.Fprintf(os.Stderr, "Error: %s", err0.Error())
-			os.Exit(1)
+			actions.UsageAgent()
 
 		}
 
 	} else {
 
-		actions.Usage([]string{"agent", "terminal"})
+		actions.UsageAgent()
 
 	}
 
