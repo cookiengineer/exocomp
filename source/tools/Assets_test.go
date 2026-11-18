@@ -18,7 +18,7 @@ func newTestAssets(t *testing.T) (*Assets, string) {
 	}
 
 	tool := NewAssets([]string{
-		"Add", "Import", "Get", "List", "Search", "Update", "Neighbors", "Scope", "Coverage",
+		"Add", "Export", "Import", "Get", "List", "Search", "Update", "Neighbors", "Scope", "Coverage",
 	}, playground, sandbox)
 
 	return tool, sandbox
@@ -29,7 +29,7 @@ func writeAssetFixture(t *testing.T, sandbox string, name string, content string
 
 	t.Helper()
 
-	relative := filepath.Join(".exocomp", "scans", name, "results.jsonl")
+	relative := filepath.Join("work", "scans", name, "results.jsonl")
 	path := filepath.Join(sandbox, relative)
 
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {

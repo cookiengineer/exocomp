@@ -22,6 +22,7 @@ func Create(image string, name string, command string, arguments []string, netwo
 		"--network", network,
 		"--workdir", "/workspace",
 		"--volume", absolute + ":/workspace:Z",
+		"--tmpfs", "/workspace/.exocomp:ro,size=1m",
 		image,
 		command,
 	}

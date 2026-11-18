@@ -45,6 +45,12 @@ func BuildProfile(policy Policy) (*Profile, error) {
 				[]string{},
 			)
 		},
+		func() error {
+			return builder.addDenyRules(
+				policy.Deny,
+				"file-read* file-write* file-read-metadata",
+			)
+		},
 	}
 
 	for _, step := range steps {

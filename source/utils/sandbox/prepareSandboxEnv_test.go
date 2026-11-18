@@ -1,6 +1,7 @@
 package sandbox
 
 import "os"
+import "path/filepath"
 import "strings"
 import "testing"
 
@@ -29,7 +30,7 @@ func TestPrepareSandboxEnv_RemovesSecrets(t *testing.T) {
 
 	t.Setenv("EXOCOMP_TEST_VISIBLE", "visible")
 
-	environment, err1 := prepareSandboxEnv(playground)
+	environment, _, err1 := prepareSandboxEnv(playground)
 
 	if err1 == nil {
 
@@ -47,6 +48,48 @@ func TestPrepareSandboxEnv_RemovesSecrets(t *testing.T) {
 
 	} else {
 		t.Errorf("Expected %v to be nil", err1)
+	}
+
+}
+
+func TestPrepareSandboxEnv_UsesRuntimeOutsideSandbox(t *testing.T) {
+
+	playground, err0 := os.MkdirTemp("/tmp", "exocomp-test-sandbox-runtime-*")
+
+	if err0 != nil {
+		t.Fatalf("Expected %v to be nil", err0)
+	}
+
+	t.Cleanup(func() {
+		os.RemoveAll(playground)
+	})
+
+	_, runtime_paths, err1 := prepareSandboxEnv(playground)
+
+	if err1 != nil {
+		t.Fatalf("Expected %v to be nil", err1)
+	}
+
+	if len(runtime_paths) != 1 {
+		t.Fatalf("Expected one runtime path, got %v", runtime_paths)
+	}
+
+	stat, err2 := os.Stat(runtime_paths[0])
+
+	if err2 != nil {
+		t.Fatalf("Expected runtime directory to exist: %v", err2)
+	}
+
+	if stat.IsDir() == false {
+		t.Errorf("Expected runtime path to be a directory")
+	}
+
+	if strings.HasPrefix(runtime_paths[0], playground) == true {
+		t.Errorf("Expected runtime directory to be outside the sandbox")
+	}
+
+	if _, err3 := os.Stat(filepath.Join(playground, ".exocomp")); os.IsNotExist(err3) == false {
+		t.Errorf("Expected prepareSandboxEnv to not create .exocomp")
 	}
 
 }

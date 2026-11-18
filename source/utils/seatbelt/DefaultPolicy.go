@@ -44,10 +44,15 @@ func DefaultPolicy(sandbox string, target string, extra_read []string, extra_wri
 		"/dev/tty",
 	}
 
+	deny := []string{
+		filepath.Join(sandbox, ".exocomp"),
+	}
+
 	return Policy{
 		ReadWrite: uniquePaths(read_write),
 		ReadOnly:  uniquePaths(read_only),
 		Devices:   uniquePaths(devices),
+		Deny:      uniquePaths(deny),
 	}
 
 }

@@ -56,6 +56,43 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "assets.Export",
+			"description": "Export assets into the sandbox as a host list, URL list or JSON file. Returns a sandbox-relative path, count, hash and size.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"format": {
+						"type": "string",
+						"enum": ["hosts", "urls", "json"],
+						"default": "hosts",
+						"description": "Export format. Defaults to hosts."
+					},
+					"path": {
+						"type": "string",
+						"description": "Optional sandbox-relative destination path, e.g. \"./work/targets.txt\". Defaults to a path under ./work."
+					},
+					"type": {
+						"type": "string",
+						"enum": ["ip", "cidr", "domain", "subdomain", "url", "endpoint", "port", "service", "technology", "dns_record", "certificate", "cloud_asset", "credential"],
+						"description": "Optional asset type filter."
+					},
+					"query": {"type": "string", "description": "Optional case-insensitive value filter."},
+					"in_scope": {"type": "boolean", "description": "Optional scope filter."},
+					"tested": {"type": "boolean", "description": "Optional tested filter."},
+					"limit": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 10000,
+						"description": "Maximum number of assets to export. Defaults to 1000."
+					}
+				},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "assets.Import",
 			"description": "Import scanner output as assets. Reads a structured artifact from inside the sandbox and returns counts, never raw content.",
 			"parameters": {
@@ -63,7 +100,7 @@
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Path to the scanner artifact inside the sandbox, e.g. \".exocomp/scans/httpx/results.jsonl\"."
+						"description": "Path to the scanner artifact inside the sandbox, e.g. \"./work/scans/scan-123-httpx.jsonl\"."
 					},
 					"format": {
 						"type": "string",

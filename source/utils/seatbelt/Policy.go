@@ -5,4 +5,5 @@ type Policy struct {
 	ReadWrite []string
 	ReadOnly  []string
 	Devices   []string
+	Deny      []string
 }

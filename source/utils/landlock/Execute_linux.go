@@ -19,6 +19,13 @@ func Execute(arguments []string) int {
 
 		runtime.LockOSThread()
 
+		err_mask := maskPrivateState(sandbox)
+
+		if err_mask != nil {
+			fmt.Fprint(os.Stderr, "landlock.Execute: Cannot hide private state folder.\n")
+			return 125
+		}
+
 		policy := DefaultPolicy(sandbox, target, read_paths, write_paths)
 		err1 := restrictPaths(policy)
 

@@ -61,6 +61,10 @@ func (tool *Assets) Call(method string, arguments map[string]interface{}) (strin
 
 			return tool.Add(parsed)
 
+		} else if method == "Export" {
+
+			return tool.Export(parsed)
+
 		} else if method == "Import" {
 
 			return tool.Import(parsed)

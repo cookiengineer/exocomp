@@ -2,6 +2,36 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "findings.Export",
+			"description": "Export a finding, evidence artifact, report or stored scan artifact into the sandbox. Returns a sandbox-relative path, hash and size.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": ["finding", "evidence", "report", "scan"],
+						"description": "What to export."
+					},
+					"id": {
+						"type": "string",
+						"description": "Finding ID for \"finding\" and \"evidence\", or scan ID for \"scan\"."
+					},
+					"evidence_id": {
+						"type": "string",
+						"description": "Evidence ID, required for type \"evidence\"."
+					},
+					"path": {
+						"type": "string",
+						"description": "Optional sandbox-relative destination path, e.g. \"./work/evidence.txt\". Defaults to a path under ./work."
+					}
+				},
+				"required": ["type"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "findings.Import",
 			"description": "Import scanner output as candidate findings. Currently supports nuclei JSONL. The artifact is read from inside the sandbox; raw scanner content is never returned.",
 			"parameters": {
@@ -9,7 +39,7 @@
 				"properties": {
 					"path": {
 						"type": "string",
-						"description": "Path to a nuclei JSONL artifact inside the sandbox, e.g. \".exocomp/scans/nuclei/results.jsonl\"."
+						"description": "Path to a nuclei JSONL artifact inside the sandbox, e.g. \"./work/scans/scan-123-nuclei.jsonl\"."
 					},
 					"format": {
 						"type": "string",
@@ -182,7 +212,7 @@
 		"type": "function",
 		"function": {
 			"name": "findings.Get",
-			"description": "Return one finding as structured JSON, including evidence metadata and artifact hashes.",
+			"description": "Return one finding as structured JSON, including evidence metadata and hashes. Internal storage paths are not returned; use findings.Export to materialize evidence.",
 			"parameters": {
 				"type": "object",
 				"properties": {
@@ -386,7 +416,7 @@
 		"type": "function",
 		"function": {
 			"name": "findings.Report",
-			"description": "Write a Markdown findings report to .exocomp/findings/report.md and return its relative path and finding count.",
+			"description": "Generate a Markdown findings report and return its content and finding count. Use findings.Export with type \"report\" to write it into the sandbox.",
 			"parameters": {
 				"type": "object",
 				"properties": {

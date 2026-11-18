@@ -98,7 +98,15 @@ func (tool *Findings) Import(arguments findingArguments) (string, error) {
 	if has_scan_id == false || strings.TrimSpace(scan_id) == "" {
 		scan_id = newScanID(data)
 	} else {
-		scan_id = utils_findings.LimitText(strings.TrimSpace(scan_id), findingsMaxIdentifier)
+		scan_id = strings.TrimSpace(scan_id)
+	}
+
+	if types.IsScanID(scan_id) == false {
+		return "", fmt.Errorf("findings.Import: Invalid parameter \"scan_id\".")
+	}
+
+	if err_store := utils_findings.WriteScanArtifact(tool.Playground, scan_id, data); err_store != nil {
+		return "", fmt.Errorf("findings.Import: %s", err_store.Error())
 	}
 
 	parsed, invalid, err3 := parseNucleiResults(data, scan_id)

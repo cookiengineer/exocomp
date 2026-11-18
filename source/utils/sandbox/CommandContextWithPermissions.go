@@ -2,6 +2,7 @@ package sandbox
 
 import "context"
 import "fmt"
+import "os"
 import "os/exec"
 import "path/filepath"
 
@@ -31,13 +32,25 @@ func CommandContextWithPermissions(ctx context.Context, sandbox string, program 
 		return nil, fmt.Errorf("sandbox.CommandContext: Cannot resolve sandbox path.")
 	}
 
+	err_mkdir := os.MkdirAll(sandbox_abs, 0755)
+
+	if err_mkdir != nil {
+		return nil, fmt.Errorf("sandbox.CommandContext: Permission denied.")
+	}
+
+	stat, err_stat := os.Stat(sandbox_abs)
+
+	if err_stat != nil || stat.IsDir() == false || stat.Mode().Perm()&0111 == 0 {
+		return nil, fmt.Errorf("sandbox.CommandContext: Permission denied.")
+	}
+
 	target_abs, err3 := filepath.Abs(target)
 
 	if err3 != nil {
 		return nil, fmt.Errorf("sandbox.CommandContext: Cannot resolve program path.")
 	}
 
-	environment, err4 := prepareSandboxEnv(sandbox_abs)
+	environment, runtime_paths, err4 := prepareSandboxEnv(sandbox_abs)
 
 	if err4 != nil {
 		return nil, err4
@@ -59,7 +72,10 @@ func CommandContextWithPermissions(ctx context.Context, sandbox string, program 
 
 	}
 
-	for _, write_path := range permissions.WritePaths {
+	write_paths := append([]string{}, permissions.WritePaths...)
+	write_paths = append(write_paths, runtime_paths...)
+
+	for _, write_path := range write_paths {
 
 		write_abs, err6 := filepath.Abs(write_path)
 
@@ -77,6 +93,8 @@ func CommandContextWithPermissions(ctx context.Context, sandbox string, program 
 	cmd := exec.CommandContext(ctx, helper, helper_arguments...)
 	cmd.Dir = sandbox_abs
 	cmd.Env = environment
+
+	prepareSandboxCommand(cmd)
 
 	return cmd, nil
 

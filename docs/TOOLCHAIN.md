@@ -70,7 +70,7 @@ architecture and can be overridden with `ARCH=<goarch>` on the make command or
 
 ## Gobuster
 
-`gobuster` (`v3.8.2`) is the chosen content/parameter fuzzer for the planned
-`scans.Gobuster` method. It is pinned in `toolchain/programs.json` and allowed
-for the `webscanner` role. Gobuster emits text output, which `scans.Gobuster`
-will parse into structured records.
+`gobuster` (`v3.8.2`) is the chosen content/parameter fuzzer. It is pinned in
+`toolchain/programs.json` and allowed for the `webscanner` role. Agents run it
+directly with `-o results.txt`; `assets.Import` parses the text lines into
+`endpoint` assets. No wrapper program is required.

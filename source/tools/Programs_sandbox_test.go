@@ -118,6 +118,84 @@ func TestPrograms_ExecuteSandbox(t *testing.T) {
 
 }
 
+func TestPrograms_ExecuteHidesExocomp(t *testing.T) {
+
+	requireSandbox(t)
+
+	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-exocomp-*")
+	sandbox := filepath.Join(playground, "programs")
+	private := filepath.Join(sandbox, ".exocomp")
+
+	if err := os.MkdirAll(private, 0755); err != nil {
+		t.Fatalf("Expected %v to be nil", err)
+	}
+
+	secret := filepath.Join(private, "secret.txt")
+
+	if err := os.WriteFile(secret, []byte("TOP SECRET"), 0644); err != nil {
+		t.Fatalf("Expected %v to be nil", err)
+	}
+
+	tool := NewPrograms([]string{"Execute"}, playground, sandbox, []string{"cat", "sh"})
+
+	result1, err1 := tool.Execute("sh", []string{"-c", "test -e .exocomp/secret.txt && echo visible || echo hidden"})
+
+	if err1 != nil {
+		t.Fatalf("Expected %v to be nil, got %s", err1, result1)
+	}
+
+	if strings.Contains(result1, "hidden") == false {
+		t.Errorf("Expected .exocomp to be hidden, got %s", result1)
+	}
+
+	result2, err2 := tool.Execute("cat", []string{".exocomp/secret.txt"})
+
+	if err2 == nil {
+		t.Errorf("Expected reading .exocomp to fail")
+	} else if strings.Contains(result2, "TOP SECRET") == true {
+		t.Errorf("Expected secret content not to be returned, got %s", result2)
+	}
+
+	t.Setenv("EXOCOMP_TEST_PROC_ROOT", "/proc/1/root"+secret)
+
+	result_proc, err_proc := tool.Execute("sh", []string{"-c", "cat \"$EXOCOMP_TEST_PROC_ROOT\""})
+
+	if err_proc == nil {
+		t.Errorf("Expected reading .exocomp through /proc to fail")
+	} else if strings.Contains(result_proc, "TOP SECRET") == true {
+		t.Errorf("Expected secret content not to be returned through /proc, got %s", result_proc)
+	}
+
+	_, err3 := tool.Execute("sh", []string{"-c", "echo pwned > .exocomp/pwned.txt"})
+
+	if err3 == nil {
+		t.Errorf("Expected writing into .exocomp to fail")
+	}
+
+	if _, err4 := os.Stat(filepath.Join(private, "pwned.txt")); os.IsNotExist(err4) == false {
+		t.Errorf("Expected host .exocomp not to be written")
+	}
+
+	result5, err5 := tool.Execute("sh", []string{"-c", "cd \"$HOME\" && echo runtime > runtime.txt && cat runtime.txt"})
+
+	if err5 != nil {
+		t.Fatalf("Expected runtime HOME to be writable, got %s", result5)
+	}
+
+	if strings.Contains(result5, "runtime") == false {
+		t.Errorf("Expected runtime HOME content, got %s", result5)
+	}
+
+	if content, err6 := os.ReadFile(secret); err6 != nil || strings.Contains(string(content), "TOP SECRET") == false {
+		t.Errorf("Expected host .exocomp to stay intact")
+	}
+
+	t.Cleanup(func() {
+		os.RemoveAll(playground)
+	})
+
+}
+
 func TestPrograms_ExecuteSandboxMissingHelper(t *testing.T) {
 
 	requireSandbox(t)

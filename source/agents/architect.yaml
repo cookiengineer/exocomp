@@ -5,23 +5,19 @@ model: huihui_ai/Qwen3.8-abliterated:27b
 temperature: 0.5
 allowed-images:
 allowed-programs:
-  - go
-  - gofmt
-  - gopls
 allowed-tools:
   - agents.Quit
   - agents.Switch
   - bugs.List
   - bugs.Search
+  - changelog.List
+  - changelog.Search
   - files.List
   - files.Read
   - files.ReadSymbol
   - files.Search
   - files.Stat
   - humans.AskPermission
-  - programs.Execute
-  - programs.List
-  - programs.Stat
   - requirements.DefineFunc
   - requirements.DefineInterface
   - requirements.DefineStruct

@@ -1,6 +1,7 @@
 package seatbelt
 
 import "fmt"
+import "path/filepath"
 import "strings"
 import "testing"
 
@@ -13,6 +14,7 @@ func TestBuildProfile(t *testing.T) {
 		ReadWrite: []string{sandbox},
 		ReadOnly:  []string{read_only},
 		Devices:   []string{"/dev/null"},
+		Deny:      []string{filepath.Join(sandbox, ".exocomp")},
 	})
 
 	if err0 == nil {
@@ -36,6 +38,7 @@ func TestBuildProfile(t *testing.T) {
 			"com.apple.app-sandbox.read",
 			"com.apple.app-sandbox.read-write",
 			"/dev/null",
+			"(deny file-read* file-write* file-read-metadata",
 		}
 
 		for _, check := range checks {

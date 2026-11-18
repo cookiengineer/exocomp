@@ -3,9 +3,17 @@ package sandbox
 import "os"
 import "path/filepath"
 
-func prepareSandboxEnv(sandbox string) ([]string, error) {
+// prepareSandboxEnv prepares the private runtime environment for a sandboxed
+// program. It returns the environment and the runtime paths that must be
+// granted to the sandbox helper.
+func prepareSandboxEnv(sandbox string) ([]string, []string, error) {
 
-	base := filepath.Join(sandbox, ".exocomp", sandboxDirectory())
+	base, err0 := sandboxRuntimeDir(sandbox)
+
+	if err0 != nil {
+		return nil, nil, err0
+	}
+
 	home := filepath.Join(base, "home")
 	tmp := filepath.Join(base, "tmp")
 	cache := filepath.Join(base, "cache")
@@ -15,6 +23,7 @@ func prepareSandboxEnv(sandbox string) ([]string, error) {
 	gopath := filepath.Join(base, "gopath")
 
 	directories := []string{
+		base,
 		home,
 		tmp,
 		cache,
@@ -25,9 +34,9 @@ func prepareSandboxEnv(sandbox string) ([]string, error) {
 		filepath.Join(gopath, "pkg", "mod"),
 	}
 
-	err0 := prepareSandboxDirectories(directories)
+	err1 := prepareSandboxDirectories(directories)
 
-	if err0 == nil {
+	if err1 == nil {
 
 		environment := os.Environ()
 
@@ -59,10 +68,10 @@ func prepareSandboxEnv(sandbox string) ([]string, error) {
 			environment = unsetEnv(environment, name)
 		}
 
-		return environment, nil
+		return environment, []string{base}, nil
 
 	} else {
-		return nil, err0
+		return nil, nil, err1
 	}
 
 }

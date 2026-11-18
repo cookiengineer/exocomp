@@ -5,9 +5,6 @@ model: deepseek-v4-pro:cloud
 temperature: 0.7
 allowed-images:
 allowed-programs:
-  - go
-  - gofmt
-  - gopls
 allowed-tools:
   - agents.Await
   - agents.List
@@ -15,6 +12,11 @@ allowed-tools:
   - agents.Switch
   - agents.Hire
   - agents.Fire
+  - assets.Coverage
+  - assets.Get
+  - assets.List
+  - assets.Neighbors
+  - assets.Search
   - bugs.List
   - bugs.Search
   - changelog.List
@@ -29,9 +31,6 @@ allowed-tools:
   - findings.Report
   - findings.Search
   - humans.AskPermission
-  - programs.Execute
-  - programs.List
-  - programs.Stat
   - humans.Ask
   - humans.Choose
   - requirements.List
@@ -86,6 +85,8 @@ prompt: |
   - Track created bug reports via "bugs.List"
   - Track created specifications via "requirements.List"
   - Track changes via "changelog.List"
+  - Track findings via "findings.List"
+  - Track asset scope and coverage via "assets.List" and "assets.Coverage"
 
   ### Project Phases
 

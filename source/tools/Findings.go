@@ -3,16 +3,12 @@ package tools
 import "exocomp/schemas"
 import "exocomp/types"
 import utils_findings "exocomp/utils/findings"
-import utils_sandbox "exocomp/utils/sandbox"
 import "encoding/json"
 import "fmt"
-import "os"
-import "path/filepath"
 import "slices"
 import "sort"
 import "strings"
 import "sync"
-import "time"
 
 const (
 	findingsDefaultLimit     = 50
@@ -67,6 +63,10 @@ func (tool *Findings) Call(method string, arguments map[string]interface{}) (str
 		if method == "Add" {
 
 			return tool.Add(parsed)
+
+		} else if method == "Export" {
+
+			return tool.Export(parsed)
 
 		} else if method == "Import" {
 
@@ -434,7 +434,8 @@ func (tool *Findings) Get(id string) (string, error) {
 
 	if err0 == nil {
 
-		buffer, err1 := json.MarshalIndent(finding, "", "\t")
+		view := newFindingView(finding)
+		buffer, err1 := json.MarshalIndent(view, "", "\t")
 
 		if err1 == nil {
 			return strings.Join([]string{
@@ -806,51 +807,10 @@ func (tool *Findings) Report(arguments findingArguments) (string, error) {
 		return "", fmt.Errorf("findings.Report: Invalid parameter \"status\".")
 	}
 
-	tool.mutex.Lock()
-	findings, err0 := utils_findings.ReadAll(tool.Playground)
-	tool.mutex.Unlock()
+	report, count, err0 := buildFindingsReport(tool, severity_filter, has_severity, status_filter, has_status)
 
 	if err0 == nil {
-
-		filtered := make([]types.Finding, 0)
-
-		for _, finding := range findings {
-
-			if has_severity == true && string(finding.Severity) != strings.ToLower(strings.TrimSpace(severity_filter)) {
-				continue
-			} else if has_status == true && string(finding.Status) != strings.ToLower(strings.TrimSpace(status_filter)) {
-				continue
-			}
-
-			filtered = append(filtered, finding)
-
-		}
-
-		report := utils_findings.BuildReport(filtered, time.Now().Format("2006-01-02 15:04:05"))
-		resolved, err1 := utils_sandbox.ResolvePath(tool.Playground, filepath.Join(".exocomp", "findings", "report.md"))
-
-		if err1 == nil {
-
-			err2 := os.WriteFile(resolved, []byte(report), 0666)
-
-			if err2 == nil {
-
-				display, err3 := utils_sandbox.SanitizePath(tool.Playground, resolved)
-
-				if err3 == nil {
-					return fmt.Sprintf("findings.Report: Wrote %s with %d findings.", display, len(filtered)), nil
-				} else {
-					return "", fmt.Errorf("findings.Report: %s", err3.Error())
-				}
-
-			} else {
-				return "", fmt.Errorf("findings.Report: Cannot write report.")
-			}
-
-		} else {
-			return "", fmt.Errorf("findings.Report: %s", err1.Error())
-		}
-
+		return fmt.Sprintf("findings.Report: %d findings.\n%s", count, report), nil
 	} else {
 		return "", fmt.Errorf("findings.Report: %s", err0.Error())
 	}

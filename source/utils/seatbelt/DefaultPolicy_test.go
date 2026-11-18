@@ -14,6 +14,15 @@ func TestDefaultPolicy(t *testing.T) {
 	found_extra := false
 	found_write := false
 	found_device := false
+	found_deny := false
+
+	for _, path := range policy.Deny {
+
+		if path == filepath.Join(sandbox, ".exocomp") {
+			found_deny = true
+		}
+
+	}
 
 	for _, path := range policy.ReadWrite {
 
@@ -61,6 +70,10 @@ func TestDefaultPolicy(t *testing.T) {
 
 	if found_device == false {
 		t.Errorf("Expected device node to be allowed")
+	}
+
+	if found_deny == false {
+		t.Errorf("Expected .exocomp folder to be denied")
 	}
 
 }

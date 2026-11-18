@@ -125,10 +125,6 @@ func BuildReport(findings []types.Finding, generated string) string {
 
 				builder.WriteString(fmt.Sprintf("- %s: %s\n", evidence.ID, evidence.Title))
 
-				if evidence.Artifact != "" {
-					builder.WriteString(fmt.Sprintf("  - Artifact: %s\n", evidence.Artifact))
-				}
-
 				if evidence.SHA256 != "" {
 					builder.WriteString(fmt.Sprintf("  - SHA-256: %s\n", evidence.SHA256))
 				}

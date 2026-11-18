@@ -12,7 +12,7 @@ func writeTestArtifact(t *testing.T, sandbox string, content string) string {
 
 	t.Helper()
 
-	path := filepath.Join(sandbox, ".exocomp", "scans", "nuclei", "results.jsonl")
+	path := filepath.Join(sandbox, "work", "scans", "nuclei", "results.jsonl")
 
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		t.Fatalf("Expected %v to be nil", err)
@@ -22,7 +22,7 @@ func writeTestArtifact(t *testing.T, sandbox string, content string) string {
 		t.Fatalf("Expected %v to be nil", err)
 	}
 
-	return ".exocomp/scans/nuclei/results.jsonl"
+	return "./work/scans/nuclei/results.jsonl"
 
 }
 
@@ -141,7 +141,7 @@ func TestFindings_ImportRejectsMissingArtifact(t *testing.T) {
 
 	tool, _ := newTestFindings(t)
 
-	_, err0 := tool.Import(findingArguments{"path": ".exocomp/scans/nuclei/missing.jsonl"})
+	_, err0 := tool.Import(findingArguments{"path": "./work/scans/nuclei/missing.jsonl"})
 
 	if err0 == nil {
 		t.Fatal("Expected an error for a missing artifact")

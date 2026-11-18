@@ -38,7 +38,7 @@ func newTestFindings(t *testing.T) (*Findings, string) {
 	})
 
 	tool := NewFindings([]string{
-		"Add", "BindEvidence", "Get", "Import", "List", "Report", "Retest", "Search", "Update", "Verify",
+		"Add", "BindEvidence", "Export", "Get", "Import", "List", "Report", "Retest", "Search", "Update", "Verify",
 	}, playground, sandbox, "Peanut Reproducer")
 
 	return tool, sandbox
@@ -69,6 +69,46 @@ func addTestFinding(t *testing.T, tool *Findings) string {
 	t.Fatalf("Expected finding ID in %q", result)
 
 	return ""
+
+}
+
+func TestFindings_BindEvidenceFromExocomp(t *testing.T) {
+
+	tool, sandbox := newTestFindings(t)
+	id := addTestFinding(t, tool)
+
+	path := filepath.Join(sandbox, ".exocomp", "scans", "evidence.txt")
+
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		t.Fatalf("Expected %v to be nil", err)
+	}
+
+	if err := os.WriteFile(path, []byte("scanner evidence"), 0644); err != nil {
+		t.Fatalf("Expected %v to be nil", err)
+	}
+
+	result, err0 := tool.BindEvidence(id, findingArguments{
+		"kind":     "artifact",
+		"artifact": ".exocomp/scans/evidence.txt",
+	})
+
+	if err0 != nil {
+		t.Fatalf("Expected %v to be nil, got %s", err0, result)
+	}
+
+	finding, err1 := utils_findings.ReadFinding(tool.Playground, id)
+
+	if err1 != nil {
+		t.Fatalf("Expected %v to be nil", err1)
+	}
+
+	if len(finding.Evidence) != 1 {
+		t.Fatalf("Expected one evidence entry, got %d", len(finding.Evidence))
+	}
+
+	if strings.HasPrefix(finding.Evidence[0].Artifact, "./.exocomp/evidence/") == false {
+		t.Errorf("Expected evidence artifact in .exocomp/evidence, got %q", finding.Evidence[0].Artifact)
+	}
 
 }
 
@@ -338,8 +378,10 @@ func TestFindings_Report(t *testing.T) {
 
 	if err1 != nil {
 		t.Errorf("Expected %v to be nil", err1)
-	} else if strings.Contains(result, "report.md") == false {
-		t.Errorf("Expected report path, got %s", result)
+	} else if strings.Contains(result, "Authentication bypass") == false {
+		t.Errorf("Expected report content, got %s", result)
+	} else if strings.Contains(result, ".exocomp") == true {
+		t.Errorf("Expected report content not to leak internal state, got %s", result)
 	}
 
 	report_path := filepath.Join(tool.Playground, ".exocomp", "findings", "report.md")

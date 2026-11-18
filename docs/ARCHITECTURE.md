@@ -70,6 +70,12 @@ setuid privilege escalation. Because landlock is Linux-only, the Linux backend
 refuses to run on other operating systems. Network access is not restricted by
 landlock, and `/proc` and `/sys` are readable for compatibility.
 
+The Linux helper also runs in a private user and mount namespace. Before
+applying landlock, it mounts an empty read-only tmpfs over `<sandbox>/.exocomp`
+so executed programs cannot read or write internal tool state. It then drops
+all capabilities before executing the target. The target runs as uid 0 inside
+the user namespace, mapped to the invoking host user.
+
 On macOS, the generated SBPL profile is deny-by-default and denies network
 access. Paths are resolved through `filepath.EvalSymlinks` before being emitted
 because the kernel matches resolved vnodes. Both the original and resolved forms
@@ -81,13 +87,21 @@ by Bazel, Nix, Homebrew, Claude Code and Codex. Using `sandbox-exec` instead of
 the cgo `sandbox_init` API keeps the whole project buildable with
 `CGO_ENABLED=0`.
 
-HOME, temp, runtime and Go cache directories are redirected into
-`<sandbox>/.exocomp/landlock/` on Linux and `<sandbox>/.exocomp/seatbelt/` on
-macOS so ordinary tools such as `go`, `gofmt` and `gcc` can write without
-leaving the sandbox. Credential and session sockets inherited from the agent
+HOME, temp, runtime and Go cache directories are redirected into a private
+runtime directory under the system temp directory, keyed by the sandbox path.
+The runtime directory is outside the sandbox and outside `.exocomp`, and is
+granted to the sandbox helper as a writable path. Ordinary tools such as `go`,
+`gofmt` and `gcc` can therefore write without leaving the sandbox or touching
+internal tool state. Credential and session sockets inherited from the agent
 environment (`SSH_AUTH_SOCK`, `GPG_AGENT_INFO`, `DBUS_SESSION_BUS_ADDRESS`,
 `KRB5CCNAME`, `DISPLAY`, ...) are removed from the child environment.
-`.exocomp` is hidden from `files.List` and ignored by the Go toolchain.
+`.exocomp` is reserved for tool-managed state and ignored by the Go toolchain.
+All `files.*` methods reject paths inside `.exocomp`; use `findings.*`,
+`assets.*`, `findings.BindEvidence` and `shell.*` to access that state.
+Executed programs cannot access `.exocomp` either: the Linux helper masks it with
+an empty read-only tmpfs in a private mount namespace before applying landlock,
+the macOS profile adds an explicit deny rule, and containers get a read-only
+tmpfs over `/workspace/.exocomp`.
 
 The helper is discovered next to the running `exocomp` binary (or via
 `EXOCOMP_SANDBOX` for development). The installer places it in the same `bin`
@@ -113,7 +127,7 @@ added to the landlock/seatbelt policy for subsequent `files.*`,
 `programs.Execute`, `shell.*`, and `skills.Execute` calls.
 
 `network.Connect` is enforced at the tool boundary for `websites.*` and future
-`scans.*`/`http.*` tools. It is not a domain/IP firewall for arbitrary programs:
+`http.*` tools. It is not a domain/IP firewall for arbitrary programs:
 landlock network rules are port-based, and seatbelt can only allow or deny
 network as a whole. Raw network programs such as `curl`, `nmap`, `nc`, or `ssh`
 are therefore not domain-filtered by this capability.
@@ -140,9 +154,10 @@ Container isolation is enforced by the tool itself:
 - Every container gets the label `io.exocomp.sandbox=<sha256(sandbox)[:16]>`.
   `List` filters on this label and every lifecycle or exec operation verifies it
   through `podman inspect`, so an agent cannot reach unrelated user containers.
-- The sandbox is mounted at `/workspace` and that is the default workdir. No
-  arbitrary volumes, port publishing, capabilities, privileged mode or host
-  namespaces are accepted from the model.
+- The sandbox is mounted at `/workspace` and that is the default workdir. A
+  read-only tmpfs is mounted over `/workspace/.exocomp`, so containers cannot
+  read or write internal tool state. No arbitrary volumes, port publishing,
+  capabilities, privileged mode or host namespaces are accepted from the model.
 - Images must appear in the role's `allowed-images` list. An empty list denies
   all images.
 - The default network mode is `bridge`; `none` is opt-in and `host` is never
@@ -160,7 +175,7 @@ source/
     html/        HTML to markdown/text conversion
     markdown/    Shared markdown parser for the web and TTY frontends
   tools/         Tool implementations and JSON schemas
-  types/         Shared types (Agent, Config, Bug, ChangelogEntry, Finding, Requirement, ...)
+  types/         Shared types (Agent, Config, Asset, Bug, ChangelogEntry, Finding, Requirement, ...)
   schemas/       Wire types (Message, ToolCall, ChatRequest/Response, ...)
   utils/         Shared helpers (ast, chat, cli, findings, fmt, fs, http, api adapters, ...)
   ui/
@@ -269,9 +284,11 @@ keyed by their namespace (the part before the first `.`).
 
 - Tool schema names are `namespace.Method` (e.g. `files.Read`, `requirements.DefineFunc`, `agents.Hire`).
 - `Session.CallTool` resolves the namespace, invokes the tool and appends the result (or `Error: ...`) as a `tool` message carrying the matching `tool_call_id`.
-- Sandbox-bound tools (files, programs, requirements, bugs, changelog, findings) resolve all paths through `utils_sandbox.ResolvePath`/`utils_sandbox.SanitizePath` so a contractor cannot escape its sandbox.
+- Sandbox-bound tools (files, programs, requirements, bugs, changelog, findings, assets) resolve all paths through `utils_sandbox.ResolvePath`/`utils_sandbox.SanitizePath` so a contractor cannot escape its sandbox.
 - `containers.*` mounts only the agent sandbox into podman containers and scopes every container to the sandbox label. `podman` must not be added to `allowed-programs`, otherwise `programs.Execute` could bypass these checks.
-- `findings.*` stores one JSON file per finding plus an index under `<playground>/.exocomp/findings/`. Evidence artifacts live under `<playground>/.exocomp/evidence/<finding-id>/` with SHA-256 hashes. Inline evidence is redacted and capped; artifact contents are never returned through the tool.
+- `findings.*` stores one JSON file per finding plus an index under `<playground>/.exocomp/findings/`. Evidence artifacts live under `<playground>/.exocomp/evidence/<finding-id>/` with SHA-256 hashes. Inline evidence is redacted and capped; artifact contents are never returned through the tool. `findings.Import` parses nuclei JSONL artifacts produced by the agent and creates candidate findings. `findings.Export` copies findings, evidence, reports or stored scan artifacts into `./work`.
+- `assets.*` stores a deduplicated inventory under `<playground>/.exocomp/assets/index.json`. `assets.Import` parses httpx, naabu, subfinder, dnsx, tlsx, katana, gobuster and urlfinder artifacts. `assets.Export` writes host lists, URL lists or JSON into `./work`.
+- There is no `scans.*` tool. Agents run the preshipped Go scanner binaries directly through `programs.Execute` or `shell.*` and write structured artifacts under `./work/scans/`. The importers consume those artifacts so the model never parses raw scanner output. Tool-managed state stays private in `.exocomp` and is only accessed through import/export methods.
 
 Each tool's LLM-facing contract lives in its embedded JSON schema at `tools/*.json`
 with precise parameter descriptions and syntax examples.
@@ -281,6 +298,8 @@ Role separation is enforced by *capability*, not by the prompt alone.
 An architect has `files.Read` but not `files.Write` and must record its output
 with `requirements.Define*`. A coder gets `files.Write`, `changelog.*` and
 `programs.Execute`. A tester only writes unit tests and `bugs.*` reports.
+`planner`, `architect`, `summarizer` and `webresearcher` have no allowed
+programs and no `programs.*` tools, so they cannot execute code.
 ... and so on.
 
 ## Tool Error Message Sandboxing

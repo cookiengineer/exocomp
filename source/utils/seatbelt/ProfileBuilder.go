@@ -34,6 +34,32 @@ func (builder *profileBuilder) addRule(rule string) {
 	builder.rules = append(builder.rules, rule)
 }
 
+func (builder *profileBuilder) addDenyRules(paths []string, operations string) error {
+
+	for _, path := range paths {
+
+		err0 := validatePath(path)
+
+		if err0 != nil {
+			return err0
+		}
+
+	}
+
+	resolved := resolvePaths(paths)
+
+	if len(resolved) == 0 {
+		return nil
+	}
+
+	filters := pathFilters(resolved)
+
+	builder.addRule(fmt.Sprintf("(deny %s %s)", operations, filters))
+
+	return nil
+
+}
+
 func (builder *profileBuilder) addFileRules(paths []string, operations string, extension_classes []string) error {
 
 	for _, path := range paths {
