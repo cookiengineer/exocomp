@@ -3,11 +3,12 @@ package seatbelt
 import "fmt"
 import "strings"
 
-func parseArguments(arguments []string) (string, []string, string, []string, error) {
+func parseArguments(arguments []string) (string, []string, []string, string, []string, error) {
 
 	sandbox := ""
 	target := ""
 	read_paths := make([]string, 0)
+	write_paths := make([]string, 0)
 	target_arguments := make([]string, 0)
 	after_separator := false
 
@@ -27,16 +28,18 @@ func parseArguments(arguments []string) (string, []string, string, []string, err
 			sandbox = strings.TrimSpace(argument[len("--sandbox="):])
 		} else if strings.HasPrefix(argument, "--read=") {
 			read_paths = append(read_paths, strings.TrimSpace(argument[len("--read="):]))
+		} else if strings.HasPrefix(argument, "--write=") {
+			write_paths = append(write_paths, strings.TrimSpace(argument[len("--write="):]))
 		} else {
-			return "", nil, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
+			return "", nil, nil, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
 		}
 
 	}
 
 	if sandbox != "" && target != "" {
-		return sandbox, read_paths, target, target_arguments, nil
+		return sandbox, read_paths, write_paths, target, target_arguments, nil
 	} else {
-		return "", nil, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
+		return "", nil, nil, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
 	}
 
 }

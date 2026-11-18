@@ -10,7 +10,7 @@ import "syscall"
 // Execute applies seatbelt confinement and replaces the process with the target.
 func Execute(arguments []string) int {
 
-	sandbox, read_paths, target, target_arguments, err0 := parseArguments(arguments)
+	sandbox, read_paths, write_paths, target, target_arguments, err0 := parseArguments(arguments)
 
 	if err0 == nil {
 
@@ -26,7 +26,7 @@ func Execute(arguments []string) int {
 
 				if err3 == nil {
 
-					policy := DefaultPolicy(sandbox_abs, target_abs, read_paths)
+					policy := DefaultPolicy(sandbox_abs, target_abs, read_paths, write_paths)
 					profile, err4 := BuildProfile(policy)
 
 					if err4 == nil {

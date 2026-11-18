@@ -4,9 +4,10 @@ import "testing"
 
 func TestParseArguments(t *testing.T) {
 
-	sandbox, read_paths, target, target_arguments, err0 := parseArguments([]string{
+	sandbox, read_paths, write_paths, target, target_arguments, err0 := parseArguments([]string{
 		"--sandbox=/sandbox",
 		"--read=/scripts",
+		"--write=/output",
 		"--",
 		"/usr/bin/cat",
 		"file.txt",
@@ -22,6 +23,10 @@ func TestParseArguments(t *testing.T) {
 			t.Errorf("Expected read paths %v, got %v", []string{"/scripts"}, read_paths)
 		}
 
+		if len(write_paths) != 1 || write_paths[0] != "/output" {
+			t.Errorf("Expected write paths %v, got %v", []string{"/output"}, write_paths)
+		}
+
 		if target != "/usr/bin/cat" {
 			t.Errorf("Expected %q, got %q", "/usr/bin/cat", target)
 		}
@@ -34,7 +39,7 @@ func TestParseArguments(t *testing.T) {
 		t.Errorf("Expected %v to be nil", err0)
 	}
 
-	_, _, _, _, err1 := parseArguments([]string{"--sandbox=/sandbox"})
+	_, _, _, _, _, err1 := parseArguments([]string{"--sandbox=/sandbox"})
 
 	if err1 != nil {
 		// expected: a target is required

@@ -7,17 +7,20 @@ func TestDefaultPolicy(t *testing.T) {
 
 	sandbox := "/tmp/exocomp-sandbox"
 	target := "/usr/bin/cat"
-	policy := DefaultPolicy(sandbox, target, []string{"/tmp/scripts"})
+	policy := DefaultPolicy(sandbox, target, []string{"/tmp/scripts"}, []string{"/tmp/output"})
 
 	found_sandbox := false
 	found_target := false
 	found_extra := false
+	found_write := false
 	found_device := false
 
 	for _, path := range policy.ReadWrite {
 
 		if path == sandbox {
 			found_sandbox = true
+		} else if path == "/tmp/output" {
+			found_write = true
 		}
 
 	}
@@ -50,6 +53,10 @@ func TestDefaultPolicy(t *testing.T) {
 
 	if found_extra == false {
 		t.Errorf("Expected extra read path to be read-only")
+	}
+
+	if found_write == false {
+		t.Errorf("Expected extra write path to be read-write")
 	}
 
 	if found_device == false {
