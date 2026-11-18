@@ -27,7 +27,7 @@ func runLandlockTestHelper() int {
 
 	runtime.LockOSThread()
 
-	err0 := restrictPaths(DefaultPolicy(sandbox, os.Args[0], nil))
+	err0 := restrictPaths(DefaultPolicy(sandbox, os.Args[0], nil, nil))
 
 	if err0 != nil {
 
@@ -176,15 +176,18 @@ func TestLandlockRestrictPaths(t *testing.T) {
 
 func TestDefaultPolicy(t *testing.T) {
 
-	policy := DefaultPolicy("/sandbox", "/usr/bin/cat", []string{"/tmp/scripts"})
+	policy := DefaultPolicy("/sandbox", "/usr/bin/cat", []string{"/tmp/scripts"}, []string{"/tmp/output"})
 
 	found_sandbox := false
 	found_target := false
 	found_extra := false
+	found_write := false
 
 	for _, path := range policy.ReadWrite {
 		if path == "/sandbox" {
 			found_sandbox = true
+		} else if path == "/tmp/output" {
+			found_write = true
 		}
 	}
 
@@ -208,13 +211,18 @@ func TestDefaultPolicy(t *testing.T) {
 		t.Errorf("Expected extra read path to be read-only")
 	}
 
+	if found_write == false {
+		t.Errorf("Expected extra write path to be read-write")
+	}
+
 }
 
 func TestParseArguments(t *testing.T) {
 
-	sandbox, read_paths, target, target_arguments, err0 := parseArguments([]string{
+	sandbox, read_paths, write_paths, target, target_arguments, err0 := parseArguments([]string{
 		"--sandbox=/sandbox",
 		"--read=/scripts",
+		"--write=/output",
 		"--",
 		"/usr/bin/cat",
 		"file.txt",
@@ -232,6 +240,10 @@ func TestParseArguments(t *testing.T) {
 		t.Errorf("Expected read paths %v, got %v", []string{"/scripts"}, read_paths)
 	}
 
+	if len(write_paths) != 1 || write_paths[0] != "/output" {
+		t.Errorf("Expected write paths %v, got %v", []string{"/output"}, write_paths)
+	}
+
 	if target != "/usr/bin/cat" {
 		t.Errorf("Expected %q, got %q", "/usr/bin/cat", target)
 	}
@@ -240,7 +252,7 @@ func TestParseArguments(t *testing.T) {
 		t.Errorf("Expected target arguments %v, got %v", []string{"file.txt"}, target_arguments)
 	}
 
-	_, _, _, _, err1 := parseArguments([]string{"--sandbox=/sandbox"})
+	_, _, _, _, _, err1 := parseArguments([]string{"--sandbox=/sandbox"})
 
 	if err1 == nil {
 		t.Errorf("Expected invalid arguments to fail")

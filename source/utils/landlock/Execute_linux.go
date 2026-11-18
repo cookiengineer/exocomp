@@ -13,13 +13,13 @@ import "golang.org/x/sys/unix"
 // Execute applies landlock confinement and replaces the process with the target.
 func Execute(arguments []string) int {
 
-	sandbox, read_paths, target, target_arguments, err0 := parseArguments(arguments)
+	sandbox, read_paths, write_paths, target, target_arguments, err0 := parseArguments(arguments)
 
 	if err0 == nil {
 
 		runtime.LockOSThread()
 
-		policy := DefaultPolicy(sandbox, target, read_paths)
+		policy := DefaultPolicy(sandbox, target, read_paths, write_paths)
 		err1 := restrictPaths(policy)
 
 		if err1 == nil {
@@ -55,11 +55,12 @@ func Execute(arguments []string) int {
 
 }
 
-func parseArguments(arguments []string) (string, []string, string, []string, error) {
+func parseArguments(arguments []string) (string, []string, []string, string, []string, error) {
 
 	sandbox := ""
 	target := ""
 	read_paths := make([]string, 0)
+	write_paths := make([]string, 0)
 	target_arguments := make([]string, 0)
 	after_separator := false
 
@@ -79,16 +80,18 @@ func parseArguments(arguments []string) (string, []string, string, []string, err
 			sandbox = strings.TrimSpace(argument[len("--sandbox="):])
 		} else if strings.HasPrefix(argument, "--read=") {
 			read_paths = append(read_paths, strings.TrimSpace(argument[len("--read="):]))
+		} else if strings.HasPrefix(argument, "--write=") {
+			write_paths = append(write_paths, strings.TrimSpace(argument[len("--write="):]))
 		} else {
-			return "", nil, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
+			return "", nil, nil, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
 		}
 
 	}
 
 	if sandbox != "" && target != "" {
-		return sandbox, read_paths, target, target_arguments, nil
+		return sandbox, read_paths, write_paths, target, target_arguments, nil
 	} else {
-		return "", nil, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
+		return "", nil, nil, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
 	}
 
 }

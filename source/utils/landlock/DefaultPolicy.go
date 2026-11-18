@@ -3,11 +3,13 @@ package landlock
 import "path/filepath"
 
 // DefaultPolicy returns the default sandbox access rules for target.
-func DefaultPolicy(sandbox string, target string, extra_read []string) Policy {
+func DefaultPolicy(sandbox string, target string, extra_read []string, extra_write []string) Policy {
 
 	read_write := []string{
 		sandbox,
 	}
+
+	read_write = append(read_write, extra_write...)
 
 	read_only := []string{
 		"/usr",
