@@ -2,6 +2,7 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
+import utils_capabilities "exocomp/utils/capabilities"
 import utils_fmt "exocomp/utils/fmt"
 import "context"
 import "encoding/json"
@@ -19,21 +20,41 @@ type questionState struct {
 }
 
 type Humans struct {
-	Methods  []string
-	Timeout  time.Duration
-	contents map[string]*types.Question
-	states   map[string]*questionState
-	mutex    *sync.RWMutex
+	Methods      []string
+	AgentName    string
+	Capabilities *utils_capabilities.Set
+	Timeout      time.Duration
+	contents     map[string]*types.Question
+	states       map[string]*questionState
+	mutex        *sync.RWMutex
 }
 
 func NewHumans(methods []string, playground string, sandbox string) *Humans {
 
+	return NewHumansWithCapabilities(methods, playground, sandbox, "", nil)
+
+}
+
+func NewHumansWithCapabilities(
+	methods []string,
+	playground string,
+	sandbox string,
+	agent_name string,
+	capabilities *utils_capabilities.Set,
+) *Humans {
+
 	humans := &Humans{
-		Methods:  methods,
-		Timeout:  15 * time.Minute,
-		contents: make(map[string]*types.Question),
-		states:   make(map[string]*questionState),
-		mutex:    &sync.RWMutex{},
+		Methods:      methods,
+		AgentName:    agent_name,
+		Capabilities: capabilities,
+		Timeout:      15 * time.Minute,
+		contents:     make(map[string]*types.Question),
+		states:       make(map[string]*questionState),
+		mutex:        &sync.RWMutex{},
+	}
+
+	if humans.Capabilities == nil {
+		humans.Capabilities = utils_capabilities.NewSet()
 	}
 
 	return humans
@@ -94,6 +115,29 @@ func (tool *Humans) Call(method string, arguments map[string]interface{}) (strin
 				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"options\" is not an array of strings.")
 			} else if ok1 == false && ok2 == true {
 				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"question\" is not a string.")
+			} else {
+				return "", fmt.Errorf("humans.%s: Invalid parameters.", method)
+			}
+
+		} else if method == "AskPermission" {
+
+			reason, ok1 := arguments["reason"].(string)
+			raw_capabilities, ok2 := arguments["capabilities"]
+
+			if ok1 == true && ok2 == true {
+
+				capabilities, err0 := utils_capabilities.Parse(raw_capabilities)
+
+				if err0 == nil {
+					return tool.AskPermission(utils_fmt.FormatSingleLine(reason), capabilities)
+				} else {
+					return "", fmt.Errorf("humans.%s: %s", method, err0.Error())
+				}
+
+			} else if ok1 == true && ok2 == false {
+				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"capabilities\" is not an array.")
+			} else if ok1 == false && ok2 == true {
+				return "", fmt.Errorf("humans.%s: %s", method, "Invalid parameter \"reason\" is not a string.")
 			} else {
 				return "", fmt.Errorf("humans.%s: Invalid parameters.", method)
 			}
@@ -210,6 +254,142 @@ func (tool *Humans) Choose(text string, options []string, multiple bool) (string
 	go watchQuestion(tool, question.Question, state)
 
 	return tool.Await(question.Question)
+
+}
+
+func (tool *Humans) AskPermission(reason string, capabilities []types.Capability) (string, error) {
+
+	if len(capabilities) > 32 {
+		return "", fmt.Errorf("humans.AskPermission: Too many capabilities (maximum 32).")
+	}
+
+	missing, err0 := tool.Capabilities.Missing(capabilities)
+
+	if err0 == nil {
+
+		if len(missing) > 0 {
+
+			question_text := strings.TrimSpace(reason)
+
+			if question_text == "" {
+				question_text = "Permission request"
+			}
+
+			question := &types.Question{
+				Type:         "Permission",
+				Agent:        tool.AgentName,
+				Question:     question_text,
+				Options:      []string{},
+				Multiple:     true,
+				Capabilities: missing,
+				Answer:       "",
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), tool.Timeout)
+			state := &questionState{
+				ctx:    ctx,
+				cancel: cancel,
+				done:   make(chan struct{}),
+			}
+
+			tool.mutex.Lock()
+
+			_, pending := tool.states[question.Question]
+
+			if pending == true {
+				tool.mutex.Unlock()
+				cancel()
+				return "", fmt.Errorf("humans.AskPermission: Permission request \"%s\" is already pending.", question.Question)
+			}
+
+			tool.contents[question.Question] = question
+			tool.states[question.Question] = state
+			tool.mutex.Unlock()
+
+			go watchQuestion(tool, question.Question, state)
+
+			_, err1 := tool.Await(question.Question)
+
+			if err1 == nil {
+
+				tool.mutex.RLock()
+				answer_text := question.Answer
+				tool.mutex.RUnlock()
+
+				answer, err2 := utils_capabilities.ParseAnswer(answer_text)
+
+				if err2 == nil {
+
+					requested := make(map[string]types.Capability, len(missing))
+
+					for _, capability := range missing {
+						requested[capability.Key()] = capability
+					}
+
+					granted := make([]types.Capability, 0)
+					denied := make([]types.Capability, 0)
+
+					granted_keys := make(map[string]bool, len(answer))
+
+					for _, capability := range answer {
+
+						normalized, err3 := utils_capabilities.Normalize(capability)
+
+						if err3 == nil {
+
+							if requested_capability, ok := requested[normalized.Key()]; ok == true && granted_keys[normalized.Key()] == false {
+								granted = append(granted, requested_capability)
+								granted_keys[normalized.Key()] = true
+							}
+
+						}
+
+					}
+
+					for _, capability := range missing {
+
+						if granted_keys[capability.Key()] == false {
+							denied = append(denied, capability)
+						}
+
+					}
+
+					if len(granted) > 0 {
+
+						err4 := tool.Capabilities.Grant(granted)
+
+						if err4 != nil {
+							return "", fmt.Errorf("humans.AskPermission: %s", err4.Error())
+						}
+
+					}
+
+					return permissionSummary(granted, denied), nil
+
+				} else {
+					return "", fmt.Errorf("humans.AskPermission: Invalid permission answer.")
+				}
+
+			} else {
+
+				tool.mutex.Lock()
+
+				if existing, ok := tool.contents[question.Question]; ok == true && existing.Answer == "" {
+					delete(tool.contents, question.Question)
+				}
+
+				tool.mutex.Unlock()
+
+				return "", err1
+			}
+
+		} else {
+			return "humans.AskPermission: All requested capabilities are already granted.", nil
+		}
+
+	} else {
+		return "", fmt.Errorf("humans.AskPermission: %s", err0.Error())
+	}
 
 }
 

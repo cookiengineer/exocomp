@@ -1,35 +1,21 @@
 package tools
 
-import "strings"
+import utils_capabilities "exocomp/utils/capabilities"
 
 // sanitizeShellArguments applies the same path rules as programs.Execute to
 // arguments that contain a path separator.
-func sanitizeShellArguments(sandbox string, arguments []string) ([]string, error) {
+func sanitizeShellArguments(sandbox string, capabilities *utils_capabilities.Set, arguments []string) ([]string, error) {
 
 	result := make([]string, 0, len(arguments))
 
 	for _, argument := range arguments {
 
-		if strings.ContainsAny(argument, "/\\") == true {
+		resolved, err0 := sanitizeProgramArgument(sandbox, capabilities, argument)
 
-			resolved, err0 := sanitizeSandboxPath(sandbox, argument)
-
-			if err0 == nil {
-				result = append(result, resolved)
-			} else {
-				return nil, err0
-			}
-
+		if err0 == nil {
+			result = append(result, resolved)
 		} else {
-
-			_, err1 := checkSandboxPath(sandbox, argument)
-
-			if err1 == nil {
-				result = append(result, argument)
-			} else {
-				return nil, err1
-			}
-
+			return nil, err0
 		}
 
 	}

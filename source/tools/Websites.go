@@ -3,29 +3,72 @@ package tools
 import "exocomp/schemas"
 import utils_fmt "exocomp/utils/fmt"
 import "exocomp/types"
+import utils_capabilities "exocomp/utils/capabilities"
+import "context"
 import "fmt"
 import "io"
 import net_http "net/http"
+import "net"
 import "slices"
 import "sort"
 import "strings"
 import "time"
 
 type Websites struct {
-	Methods    []string
-	Playground string
-	Sandbox    string
-	client     *net_http.Client
+	Methods      []string
+	Playground   string
+	Sandbox      string
+	Capabilities *utils_capabilities.Set
+	client       *net_http.Client
 }
 
 func NewWebsites(methods []string, playground string, sandbox string) *Websites {
 
+	return NewWebsitesWithCapabilities(methods, playground, sandbox, nil)
+
+}
+
+func NewWebsitesWithCapabilities(
+	methods []string,
+	playground string,
+	sandbox string,
+	capabilities *utils_capabilities.Set,
+) *Websites {
+
 	websites := &Websites{
-		Methods:    methods,
-		Playground: playground,
-		Sandbox:    sandbox,
-		client: &net_http.Client{
-			Timeout: 30 * time.Second,
+		Methods:      methods,
+		Playground:   playground,
+		Sandbox:      sandbox,
+		Capabilities: capabilities,
+	}
+
+	dialer := &net.Dialer{
+		Timeout: 30 * time.Second,
+	}
+
+	websites.client = &net_http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &net_http.Transport{
+			Proxy: net_http.ProxyFromEnvironment,
+			DialContext: func(ctx context.Context, network string, address string) (net.Conn, error) {
+				host, _, err0 := net.SplitHostPort(address)
+				if err0 != nil {
+					host = address
+				}
+				if websites.canConnect(host) == false {
+					return nil, fmt.Errorf("network permission denied")
+				}
+				return dialer.DialContext(ctx, network, address)
+			},
+		},
+		CheckRedirect: func(request *net_http.Request, via []*net_http.Request) error {
+			if websites.canConnect(request.URL.Hostname()) == false {
+				return fmt.Errorf("network permission denied")
+			}
+			if len(via) >= 10 {
+				return fmt.Errorf("stopped after 10 redirects")
+			}
+			return nil
 		},
 	}
 
@@ -35,6 +78,41 @@ func NewWebsites(methods []string, playground string, sandbox string) *Websites 
 
 func (tool *Websites) Name() string {
 	return "websites"
+}
+
+func (tool *Websites) canConnect(host string) bool {
+
+	if tool.Capabilities != nil && tool.Capabilities.HasNetwork() == true {
+
+		if tool.Capabilities.CanConnect(host) == true {
+			return true
+		}
+
+		if net.ParseIP(host) == nil {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			addresses, err0 := net.DefaultResolver.LookupIPAddr(ctx, host)
+
+			if err0 == nil {
+
+				for _, address := range addresses {
+
+					if tool.Capabilities.CanConnectIP(address.IP) == true {
+						return true
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+
+	return false
+
 }
 
 func (tool *Websites) Call(method string, arguments map[string]interface{}) (string, error) {
@@ -117,6 +195,10 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 			useragent, err1 := getWebsiteUserAgent(user_agent)
 
 			if err1 == nil {
+
+				if tool.canConnect(url.Hostname()) == false {
+					return "", fmt.Errorf("websites.Fetch: Missing network.Connect permission for \"%s\". Request it with humans.AskPermission.", url.Hostname())
+				}
 
 				request, err2 := net_http.NewRequest(net_http.MethodGet, url.String(), nil)
 
@@ -260,6 +342,10 @@ func (tool *Websites) Stat(url_str string, user_agent string) (string, error) {
 		useragent, err1 := getWebsiteUserAgent(user_agent)
 
 		if err1 == nil {
+
+			if tool.canConnect(url.Hostname()) == false {
+				return "", fmt.Errorf("websites.Stat: Missing network.Connect permission for \"%s\". Request it with humans.AskPermission.", url.Hostname())
+			}
 
 			var response *net_http.Response = nil
 

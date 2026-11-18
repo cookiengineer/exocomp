@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/schemas"
+import utils_capabilities "exocomp/utils/capabilities"
 import utils_bytes "exocomp/utils/bytes"
 import utils_sandbox "exocomp/utils/sandbox"
 import "context"
@@ -15,14 +16,28 @@ type Programs struct {
 	Methods         []string
 	Sandbox         string
 	AllowedPrograms []string
+	Capabilities    *utils_capabilities.Set
 }
 
 func NewPrograms(methods []string, playground string, sandbox string, allowed_programs []string) *Programs {
+
+	return NewProgramsWithCapabilities(methods, playground, sandbox, allowed_programs, nil)
+
+}
+
+func NewProgramsWithCapabilities(
+	methods []string,
+	playground string,
+	sandbox string,
+	allowed_programs []string,
+	capabilities *utils_capabilities.Set,
+) *Programs {
 
 	return &Programs{
 		Methods:         methods,
 		Sandbox:         sandbox,
 		AllowedPrograms: allowed_programs,
+		Capabilities:    capabilities,
 	}
 
 }
@@ -111,26 +126,12 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		for a := 0; a < len(arguments); a++ {
 
-			if strings.ContainsAny(arguments[a], "/\\") {
+			argument, err := sanitizeProgramArgument(tool.Sandbox, tool.Capabilities, arguments[a])
 
-				resolved, err := sanitizeSandboxPath(tool.Sandbox, arguments[a])
-
-				if err == nil {
-					program_arguments = append(program_arguments, resolved)
-				} else {
-					return "", fmt.Errorf("programs.Execute: %s", err.Error())
-				}
-
+			if err == nil {
+				program_arguments = append(program_arguments, argument)
 			} else {
-
-				_, err := checkSandboxPath(tool.Sandbox, arguments[a])
-
-				if err == nil {
-					program_arguments = append(program_arguments, arguments[a])
-				} else {
-					return "", fmt.Errorf("programs.Execute: %s", err.Error())
-				}
-
+				return "", fmt.Errorf("programs.Execute: %s", err.Error())
 			}
 
 		}
@@ -172,7 +173,12 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		}()
 
-		cmd, err2 := utils_sandbox.CommandContext(ctx, tool.Sandbox, program, program_arguments, []string{})
+		read_paths, write_paths := tool.Capabilities.SandboxPaths()
+
+		cmd, err2 := utils_sandbox.CommandContextWithPermissions(ctx, tool.Sandbox, program, program_arguments, utils_sandbox.Permissions{
+			ReadPaths:  read_paths,
+			WritePaths: write_paths,
+		})
 
 		if err2 == nil {
 

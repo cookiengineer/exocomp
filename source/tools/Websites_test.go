@@ -1,14 +1,33 @@
 package tools
 
+import "exocomp/types"
+import utils_capabilities "exocomp/utils/capabilities"
 import "fmt"
 import "net/http"
 import "net/http/httptest"
 import "strings"
 import "testing"
 
+func newTestWebsites(t *testing.T) *Websites {
+
+	t.Helper()
+
+	capabilities := utils_capabilities.NewSet()
+	err0 := capabilities.Grant([]types.Capability{
+		{Type: types.CapabilityNetworkConnect, Scope: "127.0.0.1"},
+	})
+
+	if err0 != nil {
+		t.Fatalf("Cannot grant test capability: %v", err0)
+	}
+
+	return NewWebsitesWithCapabilities([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp", capabilities)
+
+}
+
 func TestWebsites_List(t *testing.T) {
 
-	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
+	tool := newTestWebsites(t)
 
 	result, err0 := tool.List()
 
@@ -43,7 +62,7 @@ func TestWebsites_Fetch_Markdown(t *testing.T) {
 	}))
 	defer server.Close()
 
-	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
+	tool := newTestWebsites(t)
 
 	result, err0 := tool.Fetch(server.URL, "chrome-windows", "markdown")
 
@@ -77,7 +96,7 @@ func TestWebsites_Fetch_Text(t *testing.T) {
 	}))
 	defer server.Close()
 
-	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
+	tool := newTestWebsites(t)
 
 	result, err0 := tool.Fetch(server.URL, "", "text")
 
@@ -97,7 +116,7 @@ func TestWebsites_Fetch_Text(t *testing.T) {
 
 func TestWebsites_Fetch_InvalidURL(t *testing.T) {
 
-	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
+	tool := newTestWebsites(t)
 
 	_, err0 := tool.Fetch("ftp://example.com/file", "", "markdown")
 
@@ -109,7 +128,7 @@ func TestWebsites_Fetch_InvalidURL(t *testing.T) {
 
 func TestWebsites_Fetch_InvalidUserAgent(t *testing.T) {
 
-	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
+	tool := newTestWebsites(t)
 
 	_, err0 := tool.Fetch("https://example.com/", "does-not-exist", "markdown")
 
@@ -127,7 +146,7 @@ func TestWebsites_Stat(t *testing.T) {
 	}))
 	defer server.Close()
 
-	tool := NewWebsites([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp")
+	tool := newTestWebsites(t)
 
 	result, err0 := tool.Stat(server.URL, "")
 
@@ -141,6 +160,24 @@ func TestWebsites_Stat(t *testing.T) {
 
 	if !strings.Contains(result, "X-Custom") {
 		t.Errorf("Expected the custom header to be reported, got:\n%s", result)
+	}
+
+}
+
+func TestWebsites_DefaultDeny(t *testing.T) {
+
+	tool := NewWebsitesWithCapabilities([]string{"Fetch", "List", "Stat"}, "/tmp", "/tmp", nil)
+
+	_, err0 := tool.Fetch("https://example.com/", "", "markdown")
+
+	if err0 != nil {
+
+		if strings.Contains(err0.Error(), "Missing network.Connect permission") == false {
+			t.Errorf("Expected network permission error, got %v", err0)
+		}
+
+	} else {
+		t.Errorf("Expected %v to be not nil", err0)
 	}
 
 }

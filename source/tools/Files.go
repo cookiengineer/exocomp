@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/schemas"
+import utils_capabilities "exocomp/utils/capabilities"
 import utils_ast "exocomp/utils/ast"
 import utils_fmt "exocomp/utils/fmt"
 import utils_fs "exocomp/utils/fs"
@@ -13,15 +14,28 @@ import "sort"
 import "strings"
 
 type Files struct {
-	Methods []string
-	Sandbox string
+	Methods      []string
+	Sandbox      string
+	Capabilities *utils_capabilities.Set
 }
 
 func NewFiles(methods []string, playground string, sandbox string) *Files {
 
+	return NewFilesWithCapabilities(methods, playground, sandbox, nil)
+
+}
+
+func NewFilesWithCapabilities(
+	methods []string,
+	playground string,
+	sandbox string,
+	capabilities *utils_capabilities.Set,
+) *Files {
+
 	return &Files{
-		Methods: methods,
-		Sandbox: sandbox,
+		Methods:      methods,
+		Sandbox:      sandbox,
+		Capabilities: capabilities,
 	}
 
 }
@@ -154,11 +168,11 @@ func (tool *Files) Call(method string, arguments map[string]interface{}) (string
 
 func (tool *Files) Copy(from_path string, to_path string) (string, error) {
 
-	from_resolved, err1 := resolveSandboxPath(tool.Sandbox, from_path)
+	from_resolved, err1 := resolveFilesPath(tool.Sandbox, tool.Capabilities, from_path, false)
 
 	if err1 == nil {
 
-		to_resolved, err2 := resolveSandboxPath(tool.Sandbox, to_path)
+		to_resolved, err2 := resolveFilesPath(tool.Sandbox, tool.Capabilities, to_path, true)
 
 		if err2 == nil {
 
@@ -226,7 +240,7 @@ func (tool *Files) List(path string) (string, error) {
 		path = "."
 	}
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	resolved, err0 := resolveFilesPath(tool.Sandbox, tool.Capabilities, path, false)
 
 	if err0 == nil {
 
@@ -245,9 +259,9 @@ func (tool *Files) List(path string) (string, error) {
 					for _, entry := range entries {
 
 						name := entry.Name()
-						path, err := sanitizeSandboxPath(tool.Sandbox, resolved+"/"+name)
+						path := displayFilesPath(tool.Sandbox, resolved+"/"+name)
 
-						if err == nil && entry.Type()&os.ModeSymlink == 0 && strings.HasPrefix(name, ".") == false {
+						if entry.Type()&os.ModeSymlink == 0 && strings.HasPrefix(name, ".") == false {
 
 							typ := "file"
 
@@ -292,7 +306,7 @@ func (tool *Files) List(path string) (string, error) {
 
 func (tool *Files) Read(path string) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	resolved, err0 := resolveFilesPath(tool.Sandbox, tool.Capabilities, path, false)
 
 	if err0 == nil {
 
@@ -325,7 +339,7 @@ func (tool *Files) Search(path string, query string) (string, error) {
 		path = "."
 	}
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	resolved, err0 := resolveFilesPath(tool.Sandbox, tool.Capabilities, path, false)
 
 	if err0 == nil {
 
@@ -359,11 +373,8 @@ func (tool *Files) Search(path string, query string) (string, error) {
 
 									for s := 0; s < len(symbols); s++ {
 
-										sandbox_path, err5 := sanitizeSandboxPath(tool.Sandbox, entry_path)
-
-										if err5 == nil {
-											lines = append(lines, fmt.Sprintf("- File: \"%s\", Symbol: \"%s\", Type: \"%s\"", sandbox_path, symbols[s].Name, symbols[s].Type))
-										}
+										sandbox_path := displayFilesPath(tool.Sandbox, entry_path)
+										lines = append(lines, fmt.Sprintf("- File: \"%s\", Symbol: \"%s\", Type: \"%s\"", sandbox_path, symbols[s].Name, symbols[s].Type))
 
 									}
 
@@ -414,7 +425,7 @@ func (tool *Files) Search(path string, query string) (string, error) {
 
 func (tool *Files) ReadSymbol(path string, symbol string) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	resolved, err0 := resolveFilesPath(tool.Sandbox, tool.Capabilities, path, false)
 
 	if err0 == nil {
 
@@ -449,7 +460,7 @@ func (tool *Files) ReadSymbol(path string, symbol string) (string, error) {
 
 func (tool *Files) WriteSymbol(path string, symbol string, declaration string) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	resolved, err0 := resolveFilesPath(tool.Sandbox, tool.Capabilities, path, true)
 
 	if err0 == nil {
 
@@ -509,7 +520,7 @@ func (tool *Files) Schemas() []schemas.Tool {
 
 func (tool *Files) Stat(path string) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	resolved, err0 := resolveFilesPath(tool.Sandbox, tool.Capabilities, path, false)
 
 	if err0 == nil {
 
@@ -546,7 +557,7 @@ func (tool *Files) Stat(path string) (string, error) {
 
 func (tool *Files) Write(path string, content string) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(tool.Sandbox, path)
+	resolved, err0 := resolveFilesPath(tool.Sandbox, tool.Capabilities, path, true)
 
 	if err0 == nil {
 

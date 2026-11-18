@@ -2,6 +2,7 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
+import utils_capabilities "exocomp/utils/capabilities"
 import utils_bytes "exocomp/utils/bytes"
 import utils_fmt "exocomp/utils/fmt"
 import utils_sandbox "exocomp/utils/sandbox"
@@ -20,6 +21,7 @@ type Skills struct {
 	Sandbox         string
 	AllowedPrograms []string
 	AllowedTools    []string
+	Capabilities    *utils_capabilities.Set
 	contents        map[string]*types.Skill
 	loaded_skills   map[string]*types.Skill
 	processes       map[string]*os.Process
@@ -27,12 +29,26 @@ type Skills struct {
 
 func NewSkills(methods []string, playground string, sandbox string, allowed_programs []string, allowed_tools []string) *Skills {
 
+	return NewSkillsWithCapabilities(methods, playground, sandbox, allowed_programs, allowed_tools, nil)
+
+}
+
+func NewSkillsWithCapabilities(
+	methods []string,
+	playground string,
+	sandbox string,
+	allowed_programs []string,
+	allowed_tools []string,
+	capabilities *utils_capabilities.Set,
+) *Skills {
+
 	skills := &Skills{
 		Methods:         methods,
 		Playground:      playground,
 		Sandbox:         sandbox,
 		AllowedPrograms: allowed_programs,
 		AllowedTools:    allowed_tools,
+		Capabilities:    capabilities,
 		contents:        make(map[string]*types.Skill),
 		loaded_skills:   make(map[string]*types.Skill),
 		processes:       make(map[string]*os.Process),
@@ -436,7 +452,13 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 					}()
 
 					scripts_dir := filepath.Join(tool.Playground, "skills", skill.Name, "scripts")
-					cmd, err2 := utils_sandbox.CommandContext(ctx, tool.Sandbox, runtime, runtime_arguments, []string{scripts_dir})
+					read_paths, write_paths := tool.Capabilities.SandboxPaths()
+					read_paths = append(read_paths, scripts_dir)
+
+					cmd, err2 := utils_sandbox.CommandContextWithPermissions(ctx, tool.Sandbox, runtime, runtime_arguments, utils_sandbox.Permissions{
+						ReadPaths:  read_paths,
+						WritePaths: write_paths,
+					})
 
 					if err2 == nil {
 

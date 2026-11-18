@@ -1,6 +1,8 @@
 package tools
 
 import "exocomp/schemas"
+import utils_capabilities "exocomp/utils/capabilities"
+import utils_shell "exocomp/utils/shell"
 import utils_sandbox "exocomp/utils/sandbox"
 import "context"
 import "crypto/rand"
@@ -42,6 +44,7 @@ type Shell struct {
 	Playground      string
 	Sandbox         string
 	AllowedPrograms []string
+	Capabilities    *utils_capabilities.Set
 	Timeout         time.Duration
 	IdleTimeout     time.Duration
 	MaxSessions     int
@@ -76,7 +79,7 @@ type shellSession struct {
 	dropped      int64
 
 	output []byte
-	filter terminalFilter
+	filter utils_shell.TerminalFilter
 
 	mutex      sync.Mutex
 	writeMutex sync.Mutex
@@ -87,11 +90,24 @@ type shellSession struct {
 
 func NewShell(methods []string, playground string, sandbox string, allowed_programs []string) *Shell {
 
+	return NewShellWithCapabilities(methods, playground, sandbox, allowed_programs, nil)
+
+}
+
+func NewShellWithCapabilities(
+	methods []string,
+	playground string,
+	sandbox string,
+	allowed_programs []string,
+	capabilities *utils_capabilities.Set,
+) *Shell {
+
 	tool := &Shell{
 		Methods:         methods,
 		Playground:      playground,
 		Sandbox:         sandbox,
 		AllowedPrograms: allowed_programs,
+		Capabilities:    capabilities,
 		Timeout:         30 * time.Minute,
 		IdleTimeout:     5 * time.Minute,
 		MaxSessions:     4,
@@ -121,7 +137,7 @@ func (tool *Shell) Call(method string, arguments map[string]interface{}) (string
 
 			if ok1 == true {
 
-				args, err0 := parseShellArguments(arguments["arguments"])
+				args, err0 := utils_shell.ParseArguments(arguments["arguments"])
 
 				if err0 == nil {
 
@@ -172,11 +188,11 @@ func (tool *Shell) Call(method string, arguments map[string]interface{}) (string
 
 			if ok == true {
 
-				wait_ms, err0 := parseShellInt(arguments, "wait_ms", 0)
+				wait_ms, err0 := utils_shell.ParseInt(arguments, "wait_ms", 0)
 
 				if err0 == nil {
 
-					limit, err1 := parseShellInt(arguments, "limit", shellDefaultRead)
+					limit, err1 := utils_shell.ParseInt(arguments, "limit", shellDefaultRead)
 
 					if err1 == nil {
 						return tool.Read(session_id, wait_ms, limit)
@@ -198,11 +214,11 @@ func (tool *Shell) Call(method string, arguments map[string]interface{}) (string
 
 			if ok == true {
 
-				columns, err0 := parseShellInt(arguments, "columns", 0)
+				columns, err0 := utils_shell.ParseInt(arguments, "columns", 0)
 
 				if err0 == nil {
 
-					rows, err1 := parseShellInt(arguments, "rows", 0)
+					rows, err1 := utils_shell.ParseInt(arguments, "rows", 0)
 
 					if err1 == nil {
 						return tool.Resize(session_id, columns, rows)
@@ -281,11 +297,11 @@ func (tool *Shell) Call(method string, arguments map[string]interface{}) (string
 
 			if ok == true {
 
-				offset, err0 := parseShellInt(arguments, "offset", 0)
+				offset, err0 := utils_shell.ParseInt(arguments, "offset", 0)
 
 				if err0 == nil {
 
-					limit, err1 := parseShellInt(arguments, "limit", shellDefaultRead)
+					limit, err1 := utils_shell.ParseInt(arguments, "limit", shellDefaultRead)
 
 					if err1 == nil {
 						return tool.Log(session_id, offset, limit)
@@ -313,11 +329,11 @@ func (tool *Shell) Call(method string, arguments map[string]interface{}) (string
 
 func (tool *Shell) callOpen(program string, arguments []string, workdir string, raw map[string]interface{}) (string, error) {
 
-	columns, err0 := parseShellInt(raw, "columns", shellDefaultColumns)
+	columns, err0 := utils_shell.ParseInt(raw, "columns", shellDefaultColumns)
 
 	if err0 == nil {
 
-		rows, err1 := parseShellInt(raw, "rows", shellDefaultRows)
+		rows, err1 := utils_shell.ParseInt(raw, "rows", shellDefaultRows)
 
 		if err1 == nil {
 			return tool.Open(program, arguments, workdir, columns, rows)
@@ -367,11 +383,11 @@ func (tool *Shell) Open(program string, arguments []string, workdir string, colu
 		return "", fmt.Errorf("shell.Open: Invalid parameter \"rows\" must be between %d and %d.", shellMinRows, shellMaxRows)
 	}
 
-	if shellArgumentBytes(arguments) > shellMaxArguments {
+	if utils_shell.ArgumentBytes(arguments) > shellMaxArguments {
 		return "", fmt.Errorf("shell.Open: Invalid parameter \"arguments\" exceeds the %d byte limit.", shellMaxArguments)
 	}
 
-	resolved_arguments, err_args := sanitizeShellArguments(tool.Sandbox, arguments)
+	resolved_arguments, err_args := sanitizeShellArguments(tool.Sandbox, tool.Capabilities, arguments)
 
 	if err_args != nil {
 		return "", fmt.Errorf("shell.Open: %s", err_args.Error())
@@ -407,17 +423,22 @@ func (tool *Shell) Open(program string, arguments []string, workdir string, colu
 						if err3 == nil {
 
 							ctx, cancel := context.WithCancel(context.Background())
-							cmd, err4 := utils_sandbox.CommandContext(ctx, tool.Sandbox, program, resolved_arguments, nil)
+							read_paths, write_paths := tool.Capabilities.SandboxPaths()
+
+							cmd, err4 := utils_sandbox.CommandContextWithPermissions(ctx, tool.Sandbox, program, resolved_arguments, utils_sandbox.Permissions{
+								ReadPaths:  read_paths,
+								WritePaths: write_paths,
+							})
 
 							if err4 == nil {
 
 								cmd.Dir = resolved_workdir
-								cmd.Env = shellSetEnv(cmd.Env, "TERM", "xterm-256color")
-								cmd.Env = shellSetEnv(cmd.Env, "PAGER", "cat")
-								cmd.Env = shellSetEnv(cmd.Env, "GIT_PAGER", "cat")
-								cmd.Env = shellSetEnv(cmd.Env, "SYSTEMD_PAGER", "cat")
+								cmd.Env = utils_shell.SetEnv(cmd.Env, "TERM", "xterm-256color")
+								cmd.Env = utils_shell.SetEnv(cmd.Env, "PAGER", "cat")
+								cmd.Env = utils_shell.SetEnv(cmd.Env, "GIT_PAGER", "cat")
+								cmd.Env = utils_shell.SetEnv(cmd.Env, "SYSTEMD_PAGER", "cat")
 
-								prepareShellProcess(cmd)
+								utils_shell.PrepareProcess(cmd)
 
 								master, err5 := pty.StartWithSize(cmd, &pty.Winsize{
 									Cols: uint16(columns),
@@ -456,8 +477,8 @@ func (tool *Shell) Open(program string, arguments []string, workdir string, colu
 									initial, status, exit_code := session.read(shellOpenWait, shellDefaultRead)
 
 									lines := make([]string, 0)
-									lines = append(lines, fmt.Sprintf("shell.Open: Session \"%s\" started program \"%s\" arguments %s in workdir \"%s\".", session_id, program, shellFormatArguments(resolved_arguments), workdir))
-									lines = append(lines, fmt.Sprintf("shell.Open: Status: %s%s.", status, shellFormatExitCode(status, exit_code)))
+									lines = append(lines, fmt.Sprintf("shell.Open: Session \"%s\" started program \"%s\" arguments %s in workdir \"%s\".", session_id, program, utils_shell.FormatArguments(resolved_arguments), workdir))
+									lines = append(lines, fmt.Sprintf("shell.Open: Status: %s%s.", status, utils_shell.FormatExitCode(status, exit_code)))
 									lines = append(lines, "shell.Open: Output:")
 
 									if len(initial) > 0 {
@@ -522,7 +543,7 @@ func (tool *Shell) Write(session_id string, data string) (string, error) {
 
 				status, exit_code := session.status()
 
-				return fmt.Sprintf("shell.Write: Session \"%s\" wrote %d bytes, status \"%s\"%s.", session_id, written, status, shellFormatExitCode(status, exit_code)), nil
+				return fmt.Sprintf("shell.Write: Session \"%s\" wrote %d bytes, status \"%s\"%s.", session_id, written, status, utils_shell.FormatExitCode(status, exit_code)), nil
 
 			} else {
 				return "", fmt.Errorf("shell.Write: Cannot write to session \"%s\".", session_id)
@@ -552,7 +573,7 @@ func (tool *Shell) Read(session_id string, wait_ms int, limit int) (string, erro
 				dropped, total, truncated := session.outputStats()
 				pending := session.pendingOutput()
 
-				header := fmt.Sprintf("shell.Read: Session \"%s\" status \"%s\" read %d bytes (total %d, dropped %d)%s.", session_id, status, len(data), total, dropped, shellFormatExitCode(status, exit_code))
+				header := fmt.Sprintf("shell.Read: Session \"%s\" status \"%s\" read %d bytes (total %d, dropped %d)%s.", session_id, status, len(data), total, dropped, utils_shell.FormatExitCode(status, exit_code))
 
 				if truncated == true || pending > 0 || dropped > 0 {
 					header += " Output was truncated; use shell.Log."
@@ -622,7 +643,7 @@ func (tool *Shell) Signal(session_id string, name string) (string, error) {
 
 			status, exit_code := session.status()
 
-			return fmt.Sprintf("shell.Signal: Session \"%s\" sent SIG%s, status \"%s\"%s.", session_id, signal, status, shellFormatExitCode(status, exit_code)), nil
+			return fmt.Sprintf("shell.Signal: Session \"%s\" sent SIG%s, status \"%s\"%s.", session_id, signal, status, utils_shell.FormatExitCode(status, exit_code)), nil
 
 		} else {
 			return "", fmt.Errorf("shell.Signal: %s", err0.Error())
@@ -650,7 +671,7 @@ func (tool *Shell) Close(session_id string, force bool) (string, error) {
 		data, status, exit_code := session.close(force)
 		total, _, _ := session.outputStats()
 
-		header := fmt.Sprintf("shell.Close: Session \"%s\" closed with status \"%s\"%s, log %d bytes.", session_id, status, shellFormatExitCode(status, exit_code), total)
+		header := fmt.Sprintf("shell.Close: Session \"%s\" closed with status \"%s\"%s, log %d bytes.", session_id, status, utils_shell.FormatExitCode(status, exit_code), total)
 
 		if len(data) > 0 {
 			return header + "\n" + string(data), nil
@@ -694,7 +715,7 @@ func (tool *Shell) List() (string, error) {
 		dropped := session.dropped
 		session.mutex.Unlock()
 
-		lines = append(lines, fmt.Sprintf("- Session: %s, Program: \"%s\", Status: %s%s, Started: %s, LastActivity: %s, Log: %d bytes, Dropped: %d bytes", session.ID, program, status, shellFormatExitCode(status, exit_code), started_at.Format(time.RFC3339), last_activity.Format(time.RFC3339), log_size, dropped))
+		lines = append(lines, fmt.Sprintf("- Session: %s, Program: \"%s\", Status: %s%s, Started: %s, LastActivity: %s, Log: %d bytes, Dropped: %d bytes", session.ID, program, status, utils_shell.FormatExitCode(status, exit_code), started_at.Format(time.RFC3339), last_activity.Format(time.RFC3339), log_size, dropped))
 
 	}
 
@@ -737,7 +758,7 @@ func (tool *Shell) Stat(session_id string) (string, error) {
 		}
 
 		return strings.Join([]string{
-			fmt.Sprintf("shell.Stat: Session \"%s\": program \"%s\", arguments %s, status \"%s\"%s.", session_id, program, shellFormatArguments(arguments), status, shellFormatExitCode(status, exit_code)),
+			fmt.Sprintf("shell.Stat: Session \"%s\": program \"%s\", arguments %s, status \"%s\"%s.", session_id, program, utils_shell.FormatArguments(arguments), status, utils_shell.FormatExitCode(status, exit_code)),
 			fmt.Sprintf("shell.Stat: Workdir: \"%s\", TTY: %dx%d, Started: %s, Finished: %s, LastActivity: %s, Log: %d bytes, Dropped: %d bytes%s.", workdir, columns, rows, started_at.Format(time.RFC3339), finished, last_activity.Format(time.RFC3339), log_size, dropped, truncated),
 		}, "\n"), nil
 
@@ -1193,7 +1214,7 @@ func (session *shellSession) signal(name string) (string, error) {
 
 	if status == "starting" || status == "running" {
 
-		signal, err := shellSendSignalByName(pid, name)
+		signal, err := utils_shell.SendSignalByName(pid, name)
 
 		if err == nil {
 			session.touch()
@@ -1224,16 +1245,16 @@ func (session *shellSession) close(force bool) ([]byte, string, int) {
 
 		if force == true {
 
-			_ = shellKillProcess(pid)
+			_ = utils_shell.KillProcess(pid)
 
 		} else {
 
-			_, _ = shellSendSignalByName(pid, "TERM")
+			_, _ = utils_shell.SendSignalByName(pid, "TERM")
 
 			select {
 			case <-session.done:
 			case <-time.After(shellCloseGrace):
-				_ = shellKillProcess(pid)
+				_ = utils_shell.KillProcess(pid)
 				select {
 				case <-session.done:
 				case <-time.After(shellCloseGrace):
@@ -1287,7 +1308,7 @@ func (session *shellSession) timeout() {
 
 	session.mutex.Unlock()
 
-	_ = shellKillProcess(pid)
+	_ = utils_shell.KillProcess(pid)
 
 }
 

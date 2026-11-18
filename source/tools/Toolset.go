@@ -1,11 +1,23 @@
 package tools
 
 import "exocomp/types"
+import utils_capabilities "exocomp/utils/capabilities"
 import _ "embed"
 import net_url "net/url"
 import "strings"
 
-func Toolset(playground string, sandbox string, model string, url *net_url.URL, debug bool, allowed_programs []string, allowed_images []string, allowed_tools []string) []types.Tool {
+func Toolset(
+	playground string,
+	sandbox string,
+	model string,
+	url *net_url.URL,
+	debug bool,
+	allowed_programs []string,
+	allowed_images []string,
+	allowed_tools []string,
+	agent_name string,
+	capabilities *utils_capabilities.Set,
+) []types.Tool {
 
 	filtered_by_methods := make(map[string][]string, 0)
 	filtered_by_tool := make(map[string]types.Tool)
@@ -47,19 +59,19 @@ func Toolset(playground string, sandbox string, model string, url *net_url.URL, 
 		case "containers":
 			tool = NewContainers(allowed_methods, playground, sandbox, allowed_images)
 		case "files":
-			tool = NewFiles(allowed_methods, playground, sandbox)
+			tool = NewFilesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
 		case "humans":
-			tool = NewHumans(allowed_methods, playground, sandbox)
+			tool = NewHumansWithCapabilities(allowed_methods, playground, sandbox, agent_name, capabilities)
 		case "programs":
-			tool = NewPrograms(allowed_methods, playground, sandbox, allowed_programs)
+			tool = NewProgramsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
 		case "requirements":
 			tool = NewRequirements(allowed_methods, playground, sandbox)
 		case "shell":
-			tool = NewShell(allowed_methods, playground, sandbox, allowed_programs)
+			tool = NewShellWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
 		case "skills":
-			tool = NewSkills(allowed_methods, playground, sandbox, allowed_programs, allowed_tools)
+			tool = NewSkillsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, allowed_tools, capabilities)
 		case "websites":
-			tool = NewWebsites(allowed_methods, playground, sandbox)
+			tool = NewWebsitesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
 
 		}
 

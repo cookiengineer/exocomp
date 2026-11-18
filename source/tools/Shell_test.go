@@ -579,18 +579,6 @@ func TestShell_Destroy(t *testing.T) {
 
 }
 
-func TestTerminalFilter(t *testing.T) {
-
-	filter := &terminalFilter{}
-
-	result := filter.Write([]byte("hello\x1b[31mred\x1b[0m\r\nworld\x00"))
-
-	if string(result) != "hellored\nworld" {
-		t.Errorf("Expected filtered content, got %q", string(result))
-	}
-
-}
-
 func readShellUntil(t *testing.T, tool *Shell, session_id string, needle string) string {
 
 	t.Helper()

@@ -1,0 +1,50 @@
+package tools
+
+import utils_capabilities "exocomp/utils/capabilities"
+import "path/filepath"
+
+// resolveFilesPath resolves a path inside the sandbox or inside a granted
+// capability scope.
+func resolveFilesPath(sandbox string, capabilities *utils_capabilities.Set, path string, write bool) (string, error) {
+
+	resolved, err0 := resolveSandboxPath(sandbox, path)
+
+	if err0 == nil {
+
+		return resolved, nil
+
+	} else if capabilities != nil && filepath.IsAbs(path) == true {
+
+		absolute, err1 := filepath.Abs(path)
+
+		if err1 == nil {
+
+			canonical, err2 := filepath.EvalSymlinks(absolute)
+
+			if err2 != nil {
+
+				parent, err3 := filepath.EvalSymlinks(filepath.Dir(absolute))
+
+				if err3 == nil {
+					canonical = filepath.Join(parent, filepath.Base(absolute))
+				}
+
+			}
+
+			if canonical != "" {
+
+				if write == true && capabilities.CanWrite(canonical) == true {
+					return canonical, nil
+				} else if write == false && capabilities.CanRead(canonical) == true {
+					return canonical, nil
+				}
+
+			}
+
+		}
+
+	}
+
+	return "", err0
+
+}

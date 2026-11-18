@@ -2,6 +2,42 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "humans.AskPermission",
+			"description": "Ask the human user to grant temporary sandbox capabilities. Each capability is selectable individually. Grants are kept in memory for the current agent session only and are never persisted to disk. network.Connect applies to Exocomp network tools only; raw programs are not domain-filtered.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"reason": {
+						"type": "string",
+						"description": "Why the permissions are needed, e.g. \"The target checkout is outside the sandbox and the staging API is needed for verification.\""
+					},
+					"capabilities": {
+						"type": "array",
+						"description": "The capabilities to request, e.g. files.Read for /home/foo/target or network.Connect for example.com.",
+						"items": {
+							"type": "object",
+							"properties": {
+								"type": {
+									"type": "string",
+									"description": "The capability type.",
+									"enum": ["files.Read", "files.Write", "network.Connect"]
+								},
+								"scope": {
+									"type": "string",
+									"description": "The capability scope: an absolute path, exact domain, exact IP or CIDR."
+								}
+							},
+							"required": ["type", "scope"]
+						}
+					}
+				},
+				"required": ["reason", "capabilities"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "humans.Ask",
 			"description": "Ask the human user a question and wait for their free-form text answer. Use this to clarify requirements, confirm plans or request decisions that cannot be answered by inspecting the codebase.",
 			"parameters": {
