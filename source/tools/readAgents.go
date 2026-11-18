@@ -2,6 +2,7 @@ package tools
 
 import "exocomp/agents"
 import "exocomp/types"
+import utils_sandbox "exocomp/utils/sandbox"
 import "fmt"
 import "os"
 import "path/filepath"
@@ -11,7 +12,7 @@ func readAgents(tool *Agents) error {
 
 	if tool.Playground != "" {
 
-		resolved, err0 := resolveSandboxPath(tool.Playground, "agents")
+		resolved, err0 := utils_sandbox.ResolvePath(tool.Playground, "agents")
 
 		if err0 == nil {
 

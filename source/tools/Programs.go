@@ -1,8 +1,8 @@
 package tools
 
 import "exocomp/schemas"
-import utils_capabilities "exocomp/utils/capabilities"
 import utils_bytes "exocomp/utils/bytes"
+import utils_capabilities "exocomp/utils/capabilities"
 import utils_sandbox "exocomp/utils/sandbox"
 import "context"
 import "fmt"

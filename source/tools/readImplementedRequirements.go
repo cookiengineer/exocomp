@@ -2,14 +2,14 @@ package tools
 
 import "exocomp/types"
 import utils_ast "exocomp/utils/ast"
-
+import utils_sandbox "exocomp/utils/sandbox"
 import "fmt"
 
 func readImplementedRequirements(tool *Requirements) error {
 
 	if tool.Playground != "" {
 
-		resolved, err0 := resolveSandboxPath(tool.Playground, tool.Sandbox)
+		resolved, err0 := utils_sandbox.ResolvePath(tool.Playground, tool.Sandbox)
 
 		if err0 == nil {
 
@@ -17,7 +17,7 @@ func readImplementedRequirements(tool *Requirements) error {
 
 			for path, symbols := range package_symbols {
 
-				internal_path, err1 := sanitizeSandboxPath(tool.Playground, path)
+				internal_path, err1 := utils_sandbox.SanitizePath(tool.Playground, path)
 
 				if err1 == nil {
 

@@ -3,6 +3,7 @@ package tools
 import "exocomp/schemas"
 import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
+import utils_sandbox "exocomp/utils/sandbox"
 import "encoding/json"
 import "fmt"
 import "slices"
@@ -179,11 +180,11 @@ func (tool *Changelog) Fix(path string, symbol string, description string) (stri
 func (tool *Changelog) GetContent(id string) (any, error) {
 
 	path := utils_fmt.FormatFilePath(id)
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -243,11 +244,11 @@ func (tool *Changelog) List() (string, error) {
 
 			for _, entry := range entries {
 
-				resolved_path, err1 := resolveSandboxPath(tool.Playground, entry.File)
+				resolved_path, err1 := utils_sandbox.ResolvePath(tool.Playground, entry.File)
 
 				if err1 == nil {
 
-					sandbox_path, err2 := sanitizeSandboxPath(tool.Sandbox, resolved_path)
+					sandbox_path, err2 := utils_sandbox.SanitizePath(tool.Sandbox, resolved_path)
 
 					if err2 == nil {
 						found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: \"%s\", File: \"%s\", Symbol: \"%s\", Description: \"%s\"", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
@@ -378,11 +379,11 @@ func (tool *Changelog) Schemas() []schemas.Tool {
 
 func (tool *Changelog) Search(path string, symbol string) (string, error) {
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -404,7 +405,7 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 
 						for _, entry := range entries {
 
-							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, entry.File)
+							sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, entry.File)
 
 							if err3 == nil {
 								found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: \"%s\", File: \"%s\", Symbol: \"%s\", Description: \"%s\"", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
@@ -468,7 +469,7 @@ func (tool *Changelog) Search(path string, symbol string) (string, error) {
 
 						for _, entry := range entries {
 
-							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, entry.File)
+							sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, entry.File)
 
 							if err3 == nil {
 								found[entry.Date] = append(found[entry.Date], fmt.Sprintf("- Date: %s, Type: %s, File: %s, Symbol: %s, Description: %s", entry.Date.Format("2006-01-02"), entry.Type, sandbox_path, entry.Symbol, entry.Description))
@@ -527,11 +528,11 @@ func (tool *Changelog) createEntry(method string, path string, symbol string, de
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 

@@ -1,5 +1,6 @@
 package tools
 
+import utils_sandbox "exocomp/utils/sandbox"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -9,7 +10,7 @@ func writeChangelog(tool *Changelog) error {
 
 	if tool.Playground != "" {
 
-		resolved, err0 := resolveSandboxPath(tool.Playground, filepath.Join(".exocomp", "changelog.json"))
+		resolved, err0 := utils_sandbox.ResolvePath(tool.Playground, filepath.Join(".exocomp", "changelog.json"))
 
 		if err0 == nil {
 

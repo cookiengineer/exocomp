@@ -6,6 +6,7 @@ import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
 import utils_fmt "exocomp/utils/fmt"
 import utils_rand "exocomp/utils/rand"
+import utils_sandbox "exocomp/utils/sandbox"
 import "bytes"
 import "context"
 import "encoding/json"
@@ -396,7 +397,7 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 
 	if ok == false {
 
-		resolved, err0 := resolveSandboxPath(tool.Sandbox, sandbox)
+		resolved, err0 := utils_sandbox.ResolvePath(tool.Sandbox, sandbox)
 
 		if err0 == nil {
 
@@ -493,7 +494,7 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 					// NOTE: Liveness watchdog kills a child that stops producing output.
 					go watchProcess(tool, process)
 
-					sandbox_path, _ := sanitizeSandboxPath(tool.Sandbox, resolved)
+					sandbox_path, _ := utils_sandbox.SanitizePath(tool.Sandbox, resolved)
 
 					return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work in \"%s\" on:\n%s", name, sandbox_path, prompt), nil
 

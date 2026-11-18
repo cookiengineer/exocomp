@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/types"
+import utils_sandbox "exocomp/utils/sandbox"
 import "fmt"
 import "os"
 import "path/filepath"
@@ -10,7 +11,7 @@ func readSkills(tool *Skills) error {
 
 	if tool.Playground != "" {
 
-		resolved, err0 := resolveSandboxPath(tool.Playground, "skills")
+		resolved, err0 := utils_sandbox.ResolvePath(tool.Playground, "skills")
 
 		if err0 == nil {
 

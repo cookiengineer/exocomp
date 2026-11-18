@@ -2,8 +2,9 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
-import utils_fmt "exocomp/utils/fmt"
 import utils_ast "exocomp/utils/ast"
+import utils_fmt "exocomp/utils/fmt"
+import utils_sandbox "exocomp/utils/sandbox"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -175,11 +176,11 @@ func (tool *Requirements) Call(method string, arguments map[string]interface{}) 
 func (tool *Requirements) GetContent(id string) (any, error) {
 
 	path := utils_fmt.FormatFilePath(id)
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -237,11 +238,11 @@ func (tool *Requirements) List() (string, error) {
 
 		for _, specification := range specifications {
 
-			resolved_path, err1 := resolveSandboxPath(tool.Playground, specification.File)
+			resolved_path, err1 := utils_sandbox.ResolvePath(tool.Playground, specification.File)
 
 			if err1 == nil {
 
-				sandbox_path, err2 := sanitizeSandboxPath(tool.Sandbox, resolved_path)
+				sandbox_path, err2 := utils_sandbox.SanitizePath(tool.Sandbox, resolved_path)
 
 				if err2 == nil {
 					lines = append(lines, fmt.Sprintf("- File: \"%s\", Symbol: \"%s\", Declaration: \"%s\", Behavior: \"%s\", IsImplemented: %t", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior, specification.IsImplemented))
@@ -302,11 +303,11 @@ func (tool *Requirements) Schemas() []schemas.Tool {
 
 func (tool *Requirements) Signoff(path string, symbol string) (string, error) {
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -318,7 +319,7 @@ func (tool *Requirements) Signoff(path string, symbol string) (string, error) {
 
 			if ok1 == true {
 
-				resolved_path, err3 := resolveSandboxPath(tool.Playground, specification.File)
+				resolved_path, err3 := utils_sandbox.ResolvePath(tool.Playground, specification.File)
 
 				if err3 == nil {
 
@@ -369,11 +370,11 @@ func (tool *Requirements) Signoff(path string, symbol string) (string, error) {
 
 func (tool *Requirements) DefineFunc(path string, symbol string, declaration string, behavior string) (string, error) {
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -430,11 +431,11 @@ func (tool *Requirements) DefineFunc(path string, symbol string, declaration str
 
 func (tool *Requirements) DefineInterface(path string, symbol string, declaration string, behavior string) (string, error) {
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -495,11 +496,11 @@ func (tool *Requirements) DefineInterface(path string, symbol string, declaratio
 
 func (tool *Requirements) DefineStruct(path string, symbol string, declaration string, behavior string) (string, error) {
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -560,11 +561,11 @@ func (tool *Requirements) DefineStruct(path string, symbol string, declaration s
 
 func (tool *Requirements) DefineType(path string, symbol string, declaration string, behavior string) (string, error) {
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -631,11 +632,11 @@ func (tool *Requirements) DefineType(path string, symbol string, declaration str
 
 func (tool *Requirements) Search(path string, symbol string) (string, error) {
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		search_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		search_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -657,7 +658,7 @@ func (tool *Requirements) Search(path string, symbol string) (string, error) {
 
 							if matches_symbol == true {
 
-								sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, specification.File)
+								sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, specification.File)
 
 								if err3 == nil {
 									lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
@@ -667,7 +668,7 @@ func (tool *Requirements) Search(path string, symbol string) (string, error) {
 
 						} else if symbol == "" {
 
-							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, specification.File)
+							sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, specification.File)
 
 							if err3 == nil {
 								lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))

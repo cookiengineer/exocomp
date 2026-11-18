@@ -1,13 +1,14 @@
 package tools
 
 import utils_capabilities "exocomp/utils/capabilities"
+import utils_sandbox "exocomp/utils/sandbox"
 import "path/filepath"
 
 // resolveFilesPath resolves a path inside the sandbox or inside a granted
 // capability scope.
 func resolveFilesPath(sandbox string, capabilities *utils_capabilities.Set, path string, write bool) (string, error) {
 
-	resolved, err0 := resolveSandboxPath(sandbox, path)
+	resolved, err0 := utils_sandbox.ResolvePath(sandbox, path)
 
 	if err0 == nil {
 

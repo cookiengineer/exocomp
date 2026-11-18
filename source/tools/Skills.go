@@ -2,8 +2,8 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
-import utils_capabilities "exocomp/utils/capabilities"
 import utils_bytes "exocomp/utils/bytes"
+import utils_capabilities "exocomp/utils/capabilities"
 import utils_fmt "exocomp/utils/fmt"
 import utils_sandbox "exocomp/utils/sandbox"
 import "context"
@@ -381,7 +381,7 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 			if found == true {
 
-				script_path, err1 := sanitizeSandboxPath(tool.Playground, filepath.Join(tool.Playground, "skills", skill.Name, "scripts", script))
+				script_path, err1 := utils_sandbox.SanitizePath(tool.Playground, filepath.Join(tool.Playground, "skills", skill.Name, "scripts", script))
 
 				if err1 == nil {
 
@@ -400,7 +400,7 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 
 						if strings.Contains(arguments[a], string(os.PathSeparator)) {
 
-							resolved, err := sanitizeSandboxPath(tool.Sandbox, arguments[a])
+							resolved, err := utils_sandbox.SanitizePath(tool.Sandbox, arguments[a])
 
 							if err == nil {
 								runtime_arguments = append(runtime_arguments, resolved)

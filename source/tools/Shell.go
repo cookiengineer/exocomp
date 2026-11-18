@@ -2,8 +2,8 @@ package tools
 
 import "exocomp/schemas"
 import utils_capabilities "exocomp/utils/capabilities"
-import utils_shell "exocomp/utils/shell"
 import utils_sandbox "exocomp/utils/sandbox"
+import utils_shell "exocomp/utils/shell"
 import "context"
 import "crypto/rand"
 import "encoding/hex"
@@ -393,7 +393,7 @@ func (tool *Shell) Open(program string, arguments []string, workdir string, colu
 		return "", fmt.Errorf("shell.Open: %s", err_args.Error())
 	}
 
-	resolved_workdir, err0 := shellResolveWorkdir(tool.Sandbox, workdir)
+	resolved_workdir, err0 := utils_shell.ResolveWorkdir(tool.Sandbox, workdir)
 
 	if err0 == nil {
 
@@ -405,7 +405,7 @@ func (tool *Shell) Open(program string, arguments []string, workdir string, colu
 
 		if err1 == nil {
 
-			log_dir, err2 := resolveSandboxPath(tool.Sandbox, filepath.Join(".exocomp", "shell"))
+			log_dir, err2 := utils_sandbox.ResolvePath(tool.Sandbox, filepath.Join(".exocomp", "shell"))
 
 			if err2 == nil {
 

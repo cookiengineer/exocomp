@@ -1,6 +1,7 @@
 package tools
 
 import utils_capabilities "exocomp/utils/capabilities"
+import utils_sandbox "exocomp/utils/sandbox"
 import "path/filepath"
 import "strings"
 
@@ -10,7 +11,7 @@ func sanitizeProgramArgument(sandbox string, capabilities *utils_capabilities.Se
 
 	if strings.ContainsAny(argument, "/\\") == true {
 
-		resolved, err0 := sanitizeSandboxPath(sandbox, argument)
+		resolved, err0 := utils_sandbox.SanitizePath(sandbox, argument)
 
 		if err0 == nil {
 
@@ -44,7 +45,7 @@ func sanitizeProgramArgument(sandbox string, capabilities *utils_capabilities.Se
 
 	} else {
 
-		_, err3 := checkSandboxPath(sandbox, argument)
+		_, err3 := utils_sandbox.CheckPath(sandbox, argument)
 
 		if err3 == nil {
 			return argument, nil

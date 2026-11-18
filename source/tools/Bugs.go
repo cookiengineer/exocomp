@@ -3,6 +3,7 @@ package tools
 import "exocomp/schemas"
 import "exocomp/types"
 import utils_fmt "exocomp/utils/fmt"
+import utils_sandbox "exocomp/utils/sandbox"
 import "encoding/json"
 import "fmt"
 import "slices"
@@ -107,11 +108,11 @@ func (tool *Bugs) Add(path string, symbol string, description string) (string, e
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -174,11 +175,11 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -224,11 +225,11 @@ func (tool *Bugs) Fix(path string, symbol string) (string, error) {
 func (tool *Bugs) GetContent(id string) (any, error) {
 
 	path := utils_fmt.FormatFilePath(id)
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -288,11 +289,11 @@ func (tool *Bugs) List() (string, error) {
 
 			if bug_report.IsFixed == false {
 
-				resolved_path, err1 := resolveSandboxPath(tool.Playground, bug_report.File)
+				resolved_path, err1 := utils_sandbox.ResolvePath(tool.Playground, bug_report.File)
 
 				if err1 == nil {
 
-					sandbox_path, err2 := sanitizeSandboxPath(tool.Sandbox, resolved_path)
+					sandbox_path, err2 := utils_sandbox.SanitizePath(tool.Sandbox, resolved_path)
 
 					if err2 == nil {
 						lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description))
@@ -402,11 +403,11 @@ func (tool *Bugs) Schemas() []schemas.Tool {
 
 func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
-	tmp1, err1 := resolveSandboxPath(tool.Sandbox, path)
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
 
 	if err1 == nil {
 
-		internal_path, err2 := sanitizeSandboxPath(tool.Playground, tmp1)
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
 
 		if err2 == nil {
 
@@ -428,7 +429,7 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 						if bug_report.IsFixed == false {
 
-							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, bug_report.File)
+							sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, bug_report.File)
 
 							if err3 == nil {
 								lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description))
@@ -467,7 +468,7 @@ func (tool *Bugs) Search(path string, symbol string) (string, error) {
 
 						if bug_report.IsFixed == false {
 
-							sandbox_path, err3 := sanitizeSandboxPath(tool.Sandbox, bug_report.File)
+							sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, bug_report.File)
 
 							if err3 == nil {
 								lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description))
