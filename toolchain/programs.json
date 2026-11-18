@@ -49,6 +49,13 @@
 		"source": "./cmd/dnsx"
 	},
 	{
+		"name": "gobuster",
+		"folder": "gobuster",
+		"repository": "https://github.com/OJ/gobuster.git",
+		"version": "v3.8.2",
+		"source": "."
+	},
+	{
 		"name": "httpx",
 		"folder": "httpx",
 		"repository": "https://github.com/projectdiscovery/httpx.git",
