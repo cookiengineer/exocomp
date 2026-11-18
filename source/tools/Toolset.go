@@ -52,6 +52,8 @@ func Toolset(
 
 		case "agents":
 			tool = NewAgents(allowed_methods, playground, sandbox, model, url, debug)
+		case "assets":
+			tool = NewAssets(allowed_methods, playground, sandbox)
 		case "bugs":
 			tool = NewBugs(allowed_methods, playground, sandbox)
 		case "changelog":

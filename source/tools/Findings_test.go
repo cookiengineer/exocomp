@@ -38,7 +38,7 @@ func newTestFindings(t *testing.T) (*Findings, string) {
 	})
 
 	tool := NewFindings([]string{
-		"Add", "BindEvidence", "Get", "List", "Report", "Retest", "Search", "Update", "Verify",
+		"Add", "BindEvidence", "Get", "Import", "List", "Report", "Retest", "Search", "Update", "Verify",
 	}, playground, sandbox, "Peanut Reproducer")
 
 	return tool, sandbox

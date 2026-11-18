@@ -68,6 +68,10 @@ func (tool *Findings) Call(method string, arguments map[string]interface{}) (str
 
 			return tool.Add(parsed)
 
+		} else if method == "Import" {
+
+			return tool.Import(parsed)
+
 		} else if method == "BindEvidence" {
 
 			id, ok := parsed.String("id")

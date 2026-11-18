@@ -1,0 +1,262 @@
+[
+	{
+		"type": "function",
+		"function": {
+			"name": "assets.Add",
+			"description": "Add or update an asset record. Assets are deduplicated by type and normalized value.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": ["ip", "cidr", "domain", "subdomain", "url", "endpoint", "port", "service", "technology", "dns_record", "certificate", "cloud_asset", "credential"],
+						"description": "Asset type."
+					},
+					"value": {
+						"type": "string",
+						"description": "Canonical asset value, e.g. \"api.example.com\" or \"https://example.com/admin\"."
+					},
+					"parent_id": {
+						"type": "string",
+						"description": "Optional parent asset identifier. If omitted, a parent is inferred when possible."
+					},
+					"domain": {"type": "string", "description": "Optional related domain or host."},
+					"ip": {"type": "string", "description": "Optional related IP address."},
+					"port": {"type": "integer", "minimum": 1, "maximum": 65535, "description": "Optional related port."},
+					"url": {"type": "string", "description": "Optional related URL."},
+					"endpoint": {"type": "string", "description": "Optional related endpoint."},
+					"technology": {
+						"type": "array",
+						"items": {"type": "string"},
+						"description": "Optional technologies observed on the asset."
+					},
+					"props": {
+						"type": "object",
+						"additionalProperties": {"type": "string"},
+						"description": "Optional string properties such as status_code, title, webserver or tls_version."
+					},
+					"source": {"type": "string", "description": "Optional source tool or agent."},
+					"confidence": {
+						"type": "string",
+						"enum": ["observed", "inferred", "unverified"],
+						"description": "Optional confidence. Defaults to observed."
+					},
+					"in_scope": {"type": "boolean", "description": "Whether the asset is in scope. Defaults to false."},
+					"tested": {"type": "boolean", "description": "Whether the asset was tested. Defaults to false."},
+					"tags": {
+						"type": "array",
+						"items": {"type": "string"},
+						"description": "Optional tags."
+					}
+				},
+				"required": ["type", "value"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "assets.Import",
+			"description": "Import scanner output as assets. Reads a structured artifact from inside the sandbox and returns counts, never raw content.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Path to the scanner artifact inside the sandbox, e.g. \".exocomp/scans/httpx/results.jsonl\"."
+					},
+					"format": {
+						"type": "string",
+						"enum": ["httpx", "naabu", "subfinder", "dnsx", "tlsx", "katana", "gobuster", "urlfinder"],
+						"description": "Artifact format."
+					},
+					"target": {
+						"type": "string",
+						"description": "Optional scan target. Used to classify hosts and resolve relative gobuster paths."
+					},
+					"in_scope": {
+						"type": "boolean",
+						"description": "Mark imported assets as in scope. Defaults to false."
+					}
+				},
+				"required": ["path", "format"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "assets.List",
+			"description": "List assets with compact summaries, filtered by type, query, scope or tested state.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": ["ip", "cidr", "domain", "subdomain", "url", "endpoint", "port", "service", "technology", "dns_record", "certificate", "cloud_asset", "credential"],
+						"description": "Optional asset type filter."
+					},
+					"query": {"type": "string", "description": "Optional case-insensitive value filter."},
+					"in_scope": {"type": "boolean", "description": "Optional scope filter."},
+					"tested": {"type": "boolean", "description": "Optional tested filter."},
+					"limit": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 200,
+						"description": "Maximum number of assets to return. Defaults to 50."
+					}
+				},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "assets.Search",
+			"description": "Search assets across values, domains, IPs, URLs, technologies, properties and tags.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"query": {"type": "string", "description": "Case-insensitive search text."},
+					"type": {
+						"type": "string",
+						"enum": ["ip", "cidr", "domain", "subdomain", "url", "endpoint", "port", "service", "technology", "dns_record", "certificate", "cloud_asset", "credential"],
+						"description": "Optional asset type filter."
+					},
+					"limit": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 200,
+						"description": "Maximum number of matches to return. Defaults to 50."
+					}
+				},
+				"required": ["query"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "assets.Get",
+			"description": "Return one asset as structured JSON.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {"type": "string", "description": "Asset identifier, e.g. \"ast_4a91c2e0\"."}
+				},
+				"required": ["id"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "assets.Update",
+			"description": "Update asset fields. Type and value changes must not collide with another asset.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {"type": "string", "description": "Asset identifier."},
+					"type": {
+						"type": "string",
+						"enum": ["ip", "cidr", "domain", "subdomain", "url", "endpoint", "port", "service", "technology", "dns_record", "certificate", "cloud_asset", "credential"],
+						"description": "Optional new asset type."
+					},
+					"value": {"type": "string", "description": "Optional new asset value."},
+					"parent_id": {"type": "string", "description": "Optional new parent asset identifier."},
+					"domain": {"type": "string", "description": "Optional related domain."},
+					"ip": {"type": "string", "description": "Optional related IP address."},
+					"port": {"type": "integer", "minimum": 1, "maximum": 65535, "description": "Optional related port."},
+					"url": {"type": "string", "description": "Optional related URL."},
+					"endpoint": {"type": "string", "description": "Optional related endpoint."},
+					"technology": {
+						"type": "array",
+						"items": {"type": "string"},
+						"description": "Optional replacement technology list."
+					},
+					"props": {
+						"type": "object",
+						"additionalProperties": {"type": "string"},
+						"description": "Optional replacement properties."
+					},
+					"source": {"type": "string", "description": "Optional source."},
+					"confidence": {
+						"type": "string",
+						"enum": ["observed", "inferred", "unverified"],
+						"description": "Optional confidence."
+					},
+					"in_scope": {"type": "boolean", "description": "Optional scope flag."},
+					"tested": {"type": "boolean", "description": "Optional tested flag."},
+					"tags": {
+						"type": "array",
+						"items": {"type": "string"},
+						"description": "Optional replacement tags."
+					}
+				},
+				"required": ["id"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "assets.Neighbors",
+			"description": "Show the parent and direct children of an asset.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {"type": "string", "description": "Asset identifier."},
+					"direction": {
+						"type": "string",
+						"enum": ["parent", "children", "both"],
+						"description": "Neighbor direction. Defaults to both."
+					},
+					"limit": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 200,
+						"description": "Maximum number of children to return. Defaults to 50."
+					}
+				},
+				"required": ["id"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "assets.Scope",
+			"description": "Show scope statistics, or mark matching assets as in scope or out of scope.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": ["ip", "cidr", "domain", "subdomain", "url", "endpoint", "port", "service", "technology", "dns_record", "certificate", "cloud_asset", "credential"],
+						"description": "Optional asset type filter."
+					},
+					"value": {"type": "string", "description": "Optional exact asset value filter."},
+					"query": {"type": "string", "description": "Optional case-insensitive value filter."},
+					"in_scope": {
+						"type": "boolean",
+						"description": "New scope value for matching assets. Defaults to true."
+					}
+				},
+				"required": []
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
+			"name": "assets.Coverage",
+			"description": "Return asset coverage counts by type, including in-scope and tested totals.",
+			"parameters": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			}
+		}
+	}
+]

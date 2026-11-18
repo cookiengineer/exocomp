@@ -2,6 +2,37 @@
 	{
 		"type": "function",
 		"function": {
+			"name": "findings.Import",
+			"description": "Import scanner output as candidate findings. Currently supports nuclei JSONL. The artifact is read from inside the sandbox; raw scanner content is never returned.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Path to a nuclei JSONL artifact inside the sandbox, e.g. \".exocomp/scans/nuclei/results.jsonl\"."
+					},
+					"format": {
+						"type": "string",
+						"enum": ["nuclei"],
+						"default": "nuclei",
+						"description": "Artifact format. Defaults to \"nuclei\"."
+					},
+					"scan_id": {
+						"type": "string",
+						"description": "Optional scan identifier. Defaults to a hash of the artifact content."
+					},
+					"command": {
+						"type": "string",
+						"description": "Optional command line that produced the artifact. Stored on imported evidence."
+					}
+				},
+				"required": ["path"]
+			}
+		}
+	},
+	{
+		"type": "function",
+		"function": {
 			"name": "findings.Add",
 			"description": "Create a candidate finding. Add evidence with findings.BindEvidence and prove it with findings.Verify or findings.Retest.",
 			"parameters": {

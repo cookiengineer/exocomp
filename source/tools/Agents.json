@@ -51,7 +51,7 @@
 					"role": {
 						"type": "string",
 						"description": "The agent role to switch to, one of agents.Roles, e.g. \"architect\", \"coder\" or \"tester\".",
-						"enum": ["architect", "coder", "exploiter", "planner", "reproducer", "researcher", "reverser", "summarizer", "tester", "threathunter", "webscanner"]
+						"enum": ["architect", "coder", "exploiter", "planner", "reproducer", "reverser", "summarizer", "tester", "threathunter", "webresearcher", "webscanner"]
 					}
 				},
 				"required": ["role"]
@@ -69,7 +69,7 @@
 					"role": {
 						"type": "string",
 						"description": "The agent role, one of agents.Roles, e.g. \"architect\", \"coder\" or \"tester\".",
-						"enum": ["architect", "coder", "exploiter", "reproducer", "researcher", "reverser", "summarizer", "tester", "threathunter", "webscanner"]
+						"enum": ["architect", "coder", "exploiter", "reproducer", "reverser", "summarizer", "tester", "threathunter", "webresearcher", "webscanner"]
 					},
 					"prompt": {
 						"type": "string",
