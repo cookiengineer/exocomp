@@ -5,77 +5,80 @@ import "fmt"
 import "os"
 import "path/filepath"
 
-func BuildPrograms(base_dir string, operating_system string) {
+func BuildPrograms(base_dir string, operating_system string, architecture string) error {
 
 	programs_dir := filepath.Join(base_dir, "installer", "assets", "programs")
 	vendor_dir := filepath.Join(base_dir, "vendor")
+	cache_dir := filepath.Join(base_dir, "build", "cache", operating_system, architecture)
 
 	err01 := os.MkdirAll(programs_dir, 0755)
 	err02 := os.MkdirAll(vendor_dir, 0755)
+	err03 := os.MkdirAll(cache_dir, 0755)
 
-	if err01 == nil && err02 == nil {
+	if err01 == nil && err02 == nil && err03 == nil {
 
-		builds := []struct {
-			name   string
-			folder string
-			output string
-			source string
-		}{
-			{
-				name:   "amass",
-				folder: filepath.Join(vendor_dir, "amass"),
-				output: filepath.Join(programs_dir, "amass"),
-				source: "./cmd/amass",
-			},
-			{
-				name:   "asnmap",
-				folder: filepath.Join(vendor_dir, "asnmap"),
-				output: filepath.Join(programs_dir, "asnmap"),
-				source: "./cmd/asnmap",
-			},
-			{
-				name:   "httpx",
-				folder: filepath.Join(vendor_dir, "httpx"),
-				output: filepath.Join(programs_dir, "httpx"),
-				source: "./cmd/httpx",
-			},
-			{
-				name:   "katana",
-				folder: filepath.Join(vendor_dir, "katana"),
-				output: filepath.Join(programs_dir, "katana"),
-				source: "./cmd/katana",
-			},
-			{
-				name:   "naabu",
-				folder: filepath.Join(vendor_dir, "naabu"),
-				output: filepath.Join(programs_dir, "naabu"),
-				source: "./cmd/naabu",
-			},
-			{
-				name:   "nuclei",
-				folder: filepath.Join(vendor_dir, "nuclei"),
-				output: filepath.Join(programs_dir, "nuclei"),
-				source: "./cmd/nuclei",
-			},
-			{
-				name:   "subfinder",
-				folder: filepath.Join(vendor_dir, "subfinder"),
-				output: filepath.Join(programs_dir, "subfinder"),
-				source: "./cmd/subfinder",
-			},
-		}
+		programs, err1 := utils.ReadPrograms(base_dir)
 
-		for _, build := range builds {
+		if err1 == nil {
 
-			err := utils.Build(build.folder, build.source, build.output, []string{}, operating_system)
-			path, _ := filepath.Rel(base_dir, build.output)
+			for _, program := range programs {
 
-			if err == nil {
-				fmt.Fprintf(os.Stdout, "-> Built %s\n", path)
-			} else {
-				fmt.Fprintf(os.Stderr, "!! Error building %s: %s\n", path, err.Error())
+				binary_name := program.Name
+
+				if operating_system == "windows" {
+					binary_name = binary_name + ".exe"
+				}
+
+				folder := filepath.Join(vendor_dir, program.Folder)
+				cache_output := filepath.Join(cache_dir, binary_name)
+				asset_output := filepath.Join(programs_dir, binary_name)
+				stamp_path := cache_output + ".version"
+				path, _ := filepath.Rel(base_dir, asset_output)
+
+				if isProgramCached(cache_output, program.Version) == true {
+
+					err2 := copyProgram(cache_output, asset_output)
+
+					if err2 == nil {
+						fmt.Fprintf(os.Stdout, "-> Cached %s\n", path)
+					} else {
+						return err2
+					}
+
+				} else {
+
+					err2 := utils.Build(folder, program.Source, cache_output, []string{}, operating_system, architecture)
+
+					if err2 == nil {
+
+						err3 := os.WriteFile(stamp_path, []byte(program.Version), 0644)
+
+						if err3 == nil {
+
+							err4 := copyProgram(cache_output, asset_output)
+
+							if err4 == nil {
+								fmt.Fprintf(os.Stdout, "-> Built %s\n", path)
+							} else {
+								return err4
+							}
+
+						} else {
+							return fmt.Errorf("actions.BuildPrograms: Cannot write cache stamp for %s.", path)
+						}
+
+					} else {
+						return fmt.Errorf("actions.BuildPrograms: Cannot build %s.", path)
+					}
+
+				}
+
 			}
 
+			return nil
+
+		} else {
+			return err1
 		}
 
 	} else {
@@ -87,6 +90,12 @@ func BuildPrograms(base_dir string, operating_system string) {
 		if err02 != nil {
 			fmt.Fprintf(os.Stderr, "!! Error: %s\n", err02.Error())
 		}
+
+		if err03 != nil {
+			fmt.Fprintf(os.Stderr, "!! Error: %s\n", err03.Error())
+		}
+
+		return fmt.Errorf("actions.BuildPrograms: Cannot create build directories.")
 
 	}
 

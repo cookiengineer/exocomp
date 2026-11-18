@@ -12,16 +12,27 @@ allowed-images:
   - docker.io/library/ubuntu
   - mcr.microsoft.com/cbl-mariner/base/core
 allowed-programs:
-  - curl
+  - alterx
   - amass
   - asnmap
+  - cdncheck
+  - curl
+  - dnsx
   - go
   - gofmt
   - gopls
   - httpx
+  - interactsh-client
+  - katana
+  - mapcidr
   - naabu
+  - notify
   - nuclei
+  - proxify
   - subfinder
+  - tlsx
+  - urlfinder
+  - vulnx
 allowed-tools:
   - agents.Quit
   - agents.Switch

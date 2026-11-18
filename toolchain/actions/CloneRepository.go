@@ -1,46 +1,25 @@
 package actions
 
-import "os"
-import "os/exec"
+import "fmt"
 
-func CloneRepository(cwd string, url string, folder string) error {
+func CloneRepository(cwd string, url string, folder string, version string) error {
 
-	stat, err0 := os.Stat(folder)
+	err := runGit(
+		cwd,
+		"clone",
+		"--single-branch",
+		"--branch", version,
+		"--depth", "1",
+		url,
+		folder,
+	)
 
-	if err0 == nil && stat.IsDir() {
+	if err == nil {
 
-		cmd := exec.Command(
-			"git",
-			"pull",
-			"origin",
-			"HEAD",
-		)
-		cmd.Dir = folder
+		return CheckoutRepository(folder, version)
 
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		return cmd.Run()
-
-	} else if err0 != nil {
-
-		cmd := exec.Command(
-			"git",
-			"clone",
-			"--single-branch",
-			"--depth", "1",
-			url,
-			folder,
-		)
-		cmd.Dir = cwd
-
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		return cmd.Run()
-
+	} else {
+		return fmt.Errorf("actions.CloneRepository: Cannot clone \"%s\".", url)
 	}
-
-	return nil
 
 }

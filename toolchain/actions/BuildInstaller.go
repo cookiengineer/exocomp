@@ -5,7 +5,7 @@ import "fmt"
 import "os"
 import "path/filepath"
 
-func BuildInstaller(base_dir string, operating_system string) {
+func BuildInstaller(base_dir string, operating_system string, architecture string) {
 
 	build_dir := filepath.Join(base_dir, "build")
 	installer_dir := filepath.Join(base_dir, "installer")
@@ -15,7 +15,7 @@ func BuildInstaller(base_dir string, operating_system string) {
 	if err0 == nil {
 
 		output := filepath.Join(build_dir, operating_system, "exocomp-installer")
-		err1 := utils.Build(installer_dir, "./cmds/exocomp-installer/main.go", output, []string{}, operating_system)
+		err1 := utils.Build(installer_dir, "./cmds/exocomp-installer/main.go", output, []string{}, operating_system, architecture)
 		path, _ := filepath.Rel(base_dir, output)
 
 		if err1 == nil {

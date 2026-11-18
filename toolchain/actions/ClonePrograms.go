@@ -1,74 +1,57 @@
 package actions
 
+import "exocomp-toolchain/utils"
 import "fmt"
 import "os"
 import "path/filepath"
 
-func ClonePrograms(base_dir string) {
+func ClonePrograms(base_dir string) error {
 
 	vendor_dir := filepath.Join(base_dir, "vendor")
-
 	err0 := os.MkdirAll(vendor_dir, 0755)
 
 	if err0 == nil {
 
-		installs := []struct {
-			name   string
-			folder string
-			url    string
-		}{
-			{
-				name:   "amass",
-				folder: filepath.Join(vendor_dir, "amass"),
-				url:    "https://github.com/owasp-amass/amass.git",
-			},
-			{
-				name:   "asnmap",
-				folder: filepath.Join(vendor_dir, "asnmap"),
-				url:    "https://github.com/projectdiscovery/asnmap.git",
-			},
-			{
-				name:   "httpx",
-				folder: filepath.Join(vendor_dir, "httpx"),
-				url:    "https://github.com/projectdiscovery/httpx.git",
-			},
-			{
-				name:   "katana",
-				folder: filepath.Join(vendor_dir, "katana"),
-				url:    "https://github.com/projectdiscovery/katana.git",
-			},
-			{
-				name:   "naabu",
-				folder: filepath.Join(vendor_dir, "naabu"),
-				url:    "https://github.com/projectdiscovery/naabu.git",
-			},
-			{
-				name:   "nuclei",
-				folder: filepath.Join(vendor_dir, "nuclei"),
-				url:    "https://github.com/projectdiscovery/nuclei.git",
-			},
-			{
-				name:   "subfinder",
-				folder: filepath.Join(vendor_dir, "subfinder"),
-				url:    "https://github.com/projectdiscovery/subfinder.git",
-			},
-		}
+		programs, err1 := utils.ReadPrograms(base_dir)
 
-		for _, install := range installs {
+		if err1 == nil {
 
-			err1 := CloneRepository(vendor_dir, install.url, install.folder)
-			path, _ := filepath.Rel(base_dir, install.folder)
+			seen := make(map[string]bool, len(programs))
 
-			if err1 == nil {
-				fmt.Fprintf(os.Stdout, "-> Cloned %s\n", path)
-			} else {
-				fmt.Fprintf(os.Stderr, "!! Error cloning %s: %s\n", path, err1.Error())
+			for _, program := range programs {
+
+				if seen[program.Folder] == false {
+
+					seen[program.Folder] = true
+					folder := filepath.Join(vendor_dir, program.Folder)
+					stat, err2 := os.Stat(folder)
+
+					if err2 == nil && stat.IsDir() == true {
+						err2 = CheckoutRepository(folder, program.Version)
+					} else {
+						err2 = CloneRepository(vendor_dir, program.Repository, folder, program.Version)
+					}
+
+					path, _ := filepath.Rel(base_dir, folder)
+
+					if err2 == nil {
+						fmt.Fprintf(os.Stdout, "-> Checked out %s at %s\n", path, program.Version)
+					} else {
+						return fmt.Errorf("actions.ClonePrograms: Cannot prepare %s at %s.", path, program.Version)
+					}
+
+				}
+
 			}
 
+			return nil
+
+		} else {
+			return err1
 		}
 
 	} else {
-		fmt.Fprintf(os.Stderr, "!! Error: %s\n", err0.Error())
+		return fmt.Errorf("actions.ClonePrograms: Cannot create vendor folder.")
 	}
 
 }

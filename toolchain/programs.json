@@ -1,0 +1,142 @@
+[
+	{
+		"name": "alterx",
+		"folder": "alterx",
+		"repository": "https://github.com/projectdiscovery/alterx.git",
+		"version": "v0.1.0",
+		"source": "./cmd/alterx"
+	},
+	{
+		"name": "amass",
+		"folder": "amass",
+		"repository": "https://github.com/owasp-amass/amass.git",
+		"version": "v5.1.3",
+		"source": "./cmd/amass"
+	},
+	{
+		"name": "asnmap",
+		"folder": "asnmap",
+		"repository": "https://github.com/projectdiscovery/asnmap.git",
+		"version": "v1.2.0",
+		"source": "./cmd/asnmap"
+	},
+	{
+		"name": "cdncheck",
+		"folder": "cdncheck",
+		"repository": "https://github.com/projectdiscovery/cdncheck.git",
+		"version": "v1.4.0",
+		"source": "./cmd/cdncheck"
+	},
+	{
+		"name": "chaos",
+		"folder": "chaos-client",
+		"repository": "https://github.com/projectdiscovery/chaos-client.git",
+		"version": "v0.5.2",
+		"source": "./cmd/chaos"
+	},
+	{
+		"name": "cloudlist",
+		"folder": "cloudlist",
+		"repository": "https://github.com/projectdiscovery/cloudlist.git",
+		"version": "v1.5.1",
+		"source": "./cmd/cloudlist"
+	},
+	{
+		"name": "dnsx",
+		"folder": "dnsx",
+		"repository": "https://github.com/projectdiscovery/dnsx.git",
+		"version": "v1.3.1",
+		"source": "./cmd/dnsx"
+	},
+	{
+		"name": "httpx",
+		"folder": "httpx",
+		"repository": "https://github.com/projectdiscovery/httpx.git",
+		"version": "v1.12.0",
+		"source": "./cmd/httpx"
+	},
+	{
+		"name": "interactsh-client",
+		"folder": "interactsh",
+		"repository": "https://github.com/projectdiscovery/interactsh.git",
+		"version": "v1.4.1",
+		"source": "./cmd/interactsh-client"
+	},
+	{
+		"name": "katana",
+		"folder": "katana",
+		"repository": "https://github.com/projectdiscovery/katana.git",
+		"version": "v1.8.0",
+		"source": "./cmd/katana"
+	},
+	{
+		"name": "mapcidr",
+		"folder": "mapcidr",
+		"repository": "https://github.com/projectdiscovery/mapcidr.git",
+		"version": "v1.1.97",
+		"source": "./cmd/mapcidr"
+	},
+	{
+		"name": "naabu",
+		"folder": "naabu",
+		"repository": "https://github.com/projectdiscovery/naabu.git",
+		"version": "v2.7.0",
+		"source": "./cmd/naabu"
+	},
+	{
+		"name": "notify",
+		"folder": "notify",
+		"repository": "https://github.com/projectdiscovery/notify.git",
+		"version": "v1.0.7",
+		"source": "./cmd/notify"
+	},
+	{
+		"name": "nuclei",
+		"folder": "nuclei",
+		"repository": "https://github.com/projectdiscovery/nuclei.git",
+		"version": "v3.11.1",
+		"source": "./cmd/nuclei"
+	},
+	{
+		"name": "proxify",
+		"folder": "proxify",
+		"repository": "https://github.com/projectdiscovery/proxify.git",
+		"version": "v0.0.16",
+		"source": "./cmd/proxify"
+	},
+	{
+		"name": "subfinder",
+		"folder": "subfinder",
+		"repository": "https://github.com/projectdiscovery/subfinder.git",
+		"version": "v2.17.0",
+		"source": "./cmd/subfinder"
+	},
+	{
+		"name": "tlsx",
+		"folder": "tlsx",
+		"repository": "https://github.com/projectdiscovery/tlsx.git",
+		"version": "v1.4.6",
+		"source": "./cmd/tlsx"
+	},
+	{
+		"name": "uncover",
+		"folder": "uncover",
+		"repository": "https://github.com/projectdiscovery/uncover.git",
+		"version": "v1.2.1",
+		"source": "./cmd/uncover"
+	},
+	{
+		"name": "urlfinder",
+		"folder": "urlfinder",
+		"repository": "https://github.com/projectdiscovery/urlfinder.git",
+		"version": "v0.0.3",
+		"source": "./cmd/urlfinder"
+	},
+	{
+		"name": "vulnx",
+		"folder": "vulnx",
+		"repository": "https://github.com/projectdiscovery/vulnx.git",
+		"version": "v2.0.2",
+		"source": "./cmd/vulnx"
+	}
+]

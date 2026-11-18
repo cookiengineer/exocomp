@@ -55,6 +55,10 @@ func prepareSandboxEnv(sandbox string) ([]string, error) {
 		environment = unsetEnv(environment, "DISPLAY")
 		environment = unsetEnv(environment, "WAYLAND_DISPLAY")
 
+		for _, name := range secretEnvironmentVariables {
+			environment = unsetEnv(environment, name)
+		}
+
 		return environment, nil
 
 	} else {

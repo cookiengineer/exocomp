@@ -5,10 +5,18 @@ model: huihui_ai/Qwen3.8-abliterated:27b
 temperature: 0.3
 allowed-images:
 allowed-programs:
+  - alterx
+  - amass
+  - chaos
+  - dnsx
   - git
   - go
   - gofmt
   - gopls
+  - subfinder
+  - uncover
+  - urlfinder
+  - vulnx
 allowed-tools:
   - agents.Quit
   - agents.Switch
