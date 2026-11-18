@@ -122,3 +122,79 @@ func TestRenderMarkdownPreservesBlankLines(t *testing.T) {
 	}
 
 }
+
+func TestRenderMarkdownBlockquoteAndH6(t *testing.T) {
+
+	lines := renderMarkdown("###### Heading\n\n> quoted\n\n---", 40)
+
+	found_heading := false
+	found_quote := false
+	found_rule := false
+
+	for _, line := range lines {
+
+		text := markdownText(line)
+
+		if text == "Heading" {
+			found_heading = true
+		}
+
+		if strings.Contains(text, "│ quoted") {
+			found_quote = true
+		}
+
+		if strings.Contains(text, "────") {
+			found_rule = true
+		}
+
+	}
+
+	if found_heading == false {
+		t.Errorf("Expected h6 heading")
+	}
+
+	if found_quote == false {
+		t.Errorf("Expected blockquote")
+	}
+
+	if found_rule == false {
+		t.Errorf("Expected horizontal rule")
+	}
+
+}
+
+func TestRenderMarkdownLink(t *testing.T) {
+
+	lines := renderMarkdown("[example](https://example.com/)", 60)
+	found_label := false
+	found_url := false
+
+	for _, line := range lines {
+		text := markdownText(line)
+		if strings.Contains(text, "example") {
+			found_label = true
+		}
+		if strings.Contains(text, "https://example.com/") {
+			found_url = true
+		}
+	}
+
+	if found_label == false || found_url == false {
+		t.Errorf("Expected link label and URL, got %q", markdownText(lines[0]))
+	}
+
+}
+
+func TestRenderMarkdownLineBreak(t *testing.T) {
+
+	lines := renderMarkdown("First\nSecond", 40)
+
+	if len(lines) < 2 {
+		t.Fatalf("Expected two lines, got %d", len(lines))
+	}
+
+	if markdownText(lines[0]) != "First" || markdownText(lines[1]) != "Second" {
+		t.Errorf("Expected First and Second, got %q and %q", markdownText(lines[0]), markdownText(lines[1]))
+	}
+
+}

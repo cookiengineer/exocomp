@@ -1,7 +1,6 @@
 package markdown
 
 import "fmt"
-import "html"
 import "sort"
 import "strings"
 
@@ -34,6 +33,8 @@ func NewElement(typ string) *Element {
 	case "pre":
 		element.is_block_element = true
 	case "article", "dialog", "footer", "header", "main":
+		element.is_block_element = true
+	case "blockquote", "hr":
 		element.is_block_element = true
 	default:
 		element.is_block_element = false
@@ -148,246 +149,6 @@ func (element *Element) IsBlockElement() bool {
 	return element.is_block_element
 }
 
-func (element *Element) RenderInto(document *Document, indent string) string {
-
-	result := ""
-
-	switch element.Type {
-
-	case "a":
-
-		attributes := ""
-		is_same_site := false
-
-		for _, name := range element.getAttributes() {
-
-			value := element.GetAttribute(name)
-
-			if name == "href" {
-
-				if strings.HasPrefix(value, "#") {
-
-					attributes += fmt.Sprintf(" %s=\"%s\"", "href", strings.TrimSpace(value))
-					is_same_site = true
-
-				} else {
-
-					value = resolveURL(document.URL, value)
-
-					if strings.HasPrefix(value, "https://cookie.engineer/") {
-						is_same_site = true
-					} else if strings.HasPrefix(value, "/") {
-						is_same_site = true
-					}
-
-					attributes += fmt.Sprintf(" %s=\"%s\"", "href", value)
-
-				}
-
-			} else if name == "ping" {
-
-				attributes += fmt.Sprintf(" %s=\"%s\"", "ping", resolveURL(document.URL, value))
-
-			} else {
-
-				if value != "" {
-					attributes += " " + name + "=\"" + value + "\""
-				} else {
-					attributes += " " + name
-				}
-
-			}
-
-		}
-
-		if is_same_site == false && element.HasAttribute("target") == false {
-			attributes += " target=\"_blank\""
-		}
-
-		attributes = strings.TrimSpace(attributes)
-
-		if attributes != "" {
-			result = fmt.Sprintf("%s<a %s>%s</a>", indent, attributes, element.Text)
-		} else {
-			result = fmt.Sprintf("%s<a>%s</a>", indent, element.Text)
-		}
-
-	case "audio":
-
-		attributes := element.renderAttributes(document)
-
-		if attributes != "" {
-			result = fmt.Sprintf("%s<audio %s></audio>", indent, attributes)
-		} else {
-			result = fmt.Sprintf("%s<audio></audio>", indent)
-		}
-
-	case "code":
-
-		result = fmt.Sprintf("%s<code>%s</code>", indent, html.EscapeString(element.Text))
-
-	// headlines
-	case "h1", "h2", "h3", "h4", "h5":
-
-		id := element.GetAttribute("id")
-		content := element.renderChildren(document, "", " ")
-
-		if id == "" {
-			id = generateId(element)
-		}
-
-		result = fmt.Sprintf("%s<%s id=\"%s\">%s</%s>", indent, element.Type, id, content, element.Type)
-
-	case "img":
-
-		attributes := element.renderAttributes(document)
-
-		if attributes != "" {
-			result = fmt.Sprintf("%s<img %s/>", indent, attributes)
-		} else {
-			result = fmt.Sprintf("%s<img/>", indent)
-		}
-
-	case "pre":
-
-		class := element.GetAttribute("class")
-
-		if class != "" {
-			result = fmt.Sprintf("%s<pre class=\"%s\">\n%s\n%s</pre>", indent, class, html.EscapeString(element.Text), indent)
-		} else {
-			result = fmt.Sprintf("%s<pre>\n%s\n%s</pre>", indent, html.EscapeString(element.Text), indent)
-		}
-
-	// inline elements
-	case "abbr", "b", "del", "em", "span":
-
-		attributes := element.renderAttributes(document)
-
-		if attributes != "" {
-			result = fmt.Sprintf("%s<%s %s>%s</%s>", indent, element.Type, attributes, element.Text, element.Type)
-		} else {
-			result = fmt.Sprintf("%s<%s>%s</%s>", indent, element.Type, element.Text, element.Type)
-		}
-
-	// block flow-root elements
-	case "article", "aside", "dialog", "footer", "header", "main":
-
-		attributes := element.renderAttributes(document)
-		content := element.renderChildren(document, indent+"\t", "\n")
-
-		if len(attributes) > 0 {
-			result = fmt.Sprintf("%s<%s %s>\n%s\n%s</%s>", indent, element.Type, attributes, content, indent, element.Type)
-		} else {
-			result = fmt.Sprintf("%s<%s>\n%s\n%s</%s>", indent, element.Type, content, indent, element.Type)
-		}
-
-	// inline-block elements
-	case "div", "figure", "figcaption", "p":
-
-		if len(element.Children) > 1 {
-
-			attributes := element.renderAttributes(document)
-			content := element.renderChildren(document, indent+"\t", "\n")
-
-			if attributes != "" {
-				result = fmt.Sprintf("%s<%s %s>\n%s\n%s</%s>", indent, element.Type, attributes, content, indent, element.Type)
-			} else {
-				result = fmt.Sprintf("%s<%s>\n%s\n%s</%s>", indent, element.Type, content, indent, element.Type)
-			}
-
-		} else if len(element.Children) == 1 {
-
-			attributes := element.renderAttributes(document)
-			content := element.renderChildren(document, "", "")
-
-			if attributes != "" {
-				result = fmt.Sprintf("%s<%s %s>%s</%s>", indent, element.Type, attributes, content, element.Type)
-			} else {
-				result = fmt.Sprintf("%s<%s>%s</%s>", indent, element.Type, content, element.Type)
-			}
-
-		}
-
-	// list elements
-	case "ol", "ul":
-
-		content := element.renderChildren(document, indent+"\t", "\n")
-		result = fmt.Sprintf("%s<%s>\n%s\n%s</%s>", indent, element.Type, content, indent, element.Type)
-
-	// list items
-	case "li":
-
-		content := element.renderChildren(document, "", " ")
-		result = fmt.Sprintf("%s<li>%s</li>", indent, content)
-
-	case "#text":
-
-		result = fmt.Sprintf("%s%s", indent, element.Text)
-
-	case "table":
-
-		result = renderTable(element, document, indent)
-
-	default:
-
-		// Do Nothing, unallowed HTML element
-
-	}
-
-	return result
-
-}
-
-func (element *Element) renderAttributes(document *Document) string {
-
-	result := ""
-
-	for _, name := range element.getAttributes() {
-
-		value := element.GetAttribute(name)
-
-		if document != nil {
-
-			if name == "href" {
-				value = resolveURL(document.URL, value)
-			} else if name == "ping" {
-				value = resolveURL(document.URL, value)
-			} else if name == "src" {
-				value = resolveURL(document.URL, value)
-			}
-
-		}
-
-		if value != "" {
-			result += " " + name + "=\"" + value + "\""
-		} else {
-			result += " " + name
-		}
-
-	}
-
-	return strings.TrimSpace(result)
-
-}
-
-func (element *Element) renderChildren(document *Document, indent string, space string) string {
-
-	result := ""
-
-	for c := 0; c < len(element.Children); c++ {
-
-		result += element.Children[c].RenderInto(document, indent)
-
-		if c < len(element.Children)-1 {
-			result += space
-		}
-
-	}
-
-	return result
-
-}
-
 func (element *Element) SetAttribute(key string, value string) {
 
 	if element.Type == "a" && key == "href" {
@@ -500,6 +261,26 @@ func (element *Element) stringChildren(space string) string {
 
 }
 
+func (element *Element) stringAttributes() string {
+
+	result := ""
+
+	for _, name := range element.getAttributes() {
+
+		value := element.GetAttribute(name)
+
+		if value != "" {
+			result += " " + name + "=\"" + value + "\""
+		} else {
+			result += " " + name
+		}
+
+	}
+
+	return strings.TrimSpace(result)
+
+}
+
 func (element *Element) String() string {
 
 	result := ""
@@ -538,6 +319,10 @@ func (element *Element) String() string {
 
 		result = fmt.Sprintf("*%s*", element.Text)
 
+	case "u":
+
+		result = fmt.Sprintf("++%s++", element.Text)
+
 	case "h1":
 
 		result = fmt.Sprintf("# %s", element.stringChildren(" "))
@@ -557,6 +342,24 @@ func (element *Element) String() string {
 	case "h5":
 
 		result = fmt.Sprintf("##### %s", element.stringChildren(" "))
+
+	case "h6":
+
+		result = fmt.Sprintf("###### %s", element.stringChildren(" "))
+
+	case "blockquote":
+
+		lines := strings.Split(element.stringChildren("\n"), "\n")
+
+		for index := 0; index < len(lines); index++ {
+			lines[index] = "> " + strings.TrimSpace(lines[index])
+		}
+
+		result = strings.Join(lines, "\n")
+
+	case "hr":
+
+		result = "---"
 
 	case "img":
 
@@ -640,7 +443,7 @@ func (element *Element) String() string {
 	case "article", "aside", "dialog", "div", "figure", "figcaption", "footer", "header", "main", "span":
 
 		content := element.stringChildren("\n")
-		attributes := element.renderAttributes(nil)
+		attributes := element.stringAttributes()
 
 		if attributes != "" {
 			result = fmt.Sprintf("<%s %s>\n%s\n</%s>", element.Type, attributes, content, element.Type)
@@ -742,9 +545,21 @@ func (element *Element) TextContent() string {
 
 		result = element.Text
 
-	case "h1", "h2", "h3", "h4", "h5":
+	case "h1", "h2", "h3", "h4", "h5", "h6":
 
 		result = element.textChildren(" ")
+
+	case "u":
+
+		result = element.Text
+
+	case "blockquote":
+
+		result = element.textChildren("\n")
+
+	case "hr":
+
+		result = ""
 
 	case "img":
 

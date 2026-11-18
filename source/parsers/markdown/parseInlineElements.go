@@ -20,6 +20,8 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 		is_code := strings.HasPrefix(remaining, "`")
 		is_em := strings.HasPrefix(remaining, "*")
 		is_del := strings.HasPrefix(remaining, "~")
+		is_del_double := strings.HasPrefix(remaining, "~~")
+		is_underline := strings.HasPrefix(remaining, "++")
 
 		if is_emoji == true {
 
@@ -334,6 +336,80 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 
 			}
 
+		} else if is_del_double == true {
+
+			remaining = remaining[2:]
+
+			index2 := strings.Index(remaining, "~~")
+
+			if index2 > 0 {
+
+				text := remaining[0:index2]
+
+				element := NewElement("del")
+				element.SetLine(line)
+				element.SetText(text)
+
+				result = append(result, element)
+				remaining = remaining[index2+2:]
+
+			} else {
+
+				last_element := getLastElement(result, "#text")
+
+				if last_element != nil {
+
+					last_element.SetText(last_element.Text + "~~")
+
+				} else {
+
+					element := NewElement("#text")
+					element.SetLine(line)
+					element.SetText("~~")
+
+					result = append(result, element)
+
+				}
+
+			}
+
+		} else if is_underline == true {
+
+			remaining = remaining[2:]
+
+			index2 := strings.Index(remaining, "++")
+
+			if index2 > 0 {
+
+				text := remaining[0:index2]
+
+				element := NewElement("u")
+				element.SetLine(line)
+				element.SetText(text)
+
+				result = append(result, element)
+				remaining = remaining[index2+2:]
+
+			} else {
+
+				last_element := getLastElement(result, "#text")
+
+				if last_element != nil {
+
+					last_element.SetText(last_element.Text + "++")
+
+				} else {
+
+					element := NewElement("#text")
+					element.SetLine(line)
+					element.SetText("++")
+
+					result = append(result, element)
+
+				}
+
+			}
+
 		} else if is_del == true {
 
 			remaining = remaining[1:]
@@ -380,6 +456,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 			seek_code := strings.Index(remaining, "`")
 			seek_em := strings.Index(remaining, "*")
 			seek_del := strings.Index(remaining, "~")
+			seek_underline := strings.Index(remaining, "++")
 
 			seek := len(remaining)
 
@@ -409,6 +486,10 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 
 			if seek_del != -1 && seek_del < seek {
 				seek = seek_del
+			}
+
+			if seek_underline != -1 && seek_underline < seek {
+				seek = seek_underline
 			}
 
 			if seek > 0 {

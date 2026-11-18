@@ -158,7 +158,7 @@ source/
   agents/        Role templates (*.yaml) and prompt/message rendering
   parsers/
     html/        HTML to markdown/text conversion
-    markdown/    Markdown parser for the website frontend
+    markdown/    Shared markdown parser for the web and TTY frontends
   tools/         Tool implementations and JSON schemas
   types/         Shared types (Agent, Config, Bug, ChangelogEntry, Requirement, ...)
   schemas/       Wire types (Message, ToolCall, ChatRequest/Response, ...)
@@ -172,6 +172,11 @@ source/
     exocomp-agent/   Child-process entry point (exocomp agent)
     exocomp-web/     Web server entry point (agent | config | web)
 ```
+
+`parsers/markdown` owns only syntax and the `Document`/`Element` AST. The web
+app renders that AST to safe HTML in `app/utils/html`, while the TTY renders it
+to styled transcript lines in `source/ui/tty/components`. Both frontends share
+the same parser.
 
 ## JSONL Protocol
 

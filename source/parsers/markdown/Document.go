@@ -20,8 +20,9 @@ type Document struct {
 		Minutes int `json:"minutes"`
 		Words   int `json:"words"`
 	} `json:"statistics"`
-	Body   []*Element `json:"body"`
-	Errors []error    `json:"errors"`
+	Body       []*Element `json:"body"`
+	Errors     []error    `json:"errors"`
+	allow_html bool
 }
 
 func NewDocument(file string) *Document {
@@ -45,12 +46,38 @@ func NewDocument(file string) *Document {
 		document.Errors = make([]error, 0)
 		document.Meta.Image = "https://cookie.engineer/design/about/cookiengineer.jpg"
 		document.Meta.Tags = make([]string, 0)
+		document.allow_html = true
 
 		return &document
 
 	}
 
 	return nil
+
+}
+
+// NewFragment creates an empty markdown document for a message fragment.
+// Fragment documents do not require frontmatter and do not parse raw HTML.
+func NewFragment() *Document {
+
+	return &Document{
+		URL:        nil,
+		Body:       make([]*Element, 0),
+		Errors:     make([]error, 0),
+		allow_html: false,
+	}
+
+}
+
+// ParseFragment parses markdown without requiring frontmatter. Parsing errors
+// are collected in Document.Errors so callers can fall back to plain text.
+// Raw HTML is treated as text instead of being parsed into HTML elements.
+func ParseFragment(value string) *Document {
+
+	document := NewFragment()
+	document.Errors = document.Parse([]byte(value))
+
+	return document
 
 }
 
@@ -449,10 +476,6 @@ func (document *Document) ParseBody(value string) []error {
 
 				class := strings.TrimSpace(line[3:])
 
-				if class == "" {
-					errors = append(errors, fmt.Errorf("Line %d: Expected non-empty language attribute", l+1))
-				}
-
 				element := NewElement("pre")
 				element.SetLine(l + 1)
 				element.SetAttribute("class", class)
@@ -471,6 +494,58 @@ func (document *Document) ParseBody(value string) []error {
 
 				document.AddElement(element)
 
+			}
+
+		} else if strings.HasPrefix(line, ">") {
+
+			children, err := parseInlineElements(strings.TrimSpace(line[1:]), l+1, true)
+
+			if err == nil {
+
+				blockquote := pointer
+
+				if blockquote == nil || blockquote.Type != "blockquote" {
+
+					blockquote = NewElement("blockquote")
+					blockquote.SetLine(l + 1)
+
+					document.AddElement(blockquote)
+					pointer = blockquote
+
+				}
+
+				paragraph := NewElement("p")
+				paragraph.SetLine(l + 1)
+				paragraph.SetChildren(children)
+
+				blockquote.AddChild(paragraph)
+
+			} else {
+				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+			}
+
+		} else if isHorizontalRule(line) {
+
+			element := NewElement("hr")
+			element.SetLine(l + 1)
+
+			document.AddElement(element)
+			pointer = element
+
+		} else if strings.HasPrefix(line, "######") {
+
+			children, err := parseInlineElements(strings.TrimSpace(line[6:]), l+1, false)
+
+			if err == nil {
+
+				element := NewElement("h6")
+				element.SetLine(l + 1)
+				element.SetChildren(children)
+
+				document.AddElement(element)
+
+			} else {
+				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
 			}
 
 		} else if strings.HasPrefix(line, "#####") {
@@ -553,7 +628,7 @@ func (document *Document) ParseBody(value string) []error {
 				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
 			}
 
-		} else if strings.HasPrefix(line, "<") && strings.HasSuffix(line, ">") {
+		} else if document.allow_html == true && strings.HasPrefix(line, "<") && strings.HasSuffix(line, ">") {
 
 			if strings.HasPrefix(line, "</") && strings.HasSuffix(line, ">") {
 
@@ -903,64 +978,6 @@ func (document *Document) SetTitle(value string) {
 	document.Meta.Title = strings.TrimSpace(value)
 }
 
-func (document *Document) Render(indent string) string {
-
-	result := make([]string, 0)
-
-	first_section_at := 0
-
-	for e, element := range document.Body {
-
-		if element.Type == "h3" {
-
-			first_section_at = e
-			break
-
-		}
-
-	}
-
-	for e, element := range document.Body {
-
-		if element.Type == "h1" {
-			result = append(result, element.RenderInto(document, indent+"\t"))
-		} else if element.Type == "h2" {
-			result = append(result, element.RenderInto(document, indent+"\t"))
-		} else if element.Type == "h3" {
-
-			if first_section_at == e {
-				result = append(result, indent+"\t<section>")
-			} else {
-
-				result = append(result, indent+"\t</section>")
-				result = append(result, indent+"\t<section>")
-
-			}
-
-			result = append(result, element.RenderInto(document, indent+"\t\t"))
-
-		} else if element.Type == "h4" {
-			result = append(result, element.RenderInto(document, indent+"\t\t"))
-		} else if element.Type == "h5" {
-			result = append(result, element.RenderInto(document, indent+"\t\t"))
-		} else if element.Type != "#text" {
-
-			if e < first_section_at {
-				result = append(result, element.RenderInto(document, indent+"\t"))
-			} else {
-				result = append(result, element.RenderInto(document, indent+"\t\t"))
-			}
-
-		}
-
-	}
-
-	result = append(result, indent+"\t</section>")
-
-	return strings.Join(result, "\n")
-
-}
-
 func (document *Document) String() string {
 
 	lines := make([]string, 0)
@@ -1004,7 +1021,7 @@ func (document *Document) String() string {
 
 		switch element.Type {
 
-		case "h1", "h2", "h3", "h4", "h5":
+		case "h1", "h2", "h3", "h4", "h5", "h6":
 
 			lines = append(lines, fmt.Sprintf("%s", element.String()))
 			lines = append(lines, "")
@@ -1030,6 +1047,11 @@ func (document *Document) String() string {
 			lines = append(lines, "")
 
 		case "span":
+
+			lines = append(lines, fmt.Sprintf("%s", element.String()))
+			lines = append(lines, "")
+
+		case "blockquote", "hr":
 
 			lines = append(lines, fmt.Sprintf("%s", element.String()))
 			lines = append(lines, "")

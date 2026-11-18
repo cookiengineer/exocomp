@@ -1,6 +1,5 @@
 package html
 
-import app_fmt "exocomp-app/utils/fmt"
 import "exocomp-app/schemas"
 import "fmt"
 import "strings"
@@ -23,12 +22,12 @@ func RenderMessage(message *schemas.Message, with_empty_content bool) string {
 			if has_reasoning == true {
 				html += "<details class=\"reasoning\">"
 				html += "<summary>Thought</summary>"
-				html += app_fmt.FormatContent(message.ReasoningContent)
+				html += RenderMarkdown(message.ReasoningContent)
 				html += "</details>"
 			}
 
 			if has_content == true {
-				html += app_fmt.FormatContent(message.Content)
+				html += RenderMarkdown(message.Content)
 			}
 
 			return html
@@ -40,7 +39,7 @@ func RenderMessage(message *schemas.Message, with_empty_content bool) string {
 	} else if message.Role == "system" {
 
 		if message.Content != "" {
-			return app_fmt.FormatContent(message.Content)
+			return RenderMarkdown(message.Content)
 		} else if with_empty_content == true {
 			return "(no content)"
 		}
@@ -71,7 +70,7 @@ func RenderMessage(message *schemas.Message, with_empty_content bool) string {
 	} else if message.Role == "user" {
 
 		if message.Content != "" {
-			return app_fmt.FormatContent(message.Content)
+			return RenderMarkdown(message.Content)
 		} else if with_empty_content == true {
 			return "(no content)"
 		}
