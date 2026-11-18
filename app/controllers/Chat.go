@@ -45,15 +45,18 @@ type Chat struct {
 
 	tool_call *app_components.ToolCall
 
-	headerActionListener    *components.EventListener
-	dialogActionListener    *components.EventListener
-	dialogCancelListener    *dom.EventListener
-	answerClickListener     *dom.EventListener
-	answerCancelListener    *dom.EventListener
-	answerDialog            *dom.Element
-	promptActionListener    *components.EventListener
-	toolCallSuggestListener *components.EventListener
-	agentListChangeListener *components.EventListener
+	headerActionListener     *components.EventListener
+	dialogActionListener     *components.EventListener
+	dialogCancelListener     *dom.EventListener
+	answerClickListener      *dom.EventListener
+	answerCancelListener     *dom.EventListener
+	answerDialog             *dom.Element
+	permissionClickListener  *dom.EventListener
+	permissionCancelListener *dom.EventListener
+	permissionDialogElement  *dom.Element
+	promptActionListener     *components.EventListener
+	toolCallSuggestListener  *components.EventListener
+	agentListChangeListener  *components.EventListener
 }
 
 func NewChat(main *app.Main, view interfaces.View, config *app_types.Config) *Chat {
@@ -87,6 +90,7 @@ func (chat *Chat) Enter() bool {
 	chat.attachHeader()
 	chat.attachDialog()
 	chat.attachAnswerQuestions()
+	chat.attachAnswerPermissions()
 	chat.attachNavigation()
 	chat.attachPopover()
 	chat.attachPrompt()
@@ -131,6 +135,22 @@ func (chat *Chat) Leave() bool {
 		}
 
 		chat.answerDialog = nil
+
+	}
+
+	if chat.permissionDialogElement != nil {
+
+		if chat.permissionClickListener != nil {
+			chat.permissionDialogElement.RemoveEventListener("click", chat.permissionClickListener)
+			chat.permissionClickListener = nil
+		}
+
+		if chat.permissionCancelListener != nil {
+			chat.permissionDialogElement.RemoveEventListener("cancel", chat.permissionCancelListener)
+			chat.permissionCancelListener = nil
+		}
+
+		chat.permissionDialogElement = nil
 
 	}
 
@@ -801,7 +821,7 @@ func (chat *Chat) showHireErrors(errors []string) {
 func (chat *Chat) questionDialog() *layout.Dialog {
 
 	dialog, ok := components.UnwrapComponent[*layout.Dialog](
-		chat.View.Query("section > dialog"),
+		chat.View.Query("section > dialog[data-name=\"answer-questions\"]"),
 	)
 
 	if ok == true && dialog != nil {
@@ -822,9 +842,7 @@ func (chat *Chat) ShowQuestions(questions []*app_types.Question) {
 
 func (chat *Chat) RenderQuestion() {
 
-	dialog := chat.View.QuerySelector("dialog[data-name=\"answer-questions\"]")
-
-	if dialog == nil || len(chat.questions) == 0 {
+	if len(chat.questions) == 0 {
 		return
 	}
 
@@ -832,6 +850,19 @@ func (chat *Chat) RenderQuestion() {
 		chat.question_index = 0
 	} else if chat.question_index >= len(chat.questions) {
 		chat.question_index = len(chat.questions) - 1
+	}
+
+	if chat.questions[chat.question_index].IsPermission() == true {
+		chat.RenderPermission()
+		return
+	}
+
+	chat.hidePermissions()
+
+	dialog := chat.View.QuerySelector("dialog[data-name=\"answer-questions\"]")
+
+	if dialog == nil {
+		return
 	}
 
 	question := chat.questions[chat.question_index]
@@ -884,9 +915,18 @@ func (chat *Chat) RenderQuestion() {
 
 func (chat *Chat) ConfirmQuestion() {
 
+	if len(chat.questions) == 0 {
+		return
+	}
+
+	if chat.questions[chat.question_index].IsPermission() == true {
+		chat.ConfirmPermission()
+		return
+	}
+
 	dialog := chat.View.QuerySelector("dialog[data-name=\"answer-questions\"]")
 
-	if dialog == nil || len(chat.questions) == 0 {
+	if dialog == nil {
 		return
 	}
 
@@ -926,6 +966,204 @@ func (chat *Chat) ConfirmQuestion() {
 
 }
 
+func (chat *Chat) permissionDialog() *layout.Dialog {
+
+	dialog, ok := components.UnwrapComponent[*layout.Dialog](
+		chat.View.Query("section > dialog[data-name=\"answer-permissions\"]"),
+	)
+
+	if ok == true && dialog != nil {
+		return dialog
+	}
+
+	return nil
+
+}
+
+func (chat *Chat) RenderPermission() {
+
+	if len(chat.questions) == 0 {
+		return
+	}
+
+	question_dialog := chat.View.QuerySelector("dialog[data-name=\"answer-questions\"]")
+
+	if question_dialog != nil {
+		question_dialog.Value.Call("close")
+	}
+
+	dialog := chat.View.QuerySelector("dialog[data-name=\"answer-permissions\"]")
+
+	if dialog == nil {
+		return
+	}
+
+	question := chat.questions[chat.question_index]
+
+	title := dialog.QuerySelector("h3")
+
+	if title != nil {
+		if strings.TrimSpace(question.Agent) != "" {
+			title.SetTextContent("Agent " + question.Agent + " requests permissions")
+		} else {
+			title.SetTextContent("Agent requests permissions")
+		}
+	}
+
+	reason := dialog.QuerySelector("p[data-name=\"permission-reason\"]")
+
+	if reason != nil {
+		reason.SetInnerHTML(app_fmt.SanitizeContent(question.Question))
+	}
+
+	capabilities := dialog.QuerySelector("div[data-name=\"permission-capabilities\"]")
+	note := dialog.QuerySelector("p[data-name=\"permission-note\"]")
+
+	if capabilities != nil {
+
+		html := ""
+		has_network := false
+
+		for _, capability := range question.Capabilities {
+
+			if capability.Type == "network.Connect" {
+				has_network = true
+			}
+
+			html += "<label><input type=\"checkbox\" name=\"permission-capability\" data-type=\"" + app_fmt.SanitizeContent(capability.Type) + "\" data-scope=\"" + app_fmt.SanitizeContent(capability.Scope) + "\"/><span>" + app_fmt.SanitizeContent(capability.Type+"  "+capability.Scope) + "</span></label>"
+
+		}
+
+		capabilities.SetInnerHTML(html)
+
+		if note != nil {
+			if has_network == true {
+				note.SetTextContent("Network grants apply to Exocomp network tools only. Raw programs are not domain-filtered.")
+			} else {
+				note.SetTextContent("")
+			}
+		}
+
+	}
+
+	chat.clearQuestionErrors()
+	dialog.Value.Call("showModal")
+
+}
+
+func (chat *Chat) ConfirmPermission() {
+
+	dialog := chat.View.QuerySelector("dialog[data-name=\"answer-permissions\"]")
+
+	if dialog == nil || len(chat.questions) == 0 {
+		return
+	}
+
+	question := chat.questions[chat.question_index]
+	checked := dialog.QuerySelectorAll("input[name=\"permission-capability\"]:checked")
+	granted := make([]app_types.Capability, 0)
+
+	for _, input := range checked {
+		granted = append(granted, app_types.Capability{
+			Type:  input.GetAttribute("data-type"),
+			Scope: input.GetAttribute("data-scope"),
+		})
+	}
+
+	answer, err0 := json.Marshal(granted)
+
+	if err0 != nil {
+		chat.showQuestionErrors([]string{"Cannot encode permissions."})
+		return
+	}
+
+	result, errors := chat.AnswerQuestion(question.Question, string(answer))
+
+	if result == false {
+		chat.showQuestionErrors(errors)
+		return
+	}
+
+	chat.advanceQuestion()
+
+}
+
+func (chat *Chat) DenyPermission() {
+
+	if len(chat.questions) == 0 {
+		return
+	}
+
+	question := chat.questions[chat.question_index]
+	result, errors := chat.AnswerQuestion(question.Question, "[]")
+
+	if result == false {
+		chat.showQuestionErrors(errors)
+		return
+	}
+
+	chat.advanceQuestion()
+
+}
+
+func (chat *Chat) advanceQuestion() {
+
+	if chat.question_index >= len(chat.questions)-1 {
+		chat.hideAnswerQuestions()
+		chat.Resume()
+	} else {
+		chat.question_index++
+		chat.RenderQuestion()
+	}
+
+}
+
+func (chat *Chat) attachAnswerPermissions() {
+
+	dialog := chat.View.QuerySelector("dialog[data-name=\"answer-permissions\"]")
+
+	if dialog == nil {
+		return
+	}
+
+	chat.permissionDialogElement = dialog
+
+	chat.permissionClickListener = dom.ToEventListener(func(event *dom.Event) {
+
+		if event.Target == nil {
+			return
+		}
+
+		action := event.Target.GetAttribute("data-action")
+
+		if action == "allow" {
+			chat.ConfirmPermission()
+		} else if action == "deny" || action == "close" {
+			chat.DenyPermission()
+		}
+
+	})
+
+	dialog.AddEventListener("click", chat.permissionClickListener)
+
+	chat.permissionCancelListener = dom.ToEventListener(func(event *dom.Event) {
+		chat.DenyPermission()
+	})
+
+	dialog.AddEventListener("cancel", chat.permissionCancelListener)
+
+}
+
+func (chat *Chat) hidePermissions() {
+
+	dialog := chat.View.QuerySelector("dialog[data-name=\"answer-permissions\"]")
+
+	if dialog != nil {
+		dialog.Value.Call("close")
+	}
+
+}
+
 func (chat *Chat) hideAnswerQuestions() {
 
 	dialog := chat.View.QuerySelector("dialog[data-name=\"answer-questions\"]")
@@ -934,11 +1172,13 @@ func (chat *Chat) hideAnswerQuestions() {
 		dialog.Value.Call("close")
 	}
 
+	chat.hidePermissions()
+
 }
 
 func (chat *Chat) clearQuestionErrors() {
 
-	dialog := chat.questionDialog()
+	dialog := chat.currentQuestionDialog()
 
 	if dialog != nil {
 		clearFooterErrors(dialog.Footer)
@@ -948,10 +1188,20 @@ func (chat *Chat) clearQuestionErrors() {
 
 func (chat *Chat) showQuestionErrors(errors []string) {
 
-	dialog := chat.questionDialog()
+	dialog := chat.currentQuestionDialog()
 
 	if dialog != nil {
 		setFooterErrors(dialog.Footer, errors)
+	}
+
+}
+
+func (chat *Chat) currentQuestionDialog() *layout.Dialog {
+
+	if len(chat.questions) > 0 && chat.questions[chat.question_index].IsPermission() == true {
+		return chat.permissionDialog()
+	} else {
+		return chat.questionDialog()
 	}
 
 }

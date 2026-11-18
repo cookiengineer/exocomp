@@ -1,11 +1,13 @@
 package types
 
 type Question struct {
-	Type     string   `json:"type"`
-	Question string   `json:"question"`
-	Options  []string `json:"options"`
-	Multiple bool     `json:"multiple"`
-	Answer   string   `json:"answer"`
+	Type         string       `json:"type"`
+	Agent        string       `json:"agent,omitempty"`
+	Question     string       `json:"question"`
+	Options      []string     `json:"options"`
+	Multiple     bool         `json:"multiple"`
+	Capabilities []Capability `json:"capabilities,omitempty"`
+	Answer       string       `json:"answer"`
 }
 
 func NewQuestion(arguments map[string]any) *Question {
@@ -36,7 +38,28 @@ func NewQuestion(arguments map[string]any) *Question {
 		question.Multiple = value
 	}
 
-	if question.Question != "" && len(question.Options) > 0 {
+	if values, ok := arguments["capabilities"].([]any); ok == true {
+
+		for _, value := range values {
+
+			if entry, ok := value.(map[string]any); ok == true {
+
+				capability_type, ok1 := entry["type"].(string)
+				scope, ok2 := entry["scope"].(string)
+
+				if ok1 == true && ok2 == true {
+					question.Capabilities = append(question.Capabilities, Capability{Type: capability_type, Scope: scope})
+				}
+
+			}
+
+		}
+
+	}
+
+	if len(question.Capabilities) > 0 {
+		question.Type = "Permission"
+	} else if question.Question != "" && len(question.Options) > 0 {
 		question.Type = "Choose"
 	} else {
 		question.Type = "Ask"
@@ -48,4 +71,8 @@ func NewQuestion(arguments map[string]any) *Question {
 
 func (question *Question) IsChoice() bool {
 	return question.Type == "Choose"
+}
+
+func (question *Question) IsPermission() bool {
+	return question.Type == "Permission"
 }

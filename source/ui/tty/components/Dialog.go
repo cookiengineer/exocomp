@@ -11,3 +11,4 @@ type Dialog interface {
 
 var _ Dialog = (*QuestionDialog)(nil)
 var _ Dialog = (*ChoiceDialog)(nil)
+var _ Dialog = (*PermissionDialog)(nil)

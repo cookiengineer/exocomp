@@ -222,6 +222,8 @@ func (app *App) checkHuman() {
 
 				if pending[0].Type == "Choose" {
 					app.Human = components.NewChoiceDialog(pending[0])
+				} else if pending[0].Type == "Permission" {
+					app.Human = components.NewPermissionDialog(pending[0])
 				} else {
 					app.Human = components.NewQuestionDialog(pending[0])
 				}

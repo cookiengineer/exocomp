@@ -31,3 +31,26 @@ func TestNewQuestion_Ask(t *testing.T) {
 	}
 
 }
+
+func TestNewQuestion_Permission(t *testing.T) {
+
+	question := NewQuestion(map[string]any{
+		"reason": "Need target access.",
+		"capabilities": []any{
+			map[string]any{"type": "files.Read", "scope": "/home/foo"},
+		},
+	})
+
+	if question.Type != "Permission" {
+		t.Errorf("Expected %q, got %q", "Permission", question.Type)
+	}
+
+	if len(question.Capabilities) != 1 {
+		t.Fatalf("Expected 1 capability, got %d", len(question.Capabilities))
+	}
+
+	if question.Capabilities[0].Type != "files.Read" {
+		t.Errorf("Expected %q, got %q", "files.Read", question.Capabilities[0].Type)
+	}
+
+}

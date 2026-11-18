@@ -83,3 +83,29 @@ func TestGetUnansweredQuestions_Choice(t *testing.T) {
 	}
 
 }
+
+func TestGetUnansweredQuestions_Permission(t *testing.T) {
+
+	agent := app_types.NewAgent()
+	agent.Name = "Cody Codera"
+	agent.Messages = append(agent.Messages, newAssistantQuestion("call_0", "humans.AskPermission", "{\"reason\":\"Need target access.\",\"capabilities\":[{\"type\":\"files.Read\",\"scope\":\"/home/foo\"}]}"))
+
+	questions := GetUnansweredQuestions(agent)
+
+	if len(questions) != 1 {
+		t.Fatalf("Expected 1 unanswered question, got %d", len(questions))
+	}
+
+	if questions[0].Type != "Permission" {
+		t.Errorf("Expected %q, got %q", "Permission", questions[0].Type)
+	}
+
+	if questions[0].Agent != "Cody Codera" {
+		t.Errorf("Expected %q, got %q", "Cody Codera", questions[0].Agent)
+	}
+
+	if len(questions[0].Capabilities) != 1 {
+		t.Fatalf("Expected 1 capability, got %d", len(questions[0].Capabilities))
+	}
+
+}

@@ -23,12 +23,14 @@ func GetUnansweredQuestions(agent *app_types.Agent) []*app_types.Question {
 
 				tool_call := &message.ToolCalls[t]
 
-				if tool_call.Function.Name == "humans.Ask" || tool_call.Function.Name == "humans.Choose" {
+				if tool_call.Function.Name == "humans.Ask" || tool_call.Function.Name == "humans.Choose" || tool_call.Function.Name == "humans.AskPermission" {
 
 					arguments, err := tool_call.GetArguments()
 
 					if err == nil {
-						questions[tool_call.ID] = app_types.NewQuestion(arguments)
+						question := app_types.NewQuestion(arguments)
+						question.Agent = agent.Name
+						questions[tool_call.ID] = question
 					}
 
 				}
@@ -37,7 +39,7 @@ func GetUnansweredQuestions(agent *app_types.Agent) []*app_types.Question {
 
 		} else if message.Role == "tool" {
 
-			if message.ToolName == "humans.Ask" || message.ToolName == "humans.Choose" {
+			if message.ToolName == "humans.Ask" || message.ToolName == "humans.Choose" || message.ToolName == "humans.AskPermission" {
 
 				question, ok := questions[message.ToolCallID]
 
