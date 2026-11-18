@@ -6,4 +6,5 @@ type Policy struct {
 	ReadOnly  []string
 	Devices   []string
 	Deny      []string
+	Network   bool
 }

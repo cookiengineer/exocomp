@@ -49,6 +49,63 @@ func TestBuildProfile(t *testing.T) {
 
 		}
 
+		denied := []string{
+			"network-outbound",
+			"network-bind",
+			"network-inbound",
+			"system-socket",
+		}
+
+		for _, check := range denied {
+
+			if strings.Contains(source, check) == true {
+				t.Errorf("Expected profile without network access to not contain %q", check)
+			}
+
+		}
+
+	} else {
+		t.Errorf("Expected %v to be nil", err0)
+	}
+
+}
+
+func TestBuildProfileNetwork(t *testing.T) {
+
+	sandbox := t.TempDir()
+
+	profile, err0 := BuildProfile(Policy{
+		ReadWrite: []string{sandbox},
+		Network:   true,
+	})
+
+	if err0 == nil {
+
+		source := profile.String()
+
+		checks := []string{
+			"(allow system-socket (socket-domain AF_INET))",
+			"(allow system-socket (socket-domain AF_INET6))",
+			"(allow network-outbound (remote ip \"*:*\"))",
+			"(allow network-outbound (remote unix-socket (path-literal \"/private/var/run/mDNSResponder\")))",
+			"(allow network-bind (local ip \"localhost:*\"))",
+			"(allow network-inbound (local ip \"localhost:*\"))",
+		}
+
+		for _, check := range checks {
+
+			if strings.Contains(source, check) == false {
+				t.Errorf("Expected profile to contain %q", check)
+			}
+
+		}
+
+		// NOTE: A bare network-outbound rule would also allow unix-socket
+		// connects to host daemons such as docker.sock or the SSH agent.
+		if strings.Contains(source, "(allow network-outbound)\n") == true {
+			t.Errorf("Expected profile to filter network-outbound")
+		}
+
 	} else {
 		t.Errorf("Expected %v to be nil", err0)
 	}

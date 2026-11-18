@@ -6,13 +6,22 @@ import "os"
 import "os/exec"
 import "syscall"
 
-// prepareSandboxCommand puts the sandbox helper into a private user and mount
-// namespace. The helper uses the mount namespace to mask the private .exocomp
-// state folder before applying landlock and executing the target.
-func prepareSandboxCommand(cmd *exec.Cmd) {
+// prepareSandboxCommand puts the sandbox helper into a private user, mount and
+// (when network access is denied) network namespace. The helper uses the mount
+// namespace to mask the private .exocomp state folder before applying landlock
+// and executing the target. The private network namespace is the only network
+// boundary on Linux: landlock cannot match individual hosts, so a granted
+// network.Connect capability keeps the helper in the host network namespace.
+func prepareSandboxCommand(cmd *exec.Cmd, network bool) {
+
+	clone_flags := uintptr(syscall.CLONE_NEWUSER | syscall.CLONE_NEWNS)
+
+	if network == false {
+		clone_flags = clone_flags | uintptr(syscall.CLONE_NEWNET)
+	}
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUSER | syscall.CLONE_NEWNS,
+		Cloneflags: clone_flags,
 		UidMappings: []syscall.SysProcIDMap{
 			{ContainerID: 0, HostID: os.Getuid(), Size: 1},
 		},

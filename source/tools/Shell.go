@@ -428,6 +428,7 @@ func (tool *Shell) Open(program string, arguments []string, workdir string, colu
 							cmd, err4 := utils_sandbox.CommandContextWithPermissions(ctx, tool.Sandbox, program, resolved_arguments, utils_sandbox.Permissions{
 								ReadPaths:  read_paths,
 								WritePaths: write_paths,
+								Network:    tool.Capabilities.AllowsNetworkEgress(),
 							})
 
 							if err4 == nil {

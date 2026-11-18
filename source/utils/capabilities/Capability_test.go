@@ -132,6 +132,10 @@ func TestSet(t *testing.T) {
 		t.Errorf("Expected unrelated IP to be rejected")
 	}
 
+	if set.AllowsNetworkEgress() == false {
+		t.Errorf("Expected network egress to be allowed")
+	}
+
 	read_paths, write_paths := set.SandboxPaths()
 	resolved_folder, _ := filepath.EvalSymlinks(folder)
 
@@ -160,6 +164,16 @@ func TestSet(t *testing.T) {
 
 	if len(set.List()) != 0 {
 		t.Errorf("Expected capabilities to be cleared")
+	}
+
+	if set.AllowsNetworkEgress() == true {
+		t.Errorf("Expected network egress to be denied after clearing")
+	}
+
+	var empty *Set
+
+	if empty.AllowsNetworkEgress() == true {
+		t.Errorf("Expected a nil capability set to deny network egress")
 	}
 
 }

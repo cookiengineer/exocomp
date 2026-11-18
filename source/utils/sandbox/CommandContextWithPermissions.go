@@ -7,7 +7,8 @@ import "os/exec"
 import "path/filepath"
 
 // CommandContextWithPermissions returns an exec.Cmd that runs program through
-// the sandbox helper with extra read and write permissions.
+// the sandbox helper with extra filesystem permissions and, when Network is
+// true, network access. Network access is denied by default.
 func CommandContextWithPermissions(ctx context.Context, sandbox string, program string, arguments []string, permissions Permissions) (*exec.Cmd, error) {
 
 	target, err0 := exec.LookPath(program)
@@ -87,6 +88,12 @@ func CommandContextWithPermissions(ctx context.Context, sandbox string, program 
 
 	}
 
+	if permissions.Network == true {
+		helper_arguments = append(helper_arguments, "--network=allow")
+	} else {
+		helper_arguments = append(helper_arguments, "--network=deny")
+	}
+
 	helper_arguments = append(helper_arguments, "--", target_abs)
 	helper_arguments = append(helper_arguments, arguments...)
 
@@ -94,7 +101,7 @@ func CommandContextWithPermissions(ctx context.Context, sandbox string, program 
 	cmd.Dir = sandbox_abs
 	cmd.Env = environment
 
-	prepareSandboxCommand(cmd)
+	prepareSandboxCommand(cmd, permissions.Network)
 
 	return cmd, nil
 

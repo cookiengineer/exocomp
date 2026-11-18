@@ -3,10 +3,11 @@ package seatbelt
 import "fmt"
 import "strings"
 
-func parseArguments(arguments []string) (string, []string, []string, string, []string, error) {
+func parseArguments(arguments []string) (string, []string, []string, bool, string, []string, error) {
 
 	sandbox := ""
 	target := ""
+	network := "deny"
 	read_paths := make([]string, 0)
 	write_paths := make([]string, 0)
 	target_arguments := make([]string, 0)
@@ -30,16 +31,22 @@ func parseArguments(arguments []string) (string, []string, []string, string, []s
 			read_paths = append(read_paths, strings.TrimSpace(argument[len("--read="):]))
 		} else if strings.HasPrefix(argument, "--write=") {
 			write_paths = append(write_paths, strings.TrimSpace(argument[len("--write="):]))
+		} else if strings.HasPrefix(argument, "--network=") {
+			network = strings.TrimSpace(argument[len("--network="):])
 		} else {
-			return "", nil, nil, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
+			return "", nil, nil, false, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
 		}
 
 	}
 
+	if network != "allow" && network != "deny" {
+		return "", nil, nil, false, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
+	}
+
 	if sandbox != "" && target != "" {
-		return sandbox, read_paths, write_paths, target, target_arguments, nil
+		return sandbox, read_paths, write_paths, network == "allow", target, target_arguments, nil
 	} else {
-		return "", nil, nil, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
+		return "", nil, nil, false, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
 	}
 
 }

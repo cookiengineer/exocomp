@@ -134,6 +134,13 @@ func (set *Set) CanWrite(path string) bool {
 
 }
 
+// AllowsNetworkEgress reports whether any network.Connect capability is
+// granted. The OS sandbox can only allow or deny network access as a whole, so
+// a single grant enables egress for every sandboxed program of the session.
+func (set *Set) AllowsNetworkEgress() bool {
+	return set.HasNetwork()
+}
+
 func (set *Set) HasNetwork() bool {
 
 	if set == nil {

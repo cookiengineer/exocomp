@@ -43,7 +43,7 @@ func (tool *Containers) Call(method string, arguments map[string]interface{}) (s
 			if ok1 == true && ok2 == true {
 
 				command := ""
-				network := "bridge"
+				network := "none"
 
 				raw_command, ok3 := arguments["command"]
 

@@ -65,19 +65,40 @@ Both backends share the same fixed filesystem and process policy:
   switch and no fallback: if the platform sandbox or the helper is unavailable,
   execution fails with a fixed error.
 
+Network access is denied by default on both backends:
+
+- Without a `network.Connect` capability, the Linux helper runs in a private
+  network namespace with only its loopback interface raised, so TCP, UDP, DNS
+  and ICMP cannot reach the host or the internet. On macOS the SBPL profile
+  contains no network rules at all, which denies the same operations.
+- With a `network.Connect` capability, network access is enabled for the whole
+  sandbox. On Linux the helper then stays in the host network namespace; on
+  macOS the profile allows outbound IP traffic (`*:*`), the mDNSResponder
+  resolver socket, and loopback bind/inbound for local proxies and test
+  servers. Unrelated unix-socket connects (docker.sock, SSH agent, ...) stay
+  denied on macOS.
+
+This is all-or-nothing because neither landlock nor seatbelt can match an
+individual host: landlock network rules are port-based and seatbelt accepts
+only `*` or `localhost` as the host token in an IP filter. The domain, IP
+and CIDR scopes of `network.Connect` are therefore enforced at the
+`websites.*` tool boundary and by role prompts and `assets.Scope`, not by the
+kernel.
+
 On Linux, `PR_SET_NO_NEW_PRIVS` is set before restricting, which also blocks
 setuid privilege escalation. Because landlock is Linux-only, the Linux backend
-refuses to run on other operating systems. Network access is not restricted by
-landlock, and `/proc` and `/sys` are readable for compatibility.
+refuses to run on other operating systems. `/proc` and `/sys` are readable for
+compatibility.
 
-The Linux helper also runs in a private user and mount namespace. Before
-applying landlock, it mounts an empty read-only tmpfs over `<sandbox>/.exocomp`
-so executed programs cannot read or write internal tool state. It then drops
-all capabilities before executing the target. The target runs as uid 0 inside
-the user namespace, mapped to the invoking host user.
+The Linux helper also runs in a private user and mount namespace (plus a
+private network namespace when network access is denied). Before applying
+landlock, it mounts an empty read-only tmpfs over `<sandbox>/.exocomp` so
+executed programs cannot read or write internal tool state. It then drops all
+capabilities before executing the target. The target runs as uid 0 inside the
+user namespace, mapped to the invoking host user.
 
-On macOS, the generated SBPL profile is deny-by-default and denies network
-access. Paths are resolved through `filepath.EvalSymlinks` before being emitted
+On macOS, the generated SBPL profile is deny-by-default. Paths are resolved
+through `filepath.EvalSymlinks` before being emitted
 because the kernel matches resolved vnodes. Both the original and resolved forms
 are included, which covers `/tmp` -> `/private/tmp`, `/var` -> `/private/var`
 and `/etc` -> `/private/etc`. The profile allows only the configured file,
@@ -126,19 +147,29 @@ child agents.
 added to the landlock/seatbelt policy for subsequent `files.*`,
 `programs.Execute`, `shell.*`, and `skills.Execute` calls.
 
-`network.Connect` is enforced at the tool boundary for `websites.*` and future
-`http.*` tools. It is not a domain/IP firewall for arbitrary programs:
-landlock network rules are port-based, and seatbelt can only allow or deny
-network as a whole. Raw network programs such as `curl`, `nmap`, `nc`, or `ssh`
-are therefore not domain-filtered by this capability.
+The policy of a running process is fixed when it is spawned. A long-lived
+`shell.*` session keeps the network and filesystem policy it was started with,
+so close and reopen it after a capability is granted.
 
-Known limitations: on Linux, landlock does not restrict network access, `/proc`
-and `/sys` are readable for compatibility, and metadata changes, ptrace, signals
-and already-open file descriptors are not mediated. On macOS, the seatbelt
-profile denies network access by default, but the platform still does not
-mediate every operation and pre-opened file descriptors remain usable. On both
-platforms, programs that expect host configuration or caches outside the sandbox
-may need sandbox copies.
+`network.Connect` is enforced in two places:
+
+- `websites.*` matches the exact domain, IP or CIDR on every request and
+  redirect.
+- The OS sandbox switches network access on or off for `programs.Execute`,
+  `shell.*` and `skills.Execute`. A single grant enables outbound network
+  access for every sandboxed program of the session, because landlock and
+  seatbelt cannot match individual hosts. Raw programs such as `curl`, `nmap`,
+  `nc` or `ssh` are therefore not domain-filtered; scope is enforced by role
+  prompts and `assets.Scope`.
+
+Known limitations: on Linux, `/proc` and `/sys` are readable for
+compatibility, and metadata changes, ptrace, signals and already-open file
+descriptors are not mediated. In grant mode the sandbox also returns to the
+host network namespace, so it can reach host loopback services and use UDP and
+ICMP. On macOS, the seatbelt profile denies unrelated unix sockets but the
+platform still does not mediate every operation and pre-opened file
+descriptors remain usable. On both platforms, programs that expect host
+configuration or caches outside the sandbox may need sandbox copies.
 
 ### Container Execution (Podman)
 
@@ -160,8 +191,8 @@ Container isolation is enforced by the tool itself:
   capabilities, privileged mode or host namespaces are accepted from the model.
 - Images must appear in the role's `allowed-images` list. An empty list denies
   all images.
-- The default network mode is `bridge`; `none` is opt-in and `host` is never
-  allowed.
+- The default network mode is `none`; `bridge` must be requested explicitly and
+  `host` is never allowed.
 - Podman output that reaches the model goes through
   `utils/podman`'s `sanitizeError`, so host paths and raw runtime errors are not
   leaked.

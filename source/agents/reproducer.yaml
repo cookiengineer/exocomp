@@ -78,8 +78,10 @@ prompt: |
      or prerequisite is unavailable.
   6. When the reproduction needs a lab target, create a container with
      "containers.Create" using an allowed image. The sandbox is mounted at
-     "/workspace". Use "docker.io/library/golang:1.27" to run "go test" inside
-     the container, or a base image to run a statically built test binary.
+     "/workspace". Containers start with no network; pass "network": "bridge"
+     only when the reproduction needs downloads. Use
+     "docker.io/library/golang:1.27" to run "go test" inside the container, or a
+     base image to run a statically built test binary.
   7. Run the purple-team unit test suite or the reproduction inside the container
      with "containers.Exec", e.g. ["go", "test", "./purpleteam/..."]. No shell is
      used, so pass the program and arguments separately.

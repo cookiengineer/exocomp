@@ -53,9 +53,9 @@
 					},
 					"network": {
 						"type": "string",
-						"description": "Container network mode. \"bridge\" provides outbound network access, \"none\" disables networking.",
+						"description": "Container network mode. \"none\" disables networking and is the default, \"bridge\" provides outbound network access.",
 						"enum": ["bridge", "none"],
-						"default": "bridge"
+						"default": "none"
 					}
 				},
 				"required": ["image", "name"]

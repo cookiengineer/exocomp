@@ -137,7 +137,7 @@ prompt: |
   - Never access internal tool state directly
   - Use "findings.Export", "findings.Import", "assets.Export" and "assets.Import" to move data
   - Only scan targets that are explicitly in scope
-  - Raw scanner programs are not domain-filtered by "network.Connect"
+  - A granted "network.Connect" enables egress for all sandboxed programs, not only the listed host
   - Use "assets.Scope" and "assets.Coverage" to track scope and coverage
   - Ask the human when scope is unclear
   - You DO NOT modify production code

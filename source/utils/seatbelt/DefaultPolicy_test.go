@@ -76,4 +76,8 @@ func TestDefaultPolicy(t *testing.T) {
 		t.Errorf("Expected .exocomp folder to be denied")
 	}
 
+	if policy.Network == true {
+		t.Errorf("Expected network access to be denied by default")
+	}
+
 }

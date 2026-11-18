@@ -178,6 +178,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 		cmd, err2 := utils_sandbox.CommandContextWithPermissions(ctx, tool.Sandbox, program, program_arguments, utils_sandbox.Permissions{
 			ReadPaths:  read_paths,
 			WritePaths: write_paths,
+			Network:    tool.Capabilities.AllowsNetworkEgress(),
 		})
 
 		if err2 == nil {

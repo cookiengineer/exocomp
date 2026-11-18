@@ -5,6 +5,7 @@ package seatbelt_test
 import "exocomp/utils/sandbox"
 import "exocomp/utils/seatbelt"
 import "context"
+import "net"
 import "os"
 import "os/exec"
 import "path/filepath"
@@ -181,6 +182,88 @@ func TestExecuteSandbox(t *testing.T) {
 
 	} else {
 		t.Errorf("Expected %v to be nil", err15)
+	}
+
+}
+
+func TestExecuteSandboxNetwork(t *testing.T) {
+
+	if seatbelt.Supported() == false {
+		t.Skip("seatbelt is not available on this system")
+	}
+
+	helper := buildSandboxHelper(t)
+
+	t.Setenv("EXOCOMP_SANDBOX", helper)
+
+	playground := t.TempDir()
+	sandbox_dir := filepath.Join(playground, "sandbox")
+
+	err0 := os.MkdirAll(sandbox_dir, 0755)
+
+	if err0 != nil {
+		t.Fatalf("Expected %v to be nil", err0)
+	}
+
+	listener, err1 := net.Listen("tcp", "127.0.0.1:0")
+
+	if err1 != nil {
+		t.Fatalf("Expected %v to be nil", err1)
+	}
+
+	defer listener.Close()
+
+	go func() {
+
+		for {
+
+			connection, err := listener.Accept()
+
+			if err != nil {
+				return
+			}
+
+			connection.Write([]byte("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok"))
+			connection.Close()
+
+		}
+
+	}()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+
+	defer cancel()
+
+	url := "http://" + listener.Addr().String() + "/"
+
+	cmd1, err2 := sandbox.CommandContextWithPermissions(ctx, sandbox_dir, "curl", []string{"-s", "--max-time", "5", url}, sandbox.Permissions{})
+
+	if err2 == nil {
+
+		output, err3 := cmd1.CombinedOutput()
+
+		if err3 == nil {
+			t.Errorf("Expected network access to be denied, got %s", string(output))
+		}
+
+	} else {
+		t.Errorf("Expected %v to be nil", err2)
+	}
+
+	cmd2, err4 := sandbox.CommandContextWithPermissions(ctx, sandbox_dir, "curl", []string{"-s", "--max-time", "5", url}, sandbox.Permissions{Network: true})
+
+	if err4 == nil {
+
+		output, err5 := cmd2.CombinedOutput()
+
+		if err5 != nil {
+			t.Errorf("Expected network access to be allowed, got %v: %s", err5, string(output))
+		} else if strings.Contains(string(output), "ok") == false {
+			t.Errorf("Expected sandbox to reach the local server, got %s", string(output))
+		}
+
+	} else {
+		t.Errorf("Expected %v to be nil", err4)
 	}
 
 }

@@ -177,6 +177,26 @@ func TestContainers_Create(t *testing.T) {
 			t.Errorf("Expected default keepalive command in %q", line2)
 		}
 
+		result3, err3 := tool.Call("Create", map[string]interface{}{
+			"image": "alpine:latest",
+			"name":  "default",
+		})
+
+		if err3 != nil {
+			t.Errorf("Expected %v to be nil", err3)
+		}
+
+		if result3 != "containers.Create: Container \"default\" created from image \"alpine:latest\"." {
+			t.Errorf("Expected container to be created, got %q", result3)
+		}
+
+		arguments3 := readRecordedArguments(t)
+		line3 := strings.Join(arguments3, " ")
+
+		if strings.Contains(line3, "--network none") == false {
+			t.Errorf("Expected default network mode none in %q", line3)
+		}
+
 	} else {
 		t.Errorf("Expected tool to be not nil")
 	}

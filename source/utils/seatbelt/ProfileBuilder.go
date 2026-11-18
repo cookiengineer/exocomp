@@ -4,6 +4,7 @@ import "fmt"
 import "strings"
 
 const maxProfileSize = 65535
+const resolverSocket = "/private/var/run/mDNSResponder"
 
 type profileBuilder struct {
 	imports     []string

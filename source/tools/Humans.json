@@ -3,7 +3,7 @@
 		"type": "function",
 		"function": {
 			"name": "humans.AskPermission",
-			"description": "Ask the human user to grant temporary sandbox capabilities. Each capability is selectable individually. Grants are kept in memory for the current agent session only and are never persisted to disk. network.Connect applies to Exocomp network tools only; raw programs are not domain-filtered.",
+			"description": "Ask the human user to grant temporary sandbox capabilities. Each capability is selectable individually. Grants are kept in memory for the current agent session only and are never persisted to disk. network.Connect enables outbound network access for every sandboxed program of the session; the scoped host is enforced for websites.* only.",
 			"parameters": {
 				"type": "object",
 				"properties": {

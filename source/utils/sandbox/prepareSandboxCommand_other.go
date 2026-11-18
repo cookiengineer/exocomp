@@ -5,5 +5,5 @@ package sandbox
 import "os/exec"
 
 // prepareSandboxCommand is a no-op on platforms without Linux namespaces.
-func prepareSandboxCommand(cmd *exec.Cmd) {
+func prepareSandboxCommand(cmd *exec.Cmd, network bool) {
 }
