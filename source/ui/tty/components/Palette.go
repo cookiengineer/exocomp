@@ -10,6 +10,7 @@ type Palette struct {
 	Visible  bool
 	Items    []commands.Suggestion
 	Selected int
+	scroll   int
 }
 
 func NewPalette() *Palette {
@@ -25,8 +26,25 @@ func (palette *Palette) Set(items []commands.Suggestion) {
 	palette.Items = items
 	palette.Visible = len(items) > 0
 
-	if palette.Selected >= len(items) {
-		palette.Selected = max(0, len(items)-1)
+	if len(items) == 0 {
+
+		palette.Selected = 0
+		palette.scroll = 0
+
+	} else {
+
+		if palette.Selected >= len(items) {
+			palette.Selected = len(items) - 1
+		}
+
+		if palette.Selected < 0 {
+			palette.Selected = 0
+		}
+
+		if palette.scroll > len(items)-1 {
+			palette.scroll = max(0, len(items)-1)
+		}
+
 	}
 
 }
@@ -35,6 +53,7 @@ func (palette *Palette) Hide() {
 
 	palette.Visible = false
 	palette.Selected = 0
+	palette.scroll = 0
 
 }
 
@@ -78,14 +97,35 @@ func (palette *Palette) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, el
 		return
 	}
 
+	if len(palette.Items) == 0 {
+		return
+	}
+
 	buffer.Fill(rect, ' ', styles.Palette)
 
-	end := min(len(palette.Items), rect.Height)
+	height := rect.Height
 
-	for row := 0; row < end; row++ {
+	if palette.Selected < palette.scroll {
+		palette.scroll = palette.Selected
+	} else if palette.Selected >= palette.scroll+height {
+		palette.scroll = palette.Selected - height + 1
+	}
 
-		item := palette.Items[row]
-		selected := row == palette.Selected
+	if palette.scroll > len(palette.Items)-height {
+		palette.scroll = max(0, len(palette.Items)-height)
+	}
+
+	if palette.scroll < 0 {
+		palette.scroll = 0
+	}
+
+	end := min(len(palette.Items), palette.scroll+height)
+
+	for index := palette.scroll; index < end; index++ {
+
+		row := index - palette.scroll
+		item := palette.Items[index]
+		selected := index == palette.Selected
 
 		style := styles.Palette
 

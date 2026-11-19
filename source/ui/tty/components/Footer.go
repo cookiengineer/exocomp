@@ -88,16 +88,16 @@ func (footer *Footer) Width(width int) int {
 
 func (footer *Footer) Height(width int) int {
 
-	textarea_width := max(1, width-4)
+	textarea_width := max(1, width-5)
 	lines, _, _ := footer.Textarea.Wrap(textarea_width)
 	textarea_height := min(10, max(1, len(lines)))
 	palette_height := 0
 
 	if footer.Palette.Visible == true {
-		palette_height = footer.Palette.Height(width)
+		palette_height = footer.Palette.Height(textarea_width)
 	}
 
-	return 1 + textarea_height + palette_height + 1
+	return 1 + textarea_height + palette_height + 1 + 1
 
 }
 
@@ -107,33 +107,92 @@ func (footer *Footer) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, elap
 		return
 	}
 
-	buffer.Fill(rect, ' ', styles.Background)
+	status_y := rect.Y + rect.Height - 1
+	cap_y := rect.Y + rect.Height - 2
+	panel_height := max(0, rect.Height-2)
+	border_style := styles.PromptBorder
 
-	utils_tty.DrawRule(buffer, rect.X, rect.Y, rect.Width, styles.Border)
+	if footer.Focused == true {
+		border_style = styles.PromptBorderFocus
+	}
 
-	textarea_width := max(1, rect.Width-4)
+	if panel_height > 0 {
+
+		panel_rect := utils_tty.Rect{
+			X:      rect.X,
+			Y:      rect.Y,
+			Width:  rect.Width,
+			Height: panel_height,
+		}
+
+		buffer.Fill(panel_rect, ' ', styles.PromptPanel)
+
+		for row := rect.Y; row < rect.Y+panel_height; row++ {
+			buffer.Set(rect.X, row, "┃", border_style)
+		}
+
+	}
+
+	buffer.Fill(utils_tty.Rect{
+		X:      rect.X,
+		Y:      cap_y,
+		Width:  rect.Width,
+		Height: 1,
+	}, ' ', styles.Background)
+
+	buffer.Set(rect.X, cap_y, "╹", border_style)
+
+	for x := rect.X + 1; x < rect.X+rect.Width; x++ {
+		buffer.Set(x, cap_y, "▀", styles.PromptCap)
+	}
+
+	buffer.Fill(utils_tty.Rect{
+		X:      rect.X,
+		Y:      status_y,
+		Width:  rect.Width,
+		Height: 1,
+	}, ' ', styles.Background)
+
+	textarea_width := max(1, rect.Width-5)
 	lines, cursor_line, cursor_column := footer.Textarea.Wrap(textarea_width)
-	textarea_height := min(10, max(1, len(lines)))
+	textarea_desired := min(10, max(1, len(lines)))
+	content_height := max(0, panel_height-1)
+	palette_desired := 0
 
-	if cursor_line < footer.Textarea.scroll {
-		footer.Textarea.scroll = cursor_line
-	} else if cursor_line >= footer.Textarea.scroll+textarea_height {
-		footer.Textarea.scroll = cursor_line - textarea_height + 1
+	if footer.Palette.Visible == true {
+		palette_desired = footer.Palette.Height(textarea_width)
+	}
+
+	palette_height := min(palette_desired, max(0, content_height-1))
+	textarea_height := 0
+
+	if content_height > 0 {
+		textarea_height = min(textarea_desired, max(1, content_height-palette_height))
+	}
+
+	if textarea_height > 0 {
+
+		if cursor_line < footer.Textarea.scroll {
+			footer.Textarea.scroll = cursor_line
+		} else if cursor_line >= footer.Textarea.scroll+textarea_height {
+			footer.Textarea.scroll = cursor_line - textarea_height + 1
+		}
+
 	}
 
 	textarea_rect := utils_tty.Rect{
-		X:      rect.X + 2,
+		X:      rect.X + 3,
 		Y:      rect.Y + 1,
 		Width:  textarea_width,
 		Height: textarea_height,
 	}
 
-	if footer.Textarea.GetText() == "" {
+	if textarea_height > 0 && footer.Textarea.GetText() == "" {
 
 		placeholder := "Ask anything, / for commands and tools, @ for context…"
-		buffer.WriteString(textarea_rect.X, textarea_rect.Y, utils_tty.Truncate(placeholder, textarea_rect.Width), styles.TextMuted)
+		buffer.WriteString(textarea_rect.X, textarea_rect.Y, utils_tty.Truncate(placeholder, textarea_rect.Width), styles.PromptMuted)
 
-	} else {
+	} else if textarea_height > 0 {
 
 		for row := 0; row < textarea_rect.Height; row++ {
 
@@ -144,19 +203,16 @@ func (footer *Footer) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, elap
 			}
 
 			line := lines[index]
-			buffer.WriteString(textarea_rect.X, textarea_rect.Y+row, utils_tty.Truncate(line.Text, textarea_rect.Width), styles.Text)
+			buffer.WriteString(textarea_rect.X, textarea_rect.Y+row, utils_tty.Truncate(line.Text, textarea_rect.Width), styles.PromptText)
 
 		}
 
 	}
 
-	palette_height := 0
+	if footer.Palette.Visible == true && palette_height > 0 {
 
-	if footer.Palette.Visible == true {
-
-		palette_height = footer.Palette.Height(textarea_width)
 		palette_rect := utils_tty.Rect{
-			X:      rect.X + 2,
+			X:      rect.X + 3,
 			Y:      textarea_rect.Y + textarea_height,
 			Width:  textarea_width,
 			Height: palette_height,
@@ -166,33 +222,48 @@ func (footer *Footer) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, elap
 
 	}
 
-	status_y := rect.Y + rect.Height - 1
-	status := footer.Status
+	status := sanitizeFooterStatus(footer.Status)
+	left, busy := footerActivity(status)
+	bindings := footerBindings(status)
 
-	if strings.TrimSpace(status) == "" {
-		status = "Enter newline · Ctrl+S send · / tools · Ctrl+↑↓ scroll · Ctrl+Q quit"
+	if busy == true {
+		left = spinnerFrame(elapsed) + " " + left
 	}
 
-	buffer.WriteString(rect.X+2, status_y, utils_tty.Truncate(status, max(0, rect.Width-4)), styles.TextMuted)
+	right_width := footerBindingsWidth(bindings)
+	left_width := max(0, rect.Width-5-right_width-2)
+	left = utils_tty.TruncateRight(left, left_width)
 
-	footer.cursorShown = footer.Focused
+	buffer.WriteString(rect.X+3, status_y, left, styles.TextMuted)
+	writeRightBindings(buffer, rect.X+rect.Width-2, status_y, rect.X+3, bindings)
+
+	footer.cursorShown = footer.Focused && textarea_height > 0
 	footer.cursorX = textarea_rect.X + cursor_column
 	footer.cursorY = textarea_rect.Y + (cursor_line - footer.Textarea.scroll)
 
-	if footer.cursorX < textarea_rect.X {
+	if textarea_height > 0 {
+
+		if footer.cursorX < textarea_rect.X {
+			footer.cursorX = textarea_rect.X
+		}
+
+		if footer.cursorX >= textarea_rect.X+textarea_rect.Width {
+			footer.cursorX = textarea_rect.X + textarea_rect.Width - 1
+		}
+
+		if footer.cursorY < textarea_rect.Y {
+			footer.cursorY = textarea_rect.Y
+		}
+
+		if footer.cursorY >= textarea_rect.Y+textarea_rect.Height {
+			footer.cursorY = textarea_rect.Y + textarea_rect.Height - 1
+		}
+
+	} else {
+
 		footer.cursorX = textarea_rect.X
-	}
-
-	if footer.cursorX >= textarea_rect.X+textarea_rect.Width {
-		footer.cursorX = textarea_rect.X + textarea_rect.Width - 1
-	}
-
-	if footer.cursorY < textarea_rect.Y {
 		footer.cursorY = textarea_rect.Y
-	}
 
-	if footer.cursorY >= textarea_rect.Y+textarea_rect.Height {
-		footer.cursorY = textarea_rect.Y + textarea_rect.Height - 1
 	}
 
 }

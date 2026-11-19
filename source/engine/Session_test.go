@@ -9,7 +9,6 @@ import "io"
 import "math"
 import "net/http"
 import net_url "net/url"
-import "os"
 import "strings"
 import "sync"
 import "testing"
@@ -26,7 +25,7 @@ func newTestSession() *Session {
 			Messages: make([]*schemas.Message, 0),
 		},
 		Config:   config,
-		Console:  types.NewConsole(os.Stdout, os.Stderr, 0),
+		Console:  types.NewConsole(nil, nil, 0),
 		Recovery: NewRecovery(config.Playground),
 		Waiting:  false,
 		client:   &http.Client{},
@@ -34,6 +33,38 @@ func newTestSession() *Session {
 		adapters: make(map[string]types.Adapter),
 		tools:    make(map[string]types.Tool),
 		changes:  make(chan struct{}, 1),
+	}
+
+}
+
+func TestNewSessionHasNoConsoleOutputSinks(t *testing.T) {
+
+	url, _ := net_url.Parse("http://127.0.0.1:1/v1")
+	config := &types.Config{
+		Model:      "test-model",
+		URL:        url,
+		Playground: t.TempDir(),
+	}
+	agent := &types.Agent{
+		Name:  "Test Agent",
+		Role:  "planner",
+		Model: "test-model",
+	}
+
+	session := NewSession(agent, config)
+
+	if session.Console.Stdout != nil {
+		t.Errorf("Expected no console stdout")
+	}
+
+	if session.Console.Stderr != nil {
+		t.Errorf("Expected no console stderr")
+	}
+
+	session.Console.Error("api failed")
+
+	if len(session.Console.Messages) == 0 {
+		t.Errorf("Expected the console message to be recorded")
 	}
 
 }

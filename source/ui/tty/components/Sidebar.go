@@ -6,6 +6,7 @@ import "exocomp/types"
 import "exocomp/ui/tty/styles"
 import utils_tty "exocomp/utils/tty"
 import "fmt"
+import "strings"
 import "time"
 
 const sidebarBreakpointColumns = 124
@@ -124,7 +125,7 @@ func (sidebar *Sidebar) Refresh(now time.Time, force bool) {
 
 	if len(changelog_entries) > 0 {
 
-		lines = append(lines, sidebarLine{Text: "CHANGELOG", Style: styles.SidebarHeader})
+		lines = append(lines, sidebarLine{Text: "CHANGELOG", Style: styles.SidebarSection})
 
 		for index := len(changelog_entries) - 1; index >= 0; index-- {
 
@@ -136,14 +137,14 @@ func (sidebar *Sidebar) Refresh(now time.Time, force bool) {
 			}
 
 			for _, line := range utils_tty.Wrap(title, width) {
-				lines = append(lines, sidebarLine{Text: line, Style: styles.Text})
+				lines = append(lines, sidebarLine{Text: line, Style: styles.SidebarText})
 			}
 
 			for _, line := range utils_tty.Wrap(entry.Description, width) {
-				lines = append(lines, sidebarLine{Text: "  " + line, Style: styles.TextMuted})
+				lines = append(lines, sidebarLine{Text: "  " + line, Style: styles.SidebarMuted})
 			}
 
-			lines = append(lines, sidebarLine{Text: "", Style: styles.Text})
+			lines = append(lines, sidebarLine{Text: "", Style: styles.SidebarPanel})
 
 		}
 
@@ -151,21 +152,21 @@ func (sidebar *Sidebar) Refresh(now time.Time, force bool) {
 
 	if len(bugs) > 0 {
 
-		lines = append(lines, sidebarLine{Text: "OPEN BUGS", Style: styles.SidebarHeader})
+		lines = append(lines, sidebarLine{Text: "OPEN BUGS", Style: styles.SidebarSection})
 
 		for _, bug := range bugs {
 
 			title := fmt.Sprintf("%s:%s", bug.File, bug.Symbol)
 
 			for _, line := range utils_tty.Wrap(title, width) {
-				lines = append(lines, sidebarLine{Text: line, Style: styles.SidebarError})
+				lines = append(lines, sidebarLine{Text: line, Style: styles.SidebarPanelError})
 			}
 
 			for _, line := range utils_tty.Wrap(bug.Description, width) {
-				lines = append(lines, sidebarLine{Text: "  " + line, Style: styles.TextMuted})
+				lines = append(lines, sidebarLine{Text: "  " + line, Style: styles.SidebarMuted})
 			}
 
-			lines = append(lines, sidebarLine{Text: "", Style: styles.Text})
+			lines = append(lines, sidebarLine{Text: "", Style: styles.SidebarPanel})
 
 		}
 
@@ -181,36 +182,100 @@ func (sidebar *Sidebar) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, el
 		return
 	}
 
-	background := styles.Background
+	buffer.Fill(rect, ' ', styles.SidebarPanel)
 
-	buffer.Fill(rect, ' ', background)
-	buffer.Fill(utils_tty.Rect{X: rect.X, Y: rect.Y, Width: 1, Height: rect.Height}, ' ', background)
+	content_x := rect.X + 2
+	content_width := max(1, rect.Width-5)
+	content_y := rect.Y + 1
 
-	divider_style := styles.BorderRaised
+	title := "Session"
 
-	for row := rect.Y; row < rect.Y+rect.Height; row++ {
-		buffer.Set(rect.X, row, "┃", divider_style)
+	if sidebar.Session != nil && sidebar.Session.Agent != nil {
+
+		if strings.TrimSpace(sidebar.Session.Agent.Name) != "" {
+			title = sidebar.Session.Agent.Name
+		}
+
 	}
+
+	if rect.Height >= 5 {
+
+		buffer.WriteString(content_x, rect.Y+1, utils_tty.Truncate(title, max(0, rect.Width-4)), styles.SidebarTitle)
+		content_y = rect.Y + 3
+
+	}
+
+	content_height := max(0, rect.Y+rect.Height-1-content_y)
 
 	if len(sidebar.lines) == 0 {
 
-		message := "No changelog or open bugs yet."
-		buffer.WriteString(rect.X+2, rect.Y, utils_tty.Truncate(message, rect.Width-2), styles.TextMuted)
+		if content_height > 0 {
+			message := "No changelog or open bugs yet."
+			buffer.WriteString(content_x, content_y, utils_tty.Truncate(message, content_width), styles.SidebarMuted)
+		}
+
 		return
 
 	}
 
-	if sidebar.Scroll > len(sidebar.lines)-rect.Height {
-		sidebar.Scroll = max(0, len(sidebar.lines)-rect.Height)
+	if sidebar.Scroll > len(sidebar.lines)-content_height {
+		sidebar.Scroll = max(0, len(sidebar.lines)-content_height)
 	}
 
 	start := sidebar.Scroll
 
-	for row := 0; row < rect.Height && start+row < len(sidebar.lines); row++ {
+	for row := 0; row < content_height && start+row < len(sidebar.lines); row++ {
 
 		line := sidebar.lines[start+row]
-		text := utils_tty.PadRight(utils_tty.Truncate(line.Text, rect.Width-2), rect.Width-2)
-		buffer.WriteString(rect.X+2, rect.Y+row, text, line.Style)
+		text := utils_tty.PadRight(utils_tty.Truncate(line.Text, content_width), content_width)
+		buffer.WriteString(content_x, content_y+row, text, line.Style)
+
+	}
+
+	drawSidebarScrollbar(
+		buffer,
+		rect.X+rect.Width-1,
+		content_y,
+		content_height,
+		len(sidebar.lines),
+		sidebar.Scroll,
+	)
+
+}
+
+func drawSidebarScrollbar(buffer *utils_tty.Buffer, x int, top int, height int, total int, scroll int) {
+
+	if height <= 0 || total <= height {
+		return
+	}
+
+	track := height * 2
+	thumb := max(2, track*height/total)
+	max_scroll := max(1, total-height)
+	start := scroll * (track - thumb) / max_scroll
+
+	for row := 0; row < height; row++ {
+
+		cell_start := row * 2
+		cell_end := cell_start + 2
+		overlap_start := max(start, cell_start)
+		overlap_end := min(start+thumb, cell_end)
+
+		if overlap_end > overlap_start {
+
+			glyph := "█"
+
+			if overlap_end-overlap_start < 2 {
+				glyph = "▄"
+			}
+
+			if overlap_end-overlap_start < 2 && overlap_start == cell_start {
+				glyph = "▀"
+			}
+
+			buffer.Set(x, top+row, glyph, styles.ScrollbarThumb)
+
+		}
 
 	}
 

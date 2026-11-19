@@ -33,6 +33,7 @@ var (
 	BackgroundRaisedBase = hex("#141414")
 	BackgroundRaisedHigh = hex("#1e1e1e")
 	BackgroundRaisedMax  = hex("#4c4c4c")
+	BackgroundComposer   = hex("#0f0f0f")
 
 	BackgroundActionPrimaryBase     = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
 	BackgroundActionPrimaryHovered  = hex("#141414")

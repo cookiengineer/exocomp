@@ -11,8 +11,24 @@ var (
 	BorderRaised = utils_tty.NewStyle(colors.BorderBase, colors.BackgroundRaisedBase)
 	Selection    = utils_tty.NewStyle(colors.TextActionPrimaryFocused, colors.BackgroundActionPrimaryFocused)
 
-	SidebarHeader = utils_tty.NewStyle(colors.TextFeedbackInfoBase, colors.BackgroundBase).WithAttributes(utils_tty.AttrBold)
-	SidebarError  = utils_tty.NewStyle(colors.TextFeedbackErrorBase, colors.BackgroundBase)
+	SidebarPanel      = utils_tty.NewStyle(colors.TextBase, colors.BackgroundRaisedBase)
+	SidebarTitle      = utils_tty.NewStyle(colors.TextBase, colors.BackgroundRaisedBase).WithAttributes(utils_tty.AttrBold)
+	SidebarSection    = utils_tty.NewStyle(colors.TextBase, colors.BackgroundRaisedBase).WithAttributes(utils_tty.AttrBold)
+	SidebarText       = utils_tty.NewStyle(colors.TextBase, colors.BackgroundRaisedBase)
+	SidebarMuted      = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundRaisedBase)
+	SidebarPanelError = utils_tty.NewStyle(colors.TextFeedbackErrorBase, colors.BackgroundRaisedBase)
+
+	ScrollbarThumb = utils_tty.NewStyle(colors.ScrollbarBase, colors.BackgroundRaisedBase)
+
+	PromptPanel       = utils_tty.NewStyle(colors.TextBase, colors.BackgroundComposer)
+	PromptText        = utils_tty.NewStyle(colors.TextBase, colors.BackgroundComposer)
+	PromptMuted       = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundComposer)
+	PromptBorder      = utils_tty.NewStyle(colors.BorderBase, colors.BackgroundComposer)
+	PromptBorderFocus = utils_tty.NewStyle(colors.TextActionPrimarySelected, colors.BackgroundComposer)
+	PromptCap         = utils_tty.NewStyle(colors.BackgroundComposer, colors.BackgroundBase)
+
+	FooterKey  = utils_tty.NewStyle(colors.TextBase, colors.BackgroundBase)
+	FooterHint = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundBase)
 
 	Dialog       = utils_tty.NewStyle(colors.TextBase, colors.BackgroundRaisedBase)
 	DialogBorder = utils_tty.NewStyle(colors.BorderBase, colors.BackgroundRaisedBase)
@@ -42,4 +58,10 @@ var (
 	TranscriptAssistant = utils_tty.NewStyle(colors.TextBase, colors.BackgroundBase).WithAttributes(utils_tty.AttrBold)
 	TranscriptTool      = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundBase).WithAttributes(utils_tty.AttrBold)
 	TranscriptSystem    = utils_tty.NewStyle(colors.TextFeedbackWarningBase, colors.BackgroundBase).WithAttributes(utils_tty.AttrBold)
+
+	ReasoningHeader = utils_tty.NewStyle(colors.TextFeedbackWarningBase, colors.BackgroundBase)
+	ReasoningText   = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundBase)
+	SystemHeader    = utils_tty.NewStyle(colors.TextFeedbackInfoBase, colors.BackgroundBase)
+	ToolHeader      = utils_tty.NewStyle(colors.TextActionPrimarySelected, colors.BackgroundBase)
+	CollapsedHint   = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundBase)
 )

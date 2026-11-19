@@ -19,6 +19,7 @@ const (
 	KeyArrowDown
 	KeyArrowLeft
 	KeyArrowRight
+	KeyMouse
 	KeyPaste
 	KeyEOF
 )

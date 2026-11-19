@@ -11,7 +11,6 @@ import "encoding/json"
 import "fmt"
 import "io"
 import net_http "net/http"
-import "os"
 import "sort"
 import "strings"
 import "sync"
@@ -40,7 +39,7 @@ func NewSession(agent *types.Agent, config *types.Config) *Session {
 	session := &Session{
 		Agent:        agent,
 		Config:       config,
-		Console:      types.NewConsole(os.Stdout, os.Stderr, 0),
+		Console:      types.NewConsole(nil, nil, 0),
 		Capabilities: utils_capabilities.NewSet(),
 		Recovery:     NewRecovery(config.Playground),
 		Waiting:      false,

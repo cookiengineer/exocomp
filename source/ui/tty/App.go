@@ -16,23 +16,24 @@ import "syscall"
 import "time"
 
 type App struct {
-	Session     *engine.Session
-	Terminal    *utils_tty.Terminal
-	Input       *utils_tty.Input
-	Screen      *utils_tty.Screen
-	Header      *components.Header
-	Transcript  *components.Transcript
-	Sidebar     *components.Sidebar
-	Footer      *components.Footer
-	Human       components.Dialog
-	Role        string
-	status      string
-	statusMutex *sync.Mutex
-	started     time.Time
-	lastHuman   time.Time
-	catalog     *commands.Catalog
-	quit        chan struct{}
-	quitOnce    *sync.Once
+	Session        *engine.Session
+	Terminal       *utils_tty.Terminal
+	Input          *utils_tty.Input
+	Screen         *utils_tty.Screen
+	Header         *components.Header
+	Transcript     *components.Transcript
+	Sidebar        *components.Sidebar
+	Footer         *components.Footer
+	Human          components.Dialog
+	Role           string
+	status         string
+	statusMutex    *sync.Mutex
+	started        time.Time
+	lastHuman      time.Time
+	catalog        *commands.Catalog
+	quit           chan struct{}
+	quitOnce       *sync.Once
+	transcriptRect utils_tty.Rect
 }
 
 func NewApp(session *engine.Session) *App {
@@ -247,6 +248,16 @@ func (app *App) handleKey(key utils_tty.Key) {
 
 	}
 
+	if key.Type == utils_tty.KeyMouse {
+
+		if app.Human == nil {
+			app.handleMouse(key)
+		}
+
+		return
+
+	}
+
 	if app.Human != nil {
 
 		answer, submit, cancel := app.Human.HandleKey(key)
@@ -376,6 +387,38 @@ func (app *App) handleKey(key utils_tty.Key) {
 		app.submit(text)
 
 	}
+
+}
+
+func (app *App) handleMouse(key utils_tty.Key) {
+
+	rect := app.transcriptRect
+
+	if rect.Width <= 0 || rect.Height <= 0 {
+		return
+	}
+
+	inside := key.MouseX >= rect.X &&
+		key.MouseX < rect.X+rect.Width &&
+		key.MouseY >= rect.Y &&
+		key.MouseY < rect.Y+rect.Height
+
+	if inside == false {
+		return
+	}
+
+	if key.MouseWheel != 0 {
+
+		app.Transcript.ScrollBy(-key.MouseWheel * 3)
+		return
+
+	}
+
+	if key.MouseRelease == true || key.MouseButton != 0 {
+		return
+	}
+
+	app.Transcript.HandleMouse(key.MouseX, key.MouseY, rect)
 
 }
 
@@ -548,6 +591,7 @@ func (app *App) render(now time.Time) {
 		Width:  main_width,
 		Height: content_height,
 	}
+	app.transcriptRect = transcript_rect
 	app.Transcript.Render(buffer, transcript_rect, now.Sub(app.started))
 
 	footer_rect := utils_tty.Rect{

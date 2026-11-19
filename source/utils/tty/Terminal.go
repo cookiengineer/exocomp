@@ -48,6 +48,8 @@ func (terminal *Terminal) Enter() error {
 		terminal.write("\033[?1049h")
 		terminal.write("\033[?25l")
 		terminal.write("\033[?2004h")
+		terminal.write("\033[?1000h")
+		terminal.write("\033[?1006h")
 		terminal.write("\033[2J\033[H")
 		terminal.Output.Sync()
 
@@ -68,6 +70,8 @@ func (terminal *Terminal) Leave() {
 		return
 	}
 
+	terminal.write("\033[?1006l")
+	terminal.write("\033[?1000l")
 	terminal.write("\033[?2004l")
 	terminal.write("\033[?25h")
 	terminal.write("\033[?1049l")
