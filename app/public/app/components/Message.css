@@ -20,63 +20,28 @@ message-list article {
 	font-size: 18px;
 	font-weight: normal;
 	line-height: 24px;
-	border-top: 2px solid transparent;
-	border-right: 2px solid transparent;
-	border-bottom: 2px solid transparent;
-	border-left: 2px solid transparent;
+	border: 0px;
+	border-left: 4px solid transparent;
 	border-radius: 6px;
 }
 
-message-list article[data-role="system"]::before,
-message-list article[data-role="assistant"]::before {
-	position: absolute;
-	font-family: "cantarell";
-	font-size: 16px;
-	font-weight: normal;
-	line-height: 24px;
-	top: 50%;
-	right: auto;
-	bottom: auto;
-	left: -23px;
-	vertical-align: middle;
-	transform: translateY(-50%);
-	writing-mode: sideways-rl;
-	text-orientation: mixed;
-}
-
-message-list article[data-role="tool"]::after,
-message-list article[data-role="user"]::after {
-	position: absolute;
-	font-family: "cantarell";
-	font-size: 16px;
-	font-weight: normal;
-	line-height: 24px;
-	top: 50%;
-	right: -23px;
-	bottom: auto;
-	left: auto;
-	vertical-align: middle;
-	transform: translateY(-50%);
-	writing-mode: sideways-lr;
-	text-orientation: mixed;
-}
-
 message-list article[data-role="system"] {
-	border-left: 24px solid var(--message-system);
-	border-color: var(--message-system);
-}
-
-message-list article[data-role="system"]::before {
-	content: "System";
+	border-left: 0px;
 }
 
 message-list article[data-role="assistant"] {
-	border-left: 24px solid var(--message-assistant);
-	border-color: var(--message-assistant);
+	border-left-color: var(--message-assistant);
 }
 
 message-list article[data-role="assistant"]::before {
+	display: block;
+	margin: 0px 0px 4px 0px;
 	content: "AI";
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	color: var(--message-assistant);
 }
 
 message-list article[data-role="assistant"] > details.reasoning {
@@ -116,8 +81,7 @@ message-list article[data-role="assistant"] > details.reasoning:last-child {
 
 message-list article[data-role="tool"] {
 	background: #303030;
-	border-right: 24px solid var(--message-tool);
-	border-color: var(--message-tool);
+	border-left: 0px;
 }
 
 message-list article[data-role="tool"] > pre,
@@ -158,17 +122,19 @@ message-list article[data-role="tool"] > details > pre {
 	overflow: auto;
 }
 
-message-list article[data-role="tool"]::after {
-	content: "Tool";
-}
-
 message-list article[data-role="user"] {
-	border-right: 24px solid var(--message-user);
-	border-color: var(--message-user);
+	border-left-color: var(--message-user);
 }
 
-message-list article[data-role="user"]::after {
+message-list article[data-role="user"]::before {
+	display: block;
+	margin: 0px 0px 4px 0px;
 	content: "User";
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	color: var(--message-user);
 }
 
 message-list article > p {
@@ -209,4 +175,149 @@ message-list article > pre {
 	font-weight: normal;
 	line-height: 24px;
 	text-align: left;
+}
+
+/* Collapsible system, reasoning, tool and tool-call entries. */
+message-list article > details.message-collapse {
+	margin: 0px 0px 1em 0px;
+	padding: 8px 12px;
+	border-left: 4px solid var(--message-tool);
+	border-radius: 4px;
+	background: rgba(200, 1, 1, 0.08);
+}
+
+message-list article > details.message-collapse.reasoning {
+	border-left-color: var(--message-reasoning);
+	background: rgba(117, 80, 123, 0.12);
+}
+
+message-list article > details.message-collapse.system {
+	border-left-color: var(--message-system);
+	background: rgba(193, 157, 1, 0.08);
+}
+
+message-list article > details.message-collapse.tool-output,
+message-list article > details.message-collapse.tool-call {
+	border-left-color: var(--message-tool);
+	background: rgba(200, 1, 1, 0.08);
+}
+
+message-list article > details.message-collapse > summary {
+	display: flex;
+	align-items: baseline;
+	gap: 0px;
+	min-width: 0px;
+	cursor: pointer;
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 22px;
+	list-style: none;
+}
+
+message-list article > details.message-collapse > summary::-webkit-details-marker {
+	display: none;
+}
+
+message-list article > details.message-collapse > summary::before {
+	flex-shrink: 0;
+	content: "\25B8 ";
+	color: #a8a0b0;
+}
+
+message-list article > details.message-collapse[open] > summary::before {
+	content: "\25BE ";
+}
+
+message-list article > details.message-collapse > summary > .type {
+	flex-shrink: 0;
+	font-weight: bold;
+}
+
+message-list article > details.message-collapse > summary > .preview {
+	min-width: 0px;
+	margin-left: 0.35em;
+	overflow: hidden;
+	color: #a8a0b0;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+message-list article > details.message-collapse.reasoning > summary > .type {
+	color: var(--message-reasoning);
+}
+
+message-list article > details.message-collapse.system > summary > .type {
+	color: var(--message-system);
+}
+
+message-list article > details.message-collapse.tool-output > summary > .type,
+message-list article > details.message-collapse.tool-call > summary > .type {
+	color: var(--message-tool);
+}
+
+message-list article > details.message-collapse.tool-output > summary > .preview,
+message-list article > details.message-collapse.tool-call > summary > .preview {
+	font-family: "vera-mono";
+	font-size: 16px;
+}
+
+message-list article > details.message-collapse.tool-output > pre,
+message-list article > details.message-collapse.tool-call > pre {
+	display: block;
+	width: 100%;
+	margin: 8px 0px 0px 0px;
+	padding: 0px;
+	overflow: auto;
+	font-family: "vera-mono";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 24px;
+	text-align: left;
+	white-space: pre-wrap;
+}
+
+message-list article > details.message-collapse.reasoning > *:not(summary) {
+	margin-top: 8px;
+	color: #a8a0b0;
+	font-size: 16px;
+	line-height: 22px;
+}
+
+message-list article > details.message-collapse.system > *:not(summary) {
+	margin-top: 8px;
+}
+
+/* Thinking indicator while the model is waiting. */
+message-list article[data-role="thinking"] {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0px 0px 16px 24px;
+	padding: 8px 12px;
+	font-family: "cantarell";
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 22px;
+	color: var(--message-reasoning);
+	border-left: 4px solid var(--message-reasoning);
+	border-radius: 4px;
+	background: rgba(117, 80, 123, 0.12);
+}
+
+message-list article[data-role="thinking"] .spinner {
+	display: inline-block;
+	flex-shrink: 0;
+	width: 12px;
+	height: 12px;
+	border: 2px solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
+	animation: message-thinking-spin 0.8s linear infinite;
+}
+
+@keyframes message-thinking-spin {
+	to {
+		transform: rotate(360deg);
+	}
 }

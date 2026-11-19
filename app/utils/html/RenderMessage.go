@@ -1,7 +1,9 @@
 package html
 
 import "exocomp-app/schemas"
-import "fmt"
+import "encoding/json"
+import std_html "html"
+import "sort"
 import "strings"
 
 func RenderMessage(message *schemas.Message, with_empty_content bool) string {
@@ -12,26 +14,22 @@ func RenderMessage(message *schemas.Message, with_empty_content bool) string {
 
 	if message.Role == "assistant" {
 
-		has_content := message.Content != ""
-		has_reasoning := message.ReasoningContent != ""
+		html := ""
 
-		if has_content == true || has_reasoning == true {
+		if message.ReasoningContent != "" {
+			html += renderCollapse("reasoning", "Thought", previewText(message.ReasoningContent), RenderMarkdown(message.ReasoningContent))
+		}
 
-			html := ""
+		if message.Content != "" {
+			html += RenderMarkdown(message.Content)
+		}
 
-			if has_reasoning == true {
-				html += "<details class=\"reasoning\">"
-				html += "<summary>Thought</summary>"
-				html += RenderMarkdown(message.ReasoningContent)
-				html += "</details>"
-			}
+		for _, tool_call := range message.ToolCalls {
+			html += renderToolCall(tool_call)
+		}
 
-			if has_content == true {
-				html += RenderMarkdown(message.Content)
-			}
-
+		if html != "" {
 			return html
-
 		} else if with_empty_content == true {
 			return "(no content)"
 		}
@@ -39,33 +37,24 @@ func RenderMessage(message *schemas.Message, with_empty_content bool) string {
 	} else if message.Role == "system" {
 
 		if message.Content != "" {
-			return RenderMarkdown(message.Content)
+			return renderCollapse("system", "System", previewText(message.Content), RenderMarkdown(message.Content))
 		} else if with_empty_content == true {
 			return "(no content)"
 		}
 
 	} else if message.Role == "tool" {
 
-		tmp := strings.Split(message.Content, "\n")
+		label := "Tool"
 
-		if len(tmp) == 1 {
-
-			return fmt.Sprintf("<pre>%s</pre>", tmp[0])
-
-		} else if len(tmp) > 1 {
-
-			return strings.Join([]string{
-				"<details>",
-				"<summary>",
-				fmt.Sprintf("<pre>%s</pre>", strings.TrimSpace(tmp[0])),
-				"</summary>",
-				fmt.Sprintf("<pre>%s</pre>", strings.Join(tmp[1:], "\n")),
-				"</details>",
-			}, "")
-
+		if strings.TrimSpace(message.ToolName) != "" {
+			label = "Tool · " + strings.TrimSpace(message.ToolName)
 		}
 
-		return "<pre>(no content)</pre>"
+		if message.Content != "" {
+			return renderCollapse("tool-output", label, previewText(message.Content), "<pre>"+std_html.EscapeString(message.Content)+"</pre>")
+		}
+
+		return renderCollapse("tool-output", label, "(no content)", "<pre>(no content)</pre>")
 
 	} else if message.Role == "user" {
 
@@ -73,6 +62,136 @@ func RenderMessage(message *schemas.Message, with_empty_content bool) string {
 			return RenderMarkdown(message.Content)
 		} else if with_empty_content == true {
 			return "(no content)"
+		}
+
+	}
+
+	return ""
+
+}
+
+func renderCollapse(kind string, label string, preview string, body string) string {
+
+	summary := "<summary><span class=\"type\">" + std_html.EscapeString(label) + "</span>"
+
+	if preview != "" {
+		summary += "<span class=\"preview\">" + std_html.EscapeString(preview) + "</span>"
+	}
+
+	summary += "</summary>"
+
+	return "<details class=\"message-collapse " + kind + "\">" + summary + body + "</details>"
+
+}
+
+func renderToolCall(tool_call schemas.ToolCall) string {
+
+	name := strings.TrimSpace(tool_call.Function.Name)
+
+	if name == "" {
+		name = "Tool"
+	}
+
+	return renderCollapse(
+		"tool-call",
+		"Tool · "+name,
+		toolCallPreview(tool_call),
+		"<pre>"+std_html.EscapeString(toolCallContent(tool_call))+"</pre>",
+	)
+
+}
+
+func previewText(content string) string {
+
+	lines := strings.Split(content, "\n")
+	preview := ""
+	remaining := false
+
+	for _, line := range lines {
+
+		line = strings.Join(strings.Fields(line), " ")
+
+		if line == "" {
+			continue
+		}
+
+		if preview == "" {
+			preview = line
+		} else {
+			remaining = true
+			break
+		}
+
+	}
+
+	if remaining == true {
+		return preview + "…"
+	}
+
+	return preview
+
+}
+
+func toolCallPreview(tool_call schemas.ToolCall) string {
+
+	arguments, err := tool_call.GetArguments()
+
+	if err == nil {
+
+		keys := make([]string, 0, len(arguments))
+
+		for key := range arguments {
+			keys = append(keys, key)
+		}
+
+		if len(keys) > 0 {
+
+			sort.Strings(keys)
+			key := keys[0]
+			value := fmtValue(arguments[key])
+
+			return key + "=" + strings.Join(strings.Fields(value), " ")
+
+		}
+
+	}
+
+	return strings.Join(strings.Fields(string(tool_call.Function.ArgumentsRaw)), " ")
+
+}
+
+func toolCallContent(tool_call schemas.ToolCall) string {
+
+	arguments, err := tool_call.GetArguments()
+
+	if err == nil {
+
+		bytes, err0 := json.MarshalIndent(arguments, "", "  ")
+
+		if err0 == nil {
+			return string(bytes)
+		}
+
+	}
+
+	return strings.TrimSpace(string(tool_call.Function.ArgumentsRaw))
+
+}
+
+func fmtValue(value any) string {
+
+	if value == nil {
+		return "null"
+	}
+
+	switch value.(type) {
+	case string:
+		return value.(string)
+	default:
+		bytes, err := json.Marshal(value)
+
+		if err == nil {
+			return string(bytes)
 		}
 
 	}

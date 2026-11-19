@@ -17,6 +17,8 @@ type MessageList struct {
 	Content   []interfaces.Component `json:"content"`
 	Messages  []*app_schemas.Message `json:"-"`
 	Debug     bool                   `json:"-"`
+	Waiting   bool                   `json:"-"`
+	thinking  *dom.Element           `json:"-"`
 }
 
 func NewMessageList() MessageList {
@@ -84,6 +86,17 @@ func (list *MessageList) Clear() {
 	list.Messages = make([]*app_schemas.Message, 0)
 	list.Content = make([]interfaces.Component, 0)
 
+	list.Render()
+
+}
+
+func (list *MessageList) SetWaiting(waiting bool) {
+
+	if list.Waiting == waiting {
+		return
+	}
+
+	list.Waiting = waiting
 	list.Render()
 
 }
@@ -163,10 +176,104 @@ func (list *MessageList) Query(query string) interfaces.Component {
 func (list *MessageList) Render() *dom.Element {
 
 	if list.Component.Element != nil {
+
+		open_details := snapshotOpenDetails(list.Component.Element)
+
 		components.ReconcileComponents(list.Component.Element, list.Content)
+
+		restoreOpenDetails(list.Component.Element, open_details)
+
+		if list.Waiting == true {
+
+			if list.thinking == nil {
+
+				list.thinking = dom.GetDocument().CreateElement("article")
+				list.thinking.SetAttribute("data-role", "thinking")
+				list.thinking.SetClassName("thinking")
+				list.thinking.SetInnerHTML("<span class=\"spinner\"></span> Thinking")
+
+			}
+
+			list.Component.Element.Append(list.thinking)
+
+		} else {
+			list.thinking = nil
+		}
+
 	}
 
 	return list.Component.Element
+
+}
+
+func snapshotOpenDetails(element *dom.Element) map[string]bool {
+
+	result := make(map[string]bool)
+
+	if element == nil {
+		return result
+	}
+
+	for _, article := range element.QuerySelectorAll("article[data-key]") {
+
+		message_key := article.GetAttribute("data-key")
+
+		if message_key == "" {
+			continue
+		}
+
+		counts := make(map[string]int)
+
+		for _, detail := range article.QuerySelectorAll("details.message-collapse") {
+
+			class_name := detail.GetAttribute("class")
+			index := counts[class_name]
+			counts[class_name] = index + 1
+
+			if detail.HasAttribute("open") == true {
+				key := message_key + ":" + class_name + ":" + strconv.Itoa(index)
+				result[key] = true
+			}
+
+		}
+
+	}
+
+	return result
+
+}
+
+func restoreOpenDetails(element *dom.Element, open map[string]bool) {
+
+	if element == nil || len(open) == 0 {
+		return
+	}
+
+	for _, article := range element.QuerySelectorAll("article[data-key]") {
+
+		message_key := article.GetAttribute("data-key")
+
+		if message_key == "" {
+			continue
+		}
+
+		counts := make(map[string]int)
+
+		for _, detail := range article.QuerySelectorAll("details.message-collapse") {
+
+			class_name := detail.GetAttribute("class")
+			index := counts[class_name]
+			counts[class_name] = index + 1
+
+			key := message_key + ":" + class_name + ":" + strconv.Itoa(index)
+
+			if open[key] == true {
+				detail.SetAttribute("open", "")
+			}
+
+		}
+
+	}
 
 }
 

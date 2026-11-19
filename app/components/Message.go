@@ -9,6 +9,8 @@ import "github.com/cookiengineer/gooey/bindings/dom"
 import "github.com/cookiengineer/gooey/components"
 import "github.com/cookiengineer/gooey/components/interfaces"
 import "github.com/cookiengineer/gooey/components/utils"
+import "hash/fnv"
+import "strconv"
 
 // Message is a leaf component that renders a single chat message as `<article data-role="...">`.
 type Message struct {
@@ -114,11 +116,27 @@ func (message *Message) Render() *dom.Element {
 			message.Component.Element.SetAttribute("data-key", message.Key)
 		}
 
-		message.Component.Element.SetInnerHTML(message.Content)
+		marker := messageContentMarker(message.Content)
+
+		if message.Component.Element.GetAttribute("data-rendered") != marker {
+
+			message.Component.Element.SetAttribute("data-rendered", marker)
+			message.Component.Element.SetInnerHTML(message.Content)
+
+		}
 
 	}
 
 	return message.Component.Element
+
+}
+
+func messageContentMarker(content string) string {
+
+	hasher := fnv.New32a()
+	hasher.Write([]byte(content))
+
+	return strconv.FormatUint(uint64(hasher.Sum32()), 16)
 
 }
 

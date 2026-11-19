@@ -220,6 +220,7 @@ func (chat *Chat) loop() {
 		if chat.timer_label >= 1*time.Second {
 			chat.UpdateLabel()
 			chat.UpdateQuestions()
+			chat.UpdateWaiting()
 			chat.timer_label = 0
 		}
 
@@ -259,6 +260,7 @@ func (chat *Chat) RenderAll() {
 
 	if message_list := chat.View.GetMessageList(); message_list != nil {
 		message_list.SetMessages(chat.Session.GetMessages(0), chat.Config.Debug)
+		message_list.SetWaiting(chat.Session.Waiting)
 	}
 
 	chat.UpdateLabel()
@@ -313,6 +315,14 @@ func (chat *Chat) UpdateLabel() {
 
 	if prompt := chat.prompt(); prompt != nil {
 		prompt.SetUsage(value, title)
+	}
+
+}
+
+func (chat *Chat) UpdateWaiting() {
+
+	if message_list := chat.View.GetMessageList(); message_list != nil {
+		message_list.SetWaiting(chat.Session.Waiting)
 	}
 
 }
