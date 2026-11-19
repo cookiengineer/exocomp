@@ -232,30 +232,30 @@ func (tool *Assets) Add(arguments assetArguments) (string, error) {
 
 func (tool *Assets) Get(id string) (string, error) {
 
-	if types.IsAssetID(id) == false {
+	if types.IsAssetID(id) == true {
+
+		tool.mutex.Lock()
+		defer tool.mutex.Unlock()
+
+		asset, err0 := getAsset(tool, id)
+
+		if err0 == nil {
+
+			buffer, err1 := json.MarshalIndent(asset, "", "\t")
+
+			if err1 == nil {
+				return strings.Join([]string{fmt.Sprintf("assets.Get: %s", id), string(buffer)}, "\n"), nil
+			} else {
+				return "", fmt.Errorf("assets.Get: Cannot serialize asset \"%s\".", id)
+			}
+
+		} else {
+			return "", fmt.Errorf("assets.Get: %s", err0.Error())
+		}
+
+	} else {
 		return "", fmt.Errorf("assets.Get: Invalid asset ID \"%s\".", id)
 	}
-
-	tool.mutex.Lock()
-	defer tool.mutex.Unlock()
-
-	if err := readAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.Get: %s", err.Error())
-	}
-
-	asset, ok := tool.contents[id]
-
-	if ok == false {
-		return "", fmt.Errorf("assets.Get: Asset \"%s\" does not exist.", id)
-	}
-
-	buffer, err := json.MarshalIndent(asset, "", "\t")
-
-	if err != nil {
-		return "", fmt.Errorf("assets.Get: Cannot serialize asset \"%s\".", id)
-	}
-
-	return strings.Join([]string{fmt.Sprintf("assets.Get: %s", id), string(buffer)}, "\n"), nil
 
 }
 
@@ -274,47 +274,49 @@ func (tool *Assets) List(arguments assetArguments) (string, error) {
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	if err := readAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.List: %s", err.Error())
-	}
+	if err := readAssetsIndex(tool); err == nil {
 
-	matches := make([]types.Asset, 0)
+		matches := make([]types.Asset, 0)
 
-	for _, asset := range tool.contents {
+		for _, asset := range tool.contents {
 
-		if has_type == true && asset.Type != types.AssetType(strings.ToLower(strings.TrimSpace(type_filter))) {
-			continue
-		} else if has_query == true && assetMatchesQuery(asset, query) == false {
-			continue
-		} else if has_in_scope == true && asset.InScope != in_scope_filter {
-			continue
-		} else if has_tested == true && asset.Tested != tested_filter {
-			continue
+			if has_type == true && asset.Type != types.AssetType(strings.ToLower(strings.TrimSpace(type_filter))) {
+				continue
+			} else if has_query == true && assetMatchesQuery(asset, query) == false {
+				continue
+			} else if has_in_scope == true && asset.InScope != in_scope_filter {
+				continue
+			} else if has_tested == true && asset.Tested != tested_filter {
+				continue
+			}
+
+			matches = append(matches, asset)
+
 		}
 
-		matches = append(matches, asset)
+		sortAssets(matches)
 
+		total := len(matches)
+
+		if len(matches) > limit {
+			matches = matches[0:limit]
+		}
+
+		lines := make([]string, 0, len(matches))
+
+		for _, asset := range matches {
+			lines = append(lines, formatAssetSummary(asset))
+		}
+
+		result := make([]string, 0)
+		result = append(result, fmt.Sprintf("assets.List: %d assets (showing %d).", total, len(lines)))
+		result = append(result, lines...)
+
+		return strings.Join(result, "\n"), nil
+
+	} else {
+		return "", fmt.Errorf("assets.List: %s", err.Error())
 	}
-
-	sortAssets(matches)
-
-	total := len(matches)
-
-	if len(matches) > limit {
-		matches = matches[0:limit]
-	}
-
-	lines := make([]string, 0, len(matches))
-
-	for _, asset := range matches {
-		lines = append(lines, formatAssetSummary(asset))
-	}
-
-	result := make([]string, 0)
-	result = append(result, fmt.Sprintf("assets.List: %d assets (showing %d).", total, len(lines)))
-	result = append(result, lines...)
-
-	return strings.Join(result, "\n"), nil
 
 }
 
@@ -336,43 +338,45 @@ func (tool *Assets) Search(arguments assetArguments) (string, error) {
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	if err := readAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.Search: %s", err.Error())
-	}
+	if err := readAssetsIndex(tool); err == nil {
 
-	matches := make([]types.Asset, 0)
+		matches := make([]types.Asset, 0)
 
-	for _, asset := range tool.contents {
+		for _, asset := range tool.contents {
 
-		if has_type == true && asset.Type != types.AssetType(strings.ToLower(strings.TrimSpace(type_filter))) {
-			continue
-		} else if assetMatchesQuery(asset, query) == false {
-			continue
+			if has_type == true && asset.Type != types.AssetType(strings.ToLower(strings.TrimSpace(type_filter))) {
+				continue
+			} else if assetMatchesQuery(asset, query) == false {
+				continue
+			}
+
+			matches = append(matches, asset)
+
 		}
 
-		matches = append(matches, asset)
+		sortAssets(matches)
 
+		total := len(matches)
+
+		if len(matches) > limit {
+			matches = matches[0:limit]
+		}
+
+		lines := make([]string, 0, len(matches))
+
+		for _, asset := range matches {
+			lines = append(lines, formatAssetSummary(asset))
+		}
+
+		result := make([]string, 0)
+		result = append(result, fmt.Sprintf("assets.Search: %d matches (showing %d).", total, len(lines)))
+		result = append(result, lines...)
+
+		return strings.Join(result, "\n"), nil
+
+	} else {
+		return "", fmt.Errorf("assets.Search: %s", err.Error())
 	}
-
-	sortAssets(matches)
-
-	total := len(matches)
-
-	if len(matches) > limit {
-		matches = matches[0:limit]
-	}
-
-	lines := make([]string, 0, len(matches))
-
-	for _, asset := range matches {
-		lines = append(lines, formatAssetSummary(asset))
-	}
-
-	result := make([]string, 0)
-	result = append(result, fmt.Sprintf("assets.Search: %d matches (showing %d).", total, len(lines)))
-	result = append(result, lines...)
-
-	return strings.Join(result, "\n"), nil
 
 }
 
@@ -502,64 +506,62 @@ func (tool *Assets) Neighbors(id string, arguments assetArguments) (string, erro
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	if err := readAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.Neighbors: %s", err.Error())
-	}
+	asset, err0 := getAsset(tool, id)
 
-	asset, ok := tool.contents[id]
+	if err0 == nil {
 
-	if ok == false {
-		return "", fmt.Errorf("assets.Neighbors: Asset \"%s\" does not exist.", id)
-	}
+		lines := make([]string, 0)
 
-	lines := make([]string, 0)
+		if (direction == "parent" || direction == "both") && asset.ParentID != "" {
 
-	if (direction == "parent" || direction == "both") && asset.ParentID != "" {
-
-		if parent, ok := tool.contents[asset.ParentID]; ok == true {
-			lines = append(lines, "Parent: "+formatAssetSummary(parent))
-		}
-
-	}
-
-	if direction == "children" || direction == "both" {
-
-		children := make([]types.Asset, 0)
-
-		for _, candidate := range tool.contents {
-
-			if candidate.ParentID == id {
-				children = append(children, candidate)
+			if parent, ok := tool.contents[asset.ParentID]; ok == true {
+				lines = append(lines, "Parent: "+formatAssetSummary(parent))
 			}
 
 		}
 
-		sortAssets(children)
+		if direction == "children" || direction == "both" {
 
-		if len(children) > limit {
-			children = children[0:limit]
+			children := make([]types.Asset, 0)
+
+			for _, candidate := range tool.contents {
+
+				if candidate.ParentID == id {
+					children = append(children, candidate)
+				}
+
+			}
+
+			sortAssets(children)
+
+			if len(children) > limit {
+				children = children[0:limit]
+			}
+
+			if len(children) > 0 {
+				lines = append(lines, fmt.Sprintf("Children: %d", len(children)))
+			}
+
+			for _, child := range children {
+				lines = append(lines, formatAssetSummary(child))
+			}
+
 		}
 
-		if len(children) > 0 {
-			lines = append(lines, fmt.Sprintf("Children: %d", len(children)))
+		result := make([]string, 0)
+		result = append(result, fmt.Sprintf("assets.Neighbors: %s", id))
+
+		if len(lines) == 0 {
+			result = append(result, "No neighbors.")
+		} else {
+			result = append(result, lines...)
 		}
 
-		for _, child := range children {
-			lines = append(lines, formatAssetSummary(child))
-		}
+		return strings.Join(result, "\n"), nil
 
-	}
-
-	result := make([]string, 0)
-	result = append(result, fmt.Sprintf("assets.Neighbors: %s", id))
-
-	if len(lines) == 0 {
-		result = append(result, "No neighbors.")
 	} else {
-		result = append(result, lines...)
+		return "", fmt.Errorf("assets.Neighbors: %s", err0.Error())
 	}
-
-	return strings.Join(result, "\n"), nil
 
 }
 
@@ -582,56 +584,60 @@ func (tool *Assets) Scope(arguments assetArguments) (string, error) {
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	if err := readAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.Scope: %s", err.Error())
-	}
+	if err := readAssetsIndex(tool); err == nil {
 
-	if has_filter == false {
+		if has_filter == false {
 
-		total := len(tool.contents)
-		scoped := 0
-		tested := 0
+			total := len(tool.contents)
+			scoped := 0
+			tested := 0
 
-		for _, asset := range tool.contents {
+			for _, asset := range tool.contents {
 
-			if asset.InScope == true {
-				scoped++
+				if asset.InScope == true {
+					scoped++
+				}
+
+				if asset.Tested == true {
+					tested++
+				}
+
 			}
 
-			if asset.Tested == true {
-				tested++
+			return fmt.Sprintf("assets.Scope: %d assets, %d in scope, %d tested.", total, scoped, tested), nil
+
+		} else {
+
+			updated := 0
+
+			for id, asset := range tool.contents {
+
+				if has_type == true && asset.Type != types.AssetType(strings.ToLower(strings.TrimSpace(type_filter))) {
+					continue
+				} else if has_value == true && strings.EqualFold(asset.Value, strings.TrimSpace(value_filter)) == false {
+					continue
+				} else if has_query == true && assetMatchesQuery(asset, query) == false {
+					continue
+				}
+
+				asset.InScope = in_scope
+				asset.LastSeen = schemas.NewDatetime()
+				tool.contents[id] = asset
+				updated++
+
+			}
+
+			if err := writeAssetsIndex(tool); err == nil {
+				return fmt.Sprintf("assets.Scope: %d assets marked in_scope=%t.", updated, in_scope), nil
+			} else {
+				return "", fmt.Errorf("assets.Scope: %s", err.Error())
 			}
 
 		}
 
-		return fmt.Sprintf("assets.Scope: %d assets, %d in scope, %d tested.", total, scoped, tested), nil
-
-	}
-
-	updated := 0
-
-	for id, asset := range tool.contents {
-
-		if has_type == true && asset.Type != types.AssetType(strings.ToLower(strings.TrimSpace(type_filter))) {
-			continue
-		} else if has_value == true && strings.EqualFold(asset.Value, strings.TrimSpace(value_filter)) == false {
-			continue
-		} else if has_query == true && assetMatchesQuery(asset, query) == false {
-			continue
-		}
-
-		asset.InScope = in_scope
-		asset.LastSeen = schemas.NewDatetime()
-		tool.contents[id] = asset
-		updated++
-
-	}
-
-	if err := writeAssetsIndex(tool); err != nil {
+	} else {
 		return "", fmt.Errorf("assets.Scope: %s", err.Error())
 	}
-
-	return fmt.Sprintf("assets.Scope: %d assets marked in_scope=%t.", updated, in_scope), nil
 
 }
 
@@ -640,74 +646,74 @@ func (tool *Assets) Coverage() (string, error) {
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	if err := readAssetsIndex(tool); err != nil {
+	if err := readAssetsIndex(tool); err == nil {
+
+		counts := make(map[types.AssetType][3]int)
+
+		for _, asset := range tool.contents {
+
+			count := counts[asset.Type]
+
+			if asset.InScope == true {
+				count[0]++
+			}
+
+			if asset.Tested == true {
+				count[1]++
+			}
+
+			count[2]++
+			counts[asset.Type] = count
+
+		}
+
+		types_list := make([]string, 0, len(counts))
+
+		for asset_type := range counts {
+			types_list = append(types_list, string(asset_type))
+		}
+
+		sort.Strings(types_list)
+
+		lines := make([]string, 0, len(types_list))
+
+		for _, name := range types_list {
+
+			count := counts[types.AssetType(name)]
+			lines = append(lines, fmt.Sprintf("%s: %d assets, %d in scope, %d tested", name, count[2], count[0], count[1]))
+
+		}
+
+		result := make([]string, 0)
+		result = append(result, fmt.Sprintf("assets.Coverage: %d assets across %d types.", len(tool.contents), len(types_list)))
+		result = append(result, lines...)
+
+		return strings.Join(result, "\n"), nil
+
+	} else {
 		return "", fmt.Errorf("assets.Coverage: %s", err.Error())
 	}
-
-	counts := make(map[types.AssetType][3]int)
-
-	for _, asset := range tool.contents {
-
-		count := counts[asset.Type]
-
-		if asset.InScope == true {
-			count[0]++
-		}
-
-		if asset.Tested == true {
-			count[1]++
-		}
-
-		count[2]++
-		counts[asset.Type] = count
-
-	}
-
-	types_list := make([]string, 0, len(counts))
-
-	for asset_type := range counts {
-		types_list = append(types_list, string(asset_type))
-	}
-
-	sort.Strings(types_list)
-
-	lines := make([]string, 0, len(types_list))
-
-	for _, name := range types_list {
-
-		count := counts[types.AssetType(name)]
-		lines = append(lines, fmt.Sprintf("%s: %d assets, %d in scope, %d tested", name, count[2], count[0], count[1]))
-
-	}
-
-	result := make([]string, 0)
-	result = append(result, fmt.Sprintf("assets.Coverage: %d assets across %d types.", len(tool.contents), len(types_list)))
-	result = append(result, lines...)
-
-	return strings.Join(result, "\n"), nil
 
 }
 
 func (tool *Assets) GetContent(id string) (any, error) {
 
-	if types.IsAssetID(id) == false {
+	if types.IsAssetID(id) == true {
+
+		tool.mutex.Lock()
+		defer tool.mutex.Unlock()
+
+		asset, err0 := getAsset(tool, id)
+
+		if err0 == nil {
+			return asset, nil
+		} else {
+			return nil, fmt.Errorf("assets.GetContent: %s", err0.Error())
+		}
+
+	} else {
 		return nil, fmt.Errorf("assets.GetContent: Invalid asset ID \"%s\".", id)
 	}
-
-	tool.mutex.Lock()
-	defer tool.mutex.Unlock()
-
-	if err := readAssetsIndex(tool); err != nil {
-		return nil, fmt.Errorf("assets.GetContent: %s", err.Error())
-	}
-
-	asset, ok := tool.contents[id]
-
-	if ok == false {
-		return nil, fmt.Errorf("assets.GetContent: Asset \"%s\" does not exist.", id)
-	}
-
-	return asset, nil
 
 }
 
@@ -739,19 +745,21 @@ func (tool *Assets) MarshalJSON() ([]byte, error) {
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	if err := readAssetsIndex(tool); err != nil {
+	if err := readAssetsIndex(tool); err == nil {
+
+		entries := make([]types.Asset, 0, len(tool.contents))
+
+		for _, asset := range tool.contents {
+			entries = append(entries, asset)
+		}
+
+		sortAssets(entries)
+
+		return json.MarshalIndent(entries, "", "\t")
+
+	} else {
 		return nil, fmt.Errorf("assets.MarshalJSON: %s", err.Error())
 	}
-
-	entries := make([]types.Asset, 0, len(tool.contents))
-
-	for _, asset := range tool.contents {
-		entries = append(entries, asset)
-	}
-
-	sortAssets(entries)
-
-	return json.MarshalIndent(entries, "", "\t")
 
 }
 
@@ -779,19 +787,21 @@ func readAssetsIndex(tool *Assets) error {
 
 	entries, err := utils_assets.ReadIndex(tool.Playground)
 
-	if err != nil {
+	if err == nil {
+
+		for id := range tool.contents {
+			delete(tool.contents, id)
+		}
+
+		for _, asset := range entries {
+			tool.contents[asset.ID] = asset
+		}
+
+		return nil
+
+	} else {
 		return err
 	}
-
-	for id := range tool.contents {
-		delete(tool.contents, id)
-	}
-
-	for _, asset := range entries {
-		tool.contents[asset.ID] = asset
-	}
-
-	return nil
 
 }
 
