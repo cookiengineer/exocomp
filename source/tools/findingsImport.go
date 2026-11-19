@@ -3,12 +3,10 @@ package tools
 import "exocomp/schemas"
 import "exocomp/types"
 import utils_findings "exocomp/utils/findings"
-import utils_sandbox "exocomp/utils/sandbox"
 import "crypto/sha256"
 import "encoding/hex"
 import "encoding/json"
 import "fmt"
-import "os"
 import "strings"
 
 type nucleiImportResult struct {
@@ -71,142 +69,151 @@ func (tool *Findings) Import(arguments findingArguments) (string, error) {
 		sandbox = tool.Playground
 	}
 
-	resolved, err0 := utils_sandbox.ResolvePath(sandbox, path)
+	data, err0 := readScanArtifactFile(sandbox, path, "findings.Import")
 
-	if err0 != nil {
-		return "", fmt.Errorf("findings.Import: Cannot resolve artifact \"%s\".", path)
-	}
+	if err0 == nil {
 
-	stat, err1 := os.Stat(resolved)
+		scan_id, has_scan_id := arguments.String("scan_id")
 
-	if err1 != nil || stat.Mode().IsRegular() == false {
-		return "", fmt.Errorf("findings.Import: Artifact \"%s\" does not exist.", path)
-	}
+		if has_scan_id == false || strings.TrimSpace(scan_id) == "" {
+			scan_id = newScanID(data)
+		} else {
+			scan_id = strings.TrimSpace(scan_id)
+		}
 
-	if stat.Size() > maxScanArtifactSize {
-		return "", fmt.Errorf("findings.Import: Artifact exceeds the 16 MiB limit.")
-	}
+		if types.IsScanID(scan_id) == true {
 
-	data, err2 := os.ReadFile(resolved)
+			if err_store := utils_findings.WriteScanArtifact(tool.Playground, scan_id, data); err_store == nil {
 
-	if err2 != nil {
-		return "", fmt.Errorf("findings.Import: Cannot read artifact \"%s\".", path)
-	}
+				parsed, invalid, err1 := parseNucleiResults(data, scan_id)
 
-	scan_id, has_scan_id := arguments.String("scan_id")
+				if err1 == nil {
 
-	if has_scan_id == false || strings.TrimSpace(scan_id) == "" {
-		scan_id = newScanID(data)
+					imported, skipped, invalid, err2 := importFindingsResults(tool, parsed, invalid, command)
+
+					if err2 == nil {
+						return fmt.Sprintf(
+							"findings.Import: Imported %d candidates, skipped %d duplicates, %d invalid results (scan %s).",
+							imported,
+							skipped,
+							invalid,
+							scan_id,
+						), nil
+					} else {
+						return "", fmt.Errorf("findings.Import: %s", err2.Error())
+					}
+
+				} else {
+					return "", fmt.Errorf("findings.Import: %s", err1.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("findings.Import: %s", err_store.Error())
+			}
+
+		} else {
+			return "", fmt.Errorf("findings.Import: Invalid parameter \"scan_id\".")
+		}
+
 	} else {
-		scan_id = strings.TrimSpace(scan_id)
+		return "", err0
 	}
 
-	if types.IsScanID(scan_id) == false {
-		return "", fmt.Errorf("findings.Import: Invalid parameter \"scan_id\".")
-	}
+}
 
-	if err_store := utils_findings.WriteScanArtifact(tool.Playground, scan_id, data); err_store != nil {
-		return "", fmt.Errorf("findings.Import: %s", err_store.Error())
-	}
-
-	parsed, invalid, err3 := parseNucleiResults(data, scan_id)
-
-	if err3 != nil {
-		return "", fmt.Errorf("findings.Import: %s", err3.Error())
-	}
+func importFindingsResults(tool *Findings, parsed []nucleiImportResult, invalid int, command string) (int, int, int, error) {
 
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	err4 := readFindingsIndex(tool)
+	if err0 := readFindingsIndex(tool); err0 == nil {
 
-	if err4 != nil {
-		return "", fmt.Errorf("findings.Import: %s", err4.Error())
+		existing, err1 := utils_findings.ReadAll(tool.Playground)
+
+		if err1 == nil {
+
+			seen := make(map[string]bool, len(existing))
+
+			for _, finding := range existing {
+				seen[importDedupKey(finding)] = true
+			}
+
+			imported := 0
+			skipped := 0
+
+			for _, result := range parsed {
+
+				if seen[importDedupKey(result.Finding)] == true {
+
+					skipped++
+					continue
+
+				}
+
+				if result.Request != "" {
+
+					evidence := findingArguments{
+						"kind":    string(types.FindingEvidenceKindHTTPRequest),
+						"title":   "Nuclei request",
+						"source":  "nuclei",
+						"content": result.Request,
+					}
+
+					if command != "" {
+						evidence["command"] = command
+					}
+
+					if err2 := bindEvidenceToFinding(tool, &result.Finding, evidence); err2 != nil {
+						invalid++
+						continue
+					}
+
+				}
+
+				if result.Response != "" {
+
+					evidence := findingArguments{
+						"kind":    string(types.FindingEvidenceKindHTTPResponse),
+						"title":   "Nuclei response",
+						"source":  "nuclei",
+						"content": result.Response,
+					}
+
+					if command != "" {
+						evidence["command"] = command
+					}
+
+					if err3 := bindEvidenceToFinding(tool, &result.Finding, evidence); err3 != nil {
+						invalid++
+						continue
+					}
+
+				}
+
+				if result.Finding.Validate() == true {
+
+					if err4 := writeFinding(tool, result.Finding); err4 == nil {
+						seen[importDedupKey(result.Finding)] = true
+						imported++
+					} else {
+						return 0, 0, 0, err4
+					}
+
+				} else {
+					invalid++
+				}
+
+			}
+
+			return imported, skipped, invalid, nil
+
+		} else {
+			return 0, 0, 0, err1
+		}
+
+	} else {
+		return 0, 0, 0, err0
 	}
-
-	existing, err5 := utils_findings.ReadAll(tool.Playground)
-
-	if err5 != nil {
-		return "", fmt.Errorf("findings.Import: %s", err5.Error())
-	}
-
-	seen := make(map[string]bool, len(existing))
-
-	for _, finding := range existing {
-		seen[importDedupKey(finding)] = true
-	}
-
-	imported := 0
-	skipped := 0
-
-	for _, result := range parsed {
-
-		if seen[importDedupKey(result.Finding)] == true {
-			skipped++
-			continue
-		}
-
-		if result.Request != "" {
-
-			evidence := findingArguments{
-				"kind":    string(types.FindingEvidenceKindHTTPRequest),
-				"title":   "Nuclei request",
-				"source":  "nuclei",
-				"content": result.Request,
-			}
-
-			if command != "" {
-				evidence["command"] = command
-			}
-
-			if err6 := bindEvidenceToFinding(tool, &result.Finding, evidence); err6 != nil {
-				invalid++
-				continue
-			}
-
-		}
-
-		if result.Response != "" {
-
-			evidence := findingArguments{
-				"kind":    string(types.FindingEvidenceKindHTTPResponse),
-				"title":   "Nuclei response",
-				"source":  "nuclei",
-				"content": result.Response,
-			}
-
-			if command != "" {
-				evidence["command"] = command
-			}
-
-			if err7 := bindEvidenceToFinding(tool, &result.Finding, evidence); err7 != nil {
-				invalid++
-				continue
-			}
-
-		}
-
-		if result.Finding.Validate() == false {
-			invalid++
-			continue
-		}
-
-		if err8 := writeFinding(tool, result.Finding); err8 != nil {
-			return "", fmt.Errorf("findings.Import: %s", err8.Error())
-		}
-
-		seen[importDedupKey(result.Finding)] = true
-		imported++
-
-	}
-
-	return fmt.Sprintf(
-		"findings.Import: Imported %d candidates, skipped %d duplicates, %d invalid results (scan %s).",
-		imported,
-		skipped,
-		invalid,
-		scan_id,
-	), nil
 
 }
 

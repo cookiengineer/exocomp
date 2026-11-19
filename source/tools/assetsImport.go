@@ -2,11 +2,9 @@ package tools
 
 import "exocomp/types"
 import utils_findings "exocomp/utils/findings"
-import utils_sandbox "exocomp/utils/sandbox"
 import "encoding/json"
 import "fmt"
 import "net/url"
-import "os"
 import "strconv"
 import "strings"
 
@@ -111,66 +109,69 @@ func (tool *Assets) Import(arguments assetArguments) (string, error) {
 		sandbox = tool.Playground
 	}
 
-	resolved, err0 := utils_sandbox.ResolvePath(sandbox, path)
+	data, err0 := readScanArtifactFile(sandbox, path, "assets.Import")
 
-	if err0 != nil {
-		return "", fmt.Errorf("assets.Import: Cannot resolve artifact \"%s\".", path)
+	if err0 == nil {
+
+		parsed, invalid, err1 := parseAssetResults(format, data, target, in_scope)
+
+		if err1 == nil {
+
+			created, updated, invalid, err2 := importAssetResults(tool, parsed, invalid)
+
+			if err2 == nil {
+				return fmt.Sprintf("assets.Import: Created %d assets, updated %d, skipped %d invalid results (format %s).", created, updated, invalid, format), nil
+			} else {
+				return "", fmt.Errorf("assets.Import: %s", err2.Error())
+			}
+
+		} else {
+			return "", fmt.Errorf("assets.Import: %s", err1.Error())
+		}
+
+	} else {
+		return "", err0
 	}
 
-	stat, err1 := os.Stat(resolved)
+}
 
-	if err1 != nil || stat.Mode().IsRegular() == false {
-		return "", fmt.Errorf("assets.Import: Artifact \"%s\" does not exist.", path)
-	}
-
-	if stat.Size() > maxScanArtifactSize {
-		return "", fmt.Errorf("assets.Import: Artifact exceeds the 16 MiB limit.")
-	}
-
-	data, err2 := os.ReadFile(resolved)
-
-	if err2 != nil {
-		return "", fmt.Errorf("assets.Import: Cannot read artifact \"%s\".", path)
-	}
-
-	parsed, invalid, err3 := parseAssetResults(format, data, target, in_scope)
-
-	if err3 != nil {
-		return "", fmt.Errorf("assets.Import: %s", err3.Error())
-	}
+func importAssetResults(tool *Assets, parsed []types.Asset, invalid int) (int, int, int, error) {
 
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	if err4 := readAssetsIndex(tool); err4 != nil {
-		return "", fmt.Errorf("assets.Import: %s", err4.Error())
-	}
+	if err := readAssetsIndex(tool); err == nil {
 
-	created := 0
-	updated := 0
+		created := 0
+		updated := 0
 
-	for _, asset := range parsed {
+		for _, asset := range parsed {
 
-		_, is_new, err5 := upsertAsset(tool, asset)
+			_, is_new, err1 := upsertAsset(tool, asset)
 
-		if err5 != nil {
-			invalid++
-			continue
+			if err1 == nil {
+
+				if is_new == true {
+					created++
+				} else {
+					updated++
+				}
+
+			} else {
+				invalid++
+			}
+
 		}
 
-		if is_new == true {
-			created++
+		if err2 := writeAssetsIndex(tool); err2 == nil {
+			return created, updated, invalid, nil
 		} else {
-			updated++
+			return 0, 0, 0, err2
 		}
 
+	} else {
+		return 0, 0, 0, err
 	}
-
-	if err6 := writeAssetsIndex(tool); err6 != nil {
-		return "", fmt.Errorf("assets.Import: %s", err6.Error())
-	}
-
-	return fmt.Sprintf("assets.Import: Created %d assets, updated %d, skipped %d invalid results (format %s).", created, updated, invalid, format), nil
 
 }
 

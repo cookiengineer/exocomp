@@ -205,27 +205,18 @@ func (tool *Assets) Add(arguments assetArguments) (string, error) {
 		return "", fmt.Errorf("assets.Add: %s", err.Error())
 	}
 
-	tool.mutex.Lock()
-	defer tool.mutex.Unlock()
+	stored, created, err := storeAsset(tool, asset)
 
-	if err := readAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.Add: %s", err.Error())
-	}
+	if err == nil {
 
-	stored, created, err := upsertAsset(tool, asset)
+		if created == true {
+			return fmt.Sprintf("assets.Add: Asset \"%s\" created.", stored.ID), nil
+		} else {
+			return fmt.Sprintf("assets.Add: Asset \"%s\" updated.", stored.ID), nil
+		}
 
-	if err != nil {
-		return "", fmt.Errorf("assets.Add: %s", err.Error())
-	}
-
-	if err := writeAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.Add: %s", err.Error())
-	}
-
-	if created == true {
-		return fmt.Sprintf("assets.Add: Asset \"%s\" created.", stored.ID), nil
 	} else {
-		return fmt.Sprintf("assets.Add: Asset \"%s\" updated.", stored.ID), nil
+		return "", fmt.Errorf("assets.Add: %s", err.Error())
 	}
 
 }
@@ -382,106 +373,22 @@ func (tool *Assets) Search(arguments assetArguments) (string, error) {
 
 func (tool *Assets) Update(id string, arguments assetArguments) (string, error) {
 
-	if types.IsAssetID(id) == false {
-		return "", fmt.Errorf("assets.Update: Invalid asset ID \"%s\".", id)
-	}
+	if types.IsAssetID(id) == true {
 
-	tool.mutex.Lock()
-	defer tool.mutex.Unlock()
+		tool.mutex.Lock()
+		defer tool.mutex.Unlock()
 
-	if err := readAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.Update: %s", err.Error())
-	}
+		asset, err0 := getAsset(tool, id)
 
-	asset, ok := tool.contents[id]
-
-	if ok == false {
-		return "", fmt.Errorf("assets.Update: Asset \"%s\" does not exist.", id)
-	}
-
-	if type_value, ok := arguments.String("type"); ok == true {
-		asset.Type = types.AssetType(strings.ToLower(strings.TrimSpace(type_value)))
-	}
-
-	if value, ok := arguments.String("value"); ok == true {
-		asset.Value = value
-	}
-
-	if parent_id, ok := arguments.String("parent_id"); ok == true {
-		asset.ParentID = parent_id
-	}
-
-	if domain, ok := arguments.String("domain"); ok == true {
-		asset.Domain = utils_findings.LimitText(utils_findings.RedactSecrets(domain), assetsMaxValue)
-	}
-
-	if ip, ok := arguments.String("ip"); ok == true {
-		asset.IP = utils_findings.LimitText(utils_findings.RedactSecrets(ip), assetsMaxValue)
-	}
-
-	if port, ok := arguments.Int("port"); ok == true {
-		asset.Port = port
-	}
-
-	if raw_url, ok := arguments.String("url"); ok == true {
-		asset.URL = utils_findings.LimitText(utils_findings.RedactSecrets(raw_url), assetsMaxValue)
-	}
-
-	if endpoint, ok := arguments.String("endpoint"); ok == true {
-		asset.Endpoint = utils_findings.LimitText(utils_findings.RedactSecrets(endpoint), assetsMaxValue)
-	}
-
-	if technology, ok := arguments.Strings("technology"); ok == true {
-		asset.Technology = normalizeStringList(technology, assetsMaxText)
-	}
-
-	if source, ok := arguments.String("source"); ok == true {
-		asset.Source = utils_findings.LimitText(utils_findings.RedactSecrets(source), assetsMaxText)
-	}
-
-	if confidence, ok := arguments.String("confidence"); ok == true {
-		asset.Confidence = types.FindingConfidence(strings.ToLower(strings.TrimSpace(confidence)))
-	}
-
-	if in_scope, ok := arguments.Bool("in_scope"); ok == true {
-		asset.InScope = in_scope
-	}
-
-	if tested, ok := arguments.Bool("tested"); ok == true {
-		asset.Tested = tested
-	}
-
-	if tags, ok := arguments.Strings("tags"); ok == true {
-		asset.Tags = normalizeStringList(tags, assetsMaxText)
-	}
-
-	if props, ok := arguments.Map("props"); ok == true {
-		asset.Props = normalizeProps(props)
-	}
-
-	asset.Value = utils_assets.NormalizeValue(asset.Type, asset.Value)
-	asset.Value = utils_findings.LimitText(utils_findings.RedactSecrets(asset.Value), assetsMaxValue)
-
-	if err := validateAsset(&asset); err != nil {
-		return "", fmt.Errorf("assets.Update: %s", err.Error())
-	}
-
-	for other_id, other := range tool.contents {
-
-		if other_id != id && assetDedupKey(other) == assetDedupKey(asset) {
-			return "", fmt.Errorf("assets.Update: Asset value conflicts with \"%s\".", other_id)
+		if err0 == nil {
+			return updateAsset(tool, id, asset, arguments)
+		} else {
+			return "", fmt.Errorf("assets.Update: %s", err0.Error())
 		}
 
+	} else {
+		return "", fmt.Errorf("assets.Update: Invalid asset ID \"%s\".", id)
 	}
-
-	asset.LastSeen = schemas.NewDatetime()
-	tool.contents[id] = asset
-
-	if err := writeAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.Update: %s", err.Error())
-	}
-
-	return fmt.Sprintf("assets.Update: Asset \"%s\" updated.", id), nil
 
 }
 

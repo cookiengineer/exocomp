@@ -243,9 +243,9 @@ func (tool *Agents) GetContent(id string) (any, error) {
 
 	if ok == true {
 		return content, nil
+	} else {
+		return nil, fmt.Errorf("agents.Get: %s does not exist?", name)
 	}
-
-	return nil, fmt.Errorf("agents.Get: %s does not exist?", name)
 
 }
 

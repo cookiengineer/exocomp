@@ -34,36 +34,56 @@ func (tool *Assets) Export(arguments assetArguments) (string, error) {
 		return "", fmt.Errorf("assets.Export: Invalid parameter \"type\".")
 	}
 
+	matches, err0 := collectExportAssets(tool, type_filter, has_type, query_filter, has_query, in_scope_filter, has_in_scope, tested_filter, has_tested, limit)
+
+	if err0 == nil {
+		return runAssetExport(tool, matches, format, path, has_path)
+	} else {
+		return "", fmt.Errorf("assets.Export: %s", err0.Error())
+	}
+
+}
+
+func collectExportAssets(tool *Assets, type_filter string, has_type bool, query_filter string, has_query bool, in_scope_filter bool, has_in_scope bool, tested_filter bool, has_tested bool, limit int) ([]types.Asset, error) {
+
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
 
-	if err := readAssetsIndex(tool); err != nil {
-		return "", fmt.Errorf("assets.Export: %s", err.Error())
-	}
+	if err := readAssetsIndex(tool); err == nil {
 
-	matches := make([]types.Asset, 0)
+		matches := make([]types.Asset, 0)
 
-	for _, asset := range tool.contents {
+		for _, asset := range tool.contents {
 
-		if has_type == true && asset.Type != types.AssetType(strings.ToLower(strings.TrimSpace(type_filter))) {
-			continue
-		} else if has_query == true && assetMatchesQuery(asset, query_filter) == false {
-			continue
-		} else if has_in_scope == true && asset.InScope != in_scope_filter {
-			continue
-		} else if has_tested == true && asset.Tested != tested_filter {
-			continue
+			if has_type == true && asset.Type != types.AssetType(strings.ToLower(strings.TrimSpace(type_filter))) {
+				continue
+			} else if has_query == true && assetMatchesQuery(asset, query_filter) == false {
+				continue
+			} else if has_in_scope == true && asset.InScope != in_scope_filter {
+				continue
+			} else if has_tested == true && asset.Tested != tested_filter {
+				continue
+			}
+
+			matches = append(matches, asset)
+
 		}
 
-		matches = append(matches, asset)
+		sortAssets(matches)
 
+		if len(matches) > limit {
+			matches = matches[0:limit]
+		}
+
+		return matches, nil
+
+	} else {
+		return nil, err
 	}
 
-	sortAssets(matches)
+}
 
-	if len(matches) > limit {
-		matches = matches[0:limit]
-	}
+func runAssetExport(tool *Assets, matches []types.Asset, format string, path string, has_path bool) (string, error) {
 
 	if has_path == false || strings.TrimSpace(path) == "" {
 
@@ -89,38 +109,58 @@ func (tool *Assets) Export(arguments assetArguments) (string, error) {
 
 	data, err0 := formatAssets(matches, format)
 
-	if err0 != nil {
+	if err0 == nil {
+
+		resolved, display, err1 := writeAssetExportFile(sandbox, path, data)
+
+		if err1 == nil {
+
+			sum := sha256.Sum256(data)
+			content_type := contentTypeForPath(resolved)
+
+			return fmt.Sprintf(
+				"assets.Export: format=%s path=\"%s\" count=%d sha256=%s size=%d content_type=%s",
+				format,
+				display,
+				len(matches),
+				hex.EncodeToString(sum[:]),
+				len(data),
+				content_type,
+			), nil
+
+		} else {
+			return "", fmt.Errorf("assets.Export: %s", err1.Error())
+		}
+
+	} else {
 		return "", fmt.Errorf("assets.Export: %s", err0.Error())
 	}
 
-	resolved, err1 := utils_sandbox.ResolvePath(sandbox, path)
+}
 
-	if err1 != nil {
-		return "", fmt.Errorf("assets.Export: Cannot resolve export path.")
+func writeAssetExportFile(sandbox string, path string, data []byte) (string, string, error) {
+
+	resolved, err0 := utils_sandbox.ResolvePath(sandbox, path)
+
+	if err0 == nil {
+
+		if err1 := os.WriteFile(resolved, data, 0644); err1 == nil {
+
+			display, err2 := utils_sandbox.SanitizePath(sandbox, resolved)
+
+			if err2 == nil {
+				return resolved, display, nil
+			} else {
+				return "", "", fmt.Errorf("Cannot resolve export path.")
+			}
+
+		} else {
+			return "", "", fmt.Errorf("Cannot write export file.")
+		}
+
+	} else {
+		return "", "", fmt.Errorf("Cannot resolve export path.")
 	}
-
-	if err2 := os.WriteFile(resolved, data, 0644); err2 != nil {
-		return "", fmt.Errorf("assets.Export: Cannot write export file.")
-	}
-
-	display, err3 := utils_sandbox.SanitizePath(sandbox, resolved)
-
-	if err3 != nil {
-		return "", fmt.Errorf("assets.Export: Cannot resolve export path.")
-	}
-
-	sum := sha256.Sum256(data)
-	content_type := contentTypeForPath(resolved)
-
-	return fmt.Sprintf(
-		"assets.Export: format=%s path=\"%s\" count=%d sha256=%s size=%d content_type=%s",
-		format,
-		display,
-		len(matches),
-		hex.EncodeToString(sum[:]),
-		len(data),
-		content_type,
-	), nil
 
 }
 
