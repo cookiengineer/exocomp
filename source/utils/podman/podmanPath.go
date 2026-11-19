@@ -10,14 +10,16 @@ func podmanPath() (string, error) {
 
 	if override != "" {
 		return override, nil
-	}
-
-	path, err := exec.LookPath("podman")
-
-	if err == nil {
-		return path, nil
 	} else {
-		return "", err
+
+		path, err := exec.LookPath("podman")
+
+		if err == nil {
+			return path, nil
+		} else {
+			return "", err
+		}
+
 	}
 
 }

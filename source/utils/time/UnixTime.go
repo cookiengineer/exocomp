@@ -9,13 +9,15 @@ func (ut *UnixTime) UnmarshalJSON(data []byte) error {
 
 	var timestamp int64
 
-	if err := json.Unmarshal(data, &timestamp); err != nil {
+	if err := json.Unmarshal(data, &timestamp); err == nil {
+
+		*ut = UnixTime(time.Unix(timestamp, 0))
+
+		return nil
+
+	} else {
 		return err
 	}
-
-	*ut = UnixTime(time.Unix(timestamp, 0))
-
-	return nil
 
 }
 

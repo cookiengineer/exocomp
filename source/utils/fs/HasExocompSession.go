@@ -10,8 +10,8 @@ func HasExocompSession(folder string) bool {
 
 	if err == nil && stat.IsDir() == false {
 		return true
+	} else {
+		return false
 	}
-
-	return false
 
 }

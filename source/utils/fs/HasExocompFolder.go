@@ -10,8 +10,8 @@ func HasExocompFolder(folder string) bool {
 
 	if err == nil && stat.IsDir() {
 		return true
+	} else {
+		return false
 	}
-
-	return false
 
 }

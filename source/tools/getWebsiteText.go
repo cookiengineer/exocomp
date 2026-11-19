@@ -10,8 +10,8 @@ func getWebsiteText(url *net_url.URL, bytes []byte) string {
 
 	if err == nil && document != nil {
 		return document.Text()
+	} else {
+		return strings.TrimSpace(string(bytes))
 	}
-
-	return strings.TrimSpace(string(bytes))
 
 }
