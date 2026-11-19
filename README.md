@@ -228,7 +228,11 @@ and to use the following model for the hired short-lived contractor agents.
 `Qwen3.8-abliterated` is tested and verified to work with typical malware reverse
 engineering and exploit related development tasks.
 
-Qwen3.8:
+QwenSeek3.8 (Qwen3.8 trained on reasoning traces from DeepSeek):
+
+- [QwenSeek3.8-abliterated](https://github.com/cookiengineer/qwen-reasoning-trainer)
+
+"Original" Qwen3.8:
 
 - [Qwen3.8-abliterated on ollama](https://ollama.com/huihui_ai/Qwen3.8-abliterated)
 - [Qwen3.8-abliterated on huggingface](https://huggingface.co/collections/huihui-ai/qwen38-abliterated)
