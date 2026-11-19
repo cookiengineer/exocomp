@@ -15,7 +15,7 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 
 	case "system":
 
-		result = append(result, transcript.collapsibleLines(
+		result = append(result, withBorder(transcript.collapsibleLines(
 			message,
 			"system",
 			"System",
@@ -25,7 +25,7 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 			styles.CollapsedHint,
 			width,
 			false,
-		)...)
+		), styles.BorderSystem)...)
 
 	case "tool":
 
@@ -35,7 +35,7 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 			label = "Tool · " + strings.TrimSpace(message.ToolName)
 		}
 
-		result = append(result, transcript.collapsibleLines(
+		result = append(result, withBorder(transcript.collapsibleLines(
 			message,
 			"tool",
 			label,
@@ -45,7 +45,7 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 			styles.CollapsedHint,
 			width,
 			false,
-		)...)
+		), styles.BorderTool)...)
 
 	case "assistant":
 
@@ -53,11 +53,13 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 			Spans: []transcriptSpan{
 				{Text: "[assistant]", Style: styles.TranscriptAssistant},
 			},
+			HasBorder: true,
+			Border:    styles.BorderAssistant,
 		})
 
 		if strings.TrimSpace(message.ReasoningContent) != "" {
 
-			result = append(result, transcript.collapsibleLines(
+			result = append(result, withBorder(transcript.collapsibleLines(
 				message,
 				"reasoning",
 				"Thought",
@@ -67,12 +69,12 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 				styles.CollapsedHint,
 				width,
 				true,
-			)...)
+			), styles.BorderThinking)...)
 
 		}
 
 		if strings.TrimSpace(message.Content) != "" {
-			result = append(result, renderMarkdown(message.Content, width)...)
+			result = append(result, withBorder(renderMarkdown(message.Content, width), styles.BorderAssistant)...)
 		}
 
 		for index, tool_call := range message.ToolCalls {
@@ -83,7 +85,7 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 				name = "Tool"
 			}
 
-			result = append(result, transcript.collapsibleLines(
+			result = append(result, withBorder(transcript.collapsibleLines(
 				message,
 				fmt.Sprintf("toolcall:%d", index),
 				"Tool · "+name,
@@ -93,7 +95,7 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 				styles.CollapsedHint,
 				width,
 				false,
-			)...)
+			), styles.BorderTool)...)
 
 		}
 
@@ -103,10 +105,12 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 			Spans: []transcriptSpan{
 				{Text: "[user]", Style: styles.TranscriptUser},
 			},
+			HasBorder: true,
+			Border:    styles.BorderUser,
 		})
 
 		if strings.TrimSpace(message.Content) != "" {
-			result = append(result, renderMarkdown(message.Content, width)...)
+			result = append(result, withBorder(renderMarkdown(message.Content, width), styles.BorderUser)...)
 		}
 
 	default:
@@ -115,15 +119,28 @@ func (transcript *Transcript) appendMessage(result []transcriptLine, message *sc
 			Spans: []transcriptSpan{
 				{Text: fmt.Sprintf("[%s]", message.Role), Style: styles.TranscriptTool},
 			},
+			HasBorder: true,
+			Border:    styles.BorderTool,
 		})
 
 		if strings.TrimSpace(message.Content) != "" {
-			result = append(result, renderMarkdown(message.Content, width)...)
+			result = append(result, withBorder(renderMarkdown(message.Content, width), styles.BorderTool)...)
 		}
 
 	}
 
 	return result
+
+}
+
+func withBorder(lines []transcriptLine, style utils_tty.Style) []transcriptLine {
+
+	for index := range lines {
+		lines[index].HasBorder = true
+		lines[index].Border = style
+	}
+
+	return lines
 
 }
 

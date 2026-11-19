@@ -17,11 +17,13 @@ type transcriptToggle struct {
 }
 
 type transcriptLine struct {
-	Spans   []transcriptSpan
-	HasFill bool
-	Fill    utils_tty.Style
-	Toggle  *transcriptToggle
-	Spinner bool
+	Spans     []transcriptSpan
+	HasFill   bool
+	Fill      utils_tty.Style
+	Toggle    *transcriptToggle
+	Spinner   bool
+	HasBorder bool
+	Border    utils_tty.Style
 }
 
 type Transcript struct {
@@ -130,6 +132,7 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 
 	lines := transcript.cached
 	waiting := transcript.Session.IsWaiting()
+	content_width := max(1, rect.Width-2)
 
 	if transcript.cacheDirty == true || transcript.cacheWidth != rect.Width || transcript.cacheCount != len(messages) || transcript.cacheWaiting != waiting {
 
@@ -145,7 +148,7 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 				result = append(result, transcriptLine{})
 			}
 
-			result = transcript.appendMessage(result, message, rect.Width)
+			result = transcript.appendMessage(result, message, content_width)
 
 		}
 
@@ -159,7 +162,9 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 				Spans: []transcriptSpan{
 					{Text: "Thinking", Style: styles.ReasoningHeader},
 				},
-				Spinner: true,
+				Spinner:   true,
+				HasBorder: true,
+				Border:    styles.BorderThinking,
 			})
 
 		}
@@ -221,18 +226,28 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 
 		line := lines[row]
 		line_row := row - start
+		content_x := rect.X
+		line_width := rect.Width
+
+		if line.HasBorder == true {
+
+			buffer.Set(rect.X, rect.Y+line_row, "┃", line.Border)
+			content_x = rect.X + 2
+			line_width = max(1, rect.Width-2)
+
+		}
 
 		if line.Spinner == true {
-			buffer.WriteString(rect.X, rect.Y+line_row, spinnerFrame(elapsed)+" Thinking", styles.ReasoningHeader)
+			buffer.WriteString(content_x, rect.Y+line_row, spinnerFrame(elapsed)+" Thinking", styles.ReasoningHeader)
 			continue
 		}
 
 		if line.HasFill == true {
-			buffer.Fill(utils_tty.Rect{X: rect.X, Y: rect.Y + line_row, Width: rect.Width, Height: 1}, ' ', line.Fill)
+			buffer.Fill(utils_tty.Rect{X: content_x, Y: rect.Y + line_row, Width: line_width, Height: 1}, ' ', line.Fill)
 		}
 
-		x := rect.X
-		limit := rect.X + rect.Width
+		x := content_x
+		limit := content_x + line_width
 
 		for _, span := range line.Spans {
 

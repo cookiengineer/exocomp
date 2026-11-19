@@ -24,7 +24,7 @@ var (
 	PromptText        = utils_tty.NewStyle(colors.TextBase, colors.BackgroundComposer)
 	PromptMuted       = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundComposer)
 	PromptBorder      = utils_tty.NewStyle(colors.BorderBase, colors.BackgroundComposer)
-	PromptBorderFocus = utils_tty.NewStyle(colors.TextActionPrimarySelected, colors.BackgroundComposer)
+	PromptBorderFocus = utils_tty.NewStyle(colors.TextFeedbackSuccessBase, colors.BackgroundComposer)
 	PromptCap         = utils_tty.NewStyle(colors.BackgroundComposer, colors.BackgroundBase)
 
 	FooterKey  = utils_tty.NewStyle(colors.TextBase, colors.BackgroundBase)
@@ -59,9 +59,15 @@ var (
 	TranscriptTool      = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundBase).WithAttributes(utils_tty.AttrBold)
 	TranscriptSystem    = utils_tty.NewStyle(colors.TextFeedbackWarningBase, colors.BackgroundBase).WithAttributes(utils_tty.AttrBold)
 
-	ReasoningHeader = utils_tty.NewStyle(colors.TextFeedbackWarningBase, colors.BackgroundBase)
+	ReasoningHeader = utils_tty.NewStyle(colors.TextFeedbackThinkingBase, colors.BackgroundBase)
 	ReasoningText   = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundBase)
 	SystemHeader    = utils_tty.NewStyle(colors.TextFeedbackInfoBase, colors.BackgroundBase)
 	ToolHeader      = utils_tty.NewStyle(colors.TextActionPrimarySelected, colors.BackgroundBase)
 	CollapsedHint   = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundBase)
+
+	BorderSystem    = utils_tty.NewStyle(colors.TextFeedbackWarningBase, colors.BackgroundBase)
+	BorderAssistant = utils_tty.NewStyle(colors.TextFeedbackInfoBase, colors.BackgroundBase)
+	BorderTool      = utils_tty.NewStyle(colors.TextFeedbackErrorBase, colors.BackgroundBase)
+	BorderUser      = utils_tty.NewStyle(colors.TextFeedbackSuccessBase, colors.BackgroundBase)
+	BorderThinking  = utils_tty.NewStyle(colors.TextFeedbackThinkingBase, colors.BackgroundBase)
 )

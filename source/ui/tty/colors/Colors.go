@@ -24,10 +24,11 @@ var (
 	TextFormFieldDisabled = hex("#808080")
 	TextFormFieldSelected = hex("#fab283")
 
-	TextFeedbackErrorBase   = hex("#e06c75")
-	TextFeedbackWarningBase = hex("#f5a742")
-	TextFeedbackSuccessBase = hex("#7fd88f")
-	TextFeedbackInfoBase    = hex("#56b6c2")
+	TextFeedbackErrorBase    = hex("#e06c75")
+	TextFeedbackWarningBase  = hex("#f5a742")
+	TextFeedbackSuccessBase  = hex("#7fd88f")
+	TextFeedbackInfoBase     = hex("#56b6c2")
+	TextFeedbackThinkingBase = hex("#9d7cd8")
 
 	BackgroundBase       = hex("#0a0a0a")
 	BackgroundRaisedBase = hex("#141414")
