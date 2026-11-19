@@ -26,6 +26,12 @@ Multi agent communication works with a sub process hierarchy, where each process
 works in their own sandbox with the `jsonl` frontend and their own agent type and
 system/user prompts.
 
+In the TTY frontend, the left sidebar lists the planner and every hired agent.
+Use `Ctrl+Up/Down` to switch the displayed history, and `Alt+Up/Down` to scroll
+the transcript. The composer follows the selected agent, so a hired agent can be
+helped manually. Messages sent while it is busy are queued behind its current
+request. `agents.Fire` remains the hard stop.
+
 Cross-agent communication works with a strict process hierarchy, each contracted
 sub-agent's `playground` is set to the parent process's `sandbox`.
 

@@ -246,6 +246,22 @@ that the planner can inspect and summarize the child's work later.
 
 The `types.ContextUsage:` line doubles as a liveness heartbeat.
 
+`stdin` is the reverse channel. It accepts one `schemas.Message` JSON object per
+line with `Role: "user"`. The TTY uses this to let the human message a hired
+agent directly while viewing that agent's transcript. Messages are queued behind
+the child's current request, so this is manual guidance rather than a preemptive
+interrupt. Use `agents.Fire` to stop a child.
+
+The TTY renders two sidebars: agents on the left and session state
+(`CHANGELOG`/`OPEN BUGS`) on the right. `Ctrl+Up/Down` cycles the selected agent
+and `Alt+Up/Down` scrolls the transcript. The composer sends to the selected
+agent; the planner remains `Session.Agent` and is never replaced for viewing.
+
+Both UI frontends read agent state through the same `engine.Session` snapshot
+methods: `GetAgents`, `GetAgent`, `GetAgentInfo` and `GetAgentMessages`. The Web
+routes use the same methods as the TTY, so agent lists, configs and conversation
+histories behave identically across frontends.
+
 ## Agent Lifecycle
 
 Agent state is tracked on [types.Agent](../source/types/Agent.go) via the
