@@ -4,8 +4,10 @@
 Self-hosted multi-agent environment tailored to Golang.
 
 <p align="center">
-    <img width="256" height="256" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
+    <img width="128" height="128" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
 </p>
+
+![Exocomp Screenshot](./screenshot.png)
 
 ### Features
 
