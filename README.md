@@ -4,13 +4,15 @@
 Self-hosted multi-agent Agentic Purpleteaming Environment tailored to Golang,
 written in Golang.
 
-<p align="center">
-    <img width="128" height="128" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
-</p>
+### Screenshot
 
 ![Exocomp Screenshot](./screenshot.png)
 
 ### Features
+
+<p align="center">
+    <img width="128" height="128" src="https://raw.githubusercontent.com/cookiengineer/exocomp/master/docs/exocomp.png"/>
+</p>
 
 Quark on Deep Space 9, trying to sell you an Exocomp robot:
 
