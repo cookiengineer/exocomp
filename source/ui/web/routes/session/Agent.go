@@ -10,7 +10,8 @@ func Agent(session *engine.Session, request *http.Request, response http.Respons
 
 	if request.Method == http.MethodGet {
 
-		response_payload, err0 := json.MarshalIndent(session.Agent, "", "\t")
+		agent := session.GetAgent(request.URL.Query().Get("name"))
+		response_payload, err0 := json.MarshalIndent(agent, "", "\t")
 
 		if err0 == nil {
 

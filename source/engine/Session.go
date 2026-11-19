@@ -621,6 +621,158 @@ func (session *Session) GetLastMessage() *schemas.Message {
 
 }
 
+func (session *Session) GetAgent(name string) *types.Agent {
+
+	if session == nil {
+		return nil
+	}
+
+	if session.Agent != nil {
+
+		session.mutex.RLock()
+		planner_name := session.Agent.Name
+		agent := (*types.Agent)(nil)
+
+		if name == "" || name == planner_name {
+			agent = session.Agent.Clone()
+		}
+
+		session.mutex.RUnlock()
+
+		if agent != nil {
+			return agent
+		}
+
+	}
+
+	tool := session.GetTool("agents.List")
+
+	if tool != nil {
+
+		agents_tool, ok := tool.(*tools.Agents)
+
+		if ok == true {
+			return agents_tool.GetAgentSnapshot(name)
+		}
+
+	}
+
+	return nil
+
+}
+
+func (session *Session) GetAgentInfo(name string) *types.Agent {
+
+	if session == nil {
+		return nil
+	}
+
+	if session.Agent != nil {
+
+		session.mutex.RLock()
+		planner_name := session.Agent.Name
+		agent := (*types.Agent)(nil)
+
+		if name == "" || name == planner_name {
+			agent = session.Agent.CloneInfo()
+		}
+
+		session.mutex.RUnlock()
+
+		if agent != nil {
+			return agent
+		}
+
+	}
+
+	tool := session.GetTool("agents.List")
+
+	if tool != nil {
+
+		agents_tool, ok := tool.(*tools.Agents)
+
+		if ok == true {
+			return agents_tool.GetAgentInfo(name)
+		}
+
+	}
+
+	return nil
+
+}
+
+func (session *Session) GetAgentMessages(name string) ([]*schemas.Message, bool) {
+
+	if session == nil {
+		return []*schemas.Message{}, false
+	}
+
+	if session.Agent != nil {
+
+		session.mutex.RLock()
+		planner_name := session.Agent.Name
+		session.mutex.RUnlock()
+
+		if name == "" || name == planner_name {
+			return session.GetMessages(0), session.IsWaiting()
+		}
+
+	}
+
+	tool := session.GetTool("agents.List")
+
+	if tool != nil {
+
+		agents_tool, ok := tool.(*tools.Agents)
+
+		if ok == true {
+
+			agent := agents_tool.GetAgentSnapshot(name)
+
+			if agent != nil {
+				return agent.Messages, agent.Status == "working"
+			}
+
+		}
+
+	}
+
+	return []*schemas.Message{}, false
+
+}
+
+func (session *Session) GetAgents() []*types.Agent {
+
+	result := make([]*types.Agent, 0)
+
+	if session == nil {
+		return result
+	}
+
+	if session.Agent != nil {
+
+		session.mutex.RLock()
+		result = append(result, session.Agent.Clone())
+		session.mutex.RUnlock()
+
+	}
+
+	tool := session.GetTool("agents.List")
+
+	if tool != nil {
+
+		agents_tool, ok := tool.(*tools.Agents)
+
+		if ok == true {
+			result = append(result, agents_tool.GetAgents()...)
+		}
+
+	}
+
+	return result
+
+}
+
 func (session *Session) GetMessages(from int) []*schemas.Message {
 
 	session.mutex.RLock()
@@ -900,6 +1052,38 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 		return nil
 
+	}
+
+}
+
+func (session *Session) SendAgentMessage(name string, content string) error {
+
+	if session == nil {
+		return fmt.Errorf("Session.SendAgentMessage: No session available.")
+	}
+
+	tool := session.GetTool("agents.List")
+
+	if tool != nil {
+
+		agents_tool, ok := tool.(*tools.Agents)
+
+		if ok == true {
+
+			_, err := agents_tool.SendMessage(name, content)
+
+			if err == nil {
+				return nil
+			} else {
+				return err
+			}
+
+		} else {
+			return fmt.Errorf("Session.SendAgentMessage: Agents tool does not exist.")
+		}
+
+	} else {
+		return fmt.Errorf("Session.SendAgentMessage: Agents tool does not exist.")
 	}
 
 }

@@ -24,6 +24,10 @@ func readProcess(tool *Agents, name string, process *agentProcess, stdout_pipe i
 
 	stdout_pipe.Close()
 
+	if process.stdin != nil {
+		process.stdin.Close()
+	}
+
 	process.cmd.Wait()
 
 	tool.mutex.Lock()

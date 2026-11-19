@@ -16,6 +16,7 @@ var (
 	SidebarSection    = utils_tty.NewStyle(colors.TextBase, colors.BackgroundRaisedBase).WithAttributes(utils_tty.AttrBold)
 	SidebarText       = utils_tty.NewStyle(colors.TextBase, colors.BackgroundRaisedBase)
 	SidebarMuted      = utils_tty.NewStyle(colors.TextMuted, colors.BackgroundRaisedBase)
+	SidebarSelected   = utils_tty.NewStyle(colors.TextActionPrimarySelected, colors.BackgroundRaisedBase).WithAttributes(utils_tty.AttrBold)
 	SidebarPanelError = utils_tty.NewStyle(colors.TextFeedbackErrorBase, colors.BackgroundRaisedBase)
 
 	ScrollbarThumb = utils_tty.NewStyle(colors.ScrollbarBase, colors.BackgroundRaisedBase)

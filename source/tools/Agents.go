@@ -12,6 +12,7 @@ import "bytes"
 import "context"
 import "encoding/json"
 import "fmt"
+import "io"
 import net_url "net/url"
 import "os"
 import "os/exec"
@@ -22,10 +23,12 @@ import "sync"
 import "time"
 
 type agentProcess struct {
-	cmd        *exec.Cmd
-	cancel     context.CancelFunc
-	done       chan struct{}
-	last_write time.Time
+	cmd         *exec.Cmd
+	cancel      context.CancelFunc
+	done        chan struct{}
+	last_write  time.Time
+	stdin       io.WriteCloser
+	write_mutex *sync.Mutex
 }
 
 type Agents struct {
@@ -280,6 +283,58 @@ func (tool *Agents) GetAgent(name string) *types.Agent {
 
 }
 
+func (tool *Agents) GetAgentInfo(name string) *types.Agent {
+
+	sanitized_name := utils_fmt.FormatAgentName(name)
+
+	tool.mutex.Lock()
+	agent, ok := tool.contents[sanitized_name]
+	tool.mutex.Unlock()
+
+	if ok == true {
+		return agent.CloneInfo()
+	} else {
+		return nil
+	}
+
+}
+
+func (tool *Agents) GetAgents() []*types.Agent {
+
+	tool.mutex.Lock()
+
+	result := make([]*types.Agent, 0, len(tool.contents))
+
+	for _, agent := range tool.contents {
+		result = append(result, agent.Clone())
+	}
+
+	tool.mutex.Unlock()
+
+	sort.Slice(result, func(a int, b int) bool {
+		return result[a].Name < result[b].Name
+	})
+
+	return result
+
+}
+
+func (tool *Agents) GetAgentSnapshot(name string) *types.Agent {
+
+	sanitized_name := utils_fmt.FormatAgentName(name)
+
+	tool.mutex.Lock()
+	agent, ok := tool.contents[sanitized_name]
+	tool.mutex.Unlock()
+
+	if ok == true {
+		return agent.Clone()
+	} else {
+		return nil
+	}
+
+}
+
 func (tool *Agents) GetNames() []string {
 
 	result := make([]string, 0)
@@ -439,71 +494,84 @@ func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, er
 				cmd := exec.CommandContext(ctx, exe, arguments...)
 				cmd.Dir = resolved
 
-				cmd.Stdin = strings.NewReader("")
-
-				// XXX: Use this for debugging
-				// cmd.Stderr = os.Stderr
-
-				stdout_pipe, err3 := cmd.StdoutPipe()
+				stdin_pipe, err3 := cmd.StdinPipe()
 
 				if err3 == nil {
 
-					err4 := cmd.Start()
+					// XXX: Use this for debugging
+					// cmd.Stderr = os.Stderr
+
+					stdout_pipe, err4 := cmd.StdoutPipe()
 
 					if err4 == nil {
 
-						agent := agents.NewAgent(types.NewConfig(
-							name,
-							role,
-							tool.Model,
-							prompt,
-							0.0, // Don't change temperature
-							tool.Sandbox,
-							resolved,
-							tool.URL,
-							false,
-						))
+						err5 := cmd.Start()
 
-						if tool.Debug == true {
-							// NOTE: exocomp-agent prints the first system message
-							agent.Messages = make([]*schemas.Message, 0)
+						if err5 == nil {
+
+							agent := agents.NewAgent(types.NewConfig(
+								name,
+								role,
+								tool.Model,
+								prompt,
+								0.0, // Don't change temperature
+								tool.Sandbox,
+								resolved,
+								tool.URL,
+								false,
+							))
+
+							if tool.Debug == true {
+								// NOTE: exocomp-agent prints the first system message
+								agent.Messages = make([]*schemas.Message, 0)
+							}
+
+							process := &agentProcess{
+								cmd:         cmd,
+								cancel:      cancel,
+								done:        make(chan struct{}),
+								last_write:  time.Now(),
+								stdin:       stdin_pipe,
+								write_mutex: &sync.Mutex{},
+							}
+
+							tool.mutex.Lock()
+							tool.contents[name] = agent
+							tool.processes[name] = process
+							tool.mutex.Unlock()
+
+							// NOTE: Single reader goroutine owns the child stdout lifecycle. It
+							// reads unbounded lines, appends messages, and on EOF reaps the
+							// process and finalizes the agent status.
+							go readProcess(tool, name, process, stdout_pipe)
+
+							// NOTE: Liveness watchdog kills a child that stops producing output.
+							go watchProcess(tool, process)
+
+							sandbox_path, _ := utils_sandbox.SanitizePath(tool.Sandbox, resolved)
+
+							return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work in \"%s\" on:\n%s", name, sandbox_path, prompt), nil
+
+						} else {
+
+							stdin_pipe.Close()
+							cancel()
+							return "", fmt.Errorf("agents.Hire: Cannot start agent \"%s\".", name)
+
 						}
-
-						process := &agentProcess{
-							cmd:        cmd,
-							cancel:     cancel,
-							done:       make(chan struct{}),
-							last_write: time.Now(),
-						}
-
-						tool.mutex.Lock()
-						tool.contents[name] = agent
-						tool.processes[name] = process
-						tool.mutex.Unlock()
-
-						// NOTE: Single reader goroutine owns the child stdout lifecycle. It
-						// reads unbounded lines, appends messages, and on EOF reaps the
-						// process and finalizes the agent status.
-						go readProcess(tool, name, process, stdout_pipe)
-
-						// NOTE: Liveness watchdog kills a child that stops producing output.
-						go watchProcess(tool, process)
-
-						sandbox_path, _ := utils_sandbox.SanitizePath(tool.Sandbox, resolved)
-
-						return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work in \"%s\" on:\n%s", name, sandbox_path, prompt), nil
 
 					} else {
 
+						stdin_pipe.Close()
 						cancel()
-						return "", fmt.Errorf("agents.Hire: Cannot start agent \"%s\".", name)
+						return "", fmt.Errorf("agents.Hire: Cannot capture agent output for \"%s\".", name)
 
 					}
 
 				} else {
 
 					cancel()
-					return "", fmt.Errorf("agents.Hire: Cannot capture agent output for \"%s\".", name)
+					return "", fmt.Errorf("agents.Hire: Cannot capture agent input for \"%s\".", name)
 
 				}
 
@@ -598,6 +666,50 @@ func (tool *Agents) Inquire(name string) (string, error) {
 
 	} else {
 		return "", fmt.Errorf("agents.Inquire: Agent \"%s\" didn't work for us!", name)
+	}
+
+}
+
+func (tool *Agents) SendMessage(name string, content string) (string, error) {
+
+	sanitized_name := utils_fmt.FormatAgentName(name)
+	message := strings.TrimSpace(content)
+
+	if message != "" {
+
+		tool.mutex.Lock()
+		process, running := tool.processes[sanitized_name]
+		tool.mutex.Unlock()
+
+		if running == true && process != nil && process.stdin != nil {
+
+			payload, err0 := json.Marshal(schemas.Message{
+				Role:    "user",
+				Content: message,
+			})
+
+			if err0 == nil {
+
+				process.write_mutex.Lock()
+				_, err1 := io.WriteString(process.stdin, string(payload)+"\n")
+				process.write_mutex.Unlock()
+
+				if err1 == nil {
+					return fmt.Sprintf("agents.SendMessage: Message sent to agent \"%s\".", sanitized_name), nil
+				} else {
+					return "", fmt.Errorf("agents.SendMessage: Cannot write to agent \"%s\".", sanitized_name)
+				}
+
+			} else {
+				return "", fmt.Errorf("agents.SendMessage: Cannot encode message for agent \"%s\".", sanitized_name)
+			}
+
+		} else {
+			return "", fmt.Errorf("agents.SendMessage: Agent \"%s\" is not working.", sanitized_name)
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.SendMessage: Message must not be empty.")
 	}
 
 }

@@ -174,18 +174,14 @@ func (client *Client) InputLoop() {
 
 					if err1 == nil && role == tmp.Role {
 
-						go func() {
+						err2 := client.Session.SendChatRequest(schemas.Message{
+							Role:    tmp.Role,
+							Content: tmp.Content,
+						})
 
-							err2 := client.Session.SendChatRequest(schemas.Message{
-								Role:    tmp.Role,
-								Content: tmp.Content,
-							})
-
-							if err2 != nil {
-								os.Exit(1)
-							}
-
-						}()
+						if err2 != nil {
+							fmt.Fprintf(os.Stderr, "Error: jsonl.Client: %s\n", err2.Error())
+						}
 
 					} else {
 						fmt.Fprintf(os.Stderr, "Error: jsonl.Client: %s", "Invalid schemas.Message")

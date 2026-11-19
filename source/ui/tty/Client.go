@@ -56,8 +56,15 @@ func (client *Client) OnSwitch(role string) (string, error) {
 			client.bindEvents()
 
 			if client.App != nil {
+
 				client.App.Transcript.Reset()
+
+				if client.Session.Agent != nil {
+					client.App.selectAgent(client.Session.Agent.Name)
+				}
+
 				client.App.refresh()
+
 			}
 
 		}

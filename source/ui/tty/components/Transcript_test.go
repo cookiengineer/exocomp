@@ -1,39 +1,10 @@
 package components
 
-import "exocomp/engine"
 import "exocomp/schemas"
-import "exocomp/types"
 import "exocomp/ui/tty/styles"
 import utils_tty "exocomp/utils/tty"
-import net_url "net/url"
 import "strings"
 import "testing"
-
-func newTranscriptTestSession(t *testing.T) *engine.Session {
-
-	t.Helper()
-
-	url, err := net_url.Parse("http://127.0.0.1:1/v1")
-
-	if err != nil {
-		t.Fatalf("Expected a valid URL, got %s", err.Error())
-	}
-
-	agent := &types.Agent{
-		Name:  "Peanut Hamper",
-		Role:  "planner",
-		Model: "deepseek-v4-pro",
-	}
-
-	config := &types.Config{
-		Model:      "deepseek-v4-pro",
-		URL:        url,
-		Playground: t.TempDir(),
-	}
-
-	return engine.NewSession(agent, config)
-
-}
 
 func transcriptLineText(line transcriptLine) string {
 
@@ -78,13 +49,11 @@ func toggleTranscriptLine(t *testing.T, transcript *Transcript, buffer *utils_tt
 
 func TestTranscriptAddsBottomGap(t *testing.T) {
 
-	session := newTranscriptTestSession(t)
-	session.Agent.Messages = append(session.Agent.Messages, &schemas.Message{
-		Role:    "user",
-		Content: "hello",
-	})
+	transcript := NewTranscript()
+	transcript.SetMessages([]*schemas.Message{
+		{Role: "user", Content: "hello"},
+	}, false)
 
-	transcript := NewTranscript(session)
 	buffer := utils_tty.NewBuffer(40, 10)
 	transcript.Render(buffer, utils_tty.Rect{X: 0, Y: 0, Width: 40, Height: 10}, 0)
 
@@ -102,13 +71,14 @@ func TestTranscriptAddsBottomGap(t *testing.T) {
 
 func TestTranscriptCollapsesSystemMessage(t *testing.T) {
 
-	session := newTranscriptTestSession(t)
-	session.Agent.Messages = append(session.Agent.Messages, &schemas.Message{
-		Role:    "system",
-		Content: "You are an Exocomp robot.\nThis is the full system prompt.",
-	})
+	transcript := NewTranscript()
+	transcript.SetMessages([]*schemas.Message{
+		{
+			Role:    "system",
+			Content: "You are an Exocomp robot.\nThis is the full system prompt.",
+		},
+	}, false)
 
-	transcript := NewTranscript(session)
 	buffer := utils_tty.NewBuffer(60, 20)
 	rect := utils_tty.Rect{X: 0, Y: 0, Width: 60, Height: 20}
 	transcript.Render(buffer, rect, 0)
@@ -165,14 +135,15 @@ func TestTranscriptCollapsesSystemMessage(t *testing.T) {
 
 func TestTranscriptCollapsesReasoning(t *testing.T) {
 
-	session := newTranscriptTestSession(t)
-	session.Agent.Messages = append(session.Agent.Messages, &schemas.Message{
-		Role:             "assistant",
-		Content:          "Here is the answer.",
-		ReasoningContent: "I should inspect the files first.",
-	})
+	transcript := NewTranscript()
+	transcript.SetMessages([]*schemas.Message{
+		{
+			Role:             "assistant",
+			Content:          "Here is the answer.",
+			ReasoningContent: "I should inspect the files first.",
+		},
+	}, false)
 
-	transcript := NewTranscript(session)
 	buffer := utils_tty.NewBuffer(60, 20)
 	rect := utils_tty.Rect{X: 0, Y: 0, Width: 60, Height: 20}
 	transcript.Render(buffer, rect, 0)
@@ -205,14 +176,15 @@ func TestTranscriptCollapsesReasoning(t *testing.T) {
 
 func TestTranscriptCollapsesToolMessage(t *testing.T) {
 
-	session := newTranscriptTestSession(t)
-	session.Agent.Messages = append(session.Agent.Messages, &schemas.Message{
-		Role:     "tool",
-		ToolName: "files.Read",
-		Content:  "first line\nsecond line",
-	})
+	transcript := NewTranscript()
+	transcript.SetMessages([]*schemas.Message{
+		{
+			Role:     "tool",
+			ToolName: "files.Read",
+			Content:  "first line\nsecond line",
+		},
+	}, false)
 
-	transcript := NewTranscript(session)
 	buffer := utils_tty.NewBuffer(60, 20)
 	rect := utils_tty.Rect{X: 0, Y: 0, Width: 60, Height: 20}
 	transcript.Render(buffer, rect, 0)
@@ -245,10 +217,9 @@ func TestTranscriptCollapsesToolMessage(t *testing.T) {
 
 func TestTranscriptRendersThinkingSpinner(t *testing.T) {
 
-	session := newTranscriptTestSession(t)
-	session.Waiting = true
+	transcript := NewTranscript()
+	transcript.SetMessages([]*schemas.Message{}, true)
 
-	transcript := NewTranscript(session)
 	buffer := utils_tty.NewBuffer(60, 10)
 	transcript.Render(buffer, utils_tty.Rect{X: 0, Y: 0, Width: 60, Height: 10}, 0)
 
@@ -276,13 +247,11 @@ func TestTranscriptRendersThinkingSpinner(t *testing.T) {
 
 func TestTranscriptRendersUserBorder(t *testing.T) {
 
-	session := newTranscriptTestSession(t)
-	session.Agent.Messages = append(session.Agent.Messages, &schemas.Message{
-		Role:    "user",
-		Content: "hello",
-	})
+	transcript := NewTranscript()
+	transcript.SetMessages([]*schemas.Message{
+		{Role: "user", Content: "hello"},
+	}, false)
 
-	transcript := NewTranscript(session)
 	buffer := utils_tty.NewBuffer(40, 10)
 	rect := utils_tty.Rect{X: 0, Y: 0, Width: 40, Height: 10}
 	transcript.Render(buffer, rect, 0)
@@ -314,6 +283,22 @@ func TestTranscriptRendersUserBorder(t *testing.T) {
 
 	if buffer.Get(rect.X+2, y).Text != "[" {
 		t.Errorf("Expected the content to start after the border, got %q", buffer.Get(rect.X+2, y).Text)
+	}
+
+}
+
+func TestTranscriptClearUsesCurrentMessages(t *testing.T) {
+
+	transcript := NewTranscript()
+	transcript.SetMessages([]*schemas.Message{
+		{Role: "user", Content: "hello"},
+		{Role: "assistant", Content: "world"},
+	}, false)
+
+	transcript.Clear()
+
+	if transcript.start != 2 {
+		t.Errorf("Expected the transcript to skip the current messages, got %d", transcript.start)
 	}
 
 }

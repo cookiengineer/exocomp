@@ -102,11 +102,15 @@ func TestFooterRenderStatusAndHints(t *testing.T) {
 		t.Errorf("Expected the working status, got %q", status_line)
 	}
 
-	if strings.Contains(status_line, "Ctrl+↑↓ scroll") == false {
+	if strings.Contains(status_line, "Ctrl+↑↓ agents") == false {
+		t.Errorf("Expected the agent binding, got %q", status_line)
+	}
+
+	if strings.Contains(status_line, "Alt+↑↓ scroll") == false {
 		t.Errorf("Expected the scroll binding, got %q", status_line)
 	}
 
-	if strings.Index(status_line, "Ctrl+↑↓ scroll") > strings.Index(status_line, "Ctrl+Q quit") {
+	if strings.Index(status_line, "Alt+↑↓ scroll") > strings.Index(status_line, "Ctrl+Q quit") {
 		t.Errorf("Expected scroll before quit, got %q", status_line)
 	}
 
@@ -115,16 +119,20 @@ func TestFooterRenderStatusAndHints(t *testing.T) {
 func TestFooterRenderIdleInstruction(t *testing.T) {
 
 	footer := NewFooter(commands.NewCatalog(nil))
-	buffer := utils_tty.NewBuffer(80, 4)
-	footer.Render(buffer, utils_tty.Rect{X: 0, Y: 0, Width: 80, Height: 4}, 0)
+	buffer := utils_tty.NewBuffer(120, 4)
+	footer.Render(buffer, utils_tty.Rect{X: 0, Y: 0, Width: 120, Height: 4}, 0)
 
-	status_line := renderTestLine(buffer, 3, 80)
+	status_line := renderTestLine(buffer, 3, 120)
 
 	if strings.Contains(status_line, "Waiting for") == false {
 		t.Errorf("Expected the idle instruction, got %q", status_line)
 	}
 
-	if strings.Contains(status_line, "Ctrl+↑↓ scroll") == false {
+	if strings.Contains(status_line, "Ctrl+↑↓ agents") == false {
+		t.Errorf("Expected the agent binding, got %q", status_line)
+	}
+
+	if strings.Contains(status_line, "Alt+↑↓ scroll") == false {
 		t.Errorf("Expected the scroll binding, got %q", status_line)
 	}
 
@@ -137,42 +145,32 @@ func TestFooterRenderBindingKeyStyles(t *testing.T) {
 	footer.Render(buffer, utils_tty.Rect{X: 0, Y: 0, Width: 120, Height: 4}, 0)
 
 	bindings := footerBindings("")
-	start := 118 - footerBindingsWidth(bindings)
+	x := 118 - footerBindingsWidth(bindings)
 
-	if buffer.Get(start, 3).Style != styles.FooterKey {
-		t.Errorf("Expected the scroll key to use the key style")
-	}
+	for index, binding := range bindings {
 
-	if buffer.Get(start+8, 3).Style != styles.FooterHint {
-		t.Errorf("Expected the scroll label to use the hint style")
-	}
+		if buffer.Get(x, 3).Style != styles.FooterKey {
+			t.Errorf("Expected the %s key to use the key style", binding.Key)
+		}
 
-	if buffer.Get(start+14, 3).Style != styles.FooterHint {
-		t.Errorf("Expected the separator to use the hint style")
-	}
+		x += utils_tty.StringWidth(binding.Key) + 1
 
-	if buffer.Get(start+17, 3).Style != styles.FooterKey {
-		t.Errorf("Expected the send key to use the key style")
-	}
+		if buffer.Get(x, 3).Style != styles.FooterHint {
+			t.Errorf("Expected the %s label to use the hint style", binding.Key)
+		}
 
-	if buffer.Get(start+24, 3).Style != styles.FooterHint {
-		t.Errorf("Expected the send label to use the hint style")
-	}
+		x += utils_tty.StringWidth(binding.Label)
 
-	if buffer.Get(start+31, 3).Style != styles.FooterKey {
-		t.Errorf("Expected the tools key to use the key style")
-	}
+		if index < len(bindings)-1 {
 
-	if buffer.Get(start+33, 3).Style != styles.FooterHint {
-		t.Errorf("Expected the tools label to use the hint style")
-	}
+			if buffer.Get(x, 3).Style != styles.FooterHint {
+				t.Errorf("Expected the separator after %s to use the hint style", binding.Key)
+			}
 
-	if buffer.Get(start+41, 3).Style != styles.FooterKey {
-		t.Errorf("Expected the quit key to use the key style")
-	}
+			x += utils_tty.StringWidth(" · ")
 
-	if buffer.Get(start+48, 3).Style != styles.FooterHint {
-		t.Errorf("Expected the quit label to use the hint style")
+		}
+
 	}
 
 }
@@ -185,22 +183,26 @@ func TestFooterRenderBusyBindingStyles(t *testing.T) {
 	footer.Render(buffer, utils_tty.Rect{X: 0, Y: 0, Width: 120, Height: 4}, 0)
 
 	bindings := footerBindings("busy")
-	start := 118 - footerBindingsWidth(bindings)
+	x := 118 - footerBindingsWidth(bindings)
 
-	if buffer.Get(start, 3).Style != styles.FooterKey {
-		t.Errorf("Expected the scroll key to use the key style")
-	}
+	for index, binding := range bindings {
 
-	if buffer.Get(start+8, 3).Style != styles.FooterHint {
-		t.Errorf("Expected the scroll label to use the hint style")
-	}
+		if buffer.Get(x, 3).Style != styles.FooterKey {
+			t.Errorf("Expected the %s key to use the key style", binding.Key)
+		}
 
-	if buffer.Get(start+17, 3).Style != styles.FooterKey {
-		t.Errorf("Expected the quit key to use the key style")
-	}
+		x += utils_tty.StringWidth(binding.Key) + 1
 
-	if buffer.Get(start+24, 3).Style != styles.FooterHint {
-		t.Errorf("Expected the quit label to use the hint style")
+		if buffer.Get(x, 3).Style != styles.FooterHint {
+			t.Errorf("Expected the %s label to use the hint style", binding.Key)
+		}
+
+		x += utils_tty.StringWidth(binding.Label)
+
+		if index < len(bindings)-1 {
+			x += utils_tty.StringWidth(" · ")
+		}
+
 	}
 
 }
@@ -222,7 +224,7 @@ func TestFooterRenderMultilineErrorStatus(t *testing.T) {
 		t.Errorf("Expected a single line status, got %q", status_line)
 	}
 
-	if strings.Index(status_line, "Ctrl+↑↓ scroll") > strings.Index(status_line, "Ctrl+Q quit") {
+	if strings.Index(status_line, "Alt+↑↓ scroll") > strings.Index(status_line, "Ctrl+Q quit") {
 		t.Errorf("Expected scroll before quit, got %q", status_line)
 	}
 

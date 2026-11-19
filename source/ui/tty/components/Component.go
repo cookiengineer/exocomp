@@ -12,6 +12,7 @@ type Component interface {
 var _ Component = (*Header)(nil)
 var _ Component = (*Transcript)(nil)
 var _ Component = (*Sidebar)(nil)
+var _ Component = (*AgentSidebar)(nil)
 var _ Component = (*Footer)(nil)
 var _ Component = (*QuestionDialog)(nil)
 var _ Component = (*ChoiceDialog)(nil)

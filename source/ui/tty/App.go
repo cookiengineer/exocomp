@@ -22,10 +22,12 @@ type App struct {
 	Screen         *utils_tty.Screen
 	Header         *components.Header
 	Transcript     *components.Transcript
+	AgentSidebar   *components.AgentSidebar
 	Sidebar        *components.Sidebar
 	Footer         *components.Footer
 	Human          components.Dialog
 	Role           string
+	SelectedAgent  string
 	status         string
 	statusMutex    *sync.Mutex
 	started        time.Time
@@ -39,21 +41,33 @@ type App struct {
 func NewApp(session *engine.Session) *App {
 
 	catalog := commands.NewCatalog(session.GetToolSchemas())
+	selected_agent := ""
 
-	return &App{
-		Session:     session,
-		Terminal:    utils_tty.NewTerminal(),
-		Header:      components.NewHeader(session),
-		Transcript:  components.NewTranscript(session),
-		Sidebar:     components.NewSidebar(session),
-		Footer:      components.NewFooter(catalog),
-		Role:        "user",
-		statusMutex: &sync.Mutex{},
-		started:     time.Now(),
-		catalog:     catalog,
-		quit:        make(chan struct{}),
-		quitOnce:    &sync.Once{},
+	if session != nil && session.Agent != nil {
+		selected_agent = session.Agent.Name
 	}
+
+	app := &App{
+		Session:       session,
+		Terminal:      utils_tty.NewTerminal(),
+		Header:        components.NewHeader(session),
+		Transcript:    components.NewTranscript(),
+		AgentSidebar:  components.NewAgentSidebar(session),
+		Sidebar:       components.NewSidebar(session),
+		Footer:        components.NewFooter(catalog),
+		Role:          "user",
+		SelectedAgent: selected_agent,
+		statusMutex:   &sync.Mutex{},
+		started:       time.Now(),
+		catalog:       catalog,
+		quit:          make(chan struct{}),
+		quitOnce:      &sync.Once{},
+	}
+
+	app.Header.Selected = selected_agent
+	app.AgentSidebar.Selected = selected_agent
+
+	return app
 
 }
 
@@ -179,8 +193,42 @@ func (app *App) refresh() {
 
 	app.catalog = commands.NewCatalog(app.Session.GetToolSchemas())
 	app.Footer.SetCatalog(app.catalog)
+	app.ensureSelectedAgent()
+	app.AgentSidebar.Refresh(time.Now(), true)
 	app.Sidebar.Refresh(time.Now(), true)
 	app.Transcript.Invalidate()
+
+}
+
+func (app *App) ensureSelectedAgent() {
+
+	if app.Session == nil {
+		return
+	}
+
+	agents := app.Session.GetAgents()
+
+	if len(agents) == 0 {
+		return
+	}
+
+	found := false
+
+	for _, agent := range agents {
+
+		if agent.Name == app.SelectedAgent {
+			found = true
+			break
+		}
+
+	}
+
+	if found == false {
+		app.SelectedAgent = agents[0].Name
+		app.Header.Selected = app.SelectedAgent
+		app.AgentSidebar.Selected = app.SelectedAgent
+		app.Transcript.Reset()
+	}
 
 }
 
@@ -196,6 +244,7 @@ func (app *App) tick(now time.Time) {
 
 	}
 
+	app.AgentSidebar.Refresh(now, false)
 	app.Sidebar.Refresh(now, false)
 
 	if app.Human == nil && now.Sub(app.lastHuman) > 300*time.Millisecond {
@@ -236,6 +285,60 @@ func (app *App) checkHuman() {
 		}
 
 	}
+
+}
+
+func (app *App) cycleAgent(delta int) {
+
+	if app.Session == nil {
+		return
+	}
+
+	agents := app.Session.GetAgents()
+
+	if len(agents) == 0 {
+		return
+	}
+
+	index := -1
+
+	for agent_index, agent := range agents {
+
+		if agent.Name == app.SelectedAgent {
+			index = agent_index
+			break
+		}
+
+	}
+
+	if index == -1 {
+		index = 0
+	} else {
+
+		index = (index + delta) % len(agents)
+
+		if index < 0 {
+			index += len(agents)
+		}
+
+	}
+
+	app.selectAgent(agents[index].Name)
+
+}
+
+func (app *App) selectAgent(name string) {
+
+	if name == "" {
+		return
+	}
+
+	app.SelectedAgent = name
+	app.Header.Selected = name
+	app.AgentSidebar.Selected = name
+	app.Transcript.Reset()
+	app.AgentSidebar.Refresh(time.Now(), true)
+	app.setStatus("Viewing agent \"" + name + "\".")
 
 }
 
@@ -332,7 +435,12 @@ func (app *App) handleKey(key utils_tty.Key) {
 
 	case utils_tty.KeyArrowUp:
 
-		if key.Ctrl == true || key.Alt == true {
+		if key.Ctrl == true {
+
+			app.cycleAgent(-1)
+			return
+
+		} else if key.Alt == true {
 
 			app.Transcript.ScrollBy(1)
 			return
@@ -341,7 +449,12 @@ func (app *App) handleKey(key utils_tty.Key) {
 
 	case utils_tty.KeyArrowDown:
 
-		if key.Ctrl == true || key.Alt == true {
+		if key.Ctrl == true {
+
+			app.cycleAgent(1)
+			return
+
+		} else if key.Alt == true {
 
 			app.Transcript.ScrollBy(-1)
 			return
@@ -464,6 +577,34 @@ func (app *App) submit(text string) {
 
 	}
 
+	selected_agent := app.SelectedAgent
+	planner_name := ""
+
+	if app.Session != nil && app.Session.Agent != nil {
+		planner_name = app.Session.Agent.Name
+	}
+
+	if selected_agent != "" && selected_agent != planner_name {
+
+		app.Footer.Clear()
+		app.setStatus("Sending message to agent \"" + selected_agent + "\"...")
+
+		go func() {
+
+			err := app.Session.SendAgentMessage(selected_agent, trimmed)
+
+			if err == nil {
+				app.setStatus("Sent message to agent \"" + selected_agent + "\".")
+			} else {
+				app.setStatus(err.Error())
+			}
+
+		}()
+
+		return
+
+	}
+
 	if app.Session.IsWaiting() == true {
 
 		app.setStatus("Session is busy, waiting for the LLM response.")
@@ -529,6 +670,11 @@ func (app *App) handleBuiltin(text string) bool {
 		app.Sidebar.Toggle()
 		return true
 
+	case "/agents":
+		app.Footer.Clear()
+		app.AgentSidebar.Toggle()
+		return true
+
 	case "/quit":
 		app.stop()
 		return true
@@ -575,37 +721,61 @@ func (app *App) render(now time.Time) {
 	header_rect := utils_tty.Rect{X: 0, Y: 0, Width: width, Height: min(header_height, height)}
 	app.Header.Render(buffer, header_rect, now.Sub(app.started))
 
+	agent_sidebar_width := 0
+
+	if app.AgentSidebar.IsVisible(width) == true {
+		agent_sidebar_width = app.AgentSidebar.Width(width)
+	}
+
 	sidebar_width := 0
 
 	if app.Sidebar.IsVisible(width) == true {
 		sidebar_width = app.Sidebar.Width(width)
 	}
 
-	main_width := width - sidebar_width
+	main_width := max(1, width-agent_sidebar_width-sidebar_width)
 	footer_height := min(app.Footer.Height(main_width), max(1, height-header_rect.Height))
 	content_height := max(0, height-header_rect.Height-footer_height)
 
 	transcript_rect := utils_tty.Rect{
-		X:      0,
+		X:      agent_sidebar_width,
 		Y:      header_rect.Height,
 		Width:  main_width,
 		Height: content_height,
 	}
+
+	if app.Session != nil {
+		messages, waiting := app.Session.GetAgentMessages(app.SelectedAgent)
+		app.Transcript.SetMessages(messages, waiting)
+	}
+
 	app.transcriptRect = transcript_rect
 	app.Transcript.Render(buffer, transcript_rect, now.Sub(app.started))
 
 	footer_rect := utils_tty.Rect{
-		X:      0,
+		X:      agent_sidebar_width,
 		Y:      header_rect.Height + content_height,
 		Width:  main_width,
 		Height: footer_height,
 	}
 	app.Footer.Render(buffer, footer_rect, now.Sub(app.started))
 
+	if agent_sidebar_width > 0 {
+
+		agent_sidebar_rect := utils_tty.Rect{
+			X:      0,
+			Y:      header_rect.Height,
+			Width:  agent_sidebar_width,
+			Height: max(0, height-header_rect.Height),
+		}
+		app.AgentSidebar.Render(buffer, agent_sidebar_rect, now.Sub(app.started))
+
+	}
+
 	if sidebar_width > 0 {
 
 		sidebar_rect := utils_tty.Rect{
-			X:      main_width,
+			X:      width - sidebar_width,
 			Y:      header_rect.Height,
 			Width:  sidebar_width,
 			Height: max(0, height-header_rect.Height),

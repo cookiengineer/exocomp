@@ -1,6 +1,5 @@
 package components
 
-import "exocomp/engine"
 import "exocomp/schemas"
 import "exocomp/ui/tty/styles"
 import utils_tty "exocomp/utils/tty"
@@ -27,9 +26,10 @@ type transcriptLine struct {
 }
 
 type Transcript struct {
-	Session      *engine.Session
 	Scroll       int
 	start        int
+	messages     []*schemas.Message
+	waiting      bool
 	cached       []transcriptLine
 	cacheWidth   int
 	cacheCount   int
@@ -43,14 +43,21 @@ type Transcript struct {
 	hasAnchor    bool
 }
 
-func NewTranscript(session *engine.Session) *Transcript {
+func NewTranscript() *Transcript {
 
 	return &Transcript{
-		Session:    session,
 		Scroll:     0,
+		messages:   make([]*schemas.Message, 0),
 		cacheDirty: true,
 		expanded:   make(map[transcriptToggle]bool),
 	}
+
+}
+
+func (transcript *Transcript) SetMessages(messages []*schemas.Message, waiting bool) {
+
+	transcript.messages = messages
+	transcript.waiting = waiting
 
 }
 
@@ -86,10 +93,7 @@ func (transcript *Transcript) ScrollToBottom() {
 
 func (transcript *Transcript) Clear() {
 
-	if transcript.Session != nil {
-		transcript.start = len(transcript.Session.GetMessages(0))
-	}
-
+	transcript.start = len(transcript.messages)
 	transcript.cached = make([]transcriptLine, 0)
 	transcript.Scroll = 0
 	transcript.cacheWidth = 0
@@ -118,11 +122,7 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 
 	buffer.Fill(rect, ' ', styles.Background)
 
-	if transcript.Session == nil {
-		return
-	}
-
-	messages := transcript.Session.GetMessages(0)
+	messages := transcript.messages
 
 	if transcript.start > len(messages) {
 		transcript.start = 0
@@ -131,7 +131,7 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 	messages = messages[transcript.start:]
 
 	lines := transcript.cached
-	waiting := transcript.Session.IsWaiting()
+	waiting := transcript.waiting
 	content_width := max(1, rect.Width-2)
 
 	if transcript.cacheDirty == true || transcript.cacheWidth != rect.Width || transcript.cacheCount != len(messages) || transcript.cacheWaiting != waiting {

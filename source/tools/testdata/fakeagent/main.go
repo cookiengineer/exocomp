@@ -1,5 +1,6 @@
 package main
 
+import "bufio"
 import "encoding/json"
 import "fmt"
 import "os"
@@ -54,6 +55,33 @@ func main() {
 	case "summarize":
 		emitMessage("assistant", "The agent implemented the feature successfully.")
 		os.Exit(0)
+
+	case "input":
+
+		emitMessage("system", "hello")
+
+		scanner := bufio.NewScanner(os.Stdin)
+
+		for scanner.Scan() {
+
+			message := struct {
+				Role    string `json:"role"`
+				Content string `json:"content"`
+			}{}
+
+			err := json.Unmarshal([]byte(scanner.Text()), &message)
+
+			if err == nil {
+
+				emitMessage("user", message.Content)
+				emitMessage("assistant", "ack: "+message.Content)
+				emitQuit("my work is done: received input")
+
+				os.Exit(0)
+
+			}
+
+		}
 
 	case "args":
 

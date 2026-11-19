@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/schemas"
 import "exocomp/types"
 import "os"
 import "path/filepath"
@@ -131,6 +132,75 @@ func TestAgents_Inquire(t *testing.T) {
 
 	if strings.Contains(result, "The agent implemented the feature successfully.") == false {
 		t.Errorf("Expected summarized content, got %s", result)
+	}
+
+}
+
+func TestAgents_GetAgentSnapshot(t *testing.T) {
+
+	tool := NewAgents([]string{"List"}, t.TempDir(), t.TempDir(), "model", nil, false)
+	agent := &types.Agent{
+		Name:     "Coder",
+		Role:     "coder",
+		Status:   "working",
+		Messages: []*schemas.Message{{Role: "user", Content: "hello"}},
+	}
+
+	if tool.SetAgent(agent) == false {
+		t.Fatalf("Expected agent to be registered")
+	}
+
+	snapshot := tool.GetAgentSnapshot("Coder")
+
+	if snapshot == nil {
+		t.Fatalf("Expected an agent snapshot")
+	}
+
+	if len(snapshot.Messages) != 1 || snapshot.Messages[0].Content != "hello" {
+		t.Errorf("Expected a message snapshot, got %v", snapshot.Messages)
+	}
+
+	snapshot.Messages[0] = &schemas.Message{Role: "user", Content: "changed"}
+
+	if agent.Messages[0].Content != "hello" {
+		t.Errorf("Expected the snapshot to be independent from the live agent")
+	}
+
+	if tool.GetAgentSnapshot("Missing") != nil {
+		t.Errorf("Expected a missing agent snapshot to be nil")
+	}
+
+}
+
+func TestAgents_GetAgents(t *testing.T) {
+
+	tool := NewAgents([]string{"List"}, t.TempDir(), t.TempDir(), "model", nil, false)
+
+	tool.SetAgent(&types.Agent{
+		Name:     "Tester",
+		Role:     "tester",
+		Status:   "finished",
+		Messages: []*schemas.Message{{Role: "assistant", Content: "done"}},
+	})
+	tool.SetAgent(&types.Agent{
+		Name:     "Coder",
+		Role:     "coder",
+		Status:   "working",
+		Messages: []*schemas.Message{{Role: "user", Content: "hello"}},
+	})
+
+	agents := tool.GetAgents()
+
+	if len(agents) != 2 {
+		t.Fatalf("Expected two agents, got %d", len(agents))
+	}
+
+	if agents[0].Name != "Coder" || agents[1].Name != "Tester" {
+		t.Errorf("Expected agents to be sorted, got %s and %s", agents[0].Name, agents[1].Name)
+	}
+
+	if len(agents[0].Messages) != 1 || agents[0].Messages[0].Content != "hello" {
+		t.Errorf("Expected agent messages in the snapshot")
 	}
 
 }

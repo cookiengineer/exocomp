@@ -1,7 +1,6 @@
 package session
 
 import "exocomp/engine"
-import "exocomp/tools"
 import "exocomp/types"
 import "exocomp/ui/web/handlers"
 import "encoding/json"
@@ -37,47 +36,31 @@ func AgentConfig(session *engine.Session, request *http.Request, response http.R
 
 		} else if name != "" {
 
-			tool := session.GetTool("agents.List")
+			agent := session.GetAgentInfo(name)
 
-			if tool != nil {
+			if agent != nil {
 
-				agent_tool, ok0 := tool.(*tools.Agents)
+				response_payload, err1 := json.MarshalIndent(&types.Config{
+					Name:        agent.Name,
+					Role:        agent.Role,
+					Model:       agent.Model,
+					Prompt:      agent.Prompt,
+					Temperature: agent.Temperature,
+					Playground:  session.Config.Playground,
+					Sandbox:     agent.Sandbox,
+					URL:         session.Config.URL,
+					Debug:       session.Config.Debug,
+				}, "", "\t")
 
-				if ok0 == true {
+				if err1 == nil {
 
-					agent := agent_tool.GetAgent(name)
-
-					if agent != nil {
-
-						response_payload, err1 := json.MarshalIndent(&types.Config{
-							Name:        agent.Name,
-							Role:        agent.Role,
-							Model:       agent.Model,
-							Prompt:      agent.Prompt,
-							Temperature: agent.Temperature,
-							Playground:  session.Config.Playground,
-							Sandbox:     agent.Sandbox,
-							URL:         session.Config.URL,
-							Debug:       session.Config.Debug,
-						}, "", "\t")
-
-						if err1 == nil {
-
-							response.Header().Set("Content-Type", "application/json")
-							response.Header().Set("Content-Length", strconv.Itoa(len(response_payload)))
-							response.WriteHeader(http.StatusOK)
-							response.Write(response_payload)
-
-						} else {
-							handlers.InternalServerError(session, err1, request, response)
-						}
-
-					} else {
-						handlers.NotFound(session, request, response)
-					}
+					response.Header().Set("Content-Type", "application/json")
+					response.Header().Set("Content-Length", strconv.Itoa(len(response_payload)))
+					response.WriteHeader(http.StatusOK)
+					response.Write(response_payload)
 
 				} else {
-					handlers.NotFound(session, request, response)
+					handlers.InternalServerError(session, err1, request, response)
 				}
 
 			} else {

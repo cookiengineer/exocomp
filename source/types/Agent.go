@@ -51,6 +51,32 @@ func ParseAgent(data []byte) (*Agent, error) {
 
 }
 
+func (agent *Agent) Clone() *Agent {
+
+	if agent == nil {
+		return nil
+	}
+
+	clone := *agent
+	clone.Messages = append([]*schemas.Message(nil), agent.Messages...)
+
+	return &clone
+
+}
+
+func (agent *Agent) CloneInfo() *Agent {
+
+	if agent == nil {
+		return nil
+	}
+
+	clone := *agent
+	clone.Messages = nil
+
+	return &clone
+
+}
+
 func (agent *Agent) HasTools() bool {
 
 	if len(agent.AllowedTools) > 0 {
