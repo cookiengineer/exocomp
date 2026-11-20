@@ -2,7 +2,6 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
-import utils_assets "exocomp/utils/assets"
 import utils_findings "exocomp/utils/findings"
 import "encoding/json"
 import "fmt"
@@ -198,7 +197,7 @@ func (tool *Assets) Add(arguments assetArguments) (string, error) {
 		asset.Props = normalizeProps(props)
 	}
 
-	asset.Value = utils_assets.NormalizeValue(asset.Type, asset.Value)
+	asset.Value = utils_findings.NormalizeAssetValue(asset.Type, asset.Value)
 	asset.Value = utils_findings.LimitText(utils_findings.RedactSecrets(asset.Value), assetsMaxValue)
 
 	if err := validateAsset(&asset); err != nil {
@@ -692,7 +691,7 @@ func (tool *Assets) Schemas() []schemas.Tool {
 
 func readAssetsIndex(tool *Assets) error {
 
-	entries, err := utils_assets.ReadIndex(tool.Playground)
+	entries, err := utils_findings.ReadAssetsIndex(tool.Playground)
 
 	if err == nil {
 
@@ -720,13 +719,13 @@ func writeAssetsIndex(tool *Assets) error {
 		entries = append(entries, asset)
 	}
 
-	return utils_assets.WriteIndex(tool.Playground, entries)
+	return utils_findings.WriteAssetsIndex(tool.Playground, entries)
 
 }
 
 func upsertAsset(tool *Assets, asset types.Asset) (types.Asset, bool, error) {
 
-	asset.Value = utils_findings.LimitText(utils_findings.RedactSecrets(utils_assets.NormalizeValue(asset.Type, asset.Value)), assetsMaxValue)
+	asset.Value = utils_findings.LimitText(utils_findings.RedactSecrets(utils_findings.NormalizeAssetValue(asset.Type, asset.Value)), assetsMaxValue)
 	asset.Domain = utils_findings.LimitText(utils_findings.RedactSecrets(asset.Domain), assetsMaxValue)
 	asset.IP = utils_findings.LimitText(utils_findings.RedactSecrets(asset.IP), assetsMaxValue)
 	asset.URL = utils_findings.LimitText(utils_findings.RedactSecrets(asset.URL), assetsMaxValue)
@@ -795,7 +794,7 @@ func upsertAsset(tool *Assets, asset types.Asset) (types.Asset, bool, error) {
 
 	}
 
-	asset.ID = utils_assets.NewAssetID()
+	asset.ID = utils_findings.NewAssetID()
 
 	if types.IsAssetID(asset.ID) == false {
 		return types.Asset{}, false, fmt.Errorf("Cannot generate asset ID.")
@@ -886,7 +885,7 @@ func inferAssetParent(tool *Assets, asset types.Asset) string {
 }
 
 func assetDedupKey(asset types.Asset) string {
-	return string(asset.Type) + "\x00" + utils_assets.NormalizeValue(asset.Type, asset.Value)
+	return string(asset.Type) + "\x00" + utils_findings.NormalizeAssetValue(asset.Type, asset.Value)
 }
 
 func validateAsset(asset *types.Asset) error {

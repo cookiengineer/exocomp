@@ -3,7 +3,6 @@ package tools
 import "exocomp/schemas"
 import "exocomp/types"
 import utils_findings "exocomp/utils/findings"
-import utils_assets "exocomp/utils/assets"
 import "fmt"
 import "strings"
 
@@ -69,7 +68,7 @@ func updateAsset(tool *Assets, id string, asset types.Asset, arguments assetArgu
 		asset.Props = normalizeProps(props)
 	}
 
-	asset.Value = utils_assets.NormalizeValue(asset.Type, asset.Value)
+	asset.Value = utils_findings.NormalizeAssetValue(asset.Type, asset.Value)
 	asset.Value = utils_findings.LimitText(utils_findings.RedactSecrets(asset.Value), assetsMaxValue)
 
 	if err := validateAsset(&asset); err == nil {

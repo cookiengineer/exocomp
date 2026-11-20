@@ -1,6 +1,6 @@
 package tools
 
-import utils_assets "exocomp/utils/assets"
+import utils_findings "exocomp/utils/findings"
 import "os"
 import "path/filepath"
 import "strings"
@@ -75,7 +75,7 @@ func TestAssets_AddDeduplicates(t *testing.T) {
 		t.Fatalf("Expected one deduplicated asset, got %d", len(ids))
 	}
 
-	entries, err2 := utils_assets.ReadIndex(tool.Playground)
+	entries, err2 := utils_findings.ReadAssetsIndex(tool.Playground)
 
 	if err2 != nil {
 		t.Fatalf("Expected %v to be nil", err2)
@@ -130,7 +130,7 @@ func TestAssets_ImportHttpx(t *testing.T) {
 		t.Errorf("Expected one created and one updated asset, got %q", result)
 	}
 
-	entries, err1 := utils_assets.ReadIndex(tool.Playground)
+	entries, err1 := utils_findings.ReadAssetsIndex(tool.Playground)
 
 	if err1 != nil {
 		t.Fatalf("Expected %v to be nil", err1)
@@ -168,7 +168,7 @@ func TestAssets_ImportSubfinderAndScope(t *testing.T) {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result)
 	}
 
-	entries, err1 := utils_assets.ReadIndex(tool.Playground)
+	entries, err1 := utils_findings.ReadAssetsIndex(tool.Playground)
 
 	if err1 != nil {
 		t.Fatalf("Expected %v to be nil", err1)
@@ -226,7 +226,7 @@ func TestAssets_ImportNaabuKatanaGobuster(t *testing.T) {
 		t.Errorf("Expected two gobuster endpoints, got %q", result)
 	}
 
-	entries, err1 := utils_assets.ReadIndex(tool.Playground)
+	entries, err1 := utils_findings.ReadAssetsIndex(tool.Playground)
 
 	if err1 != nil {
 		t.Fatalf("Expected %v to be nil", err1)
@@ -263,7 +263,7 @@ func TestAssets_ImportDnsxAndTlsx(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err)
 	}
 
-	entries, err1 := utils_assets.ReadIndex(tool.Playground)
+	entries, err1 := utils_findings.ReadAssetsIndex(tool.Playground)
 
 	if err1 != nil {
 		t.Fatalf("Expected %v to be nil", err1)
