@@ -26,8 +26,10 @@ func BuildReport(findings []types.Finding, generated string) string {
 	status_counts := make(map[types.FindingStatus]int, 0)
 
 	for _, finding := range findings {
+
 		severity_counts[finding.Severity] = severity_counts[finding.Severity] + 1
 		status_counts[finding.Status] = status_counts[finding.Status] + 1
+
 	}
 
 	builder := strings.Builder{}

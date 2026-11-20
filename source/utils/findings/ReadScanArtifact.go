@@ -14,9 +14,9 @@ func ReadScanArtifact(playground string, scan_id string) ([]byte, error) {
 		if err1 != nil {
 
 			if os.IsNotExist(err1) == false {
-				return nil, fmt.Errorf("Cannot read scan artifact.")
+				return nil, fmt.Errorf("findings.ReadScanArtifact: Cannot read scan artifact.")
 			} else {
-				return nil, fmt.Errorf("Scan artifact \"%s\" does not exist.", scan_id)
+				return nil, fmt.Errorf("findings.ReadScanArtifact: Scan artifact \"%s\" does not exist.", scan_id)
 			}
 		}
 
@@ -25,4 +25,5 @@ func ReadScanArtifact(playground string, scan_id string) ([]byte, error) {
 	} else {
 		return nil, err0
 	}
+
 }

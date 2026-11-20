@@ -12,9 +12,10 @@ func WriteScanArtifact(playground string, scan_id string, data []byte) error {
 		if err1 := os.WriteFile(resolved, data, 0644); err1 == nil {
 			return nil
 		} else {
-			return fmt.Errorf("Cannot persist scan artifact.")
+			return fmt.Errorf("findings.WriteScanArtifact: Cannot persist scan artifact.")
 		}
 	} else {
 		return err0
 	}
+
 }

@@ -24,19 +24,19 @@ func WriteFinding(playground string, finding types.Finding) error {
 				if err2 == nil {
 					return nil
 				} else {
-					return fmt.Errorf("Cannot persist finding \"%s\".", finding.ID)
+					return fmt.Errorf("findings.WriteFinding: Cannot persist finding \"%s\".", finding.ID)
 				}
 
 			} else {
-				return fmt.Errorf("Cannot serialize finding \"%s\".", finding.ID)
+				return fmt.Errorf("findings.WriteFinding: Cannot serialize finding \"%s\".", finding.ID)
 			}
 
 		} else {
-			return fmt.Errorf("Cannot resolve finding \"%s\".", finding.ID)
+			return fmt.Errorf("findings.WriteFinding: Cannot resolve finding \"%s\".", finding.ID)
 		}
 
 	} else {
-		return fmt.Errorf("Finding \"%s\" is invalid.", finding.ID)
+		return fmt.Errorf("findings.WriteFinding: Finding \"%s\" is invalid.", finding.ID)
 	}
 
 }

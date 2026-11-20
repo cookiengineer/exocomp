@@ -27,25 +27,25 @@ func ReadFinding(playground string, id string) (types.Finding, error) {
 					if finding.Validate() == true {
 						return finding, nil
 					} else {
-						return types.Finding{}, fmt.Errorf("Finding \"%s\" is invalid.", id)
+						return types.Finding{}, fmt.Errorf("findings.ReadFinding: Finding \"%s\" is invalid.", id)
 					}
 
 				} else {
-					return types.Finding{}, fmt.Errorf("Cannot parse finding \"%s\".", id)
+					return types.Finding{}, fmt.Errorf("findings.ReadFinding: Cannot parse finding \"%s\".", id)
 				}
 
-			} else if os.IsNotExist(err1) {
-				return types.Finding{}, fmt.Errorf("Finding \"%s\" does not exist.", id)
+			} else if os.IsNotExist(err1) == true {
+				return types.Finding{}, fmt.Errorf("findings.ReadFinding: Finding \"%s\" does not exist.", id)
 			} else {
-				return types.Finding{}, fmt.Errorf("Cannot read finding \"%s\".", id)
+				return types.Finding{}, fmt.Errorf("findings.ReadFinding: Cannot read finding \"%s\".", id)
 			}
 
 		} else {
-			return types.Finding{}, fmt.Errorf("Cannot resolve finding \"%s\".", id)
+			return types.Finding{}, fmt.Errorf("findings.ReadFinding: Cannot resolve finding \"%s\".", id)
 		}
 
 	} else {
-		return types.Finding{}, fmt.Errorf("Invalid finding ID \"%s\".", id)
+		return types.Finding{}, fmt.Errorf("findings.ReadFinding: Invalid finding ID \"%s\".", id)
 	}
 
 }

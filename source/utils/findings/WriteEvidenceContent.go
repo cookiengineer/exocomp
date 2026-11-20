@@ -21,7 +21,7 @@ func WriteEvidenceContent(playground string, finding_id string, evidence_id stri
 			return display, hex.EncodeToString(sum[:]), int64(len(data)), nil
 
 		} else {
-			return "", "", 0, fmt.Errorf("Cannot write evidence artifact.")
+			return "", "", 0, fmt.Errorf("findings.WriteEvidenceContent: Cannot write evidence artifact.")
 		}
 
 	} else {

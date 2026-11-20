@@ -23,7 +23,7 @@ func ReadAssetsIndex(playground string) ([]types.Asset, error) {
 				result := make([]types.Asset, 0)
 
 				if err2 := json.Unmarshal(buffer, &result); err2 != nil {
-					return nil, fmt.Errorf("Cannot parse assets index.")
+					return nil, fmt.Errorf("findings.ReadAssetsIndex: Cannot parse assets index.")
 				}
 
 				return result, nil
@@ -31,14 +31,14 @@ func ReadAssetsIndex(playground string) ([]types.Asset, error) {
 			} else if os.IsNotExist(err1) == true {
 				return make([]types.Asset, 0), nil
 			} else {
-				return nil, fmt.Errorf("Cannot read assets index.")
+				return nil, fmt.Errorf("findings.ReadAssetsIndex: Cannot read assets index.")
 			}
 
 		} else {
-			return nil, fmt.Errorf("Cannot resolve assets index.")
+			return nil, fmt.Errorf("findings.ReadAssetsIndex: Cannot resolve assets index.")
 		}
 
 	} else {
-		return nil, fmt.Errorf("Invalid playground.")
+		return nil, fmt.Errorf("findings.ReadAssetsIndex: Invalid playground.")
 	}
 }

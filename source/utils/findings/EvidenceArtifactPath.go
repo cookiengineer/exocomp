@@ -39,11 +39,11 @@ func EvidenceArtifactPath(playground string, finding_id string, evidence_id stri
 		if err1 == nil {
 			return absolute, display, nil
 		} else {
-			return "", "", fmt.Errorf("Cannot resolve evidence artifact path.")
+			return "", "", fmt.Errorf("findings.EvidenceArtifactPath: Cannot resolve evidence artifact path.")
 		}
 
 	} else {
-		return "", "", fmt.Errorf("Cannot resolve evidence artifact path.")
+		return "", "", fmt.Errorf("findings.EvidenceArtifactPath: Cannot resolve evidence artifact path.")
 	}
 
 }

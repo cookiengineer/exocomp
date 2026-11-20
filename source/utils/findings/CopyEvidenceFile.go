@@ -42,19 +42,19 @@ func CopyEvidenceFile(playground string, finding_id string, evidence_id string, 
 							if err5 == nil {
 								return display, hex.EncodeToString(hasher.Sum(nil)), written, nil
 							} else {
-								return "", "", 0, fmt.Errorf("Cannot persist evidence artifact.")
+								return "", "", 0, fmt.Errorf("findings.CopyEvidenceFile: Cannot persist evidence artifact.")
 							}
 
 						} else {
-							return "", "", 0, fmt.Errorf("Cannot copy evidence artifact.")
+							return "", "", 0, fmt.Errorf("findings.CopyEvidenceFile: Cannot copy evidence artifact.")
 						}
 
 					} else {
-						return "", "", 0, fmt.Errorf("Cannot create evidence artifact.")
+						return "", "", 0, fmt.Errorf("findings.CopyEvidenceFile: Cannot create evidence artifact.")
 					}
 
 				} else {
-					return "", "", 0, fmt.Errorf("Cannot read evidence artifact.")
+					return "", "", 0, fmt.Errorf("findings.CopyEvidenceFile: Cannot read evidence artifact.")
 				}
 
 			} else {
@@ -62,13 +62,13 @@ func CopyEvidenceFile(playground string, finding_id string, evidence_id string, 
 			}
 
 		} else {
-			return "", "", 0, fmt.Errorf("Evidence artifact exceeds the 4 MiB limit.")
+			return "", "", 0, fmt.Errorf("findings.CopyEvidenceFile: Evidence artifact exceeds the 4 MiB limit.")
 		}
 
 	} else if err0 != nil {
-		return "", "", 0, fmt.Errorf("Evidence artifact does not exist.")
+		return "", "", 0, fmt.Errorf("findings.CopyEvidenceFile: Evidence artifact does not exist.")
 	} else {
-		return "", "", 0, fmt.Errorf("Evidence artifact is not a regular file.")
+		return "", "", 0, fmt.Errorf("findings.CopyEvidenceFile: Evidence artifact is not a regular file.")
 	}
 
 }

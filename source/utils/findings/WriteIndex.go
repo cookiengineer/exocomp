@@ -27,19 +27,19 @@ func WriteIndex(playground string, summaries []types.FindingSummary) error {
 				if err2 == nil {
 					return nil
 				} else {
-					return fmt.Errorf("Cannot persist findings index.")
+					return fmt.Errorf("findings.WriteIndex: Cannot persist findings index.")
 				}
 
 			} else {
-				return fmt.Errorf("Cannot serialize findings index.")
+				return fmt.Errorf("findings.WriteIndex: Cannot serialize findings index.")
 			}
 
 		} else {
-			return fmt.Errorf("Cannot resolve findings index.")
+			return fmt.Errorf("findings.WriteIndex: Cannot resolve findings index.")
 		}
 
 	} else {
-		return fmt.Errorf("Invalid playground.")
+		return fmt.Errorf("findings.WriteIndex: Invalid playground.")
 	}
 
 }

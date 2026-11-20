@@ -33,20 +33,20 @@ func WriteAssetsIndex(playground string, entries []types.Asset) error {
 			if err1 == nil {
 
 				if err2 := os.WriteFile(resolved, buffer, 0666); err2 != nil {
-					return fmt.Errorf("Cannot persist assets index.")
+					return fmt.Errorf("findings.WriteAssetsIndex: Cannot persist assets index.")
 				}
 
 				return nil
 
 			} else {
-				return fmt.Errorf("Cannot serialize assets index.")
+				return fmt.Errorf("findings.WriteAssetsIndex: Cannot serialize assets index.")
 			}
 
 		} else {
-			return fmt.Errorf("Cannot resolve assets index.")
+			return fmt.Errorf("findings.WriteAssetsIndex: Cannot resolve assets index.")
 		}
 
 	} else {
-		return fmt.Errorf("Invalid playground.")
+		return fmt.Errorf("findings.WriteAssetsIndex: Invalid playground.")
 	}
 }

@@ -14,10 +14,10 @@ func ScanArtifactPath(playground string, scan_id string) (string, error) {
 		if err0 == nil {
 			return resolved, nil
 		} else {
-			return "", fmt.Errorf("Cannot resolve scan artifact.")
+			return "", fmt.Errorf("findings.ScanArtifactPath: Cannot resolve scan artifact.")
 		}
 
 	} else {
-		return "", fmt.Errorf("Invalid scan ID \"%s\".", scan_id)
+		return "", fmt.Errorf("findings.ScanArtifactPath: Invalid scan ID \"%s\".", scan_id)
 	}
 }

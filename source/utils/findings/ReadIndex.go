@@ -25,21 +25,21 @@ func ReadIndex(playground string) ([]types.FindingSummary, error) {
 				if err2 == nil {
 					return summaries, nil
 				} else {
-					return nil, fmt.Errorf("Cannot parse findings index.")
+					return nil, fmt.Errorf("findings.ReadIndex: Cannot parse findings index.")
 				}
 
-			} else if os.IsNotExist(err1) {
+			} else if os.IsNotExist(err1) == true {
 				return make([]types.FindingSummary, 0), nil
 			} else {
-				return nil, fmt.Errorf("Cannot read findings index.")
+				return nil, fmt.Errorf("findings.ReadIndex: Cannot read findings index.")
 			}
 
 		} else {
-			return nil, fmt.Errorf("Cannot resolve findings index.")
+			return nil, fmt.Errorf("findings.ReadIndex: Cannot resolve findings index.")
 		}
 
 	} else {
-		return nil, fmt.Errorf("Invalid playground.")
+		return nil, fmt.Errorf("findings.ReadIndex: Invalid playground.")
 	}
 
 }

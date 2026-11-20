@@ -5,6 +5,7 @@ import "exocomp/types"
 func SeverityRank(severity types.FindingSeverity) int {
 
 	switch severity {
+
 	case types.FindingSeverityCritical:
 		return 0
 	case types.FindingSeverityHigh:
@@ -17,6 +18,7 @@ func SeverityRank(severity types.FindingSeverity) int {
 		return 4
 	default:
 		return 5
+
 	}
 
 }
