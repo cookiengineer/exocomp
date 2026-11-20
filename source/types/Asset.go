@@ -48,4 +48,5 @@ func (asset *Asset) Validate() bool {
 	} else {
 		return false
 	}
+
 }

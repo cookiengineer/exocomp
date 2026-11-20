@@ -11,6 +11,7 @@ const (
 func (basis FindingProofBasis) IsValid() bool {
 
 	switch basis {
+
 	case FindingProofBasisExecutedLive:
 		return true
 	case FindingProofBasisExecutedLab:
@@ -19,6 +20,7 @@ func (basis FindingProofBasis) IsValid() bool {
 		return true
 	default:
 		return false
+
 	}
 
 }

@@ -24,6 +24,7 @@ func ParseCommand(prompt string) *Command {
 	} else {
 		return nil
 	}
+
 }
 
 func (command *Command) Parse(prompt string) error {
@@ -32,7 +33,7 @@ func (command *Command) Parse(prompt string) error {
 
 		name := prompt[1:strings.Index(prompt, " ")]
 
-		if strings.Contains(name, ".") {
+		if strings.Contains(name, ".") == true {
 
 			command.Name = strings.TrimSpace(name)
 			command.Method = strings.TrimSpace(command.Name[strings.LastIndex(command.Name, ".")+1:])

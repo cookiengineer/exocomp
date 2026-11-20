@@ -31,7 +31,7 @@ func NewConsoleMessage(method string, value string) ConsoleMessage {
 	if ok == true {
 
 		// XXX: Currently there's no way to get the source code / symbols file path
-		if strings.Contains(file, "/Software/cookiengineer/exocomp/") {
+		if strings.Contains(file, "/Software/cookiengineer/exocomp/") == true {
 			file = file[strings.Index(file, "/Software/cookiengineer/exocomp/")+32:]
 		}
 
@@ -51,7 +51,7 @@ func NewConsoleMessage(method string, value string) ConsoleMessage {
 
 func (message *ConsoleMessage) IsSame(other ConsoleMessage) bool {
 
-	var result bool
+	var is_same bool
 
 	if message.Method == "Progress" && other.Method == "Progress" {
 
@@ -73,11 +73,11 @@ func (message *ConsoleMessage) IsSame(other ConsoleMessage) bool {
 				// message: "Parsing Incidents (1 of 5) and some other things"
 				// other:   "Parsing Incidents (2 of 5) and some other things"
 				if prefix1 == prefix2 && suffix1 == suffix2 {
-					result = true
+					is_same = true
 				}
 
 			} else if message.Value == other.Value {
-				result = true
+				is_same = true
 			}
 
 		} else if strings.Contains(message.Value, " of ") && strings.Contains(other.Value, " of ") == false {
@@ -93,7 +93,7 @@ func (message *ConsoleMessage) IsSame(other ConsoleMessage) bool {
 				// message: "Parsing 1 of 5 Incidents"
 				// other:   "Parsing Incidents"
 				if strings.HasPrefix(other.Value, prefix1) && strings.HasSuffix(other.Value, suffix1) {
-					result = true
+					is_same = true
 				}
 
 			}
@@ -111,30 +111,30 @@ func (message *ConsoleMessage) IsSame(other ConsoleMessage) bool {
 				// message: "Parsing Incidents"
 				// other:   "Parsing 1 of 5 Incidents"
 				if strings.HasPrefix(message.Value, prefix2) && strings.HasSuffix(message.Value, suffix2) {
-					result = true
+					is_same = true
 				}
 
 			}
 
 		} else if strings.HasPrefix(message.Value, "Export") && strings.HasPrefix(other.Value, "Export") {
-			result = true
+			is_same = true
 		} else if strings.HasPrefix(message.Value, "Parse") && strings.HasPrefix(other.Value, "Parse") {
-			result = true
+			is_same = true
 		} else if strings.HasPrefix(message.Value, "Update") && strings.HasPrefix(other.Value, "Update") {
-			result = true
+			is_same = true
 		} else if message.Value == other.Value {
-			result = true
+			is_same = true
 		}
 
 	} else {
 
 		if message.Method == other.Method && message.Value == other.Value {
-			result = true
+			is_same = true
 		}
 
 	}
 
-	return result
+	return is_same
 
 }
 
@@ -142,7 +142,7 @@ func (message *ConsoleMessage) Lines() []string {
 
 	result := make([]string, 0)
 
-	if strings.Contains(message.Value, "\n") {
+	if strings.Contains(message.Value, "\n") == true {
 
 		tmp := strings.Split(message.Value, "\n")
 
@@ -150,9 +150,9 @@ func (message *ConsoleMessage) Lines() []string {
 
 			separator := ""
 
-			if strings.HasPrefix(line, ">") {
+			if strings.HasPrefix(line, ">") == true {
 				separator = "-"
-			} else if strings.HasPrefix(line, "-") {
+			} else if strings.HasPrefix(line, "-") == true {
 				separator = "-"
 			} else {
 				separator = " "
@@ -170,9 +170,9 @@ func (message *ConsoleMessage) Lines() []string {
 
 			separator := ""
 
-			if strings.HasPrefix(line, ">") {
+			if strings.HasPrefix(line, ">") == true {
 				separator = "-"
-			} else if strings.HasPrefix(line, "-") {
+			} else if strings.HasPrefix(line, "-") == true {
 				separator = "-"
 			} else {
 				separator = " "

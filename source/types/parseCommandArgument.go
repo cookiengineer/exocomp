@@ -57,6 +57,7 @@ func parseCommandArgument(buffer []byte) any {
 				return false
 			}
 		}
+
 	}
 
 	return nil

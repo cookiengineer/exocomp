@@ -1,17 +1,17 @@
 package types
 
+import "exocomp/parsers/yaml"
 import "exocomp/schemas"
 import utils_api_llamacpp "exocomp/utils/api/llamacpp"
 import utils_api_ollama "exocomp/utils/api/ollama"
 import utils_api_vllm "exocomp/utils/api/vllm"
 import utils_fmt "exocomp/utils/fmt"
-import "exocomp/parsers/yaml"
 import _ "embed"
 import "encoding/json"
 import "fmt"
 import "io"
-import net_url "net/url"
 import "net/http"
+import net_url "net/url"
 import "os"
 import "strings"
 
@@ -28,7 +28,7 @@ type Config struct {
 	Providers   map[string]Provider `json:"providers" yaml:"providers"`
 }
 
-func NewConfig(name string, role string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, debug bool) *Config {
+func NewConfig(name string, role string, model string, prompt string, temperature float64, playground string, sandbox string, url *net_url.URL, is_debug bool) *Config {
 
 	if role == "planner" && GlobalConfig != nil {
 
@@ -52,8 +52,8 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 			url = GlobalConfig.URL
 		}
 
-		if debug == false {
-			debug = GlobalConfig.Debug
+		if is_debug == false {
+			is_debug = GlobalConfig.Debug
 		}
 
 	}
@@ -139,7 +139,7 @@ func NewConfig(name string, role string, model string, prompt string, temperatur
 		Playground:  playground,
 		Sandbox:     sandbox,
 		URL:         url,
-		Debug:       debug,
+		Debug:       is_debug,
 		Providers:   providers,
 	}
 
@@ -236,6 +236,7 @@ func (config *Config) HasProvider(model string) bool {
 	} else {
 		return false
 	}
+
 }
 
 func (config *Config) ResolveToken(model string) string {
@@ -277,6 +278,7 @@ func (config *Config) ResolvePricing(model string) (Pricing, bool) {
 	} else {
 		return Pricing{}, false
 	}
+
 }
 
 func (config *Config) ResolveURL(model string, path string) *net_url.URL {
@@ -295,21 +297,21 @@ func (config *Config) ResolveURL(model string, path string) *net_url.URL {
 		// "/v1" or "/v1/"
 		tmp_base := base_url.Path
 
-		if strings.HasSuffix(tmp_base, "/") {
+		if strings.HasSuffix(tmp_base, "/") == true {
 			tmp_base = strings.TrimSpace(tmp_base[0 : len(tmp_base)-1])
 		}
 
 		// "/chat/completions"
 		tmp_path := path
 
-		if strings.HasPrefix(tmp_path, "/") {
+		if strings.HasPrefix(tmp_path, "/") == true {
 			tmp_path = strings.TrimSpace(tmp_path[1:])
 		}
 
 		// "/v1/chat/completions"
 		api_path = fmt.Sprintf("%s/%s", tmp_base, tmp_path)
 
-	} else if strings.HasPrefix(path, "/") {
+	} else if strings.HasPrefix(path, "/") == true {
 		api_path = strings.TrimSpace(path)
 	}
 

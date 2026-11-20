@@ -16,6 +16,7 @@ const (
 func (kind FindingEvidenceKind) IsValid() bool {
 
 	switch kind {
+
 	case FindingEvidenceKindCommandOutput:
 		return true
 	case FindingEvidenceKindHTTPRequest:
@@ -34,6 +35,7 @@ func (kind FindingEvidenceKind) IsValid() bool {
 		return true
 	default:
 		return false
+
 	}
 
 }
@@ -41,12 +43,14 @@ func (kind FindingEvidenceKind) IsValid() bool {
 func (kind FindingEvidenceKind) IsReproduction() bool {
 
 	switch kind {
+
 	case FindingEvidenceKindUnitTest:
 		return true
 	case FindingEvidenceKindPoc:
 		return true
 	default:
 		return false
+
 	}
 
 }

@@ -1,7 +1,7 @@
 package types
 
-import "exocomp/schemas"
 import "exocomp/parsers/yaml"
+import "exocomp/schemas"
 import utils_fmt "exocomp/utils/fmt"
 import "encoding/json"
 
@@ -104,8 +104,8 @@ func (agent *Agent) IsValid() bool {
 		tmp_prompt == agent.Prompt &&
 		tmp_sandbox == agent.Sandbox {
 		return true
+	} else {
+		return false
 	}
-
-	return false
 
 }

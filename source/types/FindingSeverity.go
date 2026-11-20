@@ -13,6 +13,7 @@ const (
 func (severity FindingSeverity) IsValid() bool {
 
 	switch severity {
+
 	case FindingSeverityCritical:
 		return true
 	case FindingSeverityHigh:
@@ -25,6 +26,7 @@ func (severity FindingSeverity) IsValid() bool {
 		return true
 	default:
 		return false
+
 	}
 
 }

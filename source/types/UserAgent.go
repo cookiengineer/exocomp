@@ -11,13 +11,13 @@ type UserAgent struct {
 	Headers   map[string]string `json:"headers" yaml:"headers"`
 }
 
-func NewUserAgent(name string, user_agent string, platform string, mobile bool, headers map[string]string) *UserAgent {
+func NewUserAgent(name string, user_agent string, platform string, is_mobile bool, headers map[string]string) *UserAgent {
 
 	useragent := &UserAgent{
 		Name:      strings.TrimSpace(name),
 		UserAgent: strings.TrimSpace(user_agent),
 		Platform:  strings.TrimSpace(platform),
-		Mobile:    mobile,
+		Mobile:    is_mobile,
 		Headers:   make(map[string]string),
 	}
 

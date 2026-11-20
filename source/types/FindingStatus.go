@@ -13,6 +13,7 @@ const (
 func (status FindingStatus) IsValid() bool {
 
 	switch status {
+
 	case FindingStatusCandidate:
 		return true
 	case FindingStatusVerified:
@@ -25,6 +26,7 @@ func (status FindingStatus) IsValid() bool {
 		return true
 	default:
 		return false
+
 	}
 
 }

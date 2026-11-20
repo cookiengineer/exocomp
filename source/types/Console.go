@@ -128,7 +128,7 @@ func (console *Console) GetOffset() int {
 
 func (console *Console) HasErrors() bool {
 
-	var result bool
+	var has_errors bool
 
 	console.mutex.RLock()
 
@@ -136,7 +136,7 @@ func (console *Console) HasErrors() bool {
 
 		if message.Method == "Error" {
 
-			result = true
+			has_errors = true
 			break
 
 		}
@@ -145,66 +145,66 @@ func (console *Console) HasErrors() bool {
 
 	console.mutex.RUnlock()
 
-	return result
+	return has_errors
 
 }
 
 func (console *Console) SetOffset(offset int) bool {
 
-	var result bool
+	var is_set bool
 
 	console.mutex.Lock()
 
 	if offset >= 0 {
 
 		console.offset = offset
-		result = true
+		is_set = true
 
 	}
 
 	console.mutex.Unlock()
 
-	return result
+	return is_set
 
 }
 
 func (console *Console) UseColors() bool {
 
-	var result bool
+	var is_used bool
 
 	console.mutex.RLock()
 
 	if console.use_colors == true {
-		result = true
+		is_used = true
 	}
 
 	console.mutex.RUnlock()
 
-	return result
+	return is_used
 
 }
 
 func (console *Console) UseMethod(method string) bool {
 
-	var result bool
+	var is_used bool
 
 	console.mutex.RLock()
 
 	is_enabled, ok := console.methods[method]
 
 	if ok == true {
-		result = is_enabled
+		is_used = is_enabled
 	}
 
 	console.mutex.RUnlock()
 
-	return result
+	return is_used
 
 }
 
 func (console *Console) DisableMethod(method string) bool {
 
-	var result bool
+	var is_disabled bool
 
 	console.mutex.Lock()
 
@@ -213,19 +213,19 @@ func (console *Console) DisableMethod(method string) bool {
 	if ok == true {
 
 		console.methods[method] = false
-		result = true
+		is_disabled = true
 
 	}
 
 	console.mutex.Unlock()
 
-	return result
+	return is_disabled
 
 }
 
 func (console *Console) EnableMethod(method string) bool {
 
-	var result bool
+	var is_enabled bool
 
 	console.mutex.Lock()
 
@@ -234,13 +234,13 @@ func (console *Console) EnableMethod(method string) bool {
 	if ok == true {
 
 		console.methods[method] = true
-		result = true
+		is_enabled = true
 
 	}
 
 	console.mutex.Unlock()
 
-	return result
+	return is_enabled
 
 }
 
@@ -286,23 +286,23 @@ func (console *Console) Render(target *Console) {
 
 }
 
-func (console *Console) Reset(offset bool, errors bool, warnings bool) {
+func (console *Console) Reset(is_offset bool, has_errors bool, has_warnings bool) {
 
 	console.mutex.Lock()
 
-	if offset == true {
+	if is_offset == true {
 		console.offset = 0
 	}
 
-	if errors == false || warnings == false {
+	if has_errors == false || has_warnings == false {
 
 		preserved := make([]ConsoleMessage, 0)
 
 		for _, message := range console.Messages {
 
-			if message.Method == "Error" && errors == false {
+			if message.Method == "Error" && has_errors == false {
 				preserved = append(preserved, message)
-			} else if message.Method == "Warn" && warnings == false {
+			} else if message.Method == "Warn" && has_warnings == false {
 				preserved = append(preserved, message)
 			}
 
@@ -335,7 +335,7 @@ func (console *Console) Length() int {
 func (console *Console) Clear(raw string) {
 
 	// Multiline is forbidden
-	if strings.Contains(raw, "\n") {
+	if strings.Contains(raw, "\n") == true {
 		raw = raw[0:strings.Index(raw, "\n")]
 	}
 
@@ -348,7 +348,7 @@ func (console *Console) Clear(raw string) {
 
 		if message.Method == "Group" {
 
-			if strings.HasPrefix(message.Value, raw) {
+			if strings.HasPrefix(message.Value, raw) == true {
 
 				found_start = m
 				break
@@ -442,7 +442,7 @@ func (console *Console) Clear(raw string) {
 func (console *Console) Group(raw string) {
 
 	// Multiline is forbidden
-	if strings.Contains(raw, "\n") {
+	if strings.Contains(raw, "\n") == true {
 		raw = raw[0:strings.Index(raw, "\n")]
 	}
 
@@ -475,7 +475,7 @@ func (console *Console) Group(raw string) {
 func (console *Console) GroupEnd(raw string) {
 
 	// Multiline is forbidden
-	if strings.Contains(raw, "\n") {
+	if strings.Contains(raw, "\n") == true {
 		raw = raw[0:strings.Index(raw, "\n")]
 	}
 
@@ -625,7 +625,7 @@ func (console *Console) Info(raw string) {
 func (console *Console) Progress(raw string) {
 
 	// Multiline is forbidden
-	if strings.Contains(raw, "\n") {
+	if strings.Contains(raw, "\n") == true {
 		raw = raw[0:strings.Index(raw, "\n")]
 	}
 
@@ -659,7 +659,7 @@ func (console *Console) Progress(raw string) {
 
 					last_message := console.Messages[last_progress]
 
-					if message.IsSame(last_message) {
+					if message.IsSame(last_message) == true {
 
 						if console.Stdout != nil {
 

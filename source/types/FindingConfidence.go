@@ -11,6 +11,7 @@ const (
 func (confidence FindingConfidence) IsValid() bool {
 
 	switch confidence {
+
 	case FindingConfidenceObserved:
 		return true
 	case FindingConfidenceInferred:
@@ -19,6 +20,7 @@ func (confidence FindingConfidence) IsValid() bool {
 		return true
 	default:
 		return false
+
 	}
 
 }

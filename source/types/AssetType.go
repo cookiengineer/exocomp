@@ -21,6 +21,7 @@ const (
 func (asset_type AssetType) IsValid() bool {
 
 	switch asset_type {
+
 	case AssetTypeIP:
 		return true
 	case AssetTypeCIDR:
@@ -49,6 +50,7 @@ func (asset_type AssetType) IsValid() bool {
 		return true
 	default:
 		return false
+
 	}
 
 }

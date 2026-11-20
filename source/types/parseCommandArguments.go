@@ -60,7 +60,9 @@ func parseCommandArguments(raw string) map[string]any {
 				}
 
 			}
+
 		}
+
 	}
 
 	return arguments
