@@ -26,11 +26,11 @@ func ResolveWorkdir(sandbox string, workdir string) (string, error) {
 			if err2 == nil && stat.IsDir() == true {
 				return resolved, nil
 			} else {
-				return "", fmt.Errorf("Invalid workdir \"%s\": Directory does not exist.", workdir)
+				return "", fmt.Errorf("shell.ResolveWorkdir: Invalid workdir \"%s\": Directory does not exist.", workdir)
 			}
 
 		} else {
-			return "", fmt.Errorf("Invalid workdir \"%s\": Invalid sandbox.", workdir)
+			return "", fmt.Errorf("shell.ResolveWorkdir: Invalid workdir \"%s\": Invalid sandbox.", workdir)
 		}
 
 	} else {

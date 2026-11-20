@@ -16,7 +16,7 @@ func ParseInt(arguments map[string]any, name string, fallback int) (int, error) 
 			if value == float64(int(value)) {
 				return int(value), nil
 			} else {
-				return 0, fmt.Errorf("Invalid parameter \"%s\" is not an integer.", name)
+				return 0, fmt.Errorf("shell.ParseInt: Invalid parameter \"%s\" is not an integer.", name)
 			}
 
 		case int:
@@ -33,7 +33,7 @@ func ParseInt(arguments map[string]any, name string, fallback int) (int, error) 
 
 		default:
 
-			return 0, fmt.Errorf("Invalid parameter \"%s\" is not an integer.", name)
+			return 0, fmt.Errorf("shell.ParseInt: Invalid parameter \"%s\" is not an integer.", name)
 
 		}
 

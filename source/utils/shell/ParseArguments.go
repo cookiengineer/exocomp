@@ -30,8 +30,10 @@ func ParseArguments(raw any) ([]string, error) {
 				if ok == true {
 					result = append(result, tmp)
 				} else {
+
 					valid = false
 					break
+
 				}
 
 			}
@@ -39,12 +41,12 @@ func ParseArguments(raw any) ([]string, error) {
 			if valid == true {
 				return result, nil
 			} else {
-				return nil, fmt.Errorf("Invalid parameter \"arguments\" is not an array of strings.")
+				return nil, fmt.Errorf("shell.ParseArguments: Invalid parameter \"arguments\" is not an array of strings.")
 			}
 
 		default:
 
-			return nil, fmt.Errorf("Invalid parameter \"arguments\" is not an array of strings.")
+			return nil, fmt.Errorf("shell.ParseArguments: Invalid parameter \"arguments\" is not an array of strings.")
 
 		}
 

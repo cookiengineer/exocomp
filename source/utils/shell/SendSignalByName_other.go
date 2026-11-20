@@ -12,6 +12,7 @@ func SendSignalByName(pid int, name string) (string, error) {
 	signal := syscall.Signal(0)
 
 	switch strings.ToUpper(strings.TrimSpace(name)) {
+
 	case "INT":
 		signal = syscall.SIGINT
 	case "TERM":
@@ -31,18 +32,21 @@ func SendSignalByName(pid int, name string) (string, error) {
 	case "USR2":
 		signal = syscall.SIGUSR2
 	default:
-		return "", fmt.Errorf("Invalid signal \"%s\".", name)
+		return "", fmt.Errorf("shell.SendSignalByName: Invalid signal \"%s\".", name)
+
 	}
 
 	if pid > 0 {
+
 		err := syscall.Kill(-pid, signal)
 		if err == nil {
 			return strings.ToUpper(strings.TrimSpace(name)), nil
 		} else {
 			return "", err
 		}
+
 	} else {
-		return "", fmt.Errorf("Invalid process.")
+		return "", fmt.Errorf("shell.SendSignalByName: Invalid process.")
 	}
 
 }

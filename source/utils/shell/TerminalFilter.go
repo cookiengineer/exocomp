@@ -33,8 +33,10 @@ func (filter *TerminalFilter) Write(data []byte) []byte {
 			filter.pendingCR = false
 
 			if value == '\n' {
+
 				result = append(result, '\n')
 				continue
+
 			} else {
 				result = append(result, '\n')
 			}
@@ -108,8 +110,10 @@ func (filter *TerminalFilter) Write(data []byte) []byte {
 	}
 
 	if filter.pendingCR == true {
+
 		filter.pendingCR = false
 		result = append(result, '\n')
+
 	}
 
 	return []byte(strings.ToValidUTF8(string(result), string(utf8.RuneError)))

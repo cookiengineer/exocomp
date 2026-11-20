@@ -30,8 +30,10 @@ func IsNetworkArgument(argument string) bool {
 			for _, part := range parts {
 
 				if _, _, err := net.ParseCIDR(strings.TrimSpace(part)); err != nil {
+
 					valid = false
 					break
+
 				}
 
 			}
