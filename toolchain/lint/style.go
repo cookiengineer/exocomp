@@ -76,12 +76,23 @@ func checkAny(_ *Context, file *File) []Diagnostic {
 func checkBlankBlock(_ *Context, file *File) []Diagnostic {
 
 	result := make([]Diagnostic, 0)
+	switch_bodies := collectSwitchBodies(file)
 
 	ast.Inspect(file.AST, func(node ast.Node) bool {
 
 		block, ok := node.(*ast.BlockStmt)
 
-		if ok == false || len(block.List) <= 1 {
+		if ok == false {
+			return true
+		}
+
+		is_switch_body := switch_bodies[block]
+
+		if is_switch_body == true {
+			result = append(result, checkCaseBlankLines(file, block)...)
+		}
+
+		if len(block.List) <= 1 {
 			return true
 		}
 
@@ -94,7 +105,7 @@ func checkBlankBlock(_ *Context, file *File) []Diagnostic {
 
 		after := open_line + 1
 
-		if after <= close_line && after-1 < len(file.Lines) {
+		if is_switch_body == false && after <= close_line && after-1 < len(file.Lines) {
 
 			line := file.Lines[after-1]
 
@@ -135,6 +146,122 @@ func checkBlankBlock(_ *Context, file *File) []Diagnostic {
 	})
 
 	return result
+
+}
+
+// collectSwitchBodies returns the body blocks of every switch and type switch.
+func collectSwitchBodies(file *File) map[*ast.BlockStmt]bool {
+
+	result := make(map[*ast.BlockStmt]bool)
+
+	ast.Inspect(file.AST, func(node ast.Node) bool {
+
+		switch typed := node.(type) {
+		case *ast.SwitchStmt:
+			result[typed.Body] = true
+		case *ast.TypeSwitchStmt:
+			result[typed.Body] = true
+		}
+
+		return true
+
+	})
+
+	return result
+
+}
+
+// checkCaseBlankLines requires a blank line above every case and default clause.
+func checkCaseBlankLines(file *File, block *ast.BlockStmt) []Diagnostic {
+
+	result := make([]Diagnostic, 0)
+
+	for _, stmt := range block.List {
+
+		case_clause, ok := stmt.(*ast.CaseClause)
+
+		if ok == false {
+			continue
+		}
+
+		if hasBlankLineAbove(file, case_clause.Pos()) == true {
+			continue
+		}
+
+		result = append(
+			result,
+			file.Diagnostic(
+				"style/blank-block",
+				case_clause.Pos(),
+				"case clause needs a blank line above it",
+			),
+		)
+
+	}
+
+	return result
+
+}
+
+// hasBlankLineAbove reports whether the clause header at pos is preceded by a
+// blank line. Comments directly above the clause stay attached to it.
+func hasBlankLineAbove(file *File, pos token.Pos) bool {
+
+	start_line := clauseStartLine(file, pos)
+
+	if start_line <= 1 {
+		return false
+	}
+
+	index := start_line - 2
+
+	if index < 0 || index >= len(file.Lines) {
+		return false
+	}
+
+	return strings.TrimSpace(file.Lines[index]) == ""
+
+}
+
+// clauseStartLine returns the first line of the comment block attached to the
+// clause at pos, or the clause line when no comment is attached.
+func clauseStartLine(file *File, pos token.Pos) int {
+
+	line := file.Line(pos)
+
+	for {
+
+		attached := 0
+
+		for _, group := range file.AST.Comments {
+
+			start_line := file.Line(group.Pos())
+			end_line := file.Line(group.End())
+
+			if end_line != line-1 || start_line >= line {
+				continue
+			}
+
+			if start_line-1 < 0 || start_line-1 >= len(file.Lines) {
+				continue
+			}
+
+			if isCommentLine(file.Lines[start_line-1]) == false {
+				continue
+			}
+
+			attached = start_line
+			break
+
+		}
+
+		if attached == 0 {
+			return line
+		}
+
+		line = attached
+
+	}
 
 }
 

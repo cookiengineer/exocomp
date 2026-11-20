@@ -30,8 +30,9 @@ var predicatePrefixes = []string{
 }
 
 var predicateExceptions = map[string]bool{
-	"_":  true,
-	"ok": true,
+	"_":     true,
+	"ok":    true,
+	"value": true,
 }
 
 func checkFileName(_ *Context, file *File) []Diagnostic {

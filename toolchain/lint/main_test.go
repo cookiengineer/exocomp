@@ -336,6 +336,14 @@ func TestRules(t *testing.T) {
 			Want: 0,
 		},
 		{
+			Name: "naming-boolean/value",
+			Rule: "naming/boolean",
+			Files: map[string]string{
+				"pkg/a.go": "package pkg\n\nfunc FormatBool(value bool) string {\n\n\treturn \"\"\n\n}\n",
+			},
+			Want: 0,
+		},
+		{
 			Name: "naming-receiver/missing",
 			Rule: "naming/receiver",
 			Files: map[string]string{
@@ -462,6 +470,62 @@ func TestRules(t *testing.T) {
 				"pkg/a.go": "package pkg\n\nfunc run() {\n\n\tone := 1\n\ttwo := 2\n\n\t_ = one\n\t_ = two\n\n}\n",
 			},
 			Want: 0,
+		},
+		{
+			Name: "style-blank-block/switch-missing",
+			Rule: "style/blank-block",
+			Files: map[string]string{
+				"pkg/a.go": "package pkg\n\nfunc run(value int) string {\n\n\tswitch value {\n\n\tcase 1:\n\t\treturn \"one\"\n\tcase 2:\n\t\treturn \"two\"\n\n\t}\n\n}\n",
+			},
+			Want: 1,
+		},
+		{
+			Name: "style-blank-block/switch-ok",
+			Rule: "style/blank-block",
+			Files: map[string]string{
+				"pkg/a.go": "package pkg\n\nfunc run(value int) string {\n\n\tswitch value {\n\n\tcase 1:\n\t\treturn \"one\"\n\n\tcase 2:\n\t\treturn \"two\"\n\n\t}\n\n}\n",
+			},
+			Want: 0,
+		},
+		{
+			Name: "style-blank-block/switch-first-case-missing",
+			Rule: "style/blank-block",
+			Files: map[string]string{
+				"pkg/a.go": "package pkg\n\nfunc run(value int) string {\n\n\tswitch value {\n\tcase 1:\n\t\treturn \"one\"\n\n\t}\n\n}\n",
+			},
+			Want: 1,
+		},
+		{
+			Name: "style-blank-block/switch-default-missing",
+			Rule: "style/blank-block",
+			Files: map[string]string{
+				"pkg/a.go": "package pkg\n\nfunc run(value int) string {\n\n\tswitch value {\n\n\tcase 1:\n\t\treturn \"one\"\n\tdefault:\n\t\treturn \"other\"\n\n\t}\n\n}\n",
+			},
+			Want: 1,
+		},
+		{
+			Name: "style-blank-block/type-switch-missing",
+			Rule: "style/blank-block",
+			Files: map[string]string{
+				"pkg/a.go": "package pkg\n\nfunc run(value any) string {\n\n\tswitch value.(type) {\n\n\tcase int:\n\t\treturn \"int\"\n\tcase string:\n\t\treturn \"string\"\n\n\t}\n\n}\n",
+			},
+			Want: 1,
+		},
+		{
+			Name: "style-blank-block/switch-comment-ok",
+			Rule: "style/blank-block",
+			Files: map[string]string{
+				"pkg/a.go": "package pkg\n\nfunc run(value int) string {\n\n\tswitch value {\n\n\t// numbers\n\tcase 1:\n\t\treturn \"one\"\n\n\t}\n\n}\n",
+			},
+			Want: 0,
+		},
+		{
+			Name: "style-blank-block/switch-comment-missing",
+			Rule: "style/blank-block",
+			Files: map[string]string{
+				"pkg/a.go": "package pkg\n\nfunc run(value int) string {\n\n\tswitch value {\n\t// numbers\n\tcase 1:\n\t\treturn \"one\"\n\n\t}\n\n}\n",
+			},
+			Want: 1,
 		},
 		{
 			Name: "style-gofmt/missing",

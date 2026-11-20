@@ -53,7 +53,7 @@ func init() {
 		{"naming/func", "unexported functions use camelCase, never snake_case", checkFuncNaming},
 		{"naming/type-initialism", "type names are spelled out, not collapsed to initials", checkTypeInitialism},
 		{"style/any", "use any instead of interface{}", checkAny},
-		{"style/blank-block", "blank line after { and before } in multi-statement blocks", checkBlankBlock},
+		{"style/blank-block", "blank lines around blocks and above switch cases", checkBlankBlock},
 		{"style/gofmt", "file is formatted", checkGofmt},
 		{"style/json-indent", "JSON indentation uses tabs", checkJSONIndent},
 		{"style/local-case", "local variables use snake_case", checkLocalCase},
