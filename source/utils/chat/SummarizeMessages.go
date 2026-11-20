@@ -5,7 +5,7 @@ import utils_fmt "exocomp/utils/fmt"
 import "fmt"
 import "strings"
 
-func SummarizeMessages(chat []*schemas.Message, user bool, assistant bool, tool bool) string {
+func SummarizeMessages(chat []*schemas.Message, is_user bool, is_assistant bool, is_tool bool) string {
 
 	result := make([]string, 0)
 
@@ -13,17 +13,17 @@ func SummarizeMessages(chat []*schemas.Message, user bool, assistant bool, tool 
 
 		for _, message := range chat {
 
-			if message.Role == "assistant" && assistant == true {
+			if message.Role == "assistant" && is_assistant == true {
 
 				content := strings.TrimSpace(utils_fmt.FormatSingleLine(message.Content))
 				result = append(result, fmt.Sprintf("Assistant wrote: %s", content))
 
-			} else if message.Role == "user" && user == true {
+			} else if message.Role == "user" && is_user == true {
 
 				content := strings.TrimSpace(utils_fmt.FormatSingleLine(message.Content))
 				result = append(result, fmt.Sprintf("User wrote: %s", content))
 
-			} else if message.Role == "tool" && tool == true {
+			} else if message.Role == "tool" && is_tool == true {
 
 				lines := strings.Split(message.Content, "\n")
 

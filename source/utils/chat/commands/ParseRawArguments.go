@@ -5,32 +5,6 @@ import "fmt"
 import "strings"
 import "unicode"
 
-func Parse(input string) (*Command, error) {
-
-	command, raw, err := parseRaw(input)
-
-	if err == nil {
-
-		for key, value := range raw {
-
-			parsed, err0 := ParseValue(value, nil)
-
-			if err0 == nil {
-				command.Arguments[key] = parsed
-			} else {
-				return nil, err0
-			}
-
-		}
-
-		return command, nil
-
-	} else {
-		return nil, err
-	}
-
-}
-
 func ParseRawArguments(raw string) (map[string]string, error) {
 
 	result := make(map[string]string)
@@ -55,24 +29,28 @@ func ParseRawArguments(raw string) (map[string]string, error) {
 				key := strings.TrimSpace(raw[key_start:index])
 				index++
 
-				if key == "" {
-					return nil, fmt.Errorf("commands.Parse: Parameter name is empty.")
-				}
+				if key != "" {
 
-				utils_strings.SkipWhitespace(raw, &index)
+					utils_strings.SkipWhitespace(raw, &index)
 
-				value, err := scanValue(raw, &index)
+					value, err := scanValue(raw, &index)
 
-				if err == nil {
-					result[key] = value
+					if err == nil {
+						result[key] = value
+					} else {
+						return nil, err
+					}
+
 				} else {
-					return nil, err
+					return nil, fmt.Errorf("commands.Parse: Parameter name is empty.")
 				}
 
 			} else {
 				return nil, fmt.Errorf("commands.Parse: Expected \"=\" after parameter \"%s\".", raw[key_start:index])
 			}
+
 		}
+
 	}
 
 	return result, nil

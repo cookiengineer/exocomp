@@ -116,4 +116,5 @@ func ParseValue(raw string, property *schemas.ToolFunctionParameterProperty) (an
 		return parseSchemaLess(value)
 
 	}
+
 }

@@ -50,10 +50,13 @@ func parseRaw(input string) (*Command, map[string]string, error) {
 			} else {
 				return nil, nil, fmt.Errorf("commands.Parse: Invalid tool name \"%s\".", name)
 			}
+
 		} else {
 			return nil, nil, fmt.Errorf("commands.Parse: Command name is empty.")
 		}
+
 	} else {
 		return nil, nil, fmt.Errorf("commands.Parse: Command must start with \"/\".")
 	}
+
 }

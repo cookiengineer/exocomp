@@ -1,7 +1,7 @@
 package chat
 
-import net_http "net/http"
 import "math/rand/v2"
+import net_http "net/http"
 import "time"
 
 // retryDelay returns the delay before the next attempt. A valid Retry-After

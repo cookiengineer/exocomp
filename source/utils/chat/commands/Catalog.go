@@ -120,6 +120,7 @@ func (catalog *Catalog) Complete(input string, limit int) []Suggestion {
 				return result
 
 			}
+
 		} else {
 
 			prefix := strings.ToLower(content)

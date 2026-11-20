@@ -47,12 +47,14 @@ func (arguments Arguments) Int(key string) (int, bool) {
 	if ok == true {
 
 		switch typed := value.(type) {
+
 		case float64:
 			return int(typed), true
 		case int:
 			return typed, true
 		default:
 			return 0, false
+
 		}
 
 	} else {
@@ -69,6 +71,7 @@ func (arguments Arguments) Map(key string) (map[string]string, bool) {
 	if ok == true {
 
 		switch typed := raw.(type) {
+
 		case map[string]string:
 			return typed, true
 		case map[string]any:
@@ -87,6 +90,7 @@ func (arguments Arguments) Map(key string) (map[string]string, bool) {
 
 		default:
 			return nil, false
+
 		}
 
 	} else {
@@ -129,6 +133,7 @@ func (arguments Arguments) Strings(key string) ([]string, bool) {
 	if ok == true {
 
 		switch typed := raw.(type) {
+
 		case []string:
 			return typed, true
 		case []any:
@@ -147,6 +152,7 @@ func (arguments Arguments) Strings(key string) ([]string, bool) {
 
 		default:
 			return nil, false
+
 		}
 
 	} else {

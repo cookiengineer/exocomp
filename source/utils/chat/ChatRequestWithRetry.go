@@ -2,8 +2,8 @@ package chat
 
 import "bytes"
 import "context"
-import "io"
 import "fmt"
+import "io"
 import net_http "net/http"
 
 func ChatRequestWithRetry(client *net_http.Client, payload []byte, url string, token string) (*net_http.Response, error) {
@@ -54,8 +54,10 @@ func ChatRequestWithRetry(client *net_http.Client, payload []byte, url string, t
 						delay := retryDelay(attempt, response)
 
 						if response != nil && response.Body != nil {
+
 							io.Copy(io.Discard, io.LimitReader(response.Body, 4096))
 							response.Body.Close()
+
 						}
 
 						if err2 := sleepRetry(ctx, delay); err2 != nil {
@@ -112,6 +114,6 @@ func ChatRequestWithRetry(client *net_http.Client, payload []byte, url string, t
 
 	}
 
-	return nil, fmt.Errorf("ChatRequestWithRetry: Request failed after %d attempts.", RetryMaxAttempts)
+	return nil, fmt.Errorf("chat.ChatRequestWithRetry: Request failed after %d attempts.", RetryMaxAttempts)
 
 }

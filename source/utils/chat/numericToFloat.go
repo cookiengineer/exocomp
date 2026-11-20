@@ -4,7 +4,7 @@ import "reflect"
 
 func numericToFloat(v reflect.Value) float64 {
 
-	if isSignedInteger(v.Kind()) {
+	if isSignedInteger(v.Kind()) == true {
 		return float64(v.Int())
 	} else {
 		return float64(v.Uint())

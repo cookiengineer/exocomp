@@ -72,7 +72,7 @@ func scanValue(raw string, index *int) (string, error) {
 				}
 
 				if current == '"' && escaped == false {
-					in_string = !in_string
+					in_string = (in_string == false)
 				}
 
 				if in_string == false {
