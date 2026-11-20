@@ -1,5 +1,6 @@
-package tools
+package files
 
+import "exocomp/tools/testutil"
 import "os"
 import "path/filepath"
 import "strings"
@@ -727,13 +728,13 @@ func TestFiles_Symlinks(t *testing.T) {
 		t.Errorf("Expected %v to be nil", err7)
 	}
 
-	createTestSymlink(t, filepath.Join(outside, "secret.txt"), filepath.Join(sandbox, "leak.txt"))
-	createTestSymlink(t, filepath.Join(outside, "secret.go"), filepath.Join(sandbox, "leak.go"))
-	createTestSymlink(t, outside, filepath.Join(sandbox, "leakdir"))
-	createTestSymlink(t, "normal.txt", filepath.Join(sandbox, "internal_link.txt"))
-	createTestSymlink(t, filepath.Join(outside, "secret.txt"), filepath.Join(sandbox, "tree", "link_outside.txt"))
-	createTestSymlink(t, outside, filepath.Join(sandbox, "tree", "link_outside_dir"))
-	createTestSymlink(t, filepath.Join(sandbox, "normal.txt"), filepath.Join(sandbox, "tree", "link_internal.txt"))
+	testutil.CreateTestSymlink(t, filepath.Join(outside, "secret.txt"), filepath.Join(sandbox, "leak.txt"))
+	testutil.CreateTestSymlink(t, filepath.Join(outside, "secret.go"), filepath.Join(sandbox, "leak.go"))
+	testutil.CreateTestSymlink(t, outside, filepath.Join(sandbox, "leakdir"))
+	testutil.CreateTestSymlink(t, "normal.txt", filepath.Join(sandbox, "internal_link.txt"))
+	testutil.CreateTestSymlink(t, filepath.Join(outside, "secret.txt"), filepath.Join(sandbox, "tree", "link_outside.txt"))
+	testutil.CreateTestSymlink(t, outside, filepath.Join(sandbox, "tree", "link_outside_dir"))
+	testutil.CreateTestSymlink(t, filepath.Join(sandbox, "normal.txt"), filepath.Join(sandbox, "tree", "link_internal.txt"))
 
 	tool := NewFiles([]string{"Copy", "List", "Read", "ReadSymbol", "Search", "Stat", "Write", "WriteSymbol"}, playground, sandbox)
 

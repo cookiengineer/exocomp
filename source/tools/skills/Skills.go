@@ -1,4 +1,4 @@
-package tools
+package skills
 
 import "exocomp/schemas"
 import "exocomp/types"

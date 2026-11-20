@@ -1,5 +1,6 @@
-package tools
+package programs
 
+import "exocomp/tools/testutil"
 import "os"
 import "path/filepath"
 import "strings"
@@ -7,7 +8,7 @@ import "testing"
 
 func TestPrograms_ExecuteSandbox(t *testing.T) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-sandbox-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -120,7 +121,7 @@ func TestPrograms_ExecuteSandbox(t *testing.T) {
 
 func TestPrograms_ExecuteHidesExocomp(t *testing.T) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-exocomp-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -198,7 +199,7 @@ func TestPrograms_ExecuteHidesExocomp(t *testing.T) {
 
 func TestPrograms_ExecuteSandboxMissingHelper(t *testing.T) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-sandbox-*")
 	sandbox := filepath.Join(playground, "programs")

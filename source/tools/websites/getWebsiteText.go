@@ -1,4 +1,4 @@
-package tools
+package websites
 
 import parser_html "exocomp/parsers/html"
 import net_url "net/url"

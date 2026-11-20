@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/tools/testutil"
 import "os"
 import "os/exec"
 import "path/filepath"
@@ -52,7 +53,7 @@ func buildFakeShell(t *testing.T) string {
 
 func newTestShell(t *testing.T) (*Shell, string) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	fake_shell := buildFakeShell(t)
 	path := filepath.Dir(fake_shell) + string(os.PathListSeparator) + os.Getenv("PATH")

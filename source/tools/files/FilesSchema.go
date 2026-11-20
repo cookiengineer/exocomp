@@ -1,21 +1,21 @@
-package tools
+package files
 
 import "exocomp/schemas"
 import "encoding/json"
 import _ "embed"
 
-//go:embed Skills.json
-var skillsJSON []byte
+//go:embed Files.json
+var filesJSON []byte
 
-var SkillsSchema []schemas.Tool
+var FilesSchema []schemas.Tool
 
 func init() {
 
 	schema := make([]schemas.Tool, 0)
-	err := json.Unmarshal(skillsJSON, &schema)
+	err := json.Unmarshal(filesJSON, &schema)
 
 	if err == nil {
-		SkillsSchema = schema
+		FilesSchema = schema
 	} else {
 		panic(err)
 	}

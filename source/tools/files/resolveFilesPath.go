@@ -1,4 +1,4 @@
-package tools
+package files
 
 import utils_capabilities "exocomp/utils/capabilities"
 import utils_sandbox "exocomp/utils/sandbox"

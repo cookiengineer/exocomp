@@ -1,4 +1,4 @@
-package tools
+package websites
 
 import "fmt"
 import net_url "net/url"

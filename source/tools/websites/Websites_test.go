@@ -1,4 +1,4 @@
-package tools
+package websites
 
 import "exocomp/types"
 import utils_capabilities "exocomp/utils/capabilities"

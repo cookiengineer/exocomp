@@ -1,4 +1,4 @@
-package tools
+package websites
 
 import "exocomp/schemas"
 import utils_fmt "exocomp/utils/fmt"

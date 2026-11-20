@@ -1,4 +1,4 @@
-package tools
+package files
 
 import "errors"
 import "fmt"

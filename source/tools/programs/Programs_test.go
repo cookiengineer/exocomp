@@ -1,5 +1,6 @@
-package tools
+package programs
 
+import "exocomp/tools/testutil"
 import "os"
 import "path/filepath"
 import "strings"
@@ -7,7 +8,7 @@ import "testing"
 
 func TestPrograms_Execute(t *testing.T) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -133,7 +134,7 @@ func TestPrograms_Execute(t *testing.T) {
 
 func TestPrograms_ExecuteWithoutPermission(t *testing.T) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -384,7 +385,7 @@ func TestPrograms_StatWithoutProgram(t *testing.T) {
 
 func TestPrograms_Call_OptionalArguments(t *testing.T) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -452,7 +453,7 @@ func TestPrograms_Call_OptionalArguments(t *testing.T) {
 
 func TestPrograms_ExecuteSymlinks(t *testing.T) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	playground, _ := os.MkdirTemp("/tmp", "exocomp-test-programs-symlink-*")
 	sandbox := filepath.Join(playground, "programs")
@@ -482,8 +483,8 @@ func TestPrograms_ExecuteSymlinks(t *testing.T) {
 		t.Errorf("Expected %v to be nil", err3)
 	}
 
-	createTestSymlink(t, filepath.Join(outside, "secret.txt"), filepath.Join(sandbox, "leak"))
-	createTestSymlink(t, outside, filepath.Join(sandbox, "leakdir"))
+	testutil.CreateTestSymlink(t, filepath.Join(outside, "secret.txt"), filepath.Join(sandbox, "leak"))
+	testutil.CreateTestSymlink(t, outside, filepath.Join(sandbox, "leakdir"))
 
 	tool := NewPrograms([]string{"Execute", "List", "Stat"}, playground, sandbox, []string{"cat", "ls"})
 

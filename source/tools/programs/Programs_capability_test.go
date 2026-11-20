@@ -1,5 +1,6 @@
-package tools
+package programs
 
+import "exocomp/tools/testutil"
 import "exocomp/types"
 import utils_capabilities "exocomp/utils/capabilities"
 import "os"
@@ -9,7 +10,7 @@ import "testing"
 
 func TestPrograms_ExecuteCapabilityRead(t *testing.T) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	playground := t.TempDir()
 	sandbox := filepath.Join(playground, "sandbox")

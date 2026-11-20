@@ -1,5 +1,6 @@
-package tools
+package skills
 
+import "exocomp/tools/testutil"
 import "os"
 import "path/filepath"
 import "strings"
@@ -132,7 +133,7 @@ func TestSkills_Load_Unload(t *testing.T) {
 
 func TestSkills_Execute(t *testing.T) {
 
-	requireSandbox(t)
+	testutil.RequireSandbox(t)
 
 	tool := newTestSkills(t, "scan", "Scan websites for links")
 

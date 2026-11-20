@@ -1,6 +1,10 @@
 package tools
 
 import "exocomp/types"
+import "exocomp/tools/files"
+import "exocomp/tools/programs"
+import "exocomp/tools/skills"
+import "exocomp/tools/websites"
 import utils_capabilities "exocomp/utils/capabilities"
 import _ "embed"
 import net_url "net/url"
@@ -61,21 +65,21 @@ func Toolset(
 		case "containers":
 			tool = NewContainers(allowed_methods, playground, sandbox, allowed_images)
 		case "files":
-			tool = NewFilesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
+			tool = files.NewFilesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
 		case "findings":
 			tool = NewFindings(allowed_methods, playground, sandbox, agent_name)
 		case "humans":
 			tool = NewHumansWithCapabilities(allowed_methods, playground, sandbox, agent_name, capabilities)
 		case "programs":
-			tool = NewProgramsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
+			tool = programs.NewProgramsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
 		case "requirements":
 			tool = NewRequirements(allowed_methods, playground, sandbox)
 		case "shell":
 			tool = NewShellWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
 		case "skills":
-			tool = NewSkillsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, allowed_tools, capabilities)
+			tool = skills.NewSkillsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, allowed_tools, capabilities)
 		case "websites":
-			tool = NewWebsitesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
+			tool = websites.NewWebsitesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
 
 		}
 

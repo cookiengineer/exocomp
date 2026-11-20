@@ -1,5 +1,6 @@
 package tools
 
+import "exocomp/tools/testutil"
 import "encoding/json"
 import "os"
 import "os/exec"
@@ -22,7 +23,7 @@ func newTestContainers(t *testing.T, methods []string, allowed_images []string) 
 
 	tool := NewContainers(methods, playground, sandbox, allowed_images)
 
-	t.Setenv("EXOCOMP_PODMAN", buildFakePodman(t))
+	t.Setenv("EXOCOMP_PODMAN", testutil.BuildFakePodman(t))
 	t.Setenv("EXOCOMP_FAKE_PODMAN_ARGS", filepath.Join(playground, "arguments.json"))
 	t.Setenv("EXOCOMP_FAKE_PODMAN_LABEL", tool.label())
 

@@ -1,6 +1,10 @@
 package tools
 
 import "exocomp/schemas"
+import "exocomp/tools/files"
+import "exocomp/tools/programs"
+import "exocomp/tools/skills"
+import "exocomp/tools/websites"
 import "encoding/json"
 import "strings"
 import "testing"
@@ -13,14 +17,14 @@ func TestToolSchemas_DoNotMentionInternalState(t *testing.T) {
 		BugsSchema,
 		ChangelogSchema,
 		ContainersSchema,
-		FilesSchema,
+		files.FilesSchema,
 		FindingsSchema,
 		HumansSchema,
-		ProgramsSchema,
+		programs.ProgramsSchema,
 		RequirementsSchema,
 		ShellSchema,
-		SkillsSchema,
-		WebsitesSchema,
+		skills.SkillsSchema,
+		websites.WebsitesSchema,
 	}
 
 	for _, entries := range schema_groups {
