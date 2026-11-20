@@ -217,17 +217,21 @@ func (app *App) ensureSelectedAgent() {
 	for _, agent := range agents {
 
 		if agent.Name == app.SelectedAgent {
+
 			found = true
 			break
+
 		}
 
 	}
 
 	if found == false {
+
 		app.SelectedAgent = agents[0].Name
 		app.Header.Selected = app.SelectedAgent
 		app.AgentSidebar.Selected = app.SelectedAgent
 		app.Transcript.Reset()
+
 	}
 
 }
@@ -305,8 +309,10 @@ func (app *App) cycleAgent(delta int) {
 	for agent_index, agent := range agents {
 
 		if agent.Name == app.SelectedAgent {
+
 			index = agent_index
 			break
+
 		}
 
 	}
@@ -685,6 +691,7 @@ func (app *App) handleBuiltin(text string) bool {
 	} else {
 		return false
 	}
+
 }
 
 func (app *App) setStatus(value string) {
@@ -746,8 +753,10 @@ func (app *App) render(now time.Time) {
 	}
 
 	if app.Session != nil {
+
 		messages, waiting := app.Session.GetAgentMessages(app.SelectedAgent)
 		app.Transcript.SetMessages(messages, waiting)
+
 	}
 
 	app.transcriptRect = transcript_rect

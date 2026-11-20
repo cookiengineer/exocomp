@@ -1,9 +1,9 @@
 package components
 
 import parser_markdown "exocomp/parsers/markdown"
-import "strconv"
 import "exocomp/ui/tty/styles"
 import utils_tty "exocomp/utils/tty"
+import "strconv"
 import "strings"
 
 type markdownRenderer struct {
@@ -40,7 +40,7 @@ func newMarkdownRenderer(width int) *markdownRenderer {
 
 }
 
-func (renderer *markdownRenderer) addList(indent string, marker string, children []*parser_markdown.Element, ordered bool) {
+func (renderer *markdownRenderer) addList(indent string, marker string, children []*parser_markdown.Element, is_ordered bool) {
 
 	width := 0
 
@@ -58,7 +58,7 @@ func (renderer *markdownRenderer) addList(indent string, marker string, children
 	prefix_text := strings.Repeat("  ", depth) + marker + " "
 	marker_kind := "listItem"
 
-	if ordered == true {
+	if is_ordered == true {
 		marker_kind = "listEnumeration"
 	}
 
@@ -74,7 +74,7 @@ func (renderer *markdownRenderer) addList(indent string, marker string, children
 
 }
 
-func (renderer *markdownRenderer) appendWrapped(first []transcriptSpan, next []transcriptSpan, spans []transcriptSpan, fill bool) {
+func (renderer *markdownRenderer) appendWrapped(first []transcriptSpan, next []transcriptSpan, spans []transcriptSpan, has_fill bool) {
 
 	first_width := 0
 
@@ -112,7 +112,7 @@ func (renderer *markdownRenderer) appendWrapped(first []transcriptSpan, next []t
 			Spans: compactSpans(combined),
 		}
 
-		if fill == true {
+		if has_fill == true {
 
 			result.HasFill = true
 			result.Fill = markdownStyle(renderer.styles, "codeBlock")
@@ -153,6 +153,7 @@ func (renderer *markdownRenderer) inlineChildren(children []*parser_markdown.Ele
 				last_line = child.Line
 
 			}
+
 		}
 	}
 
@@ -335,22 +336,28 @@ func (renderer *markdownRenderer) renderBlock(element *parser_markdown.Element) 
 	case "table":
 
 		for _, line := range strings.Split(element.Text, "\n") {
+
 			spans := []transcriptSpan{
 				{Text: line, Style: markdownStyle(renderer.styles, "codeBlock")},
 			}
 			renderer.appendWrapped(nil, nil, spans, false)
+
 		}
 
 	default:
 
 		if len(element.Children) > 0 {
+
 			spans := renderer.inlineChildren(element.Children, "text")
 			renderer.appendWrapped(nil, nil, spans, false)
+
 		} else if strings.TrimSpace(element.Text) != "" {
+
 			spans := []transcriptSpan{
 				{Text: element.Text, Style: markdownStyle(renderer.styles, "text")},
 			}
 			renderer.appendWrapped(nil, nil, spans, false)
+
 		}
 
 	}
@@ -362,8 +369,10 @@ func (renderer *markdownRenderer) renderCodeBlock(element *parser_markdown.Eleme
 	lines := strings.Split(element.Text, "\n")
 
 	if len(lines) == 0 || (len(lines) == 1 && lines[0] == "") {
+
 		renderer.lines = append(renderer.lines, transcriptLine{})
 		return
+
 	}
 
 	for _, line := range lines {
@@ -383,7 +392,7 @@ func (renderer *markdownRenderer) renderCodeBlock(element *parser_markdown.Eleme
 
 func (renderer *markdownRenderer) renderList(element *parser_markdown.Element) {
 
-	ordered := element.Type == "ol"
+	is_ordered := element.Type == "ol"
 	index := 0
 
 	for _, child := range element.Children {
@@ -395,11 +404,11 @@ func (renderer *markdownRenderer) renderList(element *parser_markdown.Element) {
 			index++
 			marker := "•"
 
-			if ordered == true {
+			if is_ordered == true {
 				marker = strconv.Itoa(index) + "."
 			}
 
-			renderer.addList("", marker, child.Children, ordered)
+			renderer.addList("", marker, child.Children, is_ordered)
 
 		}
 	}
@@ -419,11 +428,15 @@ func (renderer *markdownRenderer) renderBlockquote(element *parser_markdown.Elem
 		} else {
 
 			if child.Type == "p" {
+
 				spans := renderer.inlineChildren(child.Children, "blockQuote")
 				renderer.appendWrapped(prefix, prefix, spans, false)
+
 			} else {
+
 				spans := renderer.inlineElement(child, "blockQuote")
 				renderer.appendWrapped(prefix, prefix, spans, false)
+
 			}
 
 		}

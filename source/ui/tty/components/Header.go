@@ -49,11 +49,13 @@ func (header *Header) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, elap
 				is_planner := header.Selected == "" || header.Selected == header.Session.Agent.Name
 
 				if is_planner == true {
+
 					status = "idle"
 
 					if header.Session.IsWaiting() == true {
 						status = "thinking"
 					}
+
 				} else if strings.TrimSpace(status) == "" {
 					status = "unknown"
 				}

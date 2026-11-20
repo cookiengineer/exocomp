@@ -11,10 +11,12 @@ func renderMarkdownPlain(text string, width int) []transcriptLine {
 		if line == "" {
 			renderer.lines = append(renderer.lines, transcriptLine{})
 		} else {
+
 			spans := []transcriptSpan{
 				{Text: line, Style: markdownStyle(renderer.styles, "text")},
 			}
 			renderer.appendWrapped(nil, nil, spans, false)
+
 		}
 
 	}

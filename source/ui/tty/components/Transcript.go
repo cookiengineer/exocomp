@@ -3,6 +3,8 @@ package components
 import "exocomp/schemas"
 import "exocomp/ui/tty/styles"
 import utils_tty "exocomp/utils/tty"
+import "fmt"
+import "strings"
 import "time"
 
 type transcriptSpan struct {
@@ -54,10 +56,10 @@ func NewTranscript() *Transcript {
 
 }
 
-func (transcript *Transcript) SetMessages(messages []*schemas.Message, waiting bool) {
+func (transcript *Transcript) SetMessages(messages []*schemas.Message, is_waiting bool) {
 
 	transcript.messages = messages
-	transcript.waiting = waiting
+	transcript.waiting = is_waiting
 
 }
 
@@ -239,8 +241,10 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 		}
 
 		if line.Spinner == true {
+
 			buffer.WriteString(content_x, rect.Y+line_row, spinnerFrame(elapsed)+" Thinking", styles.ReasoningHeader)
 			continue
+
 		}
 
 		if line.HasFill == true {
@@ -276,4 +280,225 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 
 	}
 
+}
+
+func (transcript *Transcript) appendMessage(result []transcriptLine, message *schemas.Message, width int) []transcriptLine {
+
+	switch message.Role {
+
+	case "system":
+
+		result = append(result, withBorder(transcript.collapsibleLines(
+			message,
+			"system",
+			"System",
+			firstContentLine(message.Content),
+			message.Content,
+			styles.SystemHeader,
+			styles.CollapsedHint,
+			width,
+			false,
+		), styles.BorderSystem)...)
+
+	case "tool":
+
+		label := "Tool"
+
+		if strings.TrimSpace(message.ToolName) != "" {
+			label = "Tool · " + strings.TrimSpace(message.ToolName)
+		}
+
+		result = append(result, withBorder(transcript.collapsibleLines(
+			message,
+			"tool",
+			label,
+			firstContentLine(message.Content),
+			message.Content,
+			styles.ToolHeader,
+			styles.CollapsedHint,
+			width,
+			false,
+		), styles.BorderTool)...)
+
+	case "assistant":
+
+		result = append(result, transcriptLine{
+			Spans: []transcriptSpan{
+				{Text: "[assistant]", Style: styles.TranscriptAssistant},
+			},
+			HasBorder: true,
+			Border:    styles.BorderAssistant,
+		})
+
+		if strings.TrimSpace(message.ReasoningContent) != "" {
+
+			result = append(result, withBorder(transcript.collapsibleLines(
+				message,
+				"reasoning",
+				"Thought",
+				firstContentLine(message.ReasoningContent),
+				message.ReasoningContent,
+				styles.ReasoningHeader,
+				styles.CollapsedHint,
+				width,
+				true,
+			), styles.BorderThinking)...)
+
+		}
+
+		if strings.TrimSpace(message.Content) != "" {
+			result = append(result, withBorder(renderMarkdown(message.Content, width), styles.BorderAssistant)...)
+		}
+
+		for index, tool_call := range message.ToolCalls {
+
+			name := strings.TrimSpace(tool_call.Function.Name)
+
+			if name == "" {
+				name = "Tool"
+			}
+
+			result = append(result, withBorder(transcript.collapsibleLines(
+				message,
+				fmt.Sprintf("toolcall:%d", index),
+				"Tool · "+name,
+				toolCallPreview(tool_call),
+				toolCallContent(tool_call),
+				styles.ToolHeader,
+				styles.CollapsedHint,
+				width,
+				false,
+			), styles.BorderTool)...)
+
+		}
+
+	case "user":
+
+		result = append(result, transcriptLine{
+			Spans: []transcriptSpan{
+				{Text: "[user]", Style: styles.TranscriptUser},
+			},
+			HasBorder: true,
+			Border:    styles.BorderUser,
+		})
+
+		if strings.TrimSpace(message.Content) != "" {
+			result = append(result, withBorder(renderMarkdown(message.Content, width), styles.BorderUser)...)
+		}
+
+	default:
+
+		result = append(result, transcriptLine{
+			Spans: []transcriptSpan{
+				{Text: fmt.Sprintf("[%s]", message.Role), Style: styles.TranscriptTool},
+			},
+			HasBorder: true,
+			Border:    styles.BorderTool,
+		})
+
+		if strings.TrimSpace(message.Content) != "" {
+			result = append(result, withBorder(renderMarkdown(message.Content, width), styles.BorderTool)...)
+		}
+
+	}
+
+	return result
+
+}
+
+func (transcript *Transcript) collapsibleLines(message *schemas.Message, part string, label string, preview string, content string, header_style utils_tty.Style, hint_style utils_tty.Style, width int, is_mute bool) []transcriptLine {
+
+	toggle := transcriptToggle{
+		Message: message,
+		Part:    part,
+	}
+
+	if transcript.expanded[toggle] == false {
+
+		spans := []transcriptSpan{
+			{Text: "▸ " + label, Style: header_style},
+		}
+
+		preview = strings.Join(strings.Fields(preview), " ")
+
+		if preview != "" {
+
+			prefix_width := utils_tty.StringWidth("▸ " + label + ": ")
+			preview = utils_tty.TruncateRight(preview, max(1, width-prefix_width))
+			spans = append(spans, transcriptSpan{Text: ": " + preview, Style: hint_style})
+
+		}
+
+		return []transcriptLine{
+			{
+				Spans:  compactSpans(spans),
+				Toggle: &toggle,
+			},
+		}
+
+	}
+
+	header := transcriptLine{
+		Spans: []transcriptSpan{
+			{Text: "▾ " + label, Style: header_style},
+		},
+		Toggle: &toggle,
+	}
+
+	if strings.TrimSpace(content) == "" {
+		return []transcriptLine{header}
+	} else {
+
+		body := renderMarkdown(content, width)
+
+		if is_mute == true {
+			body = muteTranscriptLines(body)
+		}
+
+		body = indentTranscriptLines(body, "  ", hint_style)
+
+		return append([]transcriptLine{header}, body...)
+
+	}
+
+}
+
+func (transcript *Transcript) HandleMouse(x int, y int, rect utils_tty.Rect) bool {
+
+	if rect.Width > 0 && rect.Height > 0 {
+
+		if x >= rect.X && x < rect.X+rect.Width && y >= rect.Y && y < rect.Y+rect.Height {
+
+			index := transcript.lastStart + (y - rect.Y)
+
+			if index >= 0 && index < len(transcript.cached) {
+
+				line := transcript.cached[index]
+
+				if line.Toggle == nil {
+					return false
+				}
+
+				if transcript.expanded == nil {
+					transcript.expanded = make(map[transcriptToggle]bool)
+				}
+
+				transcript.expanded[*line.Toggle] = (transcript.expanded[*line.Toggle] == false)
+				transcript.anchorIndex = index
+				transcript.anchorOffset = index - transcript.lastStart
+				transcript.hasAnchor = true
+				transcript.cacheDirty = true
+
+				return true
+
+			} else {
+				return false
+			}
+
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
 }

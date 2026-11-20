@@ -98,6 +98,7 @@ func (dialog *QuestionDialog) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 		} else {
 			buffer.WriteString(input_rect.X+1, input_rect.Y+index, utils_tty.Truncate(lines[line_index].Text, input_rect.Width-2), styles.DialogInput)
 		}
+
 	}
 
 	dialog.cursorX = input_rect.X + 1 + cursor_column

@@ -175,7 +175,7 @@ func (dialog *ChoiceDialog) HandleKey(key utils_tty.Key) (string, bool, bool) {
 		if key.Rune == ' ' {
 
 			if dialog.Question.Multiple == true {
-				dialog.chosen[dialog.Selected] = !dialog.chosen[dialog.Selected]
+				dialog.chosen[dialog.Selected] = (dialog.chosen[dialog.Selected] == false)
 			}
 
 		}

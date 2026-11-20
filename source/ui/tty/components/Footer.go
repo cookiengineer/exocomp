@@ -206,6 +206,7 @@ func (footer *Footer) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, elap
 				buffer.WriteString(textarea_rect.X, textarea_rect.Y+row, utils_tty.Truncate(line.Text, textarea_rect.Width), styles.PromptText)
 
 			}
+
 		}
 
 	}
@@ -386,6 +387,7 @@ func (footer *Footer) HandleKey(key utils_tty.Key) bool {
 		return false
 
 	}
+
 }
 
 func (footer *Footer) RefreshSuggestions() {

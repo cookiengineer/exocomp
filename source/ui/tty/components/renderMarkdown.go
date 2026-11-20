@@ -20,4 +20,5 @@ func renderMarkdown(text string, width int) []transcriptLine {
 		return renderer.lines
 
 	}
+
 }

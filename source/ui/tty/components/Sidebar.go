@@ -37,7 +37,7 @@ func NewSidebar(session *engine.Session) *Sidebar {
 }
 
 func (sidebar *Sidebar) Toggle() {
-	sidebar.forceVisible = !sidebar.forceVisible
+	sidebar.forceVisible = (sidebar.forceVisible == false)
 }
 
 func (sidebar *Sidebar) IsVisible(width int) bool {
@@ -72,9 +72,9 @@ func (sidebar *Sidebar) ScrollBy(delta int) {
 
 }
 
-func (sidebar *Sidebar) Refresh(now time.Time, force bool) {
+func (sidebar *Sidebar) Refresh(now time.Time, is_force bool) {
 
-	if force == false && now.Sub(sidebar.lastRefresh) < time.Second {
+	if is_force == false && now.Sub(sidebar.lastRefresh) < time.Second {
 		return
 	}
 
@@ -209,8 +209,10 @@ func (sidebar *Sidebar) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, el
 	if len(sidebar.lines) == 0 {
 
 		if content_height > 0 {
+
 			message := "No changelog or open bugs yet."
 			buffer.WriteString(content_x, content_y, utils_tty.Truncate(message, content_width), styles.SidebarMuted)
+
 		}
 
 		return
@@ -239,43 +241,5 @@ func (sidebar *Sidebar) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, el
 		len(sidebar.lines),
 		sidebar.Scroll,
 	)
-
-}
-
-func drawSidebarScrollbar(buffer *utils_tty.Buffer, x int, top int, height int, total int, scroll int) {
-
-	if height <= 0 || total <= height {
-		return
-	}
-
-	track := height * 2
-	thumb := max(2, track*height/total)
-	max_scroll := max(1, total-height)
-	start := scroll * (track - thumb) / max_scroll
-
-	for row := 0; row < height; row++ {
-
-		cell_start := row * 2
-		cell_end := cell_start + 2
-		overlap_start := max(start, cell_start)
-		overlap_end := min(start+thumb, cell_end)
-
-		if overlap_end > overlap_start {
-
-			glyph := "█"
-
-			if overlap_end-overlap_start < 2 {
-				glyph = "▄"
-			}
-
-			if overlap_end-overlap_start < 2 && overlap_start == cell_start {
-				glyph = "▀"
-			}
-
-			buffer.Set(x, top+row, glyph, styles.ScrollbarThumb)
-
-		}
-
-	}
 
 }

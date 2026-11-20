@@ -25,9 +25,11 @@ func needsMarkdownSpace(previous []transcriptSpan, next []transcriptSpan) bool {
 			} else {
 				return false
 			}
+
 		} else {
 			return false
 		}
+
 	} else {
 		return false
 	}

@@ -30,7 +30,7 @@ func NewAgentSidebar(session *engine.Session) *AgentSidebar {
 }
 
 func (sidebar *AgentSidebar) Toggle() {
-	sidebar.forceVisible = !sidebar.forceVisible
+	sidebar.forceVisible = (sidebar.forceVisible == false)
 }
 
 func (sidebar *AgentSidebar) IsVisible(width int) bool {
@@ -65,9 +65,9 @@ func (sidebar *AgentSidebar) ScrollBy(delta int) {
 
 }
 
-func (sidebar *AgentSidebar) Refresh(now time.Time, force bool) {
+func (sidebar *AgentSidebar) Refresh(now time.Time, is_force bool) {
 
-	if force == false && now.Sub(sidebar.lastRefresh) < time.Second {
+	if is_force == false && now.Sub(sidebar.lastRefresh) < time.Second {
 		return
 	}
 
@@ -84,11 +84,13 @@ func (sidebar *AgentSidebar) Refresh(now time.Time, force bool) {
 			status := agent.Status
 
 			if sidebar.Session.Agent != nil && agent.Name == sidebar.Session.Agent.Name {
+
 				status = "idle"
 
 				if sidebar.Session.IsWaiting() == true {
 					status = "thinking"
 				}
+
 			} else if strings.TrimSpace(status) == "" {
 				status = "unknown"
 			}

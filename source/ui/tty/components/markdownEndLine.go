@@ -32,5 +32,6 @@ func markdownEndLine(element *parser_markdown.Element) int {
 			return end
 
 		}
+
 	}
 }

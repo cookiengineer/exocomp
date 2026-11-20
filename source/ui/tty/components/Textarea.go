@@ -249,6 +249,7 @@ func (textarea *Textarea) Wrap(width int) ([]TextareaLine, int, int) {
 			line_width += value_width
 
 		}
+
 	}
 
 	lines = append(lines, TextareaLine{
