@@ -1,4 +1,4 @@
-package tools
+package findings
 
 import utils_findings "exocomp/utils/findings"
 

@@ -5,6 +5,7 @@ import "exocomp/tools/bugs"
 import "exocomp/tools/changelog"
 import "exocomp/tools/containers"
 import "exocomp/tools/files"
+import "exocomp/tools/findings"
 import "exocomp/tools/humans"
 import "exocomp/tools/programs"
 import "exocomp/tools/requirements"
@@ -23,7 +24,7 @@ func TestToolSchemas_DoNotMentionInternalState(t *testing.T) {
 		changelog.ChangelogSchema,
 		containers.ContainersSchema,
 		files.FilesSchema,
-		FindingsSchema,
+		findings.FindingsSchema,
 		humans.HumansSchema,
 		programs.ProgramsSchema,
 		requirements.RequirementsSchema,

@@ -1,7 +1,7 @@
 package session
 
 import "exocomp/engine"
-import "exocomp/tools"
+import "exocomp/tools/findings"
 import "exocomp/ui/web/handlers"
 import "encoding/json"
 import "net/http"
@@ -15,7 +15,7 @@ func Findings(session *engine.Session, request *http.Request, response http.Resp
 
 		if tool != nil {
 
-			findings_tool, ok := tool.(*tools.Findings)
+			findings_tool, ok := tool.(*findings.Findings)
 
 			if ok == true {
 

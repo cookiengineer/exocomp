@@ -5,6 +5,7 @@ import "exocomp/tools/bugs"
 import "exocomp/tools/changelog"
 import "exocomp/tools/containers"
 import "exocomp/tools/files"
+import "exocomp/tools/findings"
 import "exocomp/tools/humans"
 import "exocomp/tools/programs"
 import "exocomp/tools/requirements"
@@ -72,7 +73,7 @@ func Toolset(
 		case "files":
 			tool = files.NewFilesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
 		case "findings":
-			tool = NewFindings(allowed_methods, playground, sandbox, agent_name)
+			tool = findings.NewFindings(allowed_methods, playground, sandbox, agent_name)
 		case "humans":
 			tool = humans.NewHumansWithCapabilities(allowed_methods, playground, sandbox, agent_name, capabilities)
 		case "programs":

@@ -2,6 +2,7 @@ package tools
 
 import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
+import utils_http "exocomp/utils/http"
 import utils_sandbox "exocomp/utils/sandbox"
 import "crypto/sha256"
 import "encoding/hex"
@@ -117,7 +118,7 @@ func runAssetExport(tool *Assets, matches []types.Asset, format string, path str
 		if err1 == nil {
 
 			sum := sha256.Sum256(data)
-			content_type := contentTypeForPath(resolved)
+			content_type := utils_http.ContentTypeForPath(resolved)
 
 			return fmt.Sprintf(
 				"assets.Export: format=%s path=\"%s\" count=%d sha256=%s size=%d content_type=%s",

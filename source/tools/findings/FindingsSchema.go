@@ -1,8 +1,8 @@
-package tools
+package findings
 
 import "exocomp/schemas"
-import "encoding/json"
 import _ "embed"
+import "encoding/json"
 
 //go:embed Findings.json
 var findingsJSON []byte
