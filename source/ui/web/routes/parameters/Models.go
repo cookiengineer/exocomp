@@ -7,8 +7,8 @@ import "exocomp/ui/web/handlers"
 import "bytes"
 import "encoding/json"
 import "fmt"
-import "net/http"
 import "io"
+import "net/http"
 import "sort"
 import "strconv"
 import "strings"
@@ -19,7 +19,7 @@ func init() {
 	models_cache = make([]schemas.Model, 0)
 }
 
-func update_models(config *types.Config) {
+func updateModels(config *types.Config) {
 
 	resolved_endpoints := make(map[string]string)
 	resolved_models := make(map[string]schemas.Model)
@@ -105,7 +105,7 @@ func Models(session *engine.Session, request *http.Request, response http.Respon
 	if request.Method == http.MethodGet {
 
 		if len(models_cache) == 0 {
-			update_models(session.Config)
+			updateModels(session.Config)
 		}
 
 		models := make([]string, 0)

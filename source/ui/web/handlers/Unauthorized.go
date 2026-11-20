@@ -18,9 +18,9 @@ func Unauthorized(session *engine.Session, err error, request *http.Request, res
 	payload := []byte{}
 
 	if err != nil {
-		content_type, payload = format_error(request, fmt.Sprintf("Unauthorized : %s", err.Error()))
+		content_type, payload = formatError(request, fmt.Sprintf("Unauthorized : %s", err.Error()))
 	} else {
-		content_type, payload = format_error(request, "Unauthorized")
+		content_type, payload = formatError(request, "Unauthorized")
 	}
 
 	response.Header().Set("Content-Type", content_type)

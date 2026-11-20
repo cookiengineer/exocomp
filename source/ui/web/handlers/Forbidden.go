@@ -8,7 +8,7 @@ func Forbidden(session *engine.Session, request *http.Request, response http.Res
 
 	session.Console.Error(fmt.Sprintf("> %s %s %d", request.Method, request.URL.Path, http.StatusForbidden))
 
-	content_type, payload := format_error(request, "Forbidden")
+	content_type, payload := formatError(request, "Forbidden")
 
 	response.Header().Set("Content-Type", content_type)
 	response.WriteHeader(http.StatusForbidden)

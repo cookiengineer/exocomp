@@ -1,11 +1,11 @@
 package handlers
 
-import "fmt"
 import "encoding/json"
+import "fmt"
 import "net/http"
 import "strings"
 
-func format_error(request *http.Request, message string) (string, []byte) {
+func formatError(request *http.Request, message string) (string, []byte) {
 
 	content_type := "text/html; charset=utf-8"
 	payload := []byte(fmt.Sprintf(`

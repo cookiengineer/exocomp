@@ -8,7 +8,7 @@ func TooManyRequests(session *engine.Session, request *http.Request, response ht
 
 	session.Console.Error(fmt.Sprintf("> %s %s %d", request.Method, request.URL.Path, http.StatusTooManyRequests))
 
-	content_type, payload := format_error(request, "Too Many Requests")
+	content_type, payload := formatError(request, "Too Many Requests")
 
 	response.Header().Set("Content-Type", content_type)
 	response.WriteHeader(http.StatusTooManyRequests)

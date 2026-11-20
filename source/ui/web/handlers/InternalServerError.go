@@ -18,9 +18,9 @@ func InternalServerError(session *engine.Session, err error, request *http.Reque
 	payload := []byte{}
 
 	if err != nil {
-		content_type, payload = format_error(request, fmt.Sprintf("Internal Server Error: %s", err.Error()))
+		content_type, payload = formatError(request, fmt.Sprintf("Internal Server Error: %s", err.Error()))
 	} else {
-		content_type, payload = format_error(request, "Internal Server Error")
+		content_type, payload = formatError(request, "Internal Server Error")
 	}
 
 	response.Header().Set("Content-Type", content_type)

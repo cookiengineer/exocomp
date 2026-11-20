@@ -18,9 +18,9 @@ func BadRequest(session *engine.Session, err error, request *http.Request, respo
 	payload := []byte{}
 
 	if err != nil {
-		content_type, payload = format_error(request, fmt.Sprintf("Bad Request: %s", err.Error()))
+		content_type, payload = formatError(request, fmt.Sprintf("Bad Request: %s", err.Error()))
 	} else {
-		content_type, payload = format_error(request, "Bad Request")
+		content_type, payload = formatError(request, "Bad Request")
 	}
 
 	response.Header().Set("Content-Type", content_type)

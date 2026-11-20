@@ -1,12 +1,10 @@
 package colors
 
-import (
-	utils_tty "exocomp/utils/tty"
-	"os"
-	"regexp"
-	"strings"
-	"testing"
-)
+import utils_tty "exocomp/utils/tty"
+import "os"
+import "regexp"
+import "strings"
+import "testing"
 
 func TestThemeCSSMatchesPalette(t *testing.T) {
 

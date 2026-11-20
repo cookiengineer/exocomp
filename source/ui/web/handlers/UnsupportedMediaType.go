@@ -8,7 +8,7 @@ func UnsupportedMediaType(session *engine.Session, request *http.Request, respon
 
 	session.Console.Error(fmt.Sprintf("> %s %s %d", request.Method, request.URL.Path, http.StatusUnsupportedMediaType))
 
-	content_type, payload := format_error(request, "Unsupported Media Type")
+	content_type, payload := formatError(request, "Unsupported Media Type")
 
 	response.Header().Set("Content-Type", content_type)
 	response.WriteHeader(http.StatusUnsupportedMediaType)

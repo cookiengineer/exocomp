@@ -8,7 +8,7 @@ func MethodNotAllowed(session *engine.Session, request *http.Request, response h
 
 	session.Console.Error(fmt.Sprintf("> %s %s %d", request.Method, request.URL.Path, http.StatusMethodNotAllowed))
 
-	content_type, payload := format_error(request, "Method Not Allowed")
+	content_type, payload := formatError(request, "Method Not Allowed")
 
 	response.Header().Set("Content-Type", content_type)
 	response.WriteHeader(http.StatusMethodNotAllowed)
