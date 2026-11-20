@@ -1,5 +1,6 @@
 package main
 
+import "exocomp-toolchain/internal/utils/lint"
 import "encoding/json"
 import "flag"
 import "fmt"
@@ -24,7 +25,7 @@ func main() {
 
 	}
 
-	context, err0 := Load(*root, *is_including_tests)
+	context, err0 := lint.Load(*root, *is_including_tests)
 
 	if err0 != nil {
 
@@ -78,20 +79,7 @@ func parseRuleFilter(raw string) map[string]bool {
 
 func printRules() {
 
-	type entry struct {
-		ID      string
-		Summary string
-	}
-
-	entries := make([]entry, 0)
-
-	for _, rule := range fileRules {
-		entries = append(entries, entry{ID: rule.ID, Summary: rule.Summary})
-	}
-
-	for _, rule := range packageRules {
-		entries = append(entries, entry{ID: rule.ID, Summary: rule.Summary})
-	}
+	entries := lint.ListRules()
 
 	sort.Slice(entries, func(a int, b int) bool {
 		return entries[a].ID < entries[b].ID
@@ -103,7 +91,7 @@ func printRules() {
 
 }
 
-func printText(diagnostics []Diagnostic) {
+func printText(diagnostics []lint.Diagnostic) {
 
 	for _, diagnostic := range diagnostics {
 		fmt.Println(diagnostic.String())
@@ -135,7 +123,7 @@ func printText(diagnostics []Diagnostic) {
 
 }
 
-func printJSON(diagnostics []Diagnostic) {
+func printJSON(diagnostics []lint.Diagnostic) {
 
 	output := make([]jsonDiagnostic, 0, len(diagnostics))
 

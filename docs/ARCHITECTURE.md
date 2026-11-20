@@ -468,5 +468,6 @@ Dependency rules:
 - Shared helpers have exactly one home. Do not create `utils/<name>` packages
   that mirror a top-level package.
 
-The dependency rules are implemented in [`toolchain/lint/deps.go`](../toolchain/lint/deps.go)
+The dependency rules are implemented in
+[`toolchain/internal/utils/lint/checkToolIsolation.go`](../toolchain/internal/utils/lint/checkToolIsolation.go)
 and are checked by `make lint-toolchain`.

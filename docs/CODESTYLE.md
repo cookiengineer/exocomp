@@ -1,7 +1,10 @@
 # Code Style
 
 The codestyle linter is the executable source of truth. This document is an
-overview; the rules live in [`toolchain/lint`](../toolchain/lint/).
+overview; the rules live in
+[`toolchain/internal/utils/lint`](../toolchain/internal/utils/lint/).
+[`toolchain/lint/main.go`](../toolchain/lint/main.go) is the CLI wrapper and owns
+flag parsing for the linter.
 
 Run the checks from the repository root. The targets are defined in the
 [`Makefile`](../Makefile):
@@ -28,26 +31,30 @@ go -C toolchain run ./lint -root .;
 and `make lint-toolchain` are the required gates. `-root .` targets the
 toolchain module.
 
+Flag parsing for every toolchain command lives in that command's `main.go`.
+Internal packages receive already-parsed values and do not import `flag` or
+read `os.Args`.
+
 A diagnostic is suppressed with `//nolint:<rule>` on the same line or the line
 above. Comma-separated rules and `//nolint:all` are supported.
 
 ## Rule Overview
 
 Rule IDs and summaries are registered in
-[`rules.go`](../toolchain/lint/rules.go). The table below links to the
-implementation files.
+[`rules.go`](../toolchain/internal/utils/lint/rules.go). The table below links
+to the implementation files.
 
 | Area | Implementation | Intent |
 |:-----|:---------------|:-------|
-| Branches | [`branch.go`](../toolchain/lint/branch.go) | Put the positive action first and keep error or fallback cases in `else`. Consecutive guards become one `else if` chain. |
-| Conditions | [`conditions.go`](../toolchain/lint/conditions.go) | Compare booleans explicitly (`== true`, `== false`, `err == nil`); do not use `!` negation. |
-| Formatting | [`style.go`](../toolchain/lint/style.go) | Follow `gofmt`; separate multi-statement blocks with blank lines; put a blank line above every `case` and `default`; use tabs in JSON. |
-| Imports | [`imports.go`](../toolchain/lint/imports.go) | One import per line. Project imports first, then the standard library in the same block, then a blank line and third-party imports. Sort each group. |
-| Naming | [`naming.go`](../toolchain/lint/naming.go), [`style.go`](../toolchain/lint/style.go) | Exported identifiers are CamelCase, unexported functions camelCase, locals and parameters snake_case, booleans read as predicates, and a type uses one receiver name. |
-| Errors | [`errors.go`](../toolchain/lint/errors.go) | Prefix every error with `component.Method:` and start the message with a capital letter. |
-| Layout | [`layout.go`](../toolchain/lint/layout.go) | One exported type per file; methods and constructors in the owner's file; every other free function in its own file named after it; at most one `init()` per file. |
-| Dependencies | [`deps.go`](../toolchain/lint/deps.go) | Tool packages do not import each other and only import allowed project packages. `types` does not import `utils/capabilities`; `utils` does not import `tools`. |
-| Tests | [`tests.go`](../toolchain/lint/tests.go) | Test files are named after a source file; test functions follow `Test<Type>_<Method>`. |
+| Branches | [`checkGuard.go`](../toolchain/internal/utils/lint/checkGuard.go) | Put the positive action first and keep error or fallback cases in `else`. Consecutive guards become one `else if` chain. |
+| Conditions | [`checkBareCondition.go`](../toolchain/internal/utils/lint/checkBareCondition.go) | Compare booleans explicitly (`== true`, `== false`, `err == nil`); do not use `!` negation. |
+| Formatting | [`checkGofmt.go`](../toolchain/internal/utils/lint/checkGofmt.go) | Follow `gofmt`; separate multi-statement blocks with blank lines; put a blank line above every `case` and `default`; use tabs in JSON. |
+| Imports | [`checkImportParen.go`](../toolchain/internal/utils/lint/checkImportParen.go) | One import per line. Project imports first, then the standard library in the same block, then a blank line and third-party imports. Sort each group. |
+| Naming | [`checkFileName.go`](../toolchain/internal/utils/lint/checkFileName.go) | Exported identifiers are CamelCase, unexported functions camelCase, locals and parameters snake_case, booleans read as predicates, and a type uses one receiver name. |
+| Errors | [`checkErrorPrefix.go`](../toolchain/internal/utils/lint/checkErrorPrefix.go) | Prefix every error with `component.Method:` and start the message with a capital letter. |
+| Layout | [`checkOneType.go`](../toolchain/internal/utils/lint/checkOneType.go) | One exported type per file; methods and constructors in the owner's file; every other free function in its own file named after it; at most one `init()` per file. |
+| Dependencies | [`checkToolIsolation.go`](../toolchain/internal/utils/lint/checkToolIsolation.go) | Tool packages do not import each other and only import allowed project packages. `types` does not import `utils/capabilities`; `utils` does not import `tools`. |
+| Tests | [`checkTestFile.go`](../toolchain/internal/utils/lint/checkTestFile.go) | Test files are named after a source file; test functions follow `Test<Type>_<Method>`. |
 
 The linter only checks what is implemented in those files. Run
 `go -C toolchain run ./lint -list` for the current rule IDs and summaries.

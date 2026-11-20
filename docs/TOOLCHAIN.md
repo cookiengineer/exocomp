@@ -7,8 +7,10 @@ build, test and lint entry points. The program list is defined once in
 Each command is a `main` package under its own folder:
 `toolchain/build/`, `toolchain/build-webapp/`, `toolchain/clean/`,
 `toolchain/install/`, `toolchain/test/` and `toolchain/lint/`.
-Shared helpers live under `toolchain/internal/utils/<domain>/`; the web app
-build actions live under `toolchain/internal/utils/webapp/`.
+Flag parsing for a command lives in its `main.go`. Shared helpers live under
+`toolchain/internal/utils/<domain>/`; the codestyle linter implementation lives
+under `toolchain/internal/utils/lint/`, and the web app build actions live under
+`toolchain/internal/utils/webapp/`.
 
 ## Manifest
 

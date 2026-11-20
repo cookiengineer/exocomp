@@ -1,0 +1,42 @@
+package lint
+
+import "go/ast"
+import "go/token"
+import "strings"
+
+func parseSuppressions(fileset *token.FileSet, file *ast.File) map[int]map[string]bool {
+
+	result := make(map[int]map[string]bool)
+
+	for _, group := range file.Comments {
+
+		for _, comment := range group.List {
+
+			matches := nolintPattern.FindStringSubmatch(comment.Text)
+
+			if matches == nil {
+				continue
+			}
+
+			line := fileset.Position(comment.Pos()).Line
+
+			for _, rule := range strings.Split(matches[1], ",") {
+
+				trimmed := strings.TrimSpace(rule)
+
+				if trimmed == "" {
+					continue
+				}
+
+				addSuppression(result, line, trimmed)
+				addSuppression(result, line+1, trimmed)
+
+			}
+
+		}
+
+	}
+
+	return result
+
+}
