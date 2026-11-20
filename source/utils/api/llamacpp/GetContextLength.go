@@ -2,8 +2,8 @@ package llamacpp
 
 import "encoding/json"
 import "io"
-import "net/url"
 import "net/http"
+import "net/url"
 
 func GetContextLength(base_url *url.URL, model string) int {
 

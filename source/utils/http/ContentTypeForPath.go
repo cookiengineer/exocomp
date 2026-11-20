@@ -24,4 +24,5 @@ func ContentTypeForPath(path string) string {
 		return "application/octet-stream"
 
 	}
+
 }

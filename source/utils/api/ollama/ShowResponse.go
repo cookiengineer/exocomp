@@ -15,7 +15,7 @@ func (response *ShowResponse) ContextLength() int {
 
 		for key, raw_value := range response.ModelInfo {
 
-			if strings.Contains(key, ".context_length") {
+			if strings.Contains(key, ".context_length") == true {
 
 				switch tmp := raw_value.(type) {
 
@@ -46,7 +46,7 @@ func (response *ShowResponse) EmbeddingLength() int {
 
 		for key, raw_value := range response.ModelInfo {
 
-			if strings.Contains(key, ".embedding_length") {
+			if strings.Contains(key, ".embedding_length") == true {
 
 				switch tmp := raw_value.(type) {
 
