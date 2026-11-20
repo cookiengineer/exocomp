@@ -153,7 +153,7 @@ func addPathRule(ruleset_fd int, path string, access uint64) error {
 
 }
 
-func addPathRules(ruleset_fd int, paths []string, access uint64, optional bool) error {
+func addPathRules(ruleset_fd int, paths []string, access uint64, is_optional bool) error {
 
 	for _, path := range paths {
 
@@ -161,7 +161,7 @@ func addPathRules(ruleset_fd int, paths []string, access uint64, optional bool) 
 
 		if err == nil {
 			continue
-		} else if optional == true && isOptionalPathError(err) == true {
+		} else if is_optional == true && isOptionalPathError(err) == true {
 			// NOTE: Default allowlist entries may be absent on this system.
 			continue
 		} else {
@@ -237,8 +237,11 @@ func restrictPaths(policy Policy) error {
 			} else {
 				return err1
 			}
+
 		}
+
 	}
+
 }
 
 func restrictSelf(ruleset_fd int, abi int) error {

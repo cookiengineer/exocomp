@@ -8,11 +8,6 @@ import "path/filepath"
 
 import "golang.org/x/sys/unix"
 
-const (
-	securebitsNoRoot       = 1 << 0
-	securebitsNoRootLocked = 1 << 1
-)
-
 // maskPrivateState hides the sandbox's private .exocomp state folder behind an
 // empty read-only tmpfs. The helper runs in a private mount namespace, so the
 // mount only affects the sandboxed process and its children.
@@ -37,40 +32,17 @@ func maskPrivateState(sandbox string) error {
 			)
 
 			if err2 == nil {
-				return dropPrivileges()
+				return DropPrivileges()
 			} else {
-				return fmt.Errorf("Cannot mask private state folder.")
+				return fmt.Errorf("landlock.MaskPrivateState: Cannot mask private state folder.")
 			}
+
 		} else {
-			return fmt.Errorf("Cannot make mount namespace private.")
+			return fmt.Errorf("landlock.MaskPrivateState: Cannot make mount namespace private.")
 		}
+
 	} else {
 		return err0
 	}
-}
 
-// dropPrivileges clears the capabilities gained from entering the user
-// namespace. The target must not run with CAP_DAC_OVERRIDE or similar, because
-// that would bypass ordinary filesystem permissions inside the sandbox.
-func dropPrivileges() error {
-
-	err0 := unix.Prctl(unix.PR_SET_SECUREBITS, uintptr(securebitsNoRoot|securebitsNoRootLocked), 0, 0, 0)
-
-	if err0 == nil {
-
-		for capability := 0; capability <= int(unix.CAP_LAST_CAP); capability++ {
-			_ = unix.Prctl(unix.PR_CAPBSET_DROP, uintptr(capability), 0, 0, 0)
-		}
-
-		data := [2]unix.CapUserData{}
-		err1 := unix.Capset(&unix.CapUserHeader{Version: unix.LINUX_CAPABILITY_VERSION_3}, &data[0])
-
-		if err1 == nil {
-			return nil
-		} else {
-			return fmt.Errorf("Cannot drop capabilities.")
-		}
-	} else {
-		return fmt.Errorf("Cannot set secure bits.")
-	}
 }

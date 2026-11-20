@@ -6,7 +6,6 @@ import "errors"
 import "fmt"
 import "os"
 import "runtime"
-import "strings"
 
 import "golang.org/x/sys/unix"
 
@@ -28,8 +27,10 @@ func Execute(arguments []string) int {
 			err_loopback := raiseLoopback()
 
 			if err_loopback != nil {
+
 				fmt.Fprint(os.Stderr, "landlock.Execute: Cannot isolate network namespace.\n")
 				return 125
+
 			}
 
 		}
@@ -37,8 +38,10 @@ func Execute(arguments []string) int {
 		err_mask := maskPrivateState(sandbox)
 
 		if err_mask != nil {
+
 			fmt.Fprint(os.Stderr, "landlock.Execute: Cannot hide private state folder.\n")
 			return 125
+
 		}
 
 		policy := DefaultPolicy(sandbox, target, read_paths, write_paths)
@@ -52,11 +55,13 @@ func Execute(arguments []string) int {
 			if err2 == nil {
 				return 0
 			} else {
+
 				fmt.Fprint(os.Stderr, "landlock.Execute: Cannot execute program.\n")
 				return 126
+
 			}
 
-		} else if errors.Is(err1, errUnsupported) {
+		} else if errors.Is(err1, errUnsupported) == true {
 
 			fmt.Fprint(os.Stderr, "landlock.Execute: Sandboxing is not supported on this system.\n")
 			return 125
@@ -75,53 +80,4 @@ func Execute(arguments []string) int {
 
 	}
 
-}
-
-func parseArguments(arguments []string) (string, []string, []string, bool, string, []string, error) {
-
-	sandbox := ""
-	target := ""
-	network := "deny"
-	read_paths := make([]string, 0)
-	write_paths := make([]string, 0)
-	target_arguments := make([]string, 0)
-	after_separator := false
-
-	for _, argument := range arguments {
-
-		if after_separator == true {
-
-			if target == "" {
-				target = argument
-			} else {
-				target_arguments = append(target_arguments, argument)
-			}
-
-		} else if argument == "--" {
-			after_separator = true
-		} else if strings.HasPrefix(argument, "--sandbox=") {
-			sandbox = strings.TrimSpace(argument[len("--sandbox="):])
-		} else if strings.HasPrefix(argument, "--read=") {
-			read_paths = append(read_paths, strings.TrimSpace(argument[len("--read="):]))
-		} else if strings.HasPrefix(argument, "--write=") {
-			write_paths = append(write_paths, strings.TrimSpace(argument[len("--write="):]))
-		} else if strings.HasPrefix(argument, "--network=") {
-			network = strings.TrimSpace(argument[len("--network="):])
-		} else {
-			return "", nil, nil, false, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
-		}
-
-	}
-
-	if network == "allow" || network == "deny" {
-
-		if sandbox != "" && target != "" {
-			return sandbox, read_paths, write_paths, network == "allow", target, target_arguments, nil
-		} else {
-			return "", nil, nil, false, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
-		}
-
-	} else {
-		return "", nil, nil, false, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
-	}
 }

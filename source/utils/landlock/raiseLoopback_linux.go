@@ -31,18 +31,21 @@ func raiseLoopback() error {
 				err3 := unix.IoctlIfreq(fd, unix.SIOCSIFFLAGS, ifreq)
 
 				if err3 != nil {
-					return fmt.Errorf("Cannot raise loopback interface.")
+					return fmt.Errorf("landlock.RaiseLoopback: Cannot raise loopback interface.")
 				}
 
 				return nil
 
 			} else {
-				return fmt.Errorf("Cannot read loopback flags.")
+				return fmt.Errorf("landlock.RaiseLoopback: Cannot read loopback flags.")
 			}
+
 		} else {
-			return fmt.Errorf("Cannot resolve loopback interface.")
+			return fmt.Errorf("landlock.RaiseLoopback: Cannot resolve loopback interface.")
 		}
+
 	} else {
-		return fmt.Errorf("Cannot open socket.")
+		return fmt.Errorf("landlock.RaiseLoopback: Cannot open socket.")
 	}
+
 }
