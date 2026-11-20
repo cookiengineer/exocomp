@@ -1,10 +1,14 @@
-package tools
+package findings
 
 import utils_sandbox "exocomp/utils/sandbox"
 import "fmt"
 import "os"
 
-func readScanArtifactFile(sandbox string, path string, namespace string) ([]byte, error) {
+const maxScanArtifactSize = 16 * 1024 * 1024
+
+// ReadScanArtifactFile reads a scanner artifact from the sandbox and rejects
+// files that exceed the 16 MiB limit. namespace is used for the error prefix.
+func ReadScanArtifactFile(sandbox string, path string, namespace string) ([]byte, error) {
 
 	resolved, err0 := utils_sandbox.ResolvePath(sandbox, path)
 

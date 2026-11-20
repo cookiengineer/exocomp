@@ -1,12 +1,12 @@
-package tools
+package sandbox
 
 import "path/filepath"
 import "strings"
 
-// isReservedFilesPath reports whether path points at the internal .exocomp
-// folder. The folder is reserved for findings, assets, shell transcripts and
-// scanner artifacts, which must be accessed through their own tools.
-func isReservedFilesPath(sandbox string, path string) bool {
+// IsReservedPath reports whether path points at the internal .exocomp folder.
+// The folder is reserved for findings, assets, shell transcripts and scanner
+// artifacts, which must be accessed through their own tools.
+func IsReservedPath(sandbox string, path string) bool {
 
 	cleaned := filepath.Clean(path)
 

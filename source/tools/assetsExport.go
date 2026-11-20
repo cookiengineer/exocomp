@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import utils_sandbox "exocomp/utils/sandbox"
 import "crypto/sha256"
 import "encoding/hex"
@@ -11,7 +12,7 @@ import "path/filepath"
 import "strings"
 import "time"
 
-func (tool *Assets) Export(arguments assetArguments) (string, error) {
+func (tool *Assets) Export(arguments utils_chat.Arguments) (string, error) {
 
 	format := "hosts"
 
@@ -103,7 +104,7 @@ func runAssetExport(tool *Assets, matches []types.Asset, format string, path str
 		sandbox = tool.Playground
 	}
 
-	if isReservedFilesPath(sandbox, path) == true {
+	if utils_sandbox.IsReservedPath(sandbox, path) == true {
 		return "", fmt.Errorf("assets.Export: Path is reserved for internal state.")
 	}
 
@@ -164,7 +165,7 @@ func writeAssetExportFile(sandbox string, path string, data []byte) (string, str
 
 }
 
-func assetExportLimit(arguments assetArguments) int {
+func assetExportLimit(arguments utils_chat.Arguments) int {
 
 	limit := 1000
 

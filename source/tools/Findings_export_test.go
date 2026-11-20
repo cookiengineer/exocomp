@@ -1,5 +1,6 @@
 package tools
 
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "os"
 import "path/filepath"
@@ -11,7 +12,7 @@ func TestFindings_ExportFindingAndEvidence(t *testing.T) {
 	tool, sandbox := newTestFindings(t)
 	id := addTestFinding(t, tool)
 
-	_, err0 := tool.BindEvidence(id, findingArguments{
+	_, err0 := tool.BindEvidence(id, utils_chat.Arguments{
 		"kind":    "command_output",
 		"content": "HTTP/1.1 200 OK",
 	})
@@ -30,7 +31,7 @@ func TestFindings_ExportFindingAndEvidence(t *testing.T) {
 		t.Fatalf("Expected one evidence entry, got %d", len(finding.Evidence))
 	}
 
-	finding_result, err2 := tool.Export(findingArguments{"type": "finding", "id": id})
+	finding_result, err2 := tool.Export(utils_chat.Arguments{"type": "finding", "id": id})
 
 	if err2 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err2, finding_result)
@@ -50,7 +51,7 @@ func TestFindings_ExportFindingAndEvidence(t *testing.T) {
 		t.Errorf("Expected exported finding file: %v", err3)
 	}
 
-	evidence_result, err4 := tool.Export(findingArguments{
+	evidence_result, err4 := tool.Export(utils_chat.Arguments{
 		"type":        "evidence",
 		"id":          id,
 		"evidence_id": finding.Evidence[0].ID,
@@ -91,7 +92,7 @@ func TestFindings_ExportReport(t *testing.T) {
 	tool, sandbox := newTestFindings(t)
 	id := addTestFinding(t, tool)
 
-	result, err0 := tool.Export(findingArguments{"type": "report"})
+	result, err0 := tool.Export(utils_chat.Arguments{"type": "report"})
 
 	if err0 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result)
@@ -126,7 +127,7 @@ func TestFindings_ExportScan(t *testing.T) {
 	tool, sandbox := newTestFindings(t)
 	path := writeTestArtifact(t, sandbox, testNucleiResult+"\n")
 
-	result, err0 := tool.Import(findingArguments{"path": path})
+	result, err0 := tool.Import(utils_chat.Arguments{"path": path})
 
 	if err0 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result)
@@ -142,7 +143,7 @@ func TestFindings_ExportScan(t *testing.T) {
 		t.Fatalf("Expected scan ID in %q", result)
 	}
 
-	exported, err1 := tool.Export(findingArguments{"type": "scan", "id": scan_id})
+	exported, err1 := tool.Export(utils_chat.Arguments{"type": "scan", "id": scan_id})
 
 	if err1 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err1, exported)
@@ -175,7 +176,7 @@ func TestFindings_GetHidesInternalPaths(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err)
 	}
 
-	_, err0 := tool.BindEvidence(id, findingArguments{
+	_, err0 := tool.BindEvidence(id, utils_chat.Arguments{
 		"kind":     "unit_test",
 		"artifact": "./proof_test.go",
 	})
@@ -205,7 +206,7 @@ func TestFindings_ExportRejectsInternalState(t *testing.T) {
 	tool, _ := newTestFindings(t)
 	_ = addTestFinding(t, tool)
 
-	_, err0 := tool.Export(findingArguments{"type": "report", "path": ".exocomp/report.md"})
+	_, err0 := tool.Export(utils_chat.Arguments{"type": "report", "path": ".exocomp/report.md"})
 
 	if err0 == nil {
 		t.Fatal("Expected export into .exocomp to be rejected")

@@ -1,6 +1,7 @@
 package tools
 
 import utils_capabilities "exocomp/utils/capabilities"
+import utils_shell "exocomp/utils/shell"
 
 // sanitizeShellArguments applies the same path rules as programs.Execute to
 // arguments that contain a path separator.
@@ -10,7 +11,7 @@ func sanitizeShellArguments(sandbox string, capabilities *utils_capabilities.Set
 
 	for _, argument := range arguments {
 
-		resolved, err0 := sanitizeProgramArgument(sandbox, capabilities, argument)
+		resolved, err0 := utils_shell.SanitizeProgramArgument(sandbox, capabilities, argument)
 
 		if err0 == nil {
 			result = append(result, resolved)

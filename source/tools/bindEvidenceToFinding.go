@@ -2,12 +2,13 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import utils_sandbox "exocomp/utils/sandbox"
 import "fmt"
 import "path/filepath"
 
-func bindEvidenceToFinding(tool *Findings, finding *types.Finding, arguments findingArguments) error {
+func bindEvidenceToFinding(tool *Findings, finding *types.Finding, arguments utils_chat.Arguments) error {
 
 	if len(finding.Evidence) < findingsMaxEvidenceCount {
 

@@ -4,6 +4,7 @@ import "exocomp/schemas"
 import utils_bytes "exocomp/utils/bytes"
 import utils_capabilities "exocomp/utils/capabilities"
 import utils_sandbox "exocomp/utils/sandbox"
+import utils_shell "exocomp/utils/shell"
 import "context"
 import "fmt"
 import "os/exec"
@@ -126,7 +127,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 
 		for a := 0; a < len(arguments); a++ {
 
-			argument, err := sanitizeProgramArgument(tool.Sandbox, tool.Capabilities, arguments[a])
+			argument, err := utils_shell.SanitizeProgramArgument(tool.Sandbox, tool.Capabilities, arguments[a])
 
 			if err == nil {
 				program_arguments = append(program_arguments, argument)
@@ -215,7 +216,7 @@ func (tool *Programs) Execute(program string, arguments []string) (string, error
 				return result, nil
 
 			} else {
-				return sanitizeExecutionError("programs", "Execute", "program", program, result, err3)
+				return utils_sandbox.SanitizeExecutionError("programs", "Execute", "program", program, result, err3)
 			}
 
 		} else {

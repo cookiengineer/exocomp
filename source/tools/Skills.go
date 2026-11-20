@@ -486,7 +486,7 @@ func (tool *Skills) Execute(name string, script string, arguments []string) (str
 							return result, nil
 
 						} else {
-							return sanitizeExecutionError("skills", "Execute", "runtime", runtime, result, err3)
+							return utils_sandbox.SanitizeExecutionError("skills", "Execute", "runtime", runtime, result, err3)
 						}
 
 					} else {

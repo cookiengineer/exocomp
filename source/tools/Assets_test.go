@@ -1,5 +1,6 @@
 package tools
 
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "os"
 import "path/filepath"
@@ -48,7 +49,7 @@ func TestAssets_AddDeduplicates(t *testing.T) {
 
 	tool, _ := newTestAssets(t)
 
-	result1, err0 := tool.Add(assetArguments{
+	result1, err0 := tool.Add(utils_chat.Arguments{
 		"type":     "subdomain",
 		"value":    "API.Example.com",
 		"source":   "manual",
@@ -60,7 +61,7 @@ func TestAssets_AddDeduplicates(t *testing.T) {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result1)
 	}
 
-	result2, err1 := tool.Add(assetArguments{
+	result2, err1 := tool.Add(utils_chat.Arguments{
 		"type":  "subdomain",
 		"value": "api.example.com",
 	})
@@ -89,7 +90,7 @@ func TestAssets_AddDeduplicates(t *testing.T) {
 		t.Errorf("Expected asset to stay in scope")
 	}
 
-	scope, err3 := tool.Scope(assetArguments{})
+	scope, err3 := tool.Scope(utils_chat.Arguments{})
 
 	if err3 != nil {
 		t.Fatalf("Expected %v to be nil", err3)
@@ -120,7 +121,7 @@ func TestAssets_ImportHttpx(t *testing.T) {
 		`{"url":"https://api.example.com/v1","host":"api.example.com","status_code":200,"title":"API","tech":["nginx"],"webserver":"nginx","ip":"1.2.3.4"}`,
 	}, "\n"))
 
-	result, err0 := tool.Import(assetArguments{"path": path, "format": "httpx", "in_scope": true})
+	result, err0 := tool.Import(utils_chat.Arguments{"path": path, "format": "httpx", "in_scope": true})
 
 	if err0 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result)
@@ -162,7 +163,7 @@ func TestAssets_ImportSubfinderAndScope(t *testing.T) {
 		`{"host":"example.com","source":"crtsh"}`,
 	}, "\n"))
 
-	result, err0 := tool.Import(assetArguments{"path": path, "format": "subfinder", "target": "example.com"})
+	result, err0 := tool.Import(utils_chat.Arguments{"path": path, "format": "subfinder", "target": "example.com"})
 
 	if err0 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result)
@@ -188,7 +189,7 @@ func TestAssets_ImportSubfinderAndScope(t *testing.T) {
 		t.Errorf("Expected one subdomain and one domain, got %v", types)
 	}
 
-	scoped, err2 := tool.Scope(assetArguments{"type": "subdomain"})
+	scoped, err2 := tool.Scope(utils_chat.Arguments{"type": "subdomain"})
 
 	if err2 != nil {
 		t.Fatalf("Expected %v to be nil", err2)
@@ -208,15 +209,15 @@ func TestAssets_ImportNaabuKatanaGobuster(t *testing.T) {
 	katana_path := writeAssetFixture(t, sandbox, "katana", `{"request":{"method":"GET","endpoint":"https://example.com/admin"},"response":{"status_code":200}}`)
 	gobuster_path := writeAssetFixture(t, sandbox, "gobuster", "/backup (Status: 301) [Size: 0]\nhttps://example.com/login (Status: 200) [Size: 123]")
 
-	if _, err := tool.Import(assetArguments{"path": naabu_path, "format": "naabu"}); err != nil {
+	if _, err := tool.Import(utils_chat.Arguments{"path": naabu_path, "format": "naabu"}); err != nil {
 		t.Fatalf("Expected %v to be nil", err)
 	}
 
-	if _, err := tool.Import(assetArguments{"path": katana_path, "format": "katana"}); err != nil {
+	if _, err := tool.Import(utils_chat.Arguments{"path": katana_path, "format": "katana"}); err != nil {
 		t.Fatalf("Expected %v to be nil", err)
 	}
 
-	result, err := tool.Import(assetArguments{"path": gobuster_path, "format": "gobuster", "target": "https://example.com"})
+	result, err := tool.Import(utils_chat.Arguments{"path": gobuster_path, "format": "gobuster", "target": "https://example.com"})
 
 	if err != nil {
 		t.Fatalf("Expected %v to be nil", err)
@@ -255,11 +256,11 @@ func TestAssets_ImportDnsxAndTlsx(t *testing.T) {
 	dnsx_path := writeAssetFixture(t, sandbox, "dnsx", `{"host":"example.com","a":["1.2.3.4"],"cname":["edge.example.net"],"status_code":"NOERROR"}`)
 	tlsx_path := writeAssetFixture(t, sandbox, "tlsx", `{"host":"example.com","port":443,"serial":"abc123","subject_cn":"example.com","subject_an":["example.com"],"issuer_cn":"Example CA"}`)
 
-	if _, err := tool.Import(assetArguments{"path": dnsx_path, "format": "dnsx"}); err != nil {
+	if _, err := tool.Import(utils_chat.Arguments{"path": dnsx_path, "format": "dnsx"}); err != nil {
 		t.Fatalf("Expected %v to be nil", err)
 	}
 
-	if _, err := tool.Import(assetArguments{"path": tlsx_path, "format": "tlsx"}); err != nil {
+	if _, err := tool.Import(utils_chat.Arguments{"path": tlsx_path, "format": "tlsx"}); err != nil {
 		t.Fatalf("Expected %v to be nil", err)
 	}
 
@@ -297,7 +298,7 @@ func TestAssets_ImportInvalidLines(t *testing.T) {
 	tool, sandbox := newTestAssets(t)
 	path := writeAssetFixture(t, sandbox, "httpx", "not json\n"+`{"url":"https://example.com/","status_code":200}`)
 
-	result, err0 := tool.Import(assetArguments{"path": path, "format": "httpx"})
+	result, err0 := tool.Import(utils_chat.Arguments{"path": path, "format": "httpx"})
 
 	if err0 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result)

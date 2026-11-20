@@ -1,11 +1,12 @@
 package tools
 
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "fmt"
 import "strings"
 
-func parseFindingEvidence(arguments findingArguments) (types.FindingEvidence, bool, error) {
+func parseFindingEvidence(arguments utils_chat.Arguments) (types.FindingEvidence, bool, error) {
 
 	if len(arguments) == 0 {
 		return types.FindingEvidence{}, false, nil

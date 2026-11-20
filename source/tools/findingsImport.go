@@ -2,6 +2,7 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "crypto/sha256"
 import "encoding/hex"
@@ -43,7 +44,7 @@ type nucleiImportLine struct {
 	ExtractedResults []string         `json:"extracted-results"`
 }
 
-func (tool *Findings) Import(arguments findingArguments) (string, error) {
+func (tool *Findings) Import(arguments utils_chat.Arguments) (string, error) {
 
 	path, ok := arguments.String("path")
 
@@ -69,7 +70,7 @@ func (tool *Findings) Import(arguments findingArguments) (string, error) {
 		sandbox = tool.Playground
 	}
 
-	data, err0 := readScanArtifactFile(sandbox, path, "findings.Import")
+	data, err0 := utils_findings.ReadScanArtifactFile(sandbox, path, "findings.Import")
 
 	if err0 == nil {
 
@@ -152,7 +153,7 @@ func importFindingsResults(tool *Findings, parsed []nucleiImportResult, invalid 
 
 				if result.Request != "" {
 
-					evidence := findingArguments{
+					evidence := utils_chat.Arguments{
 						"kind":    string(types.FindingEvidenceKindHTTPRequest),
 						"title":   "Nuclei request",
 						"source":  "nuclei",
@@ -172,7 +173,7 @@ func importFindingsResults(tool *Findings, parsed []nucleiImportResult, invalid 
 
 				if result.Response != "" {
 
-					evidence := findingArguments{
+					evidence := utils_chat.Arguments{
 						"kind":    string(types.FindingEvidenceKindHTTPResponse),
 						"title":   "Nuclei response",
 						"source":  "nuclei",

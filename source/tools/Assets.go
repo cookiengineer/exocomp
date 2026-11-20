@@ -2,6 +2,7 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "encoding/json"
 import "fmt"
@@ -19,8 +20,6 @@ const (
 	assetsMaxValue     = 2048
 	assetsMaxText      = 1024
 )
-
-type assetArguments = findingArguments
 
 type Assets struct {
 	Methods    []string
@@ -54,7 +53,7 @@ func (tool *Assets) Call(method string, arguments map[string]interface{}) (strin
 
 	if tool.HasMethod(method) == true {
 
-		parsed := assetArguments(arguments)
+		parsed := utils_chat.Arguments(arguments)
 
 		if method == "Add" {
 
@@ -124,7 +123,7 @@ func (tool *Assets) Call(method string, arguments map[string]interface{}) (strin
 
 }
 
-func (tool *Assets) Add(arguments assetArguments) (string, error) {
+func (tool *Assets) Add(arguments utils_chat.Arguments) (string, error) {
 
 	type_value, has_type := arguments.String("type")
 	value, has_value := arguments.String("value")
@@ -249,7 +248,7 @@ func (tool *Assets) Get(id string) (string, error) {
 
 }
 
-func (tool *Assets) List(arguments assetArguments) (string, error) {
+func (tool *Assets) List(arguments utils_chat.Arguments) (string, error) {
 
 	type_filter, has_type := arguments.String("type")
 	query, has_query := arguments.String("query")
@@ -310,7 +309,7 @@ func (tool *Assets) List(arguments assetArguments) (string, error) {
 
 }
 
-func (tool *Assets) Search(arguments assetArguments) (string, error) {
+func (tool *Assets) Search(arguments utils_chat.Arguments) (string, error) {
 
 	query, ok := arguments.String("query")
 
@@ -370,7 +369,7 @@ func (tool *Assets) Search(arguments assetArguments) (string, error) {
 
 }
 
-func (tool *Assets) Update(id string, arguments assetArguments) (string, error) {
+func (tool *Assets) Update(id string, arguments utils_chat.Arguments) (string, error) {
 
 	if types.IsAssetID(id) == true {
 
@@ -391,7 +390,7 @@ func (tool *Assets) Update(id string, arguments assetArguments) (string, error) 
 
 }
 
-func (tool *Assets) Neighbors(id string, arguments assetArguments) (string, error) {
+func (tool *Assets) Neighbors(id string, arguments utils_chat.Arguments) (string, error) {
 
 	if types.IsAssetID(id) == false {
 		return "", fmt.Errorf("assets.Neighbors: Invalid asset ID \"%s\".", id)
@@ -471,7 +470,7 @@ func (tool *Assets) Neighbors(id string, arguments assetArguments) (string, erro
 
 }
 
-func (tool *Assets) Scope(arguments assetArguments) (string, error) {
+func (tool *Assets) Scope(arguments utils_chat.Arguments) (string, error) {
 
 	type_filter, has_type := arguments.String("type")
 	value_filter, has_value := arguments.String("value")
@@ -947,7 +946,7 @@ func validateAsset(asset *types.Asset) error {
 
 }
 
-func assetLimit(arguments assetArguments) int {
+func assetLimit(arguments utils_chat.Arguments) int {
 
 	limit := assetsDefaultLimit
 

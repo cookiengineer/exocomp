@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import utils_sandbox "exocomp/utils/sandbox"
 import "crypto/sha256"
@@ -12,7 +13,7 @@ import "os"
 import "path/filepath"
 import "strings"
 
-func (tool *Findings) Export(arguments findingArguments) (string, error) {
+func (tool *Findings) Export(arguments utils_chat.Arguments) (string, error) {
 
 	type_value, ok := arguments.String("type")
 
@@ -33,7 +34,7 @@ func (tool *Findings) Export(arguments findingArguments) (string, error) {
 
 }
 
-func exportFindingsData(tool *Findings, export_type string, arguments findingArguments) ([]byte, string, string, error) {
+func exportFindingsData(tool *Findings, export_type string, arguments utils_chat.Arguments) ([]byte, string, string, error) {
 
 	if export_type == "finding" {
 		return exportFindingData(tool, arguments)
@@ -49,7 +50,7 @@ func exportFindingsData(tool *Findings, export_type string, arguments findingArg
 
 }
 
-func exportFindingData(tool *Findings, arguments findingArguments) ([]byte, string, string, error) {
+func exportFindingData(tool *Findings, arguments utils_chat.Arguments) ([]byte, string, string, error) {
 
 	id, has_id := arguments.String("id")
 
@@ -77,7 +78,7 @@ func exportFindingData(tool *Findings, arguments findingArguments) ([]byte, stri
 
 }
 
-func exportEvidenceData(tool *Findings, arguments findingArguments) ([]byte, string, string, error) {
+func exportEvidenceData(tool *Findings, arguments utils_chat.Arguments) ([]byte, string, string, error) {
 
 	id, has_id := arguments.String("id")
 	evidence_id, has_evidence_id := arguments.String("evidence_id")
@@ -124,7 +125,7 @@ func exportReportData(tool *Findings) ([]byte, string, string, error) {
 
 }
 
-func exportScanData(tool *Findings, arguments findingArguments) ([]byte, string, string, error) {
+func exportScanData(tool *Findings, arguments utils_chat.Arguments) ([]byte, string, string, error) {
 
 	id, has_id := arguments.String("id")
 
@@ -184,7 +185,7 @@ func readEvidenceArtifact(tool *Findings, evidence types.FindingEvidence, eviden
 
 }
 
-func writeFindingsExport(tool *Findings, export_type string, data []byte, default_path string, content_type string, arguments findingArguments) (string, error) {
+func writeFindingsExport(tool *Findings, export_type string, data []byte, default_path string, content_type string, arguments utils_chat.Arguments) (string, error) {
 
 	path, has_path := arguments.String("path")
 
@@ -198,7 +199,7 @@ func writeFindingsExport(tool *Findings, export_type string, data []byte, defaul
 		sandbox = tool.Playground
 	}
 
-	if isReservedFilesPath(sandbox, default_path) == true {
+	if utils_sandbox.IsReservedPath(sandbox, default_path) == true {
 		return "", fmt.Errorf("findings.Export: Path is reserved for internal state.")
 	}
 

@@ -1,5 +1,6 @@
 package tools
 
+import utils_chat "exocomp/utils/chat"
 import "os"
 import "path/filepath"
 import "strings"
@@ -9,7 +10,7 @@ func TestAssets_ExportHosts(t *testing.T) {
 
 	tool, sandbox := newTestAssets(t)
 
-	_, err0 := tool.Add(assetArguments{
+	_, err0 := tool.Add(utils_chat.Arguments{
 		"type":     "subdomain",
 		"value":    "api.example.com",
 		"in_scope": true,
@@ -19,7 +20,7 @@ func TestAssets_ExportHosts(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err0)
 	}
 
-	_, err1 := tool.Add(assetArguments{
+	_, err1 := tool.Add(utils_chat.Arguments{
 		"type":  "subdomain",
 		"value": "dev.example.com",
 	})
@@ -28,7 +29,7 @@ func TestAssets_ExportHosts(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err1)
 	}
 
-	result, err2 := tool.Export(assetArguments{
+	result, err2 := tool.Export(utils_chat.Arguments{
 		"format":   "hosts",
 		"path":     "./work/targets.txt",
 		"in_scope": true,
@@ -62,10 +63,10 @@ func TestAssets_ExportURLsAndJSON(t *testing.T) {
 
 	tool, sandbox := newTestAssets(t)
 
-	_, _ = tool.Add(assetArguments{"type": "url", "value": "https://example.com/admin"})
-	_, _ = tool.Add(assetArguments{"type": "subdomain", "value": "api.example.com"})
+	_, _ = tool.Add(utils_chat.Arguments{"type": "url", "value": "https://example.com/admin"})
+	_, _ = tool.Add(utils_chat.Arguments{"type": "subdomain", "value": "api.example.com"})
 
-	result1, err0 := tool.Export(assetArguments{"format": "urls", "path": "./work/urls.txt"})
+	result1, err0 := tool.Export(utils_chat.Arguments{"format": "urls", "path": "./work/urls.txt"})
 
 	if err0 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result1)
@@ -81,7 +82,7 @@ func TestAssets_ExportURLsAndJSON(t *testing.T) {
 		t.Errorf("Expected only URL assets, got %q", string(content1))
 	}
 
-	result2, err2 := tool.Export(assetArguments{"format": "json", "path": "./work/assets.json"})
+	result2, err2 := tool.Export(utils_chat.Arguments{"format": "json", "path": "./work/assets.json"})
 
 	if err2 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err2, result2)
@@ -103,7 +104,7 @@ func TestAssets_ExportRejectsInternalState(t *testing.T) {
 
 	tool, _ := newTestAssets(t)
 
-	_, err0 := tool.Export(assetArguments{"format": "hosts", "path": ".exocomp/targets.txt"})
+	_, err0 := tool.Export(utils_chat.Arguments{"format": "hosts", "path": ".exocomp/targets.txt"})
 
 	if err0 == nil {
 		t.Fatal("Expected export into .exocomp to be rejected")

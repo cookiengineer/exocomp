@@ -2,6 +2,7 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "encoding/json"
 import "fmt"
@@ -21,8 +22,6 @@ const (
 	findingsMaxEvidenceCount = 32
 	findingsMaxArtifactSize  = 4 * 1024 * 1024
 )
-
-type findingArguments map[string]interface{}
 
 type Findings struct {
 	Methods    []string
@@ -58,7 +57,7 @@ func (tool *Findings) Call(method string, arguments map[string]interface{}) (str
 
 	if tool.HasMethod(method) == true {
 
-		parsed := findingArguments(arguments)
+		parsed := utils_chat.Arguments(arguments)
 
 		if method == "Add" {
 
@@ -144,7 +143,7 @@ func (tool *Findings) Call(method string, arguments map[string]interface{}) (str
 
 }
 
-func (tool *Findings) Add(arguments findingArguments) (string, error) {
+func (tool *Findings) Add(arguments utils_chat.Arguments) (string, error) {
 
 	title, ok1 := arguments.String("title")
 	severity_value, ok2 := arguments.String("severity")
@@ -245,7 +244,7 @@ func (tool *Findings) Add(arguments findingArguments) (string, error) {
 
 }
 
-func (tool *Findings) List(arguments findingArguments) (string, error) {
+func (tool *Findings) List(arguments utils_chat.Arguments) (string, error) {
 
 	severity_filter, has_severity := arguments.String("severity")
 	status_filter, has_status := arguments.String("status")
@@ -335,7 +334,7 @@ func (tool *Findings) List(arguments findingArguments) (string, error) {
 
 }
 
-func (tool *Findings) Search(arguments findingArguments) (string, error) {
+func (tool *Findings) Search(arguments utils_chat.Arguments) (string, error) {
 
 	query, ok := arguments.String("query")
 
@@ -452,7 +451,7 @@ func (tool *Findings) Get(id string) (string, error) {
 
 }
 
-func (tool *Findings) Update(id string, arguments findingArguments) (string, error) {
+func (tool *Findings) Update(id string, arguments utils_chat.Arguments) (string, error) {
 
 	if arguments.Has("status") == true || arguments.Has("confidence") == true || arguments.Has("proof_basis") == true || arguments.Has("evidence") == true {
 		return "", fmt.Errorf("findings.Update: Status and evidence can only be changed via findings.Retest, findings.Verify or findings.BindEvidence.")
@@ -547,7 +546,7 @@ func (tool *Findings) Update(id string, arguments findingArguments) (string, err
 
 }
 
-func (tool *Findings) BindEvidence(id string, arguments findingArguments) (string, error) {
+func (tool *Findings) BindEvidence(id string, arguments utils_chat.Arguments) (string, error) {
 
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
@@ -590,7 +589,7 @@ func (tool *Findings) BindEvidence(id string, arguments findingArguments) (strin
 
 }
 
-func (tool *Findings) Verify(id string, arguments findingArguments) (string, error) {
+func (tool *Findings) Verify(id string, arguments utils_chat.Arguments) (string, error) {
 
 	proof_basis_value, ok := arguments.String("proof_basis")
 
@@ -693,7 +692,7 @@ func (tool *Findings) Verify(id string, arguments findingArguments) (string, err
 
 }
 
-func (tool *Findings) Retest(id string, arguments findingArguments) (string, error) {
+func (tool *Findings) Retest(id string, arguments utils_chat.Arguments) (string, error) {
 
 	status_value, ok := arguments.String("status")
 
@@ -794,7 +793,7 @@ func (tool *Findings) Retest(id string, arguments findingArguments) (string, err
 
 }
 
-func (tool *Findings) Report(arguments findingArguments) (string, error) {
+func (tool *Findings) Report(arguments utils_chat.Arguments) (string, error) {
 
 	severity_filter, has_severity := arguments.String("severity")
 	status_filter, has_status := arguments.String("status")
@@ -894,148 +893,5 @@ func (tool *Findings) Schemas() []schemas.Tool {
 	}
 
 	return result
-
-}
-
-func (arguments findingArguments) Bool(key string) (bool, bool) {
-
-	value, ok := arguments[key].(bool)
-
-	if ok == true {
-		return value, true
-	} else {
-		return false, false
-	}
-
-}
-
-func (arguments findingArguments) Float(key string) (float64, bool) {
-
-	value, ok := arguments[key].(float64)
-
-	if ok == true {
-		return value, true
-	} else {
-		return 0, false
-	}
-
-}
-
-func (arguments findingArguments) Has(key string) bool {
-
-	_, ok := arguments[key]
-
-	return ok
-
-}
-
-func (arguments findingArguments) Int(key string) (int, bool) {
-
-	value, ok := arguments[key]
-
-	if ok == true {
-
-		switch typed := value.(type) {
-		case float64:
-			return int(typed), true
-		case int:
-			return typed, true
-		default:
-			return 0, false
-		}
-
-	} else {
-		return 0, false
-	}
-
-}
-
-func (arguments findingArguments) Map(key string) (map[string]string, bool) {
-
-	raw, ok := arguments[key]
-
-	if ok == true {
-
-		switch typed := raw.(type) {
-		case map[string]string:
-			return typed, true
-		case map[string]interface{}:
-
-			result := make(map[string]string, len(typed))
-
-			for name, value := range typed {
-
-				if text, ok := value.(string); ok == true {
-					result[name] = text
-				}
-
-			}
-
-			return result, true
-
-		default:
-			return nil, false
-		}
-
-	} else {
-		return nil, false
-	}
-
-}
-
-func (arguments findingArguments) Object(key string) (findingArguments, bool) {
-
-	raw, ok := arguments[key].(map[string]interface{})
-
-	if ok == true {
-		return findingArguments(raw), true
-	} else {
-		return nil, false
-	}
-
-}
-
-func (arguments findingArguments) String(key string) (string, bool) {
-
-	value, ok := arguments[key].(string)
-
-	if ok == true {
-		return value, true
-	} else {
-		return "", false
-	}
-
-}
-
-func (arguments findingArguments) Strings(key string) ([]string, bool) {
-
-	raw, ok := arguments[key]
-
-	if ok == true {
-
-		switch typed := raw.(type) {
-		case []string:
-			return typed, true
-		case []interface{}:
-
-			result := make([]string, 0, len(typed))
-
-			for _, value := range typed {
-
-				if text, ok := value.(string); ok == true {
-					result = append(result, text)
-				}
-
-			}
-
-			return result, true
-
-		default:
-			return nil, false
-		}
-
-	} else {
-		return nil, false
-	}
 
 }

@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import utils_strings "exocomp/utils/strings"
 import "encoding/json"
@@ -82,7 +83,7 @@ type urlfinderImportLine struct {
 	Input  string `json:"input"`
 }
 
-func (tool *Assets) Import(arguments assetArguments) (string, error) {
+func (tool *Assets) Import(arguments utils_chat.Arguments) (string, error) {
 
 	path, ok := arguments.String("path")
 
@@ -110,7 +111,7 @@ func (tool *Assets) Import(arguments assetArguments) (string, error) {
 		sandbox = tool.Playground
 	}
 
-	data, err0 := readScanArtifactFile(sandbox, path, "assets.Import")
+	data, err0 := utils_findings.ReadScanArtifactFile(sandbox, path, "assets.Import")
 
 	if err0 == nil {
 

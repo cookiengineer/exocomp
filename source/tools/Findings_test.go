@@ -1,5 +1,6 @@
 package tools
 
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "crypto/sha256"
 import "encoding/hex"
@@ -49,7 +50,7 @@ func addTestFinding(t *testing.T, tool *Findings) string {
 
 	t.Helper()
 
-	result, err := tool.Add(findingArguments{
+	result, err := tool.Add(utils_chat.Arguments{
 		"title":    "Authentication bypass",
 		"severity": "high",
 		"endpoint": "https://example.com/admin",
@@ -87,7 +88,7 @@ func TestFindings_BindEvidenceFromExocomp(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err)
 	}
 
-	result, err0 := tool.BindEvidence(id, findingArguments{
+	result, err0 := tool.BindEvidence(id, utils_chat.Arguments{
 		"kind":     "artifact",
 		"artifact": ".exocomp/scans/evidence.txt",
 	})
@@ -140,7 +141,7 @@ func TestFindings_ListSearchUpdate(t *testing.T) {
 	tool, _ := newTestFindings(t)
 	id := addTestFinding(t, tool)
 
-	_, err0 := tool.Add(findingArguments{
+	_, err0 := tool.Add(utils_chat.Arguments{
 		"title":    "Information disclosure",
 		"severity": "low",
 		"endpoint": "https://example.com/debug",
@@ -150,7 +151,7 @@ func TestFindings_ListSearchUpdate(t *testing.T) {
 		t.Errorf("Expected %v to be nil", err0)
 	}
 
-	result1, err1 := tool.List(findingArguments{"severity": "high"})
+	result1, err1 := tool.List(utils_chat.Arguments{"severity": "high"})
 
 	if err1 != nil {
 		t.Errorf("Expected %v to be nil", err1)
@@ -158,7 +159,7 @@ func TestFindings_ListSearchUpdate(t *testing.T) {
 		t.Errorf("Expected one high finding, got %s", result1)
 	}
 
-	result2, err2 := tool.Search(findingArguments{"query": "debug"})
+	result2, err2 := tool.Search(utils_chat.Arguments{"query": "debug"})
 
 	if err2 != nil {
 		t.Errorf("Expected %v to be nil", err2)
@@ -166,7 +167,7 @@ func TestFindings_ListSearchUpdate(t *testing.T) {
 		t.Errorf("Expected search to find disclosure, got %s", result2)
 	}
 
-	result3, err3 := tool.Update(id, findingArguments{"title": "Authentication bypass confirmed"})
+	result3, err3 := tool.Update(id, utils_chat.Arguments{"title": "Authentication bypass confirmed"})
 
 	if err3 != nil {
 		t.Errorf("Expected %v to be nil", err3)
@@ -174,7 +175,7 @@ func TestFindings_ListSearchUpdate(t *testing.T) {
 		t.Errorf("Expected update confirmation, got %s", result3)
 	}
 
-	_, err4 := tool.Update(id, findingArguments{"status": "verified"})
+	_, err4 := tool.Update(id, utils_chat.Arguments{"status": "verified"})
 
 	if err4 == nil {
 		t.Errorf("Expected status update through findings.Update to fail")
@@ -187,7 +188,7 @@ func TestFindings_BindEvidenceContent(t *testing.T) {
 	tool, _ := newTestFindings(t)
 	id := addTestFinding(t, tool)
 
-	result, err0 := tool.BindEvidence(id, findingArguments{
+	result, err0 := tool.BindEvidence(id, utils_chat.Arguments{
 		"kind":    "http_response",
 		"content": "Authorization: Bearer supersecret\nHTTP/1.1 200 OK",
 	})
@@ -236,7 +237,7 @@ func TestFindings_BindEvidenceArtifact(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err0)
 	}
 
-	_, err1 := tool.BindEvidence(id, findingArguments{
+	_, err1 := tool.BindEvidence(id, utils_chat.Arguments{
 		"kind":     "unit_test",
 		"artifact": "./proof_test.go",
 	})
@@ -265,7 +266,7 @@ func TestFindings_VerifyRequiresEvidence(t *testing.T) {
 	tool, _ := newTestFindings(t)
 	id := addTestFinding(t, tool)
 
-	_, err0 := tool.Verify(id, findingArguments{"proof_basis": "executed_lab"})
+	_, err0 := tool.Verify(id, utils_chat.Arguments{"proof_basis": "executed_lab"})
 
 	if err0 == nil {
 		t.Errorf("Expected verification without evidence to fail")
@@ -285,7 +286,7 @@ func TestFindings_VerifyRequiresReproduction(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err0)
 	}
 
-	_, err1 := tool.BindEvidence(id, findingArguments{
+	_, err1 := tool.BindEvidence(id, utils_chat.Arguments{
 		"kind":     "unit_test",
 		"artifact": "./proof_test.go",
 	})
@@ -294,7 +295,7 @@ func TestFindings_VerifyRequiresReproduction(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err1)
 	}
 
-	_, err2 := tool.BindEvidence(id, findingArguments{
+	_, err2 := tool.BindEvidence(id, utils_chat.Arguments{
 		"kind":        "test_run",
 		"command":     "go test ./findings/fnd_test",
 		"exit_code":   0,
@@ -306,7 +307,7 @@ func TestFindings_VerifyRequiresReproduction(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err2)
 	}
 
-	_, err3 := tool.Verify(id, findingArguments{
+	_, err3 := tool.Verify(id, utils_chat.Arguments{
 		"proof_basis":          "executed_lab",
 		"require_reproduction": true,
 	})
@@ -332,7 +333,7 @@ func TestFindings_Retest(t *testing.T) {
 	tool, _ := newTestFindings(t)
 	id := addTestFinding(t, tool)
 
-	_, err0 := tool.BindEvidence(id, findingArguments{
+	_, err0 := tool.BindEvidence(id, utils_chat.Arguments{
 		"kind":    "note",
 		"content": "Fixed in version 2.0.",
 	})
@@ -341,7 +342,7 @@ func TestFindings_Retest(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err0)
 	}
 
-	_, err1 := tool.Retest(id, findingArguments{
+	_, err1 := tool.Retest(id, utils_chat.Arguments{
 		"status":          "fixed",
 		"counterevidence": "Version 2.0 returns 403.",
 	})
@@ -365,7 +366,7 @@ func TestFindings_Report(t *testing.T) {
 	tool, _ := newTestFindings(t)
 	id := addTestFinding(t, tool)
 
-	_, err0 := tool.BindEvidence(id, findingArguments{
+	_, err0 := tool.BindEvidence(id, utils_chat.Arguments{
 		"kind":    "command_output",
 		"content": "HTTP/1.1 200 OK",
 	})
@@ -374,7 +375,7 @@ func TestFindings_Report(t *testing.T) {
 		t.Fatalf("Expected %v to be nil", err0)
 	}
 
-	result, err1 := tool.Report(findingArguments{})
+	result, err1 := tool.Report(utils_chat.Arguments{})
 
 	if err1 != nil {
 		t.Errorf("Expected %v to be nil", err1)
@@ -407,7 +408,7 @@ func TestFindings_InvalidID(t *testing.T) {
 		t.Errorf("Expected invalid ID to be refused")
 	}
 
-	_, err1 := tool.BindEvidence("../index", findingArguments{
+	_, err1 := tool.BindEvidence("../index", utils_chat.Arguments{
 		"kind":    "note",
 		"content": "test",
 	})

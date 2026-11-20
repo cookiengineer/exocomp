@@ -1,11 +1,13 @@
-package tools
+package sandbox
 
 import "errors"
 import "fmt"
 import "io/fs"
 import "strings"
 
-func sanitizeExecutionError(namespace string, method string, kind string, name string, result string, err error) (string, error) {
+// SanitizeExecutionError maps a subprocess failure to a fixed message that does
+// not leak host paths.
+func SanitizeExecutionError(namespace string, method string, kind string, name string, result string, err error) (string, error) {
 
 	title := strings.ToUpper(kind[0:1]) + kind[1:]
 

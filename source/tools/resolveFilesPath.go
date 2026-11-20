@@ -10,7 +10,7 @@ import "path/filepath"
 // state and is never accessible through files.*.
 func resolveFilesPath(sandbox string, capabilities *utils_capabilities.Set, path string, write bool) (string, error) {
 
-	if isReservedFilesPath(sandbox, path) == true {
+	if utils_sandbox.IsReservedPath(sandbox, path) == true {
 		return "", fmt.Errorf("Path is reserved for internal state.")
 	}
 
@@ -40,7 +40,7 @@ func resolveFilesPath(sandbox string, capabilities *utils_capabilities.Set, path
 
 			if canonical != "" {
 
-				if isReservedFilesPath(sandbox, canonical) == true {
+				if utils_sandbox.IsReservedPath(sandbox, canonical) == true {
 					return "", fmt.Errorf("Path is reserved for internal state.")
 				}
 

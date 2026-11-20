@@ -2,11 +2,12 @@ package tools
 
 import "exocomp/schemas"
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "fmt"
 import "strings"
 
-func updateAsset(tool *Assets, id string, asset types.Asset, arguments assetArguments) (string, error) {
+func updateAsset(tool *Assets, id string, asset types.Asset, arguments utils_chat.Arguments) (string, error) {
 
 	if type_value, ok := arguments.String("type"); ok == true {
 		asset.Type = types.AssetType(strings.ToLower(strings.TrimSpace(type_value)))

@@ -1,4 +1,4 @@
-package tools
+package shell
 
 import "testing"
 
@@ -17,14 +17,14 @@ func TestSanitizeProgramArgumentNetworkValues(t *testing.T) {
 
 	for _, argument := range valid {
 
-		result, err := sanitizeProgramArgument(sandbox, nil, argument)
+		result, err := SanitizeProgramArgument(sandbox, nil, argument)
 
 		if err != nil {
-			t.Fatalf("sanitizeProgramArgument(%q) returned error: %v", argument, err)
+			t.Fatalf("SanitizeProgramArgument(%q) returned error: %v", argument, err)
 		}
 
 		if result != argument {
-			t.Fatalf("sanitizeProgramArgument(%q) = %q, want unchanged", argument, result)
+			t.Fatalf("SanitizeProgramArgument(%q) = %q, want unchanged", argument, result)
 		}
 
 	}
@@ -47,14 +47,14 @@ func TestSanitizeProgramArgumentPaths(t *testing.T) {
 
 	for _, test := range cases {
 
-		result, err := sanitizeProgramArgument(sandbox, nil, test.argument)
+		result, err := SanitizeProgramArgument(sandbox, nil, test.argument)
 
 		if err != nil {
-			t.Fatalf("sanitizeProgramArgument(%q) returned error: %v", test.argument, err)
+			t.Fatalf("SanitizeProgramArgument(%q) returned error: %v", test.argument, err)
 		}
 
 		if result != test.expected {
-			t.Fatalf("sanitizeProgramArgument(%q) = %q, want %q", test.argument, result, test.expected)
+			t.Fatalf("SanitizeProgramArgument(%q) = %q, want %q", test.argument, result, test.expected)
 		}
 
 	}
@@ -73,8 +73,8 @@ func TestSanitizeProgramArgumentRejectsEscapes(t *testing.T) {
 
 	for _, argument := range invalid {
 
-		if _, err := sanitizeProgramArgument(sandbox, nil, argument); err == nil {
-			t.Fatalf("sanitizeProgramArgument(%q) returned no error", argument)
+		if _, err := SanitizeProgramArgument(sandbox, nil, argument); err == nil {
+			t.Fatalf("SanitizeProgramArgument(%q) returned no error", argument)
 		}
 
 	}

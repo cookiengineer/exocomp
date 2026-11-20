@@ -1,5 +1,6 @@
 package tools
 
+import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "os"
 import "path/filepath"
@@ -31,7 +32,7 @@ func TestFindings_ImportNuclei(t *testing.T) {
 	tool, sandbox := newTestFindings(t)
 	path := writeTestArtifact(t, sandbox, testNucleiResult+"\n")
 
-	result, err0 := tool.Import(findingArguments{"path": path})
+	result, err0 := tool.Import(utils_chat.Arguments{"path": path})
 
 	if err0 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result)
@@ -87,7 +88,7 @@ func TestFindings_ImportNuclei(t *testing.T) {
 		t.Errorf("Expected http_response evidence, got %q", finding.Evidence[1].Kind)
 	}
 
-	second, err3 := tool.Import(findingArguments{"path": path})
+	second, err3 := tool.Import(utils_chat.Arguments{"path": path})
 
 	if err3 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err3, second)
@@ -104,7 +105,7 @@ func TestFindings_ImportNucleiInvalidLines(t *testing.T) {
 	tool, sandbox := newTestFindings(t)
 	path := writeTestArtifact(t, sandbox, "not json\n"+testNucleiResult+"\n")
 
-	result, err0 := tool.Import(findingArguments{"path": path})
+	result, err0 := tool.Import(utils_chat.Arguments{"path": path})
 
 	if err0 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result)
@@ -125,7 +126,7 @@ func TestFindings_ImportNucleiEmpty(t *testing.T) {
 	tool, sandbox := newTestFindings(t)
 	path := writeTestArtifact(t, sandbox, "")
 
-	result, err0 := tool.Import(findingArguments{"path": path})
+	result, err0 := tool.Import(utils_chat.Arguments{"path": path})
 
 	if err0 != nil {
 		t.Fatalf("Expected %v to be nil, got %s", err0, result)
@@ -141,7 +142,7 @@ func TestFindings_ImportRejectsMissingArtifact(t *testing.T) {
 
 	tool, _ := newTestFindings(t)
 
-	_, err0 := tool.Import(findingArguments{"path": "./work/scans/nuclei/missing.jsonl"})
+	_, err0 := tool.Import(utils_chat.Arguments{"path": "./work/scans/nuclei/missing.jsonl"})
 
 	if err0 == nil {
 		t.Fatal("Expected an error for a missing artifact")
