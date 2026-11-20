@@ -22,4 +22,5 @@ func resolveURL(document *Document, ref string) string {
 		}
 
 	}
+
 }

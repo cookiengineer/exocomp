@@ -66,4 +66,5 @@ func renderTable(table *Element, document *Document) string {
 		return strings.Join(lines, "\n")
 
 	}
+
 }

@@ -133,15 +133,15 @@ func (element *Element) getLastChild() *Element {
 
 func (element *Element) HasAttribute(key string) bool {
 
-	var result bool
+	var has_attribute bool
 
 	_, ok := element.Attributes[key]
 
 	if ok == true {
-		result = true
+		has_attribute = true
 	}
 
-	return result
+	return has_attribute
 
 }
 
@@ -153,27 +153,27 @@ func (element *Element) SetAttribute(key string, value string) {
 
 	if element.Type == "a" && key == "href" {
 
-		if strings.HasPrefix(value, "https://github.com") {
+		if strings.HasPrefix(value, "https://github.com") == true {
 			element.Attributes["class"] = "icon-github"
-		} else if strings.HasPrefix(value, "https://gitlab.com") {
+		} else if strings.HasPrefix(value, "https://gitlab.com") == true {
 			element.Attributes["class"] = "icon-gitlab"
-		} else if strings.HasPrefix(value, "https://instagram.com") {
+		} else if strings.HasPrefix(value, "https://instagram.com") == true {
 			element.Attributes["class"] = "icon-instagram"
-		} else if strings.HasPrefix(value, "https://linkedin.com") {
+		} else if strings.HasPrefix(value, "https://linkedin.com") == true {
 			element.Attributes["class"] = "icon-linkedin"
-		} else if strings.HasPrefix(value, "https://medium.com") {
+		} else if strings.HasPrefix(value, "https://medium.com") == true {
 			element.Attributes["class"] = "icon-medium"
-		} else if strings.HasPrefix(value, "https://reddit.com") {
+		} else if strings.HasPrefix(value, "https://reddit.com") == true {
 			element.Attributes["class"] = "icon-reddit"
-		} else if strings.HasPrefix(value, "https://old.reddit.com") {
+		} else if strings.HasPrefix(value, "https://old.reddit.com") == true {
 			element.Attributes["class"] = "icon-reddit"
-		} else if strings.HasPrefix(value, "https://cookie.engineer") {
+		} else if strings.HasPrefix(value, "https://cookie.engineer") == true {
 			// Do Nothing
-		} else if strings.HasPrefix(value, "../") {
+		} else if strings.HasPrefix(value, "../") == true {
 			// Do Nothing
-		} else if strings.HasPrefix(value, "./") {
+		} else if strings.HasPrefix(value, "./") == true {
 			// Do Nothing
-		} else if strings.HasPrefix(value, "/") {
+		} else if strings.HasPrefix(value, "/") == true {
 			// Do Nothing
 		} else if strings.HasPrefix(value, "https://") || strings.HasPrefix(value, "http://") {
 			element.Attributes["class"] = "icon-website"
@@ -187,7 +187,7 @@ func (element *Element) SetAttribute(key string, value string) {
 			strings.HasSuffix(value, ".tar.xz") ||
 			strings.HasSuffix(value, ".zip") {
 			element.Attributes["class"] = "icon-download"
-		} else if strings.HasPrefix(value, "#") {
+		} else if strings.HasPrefix(value, "#") == true {
 			element.Attributes["class"] = "icon-section"
 		}
 
@@ -289,7 +289,7 @@ func (element *Element) String() string {
 
 	case "a":
 
-		if strings.HasPrefix(element.Text, "#") {
+		if strings.HasPrefix(element.Text, "#") == true {
 			result = fmt.Sprintf("[%s](%s)", element.Text, element.Text)
 		} else {
 			result = fmt.Sprintf("[%s](%s)", element.Text, element.GetAttribute("href"))

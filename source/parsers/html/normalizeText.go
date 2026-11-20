@@ -26,4 +26,5 @@ func normalizeText(raw string) string {
 		return result
 
 	}
+
 }

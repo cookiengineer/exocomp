@@ -7,6 +7,6 @@ func Marshal(document *Document) ([]byte, error) {
 	if document != nil {
 		return document.MarshalText()
 	} else {
-		return []byte{}, fmt.Errorf("nil document")
+		return []byte{}, fmt.Errorf("markdown.Marshal: Nil document.")
 	}
 }

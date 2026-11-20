@@ -12,7 +12,7 @@ func splitTableCells(line string) []string {
 
 		if ch == '`' {
 
-			in_code = !in_code
+			in_code = (in_code == false)
 			current += string(ch)
 
 		} else if ch == '\\' && i+1 < len(line) && line[i+1] == '|' && in_code == false {

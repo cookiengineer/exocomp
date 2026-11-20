@@ -1,6 +1,7 @@
 package html
 
 import "strings"
+
 import html_tree "golang.org/x/net/html"
 
 func rawText(node *html_tree.Node) string {

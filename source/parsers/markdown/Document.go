@@ -31,7 +31,7 @@ func NewDocument(file string) *Document {
 
 	if base == "" {
 		base = "https://cookie.engineer/index.html"
-	} else if strings.HasPrefix(base, "/") {
+	} else if strings.HasPrefix(base, "/") == true {
 		base = "https://cookie.engineer/" + base[1:]
 	}
 
@@ -96,7 +96,7 @@ func ParseDocument(file string, bytes []byte) (*Document, error) {
 		}
 
 	} else {
-		return document, fmt.Errorf("Invalid file path \"%s\"", file)
+		return document, fmt.Errorf("markdown.ParseDocument: Invalid file path \"%s\".", file)
 	}
 
 }
@@ -124,7 +124,7 @@ func (document *Document) Count() {
 
 func (document *Document) CloseElement() bool {
 
-	var result bool = false
+	var is_closed bool = false
 	var element *Element = nil
 
 	if len(document.Body) > 0 {
@@ -144,7 +144,7 @@ func (document *Document) CloseElement() bool {
 
 	}
 
-	return result
+	return is_closed
 
 }
 
@@ -162,7 +162,7 @@ func (document *Document) getLastElement() *Element {
 
 func (document *Document) IsValid() bool {
 
-	var result bool
+	var is_valid bool
 
 	if document.URL != nil && len(document.Body) > 0 {
 
@@ -171,7 +171,7 @@ func (document *Document) IsValid() bool {
 			if document.Meta.Date.IsZero() == false && len(document.Meta.Tags) > 0 {
 
 				if len(document.Errors) == 0 {
-					result = true
+					is_valid = true
 				}
 
 			}
@@ -180,7 +180,7 @@ func (document *Document) IsValid() bool {
 
 	}
 
-	return result
+	return is_valid
 
 }
 
@@ -211,7 +211,7 @@ func (document *Document) Parse(bytes []byte) []error {
 		}
 
 	} else {
-		errors = append(errors, fmt.Errorf("Line 1: Expected non-empty markdown code"))
+		errors = append(errors, fmt.Errorf("markdown.Document.Parse: Line 1: Expected non-empty markdown code"))
 	}
 
 	return errors
@@ -285,19 +285,19 @@ func (document *Document) ParseMeta(value string) []error {
 		}
 
 		if found["title"] == false {
-			errors = append(errors, fmt.Errorf("Line 1: Missing \"title\" (string) frontmatter field"))
+			errors = append(errors, fmt.Errorf("markdown.Document.ParseMeta: Line 1: Missing \"title\" (string) frontmatter field"))
 		}
 
 		if found["summary"] == false {
-			errors = append(errors, fmt.Errorf("Line 1: Missing \"summary\" (string) frontmatter field"))
+			errors = append(errors, fmt.Errorf("markdown.Document.ParseMeta: Line 1: Missing \"summary\" (string) frontmatter field"))
 		}
 
 		if found["date"] == false {
-			errors = append(errors, fmt.Errorf("Line 1: Missing \"date\" (YYYY-MM-DD string) frontmatter field"))
+			errors = append(errors, fmt.Errorf("markdown.Document.ParseMeta: Line 1: Missing \"date\" (YYYY-MM-DD string) frontmatter field"))
 		}
 
 		if found["tags"] == false {
-			errors = append(errors, fmt.Errorf("Line 1: Missing \"tags\" (comma separated strings) frontmatter field"))
+			errors = append(errors, fmt.Errorf("markdown.Document.ParseMeta: Line 1: Missing \"tags\" (comma separated strings) frontmatter field"))
 		}
 
 	}
@@ -348,7 +348,7 @@ func (document *Document) ParseBody(value string) []error {
 
 		} else if pointer != nil && pointer.Type == "table" {
 
-			if strings.HasPrefix(line, "|") {
+			if strings.HasPrefix(line, "|") == true {
 				pointer.AddText(line)
 			} else {
 				document.CloseElement()
@@ -467,7 +467,7 @@ func (document *Document) ParseBody(value string) []error {
 				}
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
 		} else if len(line) >= 3 && strings.HasPrefix(line, "```") {
@@ -496,7 +496,7 @@ func (document *Document) ParseBody(value string) []error {
 
 			}
 
-		} else if strings.HasPrefix(line, ">") {
+		} else if strings.HasPrefix(line, ">") == true {
 
 			children, err := parseInlineElements(strings.TrimSpace(line[1:]), l+1, true)
 
@@ -521,10 +521,10 @@ func (document *Document) ParseBody(value string) []error {
 				blockquote.AddChild(paragraph)
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
-		} else if isHorizontalRule(line) {
+		} else if isHorizontalRule(line) == true {
 
 			element := NewElement("hr")
 			element.SetLine(l + 1)
@@ -532,7 +532,7 @@ func (document *Document) ParseBody(value string) []error {
 			document.AddElement(element)
 			pointer = element
 
-		} else if strings.HasPrefix(line, "######") {
+		} else if strings.HasPrefix(line, "######") == true {
 
 			children, err := parseInlineElements(strings.TrimSpace(line[6:]), l+1, false)
 
@@ -545,10 +545,10 @@ func (document *Document) ParseBody(value string) []error {
 				document.AddElement(element)
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
-		} else if strings.HasPrefix(line, "#####") {
+		} else if strings.HasPrefix(line, "#####") == true {
 
 			children, err := parseInlineElements(strings.TrimSpace(line[5:]), l+1, false)
 
@@ -561,10 +561,10 @@ func (document *Document) ParseBody(value string) []error {
 				document.AddElement(element)
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
-		} else if strings.HasPrefix(line, "####") {
+		} else if strings.HasPrefix(line, "####") == true {
 
 			children, err := parseInlineElements(strings.TrimSpace(line[4:]), l+1, false)
 
@@ -577,10 +577,10 @@ func (document *Document) ParseBody(value string) []error {
 				document.AddElement(element)
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
-		} else if strings.HasPrefix(line, "###") {
+		} else if strings.HasPrefix(line, "###") == true {
 
 			children, err := parseInlineElements(strings.TrimSpace(line[3:]), l+1, false)
 
@@ -593,10 +593,10 @@ func (document *Document) ParseBody(value string) []error {
 				document.AddElement(element)
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
-		} else if strings.HasPrefix(line, "##") {
+		} else if strings.HasPrefix(line, "##") == true {
 
 			children, err := parseInlineElements(strings.TrimSpace(line[2:]), l+1, false)
 
@@ -609,10 +609,10 @@ func (document *Document) ParseBody(value string) []error {
 				document.AddElement(element)
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
-		} else if strings.HasPrefix(line, "#") {
+		} else if strings.HasPrefix(line, "#") == true {
 
 			children, err := parseInlineElements(strings.TrimSpace(line[1:]), l+1, false)
 
@@ -625,7 +625,7 @@ func (document *Document) ParseBody(value string) []error {
 				document.AddElement(element)
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
 		} else if document.allow_html == true && strings.HasPrefix(line, "<") && strings.HasSuffix(line, ">") {
@@ -641,14 +641,14 @@ func (document *Document) ParseBody(value string) []error {
 					}
 
 				} else {
-					errors = append(errors, fmt.Errorf("Line %d: Malformed raw HTML tag \"%s\"", l+1, line))
+					errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: Malformed raw HTML tag \"%s\"", l+1, line))
 				}
 
 			} else if strings.HasPrefix(line, "<") && strings.HasSuffix(line, "/>") {
 
 				element_type := ""
 
-				if strings.Contains(line, " ") {
+				if strings.Contains(line, " ") == true {
 					element_type = strings.TrimSpace(line[1:strings.Index(line, " ")])
 				} else {
 					element_type = strings.TrimSpace(line[1 : len(line)-2])
@@ -662,13 +662,13 @@ func (document *Document) ParseBody(value string) []error {
 					// Don't expect a closing HTML tag
 					element.is_block_element = false
 
-					if strings.Contains(line, " ") {
+					if strings.Contains(line, " ") == true {
 
 						raw_attributes := strings.Split(line[strings.Index(line, " ")+1:len(line)-2], " ")
 
 						for _, attribute := range raw_attributes {
 
-							if strings.Contains(attribute, "=") {
+							if strings.Contains(attribute, "=") == true {
 
 								attribute_key := attribute[0:strings.Index(attribute, "=")]
 								attribute_val := attribute[strings.Index(attribute, "=")+1:]
@@ -694,14 +694,14 @@ func (document *Document) ParseBody(value string) []error {
 					document.AddElement(element)
 
 				} else {
-					errors = append(errors, fmt.Errorf("Line %d: Malformed raw HTML tag \"%s\"", l+1, line))
+					errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: Malformed raw HTML tag \"%s\"", l+1, line))
 				}
 
 			} else if strings.HasPrefix(line, "<") && strings.HasSuffix(line, ">") {
 
 				element_type := ""
 
-				if strings.Contains(line, " ") {
+				if strings.Contains(line, " ") == true {
 					element_type = line[1:strings.Index(line, " ")]
 				} else {
 					element_type = line[1 : len(line)-1]
@@ -715,13 +715,13 @@ func (document *Document) ParseBody(value string) []error {
 					// Expect a closing HTML tag
 					element.is_block_element = true
 
-					if strings.Contains(line, " ") {
+					if strings.Contains(line, " ") == true {
 
 						raw_attributes := strings.Split(line[strings.Index(line, " ")+1:len(line)-1], " ")
 
 						for _, attribute := range raw_attributes {
 
-							if strings.Contains(attribute, "=") {
+							if strings.Contains(attribute, "=") == true {
 
 								attribute_key := attribute[0:strings.Index(attribute, "=")]
 								attribute_val := attribute[strings.Index(attribute, "=")+1:]
@@ -747,12 +747,12 @@ func (document *Document) ParseBody(value string) []error {
 					pointer = document.getLastElement()
 
 				} else {
-					errors = append(errors, fmt.Errorf("Line %d: Malformed raw HTML tag \"%s\"", l+1, line))
+					errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: Malformed raw HTML tag \"%s\"", l+1, line))
 				}
 
 			}
 
-		} else if regexp_ul.MatchString(line) {
+		} else if regexp_ul.MatchString(line) == true {
 
 			children, err := parseInlineElements(strings.TrimSpace(line[2:]), l+1, true)
 
@@ -806,10 +806,10 @@ func (document *Document) ParseBody(value string) []error {
 				}
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
-		} else if regexp_ol.MatchString(line) {
+		} else if regexp_ol.MatchString(line) == true {
 
 			children, err := parseInlineElements(strings.TrimSpace(line[strings.Index(line, ".")+1:]), l+1, true)
 
@@ -863,7 +863,7 @@ func (document *Document) ParseBody(value string) []error {
 				}
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
 		} else if line != "" {
@@ -899,7 +899,7 @@ func (document *Document) ParseBody(value string) []error {
 				}
 
 			} else {
-				errors = append(errors, fmt.Errorf("Line %d: %s", l+1, err.Error()))
+				errors = append(errors, fmt.Errorf("markdown.Document.ParseBody: Line %d: %s", l+1, err.Error()))
 			}
 
 		}
@@ -1090,7 +1090,7 @@ func (document *Document) UnmarshalMarkdown(bytes []byte) error {
 			messages = append(messages, err.Error())
 		}
 
-		return fmt.Errorf("%d Parsing Errors:\n%s\n", len(messages), strings.Join(messages, "\n"))
+		return fmt.Errorf("markdown.Document.UnmarshalMarkdown: %d Parsing Errors:\n%s\n", len(messages), strings.Join(messages, "\n"))
 
 	} else {
 

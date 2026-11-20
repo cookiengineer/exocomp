@@ -29,11 +29,11 @@ func generateId(element *Element) string {
 
 				tmp := strings.TrimSpace(utils_strings.ToASCIIName(child.Text))
 
-				if strings.HasPrefix(tmp, "-") {
+				if strings.HasPrefix(tmp, "-") == true {
 					tmp = tmp[1:]
 				}
 
-				if strings.HasSuffix(tmp, "-") {
+				if strings.HasSuffix(tmp, "-") == true {
 					tmp = tmp[0 : len(tmp)-1]
 				}
 
@@ -59,7 +59,7 @@ func generateId(element *Element) string {
 
 		filtered := make([]string, 0)
 
-		if utils_strings.IsNumber(string(texts[0])) {
+		if utils_strings.IsNumber(string(texts[0])) == true {
 			texts = texts[1:]
 		}
 

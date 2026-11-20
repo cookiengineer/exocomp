@@ -1,6 +1,7 @@
 package html
 
 import "strings"
+
 import html_tree "golang.org/x/net/html"
 
 func copyAttributes(source *html_tree.Node, target *Element) {
@@ -18,6 +19,7 @@ func copyAttributes(source *html_tree.Node, target *Element) {
 			}
 
 		}
+
 	}
 
 }

@@ -68,11 +68,11 @@ func TestParse_SkipsNoise(t *testing.T) {
 
 	result := document.String()
 
-	if strings.Contains(result, "var x") {
+	if strings.Contains(result, "var x") == true {
 		t.Errorf("Expected script content to be skipped, got:\n%s", result)
 	}
 
-	if strings.Contains(result, ".x {}") {
+	if strings.Contains(result, ".x {}") == true {
 		t.Errorf("Expected style content to be skipped, got:\n%s", result)
 	}
 
@@ -146,7 +146,7 @@ func TestParse_Text(t *testing.T) {
 		t.Errorf("Expected plain text to contain body, got:\n%s", text)
 	}
 
-	if strings.Contains(text, "#") {
+	if strings.Contains(text, "#") == true {
 		t.Errorf("Expected plain text to drop markdown syntax, got:\n%s", text)
 	}
 
@@ -185,15 +185,15 @@ func TestParse_ReaderMode(t *testing.T) {
 		t.Errorf("Expected the article body, got:\n%s", result)
 	}
 
-	if strings.Contains(result, "Home About Contact") {
+	if strings.Contains(result, "Home About Contact") == true {
 		t.Errorf("Expected navigation to be stripped, got:\n%s", result)
 	}
 
-	if strings.Contains(result, "Related links") {
+	if strings.Contains(result, "Related links") == true {
 		t.Errorf("Expected sidebar to be stripped, got:\n%s", result)
 	}
 
-	if strings.Contains(result, "Copyright") {
+	if strings.Contains(result, "Copyright") == true {
 		t.Errorf("Expected footer to be stripped, got:\n%s", result)
 	}
 

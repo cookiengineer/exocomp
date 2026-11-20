@@ -12,22 +12,22 @@ func encodeMap(value reflect.Value) (*Node, error) {
 
 	for _, map_key := range value.MapKeys() {
 
-		if map_key.Kind() != reflect.String {
+		if map_key.Kind() == reflect.String {
 
+			map_value := value.MapIndex(map_key)
+			child_node, err := encodeValue(map_value)
+
+			if err == nil {
+				node.ObjectChildren[map_key.String()] = child_node
+			} else {
+				return nil, err
+			}
+
+		} else {
 			return nil, fmt.Errorf(
 				"yaml.EncodeMap: Unsupported map key type: %s.",
 				map_key.Kind(),
 			)
-
-		}
-
-		map_value := value.MapIndex(map_key)
-		child_node, err := encodeValue(map_value)
-
-		if err == nil {
-			node.ObjectChildren[map_key.String()] = child_node
-		} else {
-			return nil, err
 		}
 
 	}

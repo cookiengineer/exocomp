@@ -25,7 +25,7 @@ func classScore(class string, id string) float64 {
 
 		for _, keyword := range positive {
 
-			if strings.Contains(combined, keyword) {
+			if strings.Contains(combined, keyword) == true {
 				score += 25
 			}
 
@@ -33,7 +33,7 @@ func classScore(class string, id string) float64 {
 
 		for _, keyword := range negative {
 
-			if strings.Contains(combined, keyword) {
+			if strings.Contains(combined, keyword) == true {
 				score -= 25
 			}
 
@@ -42,4 +42,5 @@ func classScore(class string, id string) float64 {
 		return score
 
 	}
+
 }

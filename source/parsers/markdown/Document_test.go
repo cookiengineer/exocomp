@@ -95,7 +95,7 @@ func TestDocument(t *testing.T) {
 
 		if len(errors) == 1 {
 
-			expected := "Line 1: Missing \"summary\" (string) frontmatter field"
+			expected := "markdown.Document.ParseMeta: Line 1: Missing \"summary\" (string) frontmatter field"
 
 			if errors[0].Error() != expected {
 				t.Errorf("Expected \"%s\" instead of \"%s\" error", expected, errors[0].Error())

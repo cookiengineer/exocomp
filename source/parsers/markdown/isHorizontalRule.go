@@ -23,7 +23,9 @@ func isHorizontalRule(line string) bool {
 		} else {
 			return false
 		}
+
 	} else {
 		return false
 	}
+
 }

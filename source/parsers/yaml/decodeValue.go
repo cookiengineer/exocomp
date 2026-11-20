@@ -6,7 +6,7 @@ import "strconv"
 
 func decodeValue(node *Node, target reflect.Value) error {
 
-	if target.CanAddr() {
+	if target.CanAddr() == true {
 
 		unmarshaler, implements := target.Addr().Interface().(Unmarshaler)
 
@@ -211,11 +211,12 @@ func decodeValue(node *Node, target reflect.Value) error {
 		default:
 
 			return fmt.Errorf(
-				"unsupported type: %s",
+				"yaml.DecodeValue: Unsupported type: %s.",
 				target.Kind(),
 			)
 
 		}
 
 	}
+
 }

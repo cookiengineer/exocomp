@@ -97,6 +97,7 @@ func (element *Element) textContent() string {
 		return result
 
 	}
+
 }
 
 // RenderInline renders the element as a single line of markdown, used inside
@@ -262,7 +263,7 @@ func (element *Element) renderChildrenBlock(document *Document) string {
 
 		for _, child := range element.Children {
 
-			if isBlockElement(child.Type) {
+			if isBlockElement(child.Type) == true {
 
 				content := child.Render(document)
 

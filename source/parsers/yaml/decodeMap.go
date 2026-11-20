@@ -12,18 +12,14 @@ func decodeMap(node *Node, target reflect.Value) error {
 			node.Kind,
 		)
 
-	}
-
-	if target.Kind() != reflect.Map {
+	} else if target.Kind() != reflect.Map {
 
 		return fmt.Errorf(
 			"yaml.DecodeMap: Target is not a map: %s.",
 			target.Kind(),
 		)
 
-	}
-
-	if target.Type().Key().Kind() != reflect.String {
+	} else if target.Type().Key().Kind() != reflect.String {
 
 		return fmt.Errorf(
 			"yaml.DecodeMap: Unsupported map key type: %s.",

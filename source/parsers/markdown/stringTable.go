@@ -20,7 +20,7 @@ func stringTable(element *Element) string {
 			thead = append(thead, strings.TrimSpace(field))
 		}
 
-		if strings.Contains(lines[1], "---") {
+		if strings.Contains(lines[1], "---") == true {
 
 			second_line := splitTableCells(lines[1][1 : len(lines[1])-1])
 
@@ -28,9 +28,9 @@ func stringTable(element *Element) string {
 
 				if strings.HasPrefix(align, ":-") && strings.HasSuffix(align, "-:") {
 					alignment = append(alignment, "justify")
-				} else if strings.HasPrefix(align, ":-") {
+				} else if strings.HasPrefix(align, ":-") == true {
 					alignment = append(alignment, "left")
-				} else if strings.HasSuffix(align, "-:") {
+				} else if strings.HasSuffix(align, "-:") == true {
 					alignment = append(alignment, "right")
 				} else {
 					alignment = append(alignment, "center")
@@ -46,7 +46,7 @@ func stringTable(element *Element) string {
 
 					line := lines[l]
 
-					if strings.Contains(line, "---") {
+					if strings.Contains(line, "---") == true {
 
 						fill = "tfoot"
 
@@ -85,7 +85,7 @@ func stringTable(element *Element) string {
 
 					line := lines[l]
 
-					if strings.Contains(line, "---") {
+					if strings.Contains(line, "---") == true {
 
 						fill = "tfoot"
 

@@ -86,6 +86,7 @@ func (parser *Parser) ParseMultilineString(parent_indent int) string {
 			parser.index++
 
 		}
+
 	}
 
 	return strings.Join(lines, "\n")
@@ -227,7 +228,7 @@ func (parser *Parser) SplitKeyValue(line string) (string, string, bool) {
 
 func (parser *Parser) parseNestedBlock(parent_indent int) (*Node, error) {
 
-	if parser.index >= len(parser.lines) {
+	if parser.index >= len(parser.lines) == true {
 		return nil, nil
 	} else {
 
@@ -235,11 +236,12 @@ func (parser *Parser) parseNestedBlock(parent_indent int) (*Node, error) {
 
 		if next_line.Indent <= parent_indent {
 			return nil, nil
-		} else if isSequenceItem(next_line.Text) {
+		} else if isSequenceItem(next_line.Text) == true {
 			return parser.ParseArray(next_line.Indent)
 		} else {
 			return parser.ParseObject(next_line.Indent)
 		}
+
 	}
 }
 
@@ -267,67 +269,72 @@ func (parser *Parser) parseSequenceItem(expected_indent int, content string) (*N
 					Kind:  ScalarNode,
 					Value: "",
 				}, nil
+			} else {
+				return child, nil
 			}
-
-			return child, nil
 
 		} else {
 			return nil, err
 		}
 
-	}
+	} else if isSequenceItem(content) == true {
 
-	if isSequenceItem(content) {
 		return parser.parseInlineSequence(expected_indent, content)
+
 	} else {
 
 		key, value, has_value := parser.SplitKeyValue(content)
 
 		if key == "" && has_value == false {
+
 			return &Node{
 				Kind:  ScalarNode,
 				Value: parser.ParseScalar(content),
 			}, nil
-		}
-
-		object := &Node{
-			Kind:           ObjectNode,
-			ObjectChildren: map[string]*Node{},
-		}
-
-		if has_value == true {
-
-			object.ObjectChildren[key] = &Node{
-				Kind:  ScalarNode,
-				Value: parser.ParseScalar(value),
-			}
 
 		} else {
 
-			child, err := parser.parseNestedBlock(expected_indent)
+			object := &Node{
+				Kind:           ObjectNode,
+				ObjectChildren: map[string]*Node{},
+			}
 
-			if err == nil {
+			if has_value == true {
 
-				if child == nil {
-					child = &Node{
-						Kind:           ObjectNode,
-						ObjectChildren: map[string]*Node{},
-					}
+				object.ObjectChildren[key] = &Node{
+					Kind:  ScalarNode,
+					Value: parser.ParseScalar(value),
 				}
 
-				object.ObjectChildren[key] = child
+			} else {
 
+				child, err := parser.parseNestedBlock(expected_indent)
+
+				if err == nil {
+
+					if child == nil {
+						child = &Node{
+							Kind:           ObjectNode,
+							ObjectChildren: map[string]*Node{},
+						}
+					}
+
+					object.ObjectChildren[key] = child
+
+				} else {
+					return nil, err
+				}
+
+			}
+
+			if err := parser.consumeMappingFields(expected_indent, object); err == nil {
+				return object, nil
 			} else {
 				return nil, err
 			}
 
 		}
 
-		if err := parser.consumeMappingFields(expected_indent, object); err == nil {
-			return object, nil
-		} else {
-			return nil, err
-		}
 	}
 }
 
@@ -386,7 +393,7 @@ func (parser *Parser) consumeMappingFields(expected_indent int, object *Node) er
 
 		if line.Indent <= expected_indent {
 			break
-		} else if isSequenceItem(line.Text) {
+		} else if isSequenceItem(line.Text) == true {
 			break
 		} else {
 
@@ -403,6 +410,7 @@ func (parser *Parser) consumeMappingFields(expected_indent int, object *Node) er
 			}
 
 		}
+
 	}
 
 	return nil

@@ -1,7 +1,7 @@
 package html
 
-import net_url "net/url"
 import "fmt"
+import net_url "net/url"
 import "strings"
 
 import html_tree "golang.org/x/net/html"
@@ -39,6 +39,7 @@ func NewDocument(file string) *Document {
 		return nil
 
 	}
+
 }
 
 func ParseDocument(file string, bytes []byte) (*Document, error) {
@@ -56,7 +57,7 @@ func ParseDocument(file string, bytes []byte) (*Document, error) {
 		}
 
 	} else {
-		return nil, fmt.Errorf("Invalid URL \"%s\"", file)
+		return nil, fmt.Errorf("html.ParseDocument: Invalid URL \"%s\".", file)
 	}
 
 }
@@ -74,7 +75,7 @@ func (document *Document) MarshalText() ([]byte, error) {
 	if document != nil {
 		return []byte(document.String()), nil
 	} else {
-		return []byte{}, fmt.Errorf("nil document")
+		return []byte{}, fmt.Errorf("html.Document.MarshalText: Nil document.")
 	}
 }
 
@@ -131,14 +132,14 @@ func (document *Document) buildBody(article *html_tree.Node) {
 
 	name := strings.ToLower(strings.TrimSpace(article.Data))
 
-	if isTransparentElement(name) {
+	if isTransparentElement(name) == true {
 
 		document.walk(article, nil)
 		return
 
 	}
 
-	if isBlockElement(name) {
+	if isBlockElement(name) == true {
 
 		element := NewElement(name)
 		copyAttributes(article, element)
@@ -240,7 +241,7 @@ func (document *Document) walk(node *html_tree.Node, current *Element) {
 				continue
 			} else {
 
-				if isTransparentElement(name) {
+				if isTransparentElement(name) == true {
 
 					document.walk(child, current)
 					continue
@@ -250,7 +251,7 @@ func (document *Document) walk(node *html_tree.Node, current *Element) {
 				element := NewElement(name)
 				copyAttributes(child, element)
 
-				if isBlockElement(name) {
+				if isBlockElement(name) == true {
 
 					if current == nil {
 						document.AddElement(element)
@@ -272,6 +273,7 @@ func (document *Document) walk(node *html_tree.Node, current *Element) {
 				}
 
 			}
+
 		}
 
 	}

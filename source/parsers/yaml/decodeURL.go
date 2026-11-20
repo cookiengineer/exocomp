@@ -9,37 +9,39 @@ var netURLPointerType = reflect.TypeOf((*net_url.URL)(nil))
 
 func decodeURL(node *Node, target reflect.Value) error {
 
-	if node.Kind != ScalarNode {
+	if node.Kind == ScalarNode {
+
+		parsed, err := net_url.Parse(node.Value)
+
+		if err == nil {
+
+			switch target.Kind() {
+
+			case reflect.Struct:
+				target.Set(reflect.ValueOf(*parsed))
+
+			case reflect.Ptr:
+				target.Set(reflect.ValueOf(parsed))
+
+			default:
+				return fmt.Errorf(
+					"yaml.DecodeURL: Cannot decode net.URL into %s.",
+					target.Kind(),
+				)
+
+			}
+
+		} else {
+			return err
+		}
+
+		return nil
+
+	} else {
 		return fmt.Errorf(
 			"yaml.DecodeURL: Cannot decode %v into net.URL.",
 			node.Kind,
 		)
 	}
-
-	parsed, err := net_url.Parse(node.Value)
-
-	if err == nil {
-
-		switch target.Kind() {
-
-		case reflect.Struct:
-			target.Set(reflect.ValueOf(*parsed))
-
-		case reflect.Ptr:
-			target.Set(reflect.ValueOf(parsed))
-
-		default:
-			return fmt.Errorf(
-				"yaml.DecodeURL: Cannot decode net.URL into %s.",
-				target.Kind(),
-			)
-
-		}
-
-	} else {
-		return err
-	}
-
-	return nil
 
 }

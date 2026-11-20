@@ -113,15 +113,15 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 						remaining = remaining[index2+2+1:]
 
 					} else {
-						return result, fmt.Errorf("Unsupported media type \"%s\" at position %d", href, getTokenPosition(value, remaining))
+						return result, fmt.Errorf("markdown.ParseInlineElements: Unsupported media type \"%s\" at position %d", href, getTokenPosition(value, remaining))
 					}
 
 				} else {
-					return result, fmt.Errorf("Expected token \"%s\" at positon %d", ")", getTokenPosition(value, remaining))
+					return result, fmt.Errorf("markdown.ParseInlineElements: Expected token \"%s\" at positon %d", ")", getTokenPosition(value, remaining))
 				}
 
 			} else {
-				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "](", getTokenPosition(value, remaining))
+				return result, fmt.Errorf("markdown.ParseInlineElements: Expected token \"%s\" at positon %d", "](", getTokenPosition(value, remaining))
 			}
 
 		} else if is_a == true {
@@ -148,11 +148,11 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 					remaining = remaining[index2+2+1:]
 
 				} else {
-					return result, fmt.Errorf("Expected token \"%s\" at positon %d", ")", getTokenPosition(value, remaining))
+					return result, fmt.Errorf("markdown.ParseInlineElements: Expected token \"%s\" at positon %d", ")", getTokenPosition(value, remaining))
 				}
 
 			} else {
-				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "](", getTokenPosition(value, remaining))
+				return result, fmt.Errorf("markdown.ParseInlineElements: Expected token \"%s\" at positon %d", "](", getTokenPosition(value, remaining))
 			}
 
 		} else if is_a_footnote == true {
@@ -176,11 +176,11 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 					remaining = remaining[index2+1:]
 
 				} else {
-					return result, fmt.Errorf("Expected non-empty footnote link at positon %d", getTokenPosition(value, remaining))
+					return result, fmt.Errorf("markdown.ParseInlineElements: Expected non-empty footnote link at positon %d", getTokenPosition(value, remaining))
 				}
 
 			} else {
-				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "]", getTokenPosition(value, remaining))
+				return result, fmt.Errorf("markdown.ParseInlineElements: Expected token \"%s\" at positon %d", "]", getTokenPosition(value, remaining))
 			}
 
 		} else if is_footnote == true {
@@ -204,11 +204,11 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 					remaining = remaining[index2+2:]
 
 				} else {
-					return result, fmt.Errorf("Expected non-empty footnote at positon %d", getTokenPosition(value, remaining))
+					return result, fmt.Errorf("markdown.ParseInlineElements: Expected non-empty footnote at positon %d", getTokenPosition(value, remaining))
 				}
 
 			} else {
-				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "]", getTokenPosition(value, remaining))
+				return result, fmt.Errorf("markdown.ParseInlineElements: Expected token \"%s\" at positon %d", "]", getTokenPosition(value, remaining))
 			}
 
 		} else if is_abbr == true {
@@ -235,18 +235,18 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 					remaining = remaining[index2+2+1:]
 
 				} else {
-					return result, fmt.Errorf("Expected token \"%s\" at positon %d", "}", getTokenPosition(value, remaining))
+					return result, fmt.Errorf("markdown.ParseInlineElements: Expected token \"%s\" at positon %d", "}", getTokenPosition(value, remaining))
 				}
 
 			} else {
-				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "]{", getTokenPosition(value, remaining))
+				return result, fmt.Errorf("markdown.ParseInlineElements: Expected token \"%s\" at positon %d", "]{", getTokenPosition(value, remaining))
 			}
 
 		} else if is_b == true {
 
 			remaining = remaining[2:]
 
-			if strings.Contains(remaining, "**") {
+			if strings.Contains(remaining, "**") == true {
 
 				index2 := strings.Index(remaining, "**")
 				text := remaining[0:index2]
@@ -296,7 +296,7 @@ func parseInlineElements(value string, line int, with_abbreviations bool) ([]*El
 				remaining = remaining[index2+1:]
 
 			} else {
-				return result, fmt.Errorf("Expected token \"%s\" at positon %d", "`", getTokenPosition(value, remaining))
+				return result, fmt.Errorf("markdown.ParseInlineElements: Expected token \"%s\" at positon %d", "`", getTokenPosition(value, remaining))
 			}
 
 		} else if is_em == true {

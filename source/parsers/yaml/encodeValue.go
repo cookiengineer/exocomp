@@ -126,7 +126,7 @@ func encodeValue(value reflect.Value) (*Node, error) {
 		default:
 
 			return nil, fmt.Errorf(
-				"unsupported type: %s",
+				"yaml.EncodeValue: Unsupported type: %s.",
 				value.Kind(),
 			)
 
