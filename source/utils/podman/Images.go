@@ -16,7 +16,7 @@ func Images() ([]ImagesSchema, error) {
 		if err2 == nil {
 			return images, nil
 		} else {
-			return nil, fmt.Errorf("Cannot parse image list.")
+			return nil, fmt.Errorf("podman.Images: Cannot parse image list.")
 		}
 
 	} else {

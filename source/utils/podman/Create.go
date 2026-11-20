@@ -36,7 +36,7 @@ func Create(image string, name string, command string, arguments []string, netwo
 		}
 
 	} else {
-		return fmt.Errorf("Cannot resolve sandbox path.")
+		return fmt.Errorf("podman.Create: Cannot resolve sandbox path.")
 	}
 
 }

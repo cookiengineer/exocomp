@@ -46,8 +46,10 @@ func (names *processNames) UnmarshalJSON(data []byte) error {
 		err := json.Unmarshal(data, &name)
 
 		if err == nil {
+
 			*names = []string{name}
 			return nil
+
 		} else {
 			return err
 		}
@@ -59,8 +61,10 @@ func (names *processNames) UnmarshalJSON(data []byte) error {
 		err := json.Unmarshal(data, &values)
 
 		if err == nil {
+
 			*names = values
 			return nil
+
 		} else {
 			return err
 		}

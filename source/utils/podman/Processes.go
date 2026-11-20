@@ -23,7 +23,7 @@ func Processes(label string) ([]ProcessesSchema, error) {
 		if err2 == nil {
 			return processes, nil
 		} else {
-			return nil, fmt.Errorf("Cannot parse container list.")
+			return nil, fmt.Errorf("podman.Processes: Cannot parse container list.")
 		}
 
 	} else {
