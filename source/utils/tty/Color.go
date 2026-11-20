@@ -38,7 +38,7 @@ func ColorFromHex(input string) (Color, error) {
 
 	value := strings.TrimSpace(input)
 
-	if strings.HasPrefix(value, "#") {
+	if strings.HasPrefix(value, "#") == true {
 		value = value[1:]
 	}
 
@@ -88,6 +88,7 @@ func ColorFromHex(input string) (Color, error) {
 	} else {
 		return Color{}, fmt.Errorf("tty.ColorFromHex: Invalid color \"%s\".", input)
 	}
+
 }
 
 func (color Color) Hex() string {
@@ -150,7 +151,9 @@ func (color Color) Foreground(profile ColorProfile) string {
 			} else {
 				return fmt.Sprintf("\033[38;5;%dm", code)
 			}
+
 		}
+
 	}
 }
 
@@ -175,6 +178,8 @@ func (color Color) Background(profile ColorProfile) string {
 			} else {
 				return fmt.Sprintf("\033[48;5;%dm", code)
 			}
+
 		}
+
 	}
 }

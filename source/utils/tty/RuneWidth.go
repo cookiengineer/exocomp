@@ -10,7 +10,7 @@ func RuneWidth(value rune) int {
 		return 0
 	} else if unicode.Is(unicode.Mn, value) || unicode.Is(unicode.Me, value) || unicode.Is(unicode.Cf, value) {
 		return 0
-	} else if isWideRune(value) {
+	} else if isWideRune(value) == true {
 		return 2
 	} else {
 		return 1

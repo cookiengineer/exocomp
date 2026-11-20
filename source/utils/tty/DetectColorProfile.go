@@ -16,12 +16,14 @@ func DetectColorProfile() ColorProfile {
 
 		if color_term == "truecolor" || color_term == "24bit" || strings.Contains(term, "direct") {
 			return ProfileTrueColor
-		} else if strings.Contains(term, "256color") {
+		} else if strings.Contains(term, "256color") == true {
 			return Profile256
 		} else if term != "" && term != "dumb" {
 			return Profile16
 		} else {
 			return ProfileMono
 		}
+
 	}
+
 }

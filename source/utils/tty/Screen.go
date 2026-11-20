@@ -64,11 +64,11 @@ func (screen *Screen) Resize(width int, height int) {
 
 }
 
-func (screen *Screen) SetCursor(x int, y int, visible bool) {
+func (screen *Screen) SetCursor(x int, y int, is_visible bool) {
 
 	screen.cursorX = x
 	screen.cursorY = y
-	screen.cursorVisible = visible
+	screen.cursorVisible = is_visible
 
 }
 
@@ -104,7 +104,7 @@ func (screen *Screen) Flush() error {
 
 			}
 
-			if cell.Equals(previous) {
+			if cell.Equals(previous) == true {
 
 				x += max(1, cell.Width)
 				continue
@@ -174,4 +174,5 @@ func (screen *Screen) Flush() error {
 		return nil
 
 	}
+
 }

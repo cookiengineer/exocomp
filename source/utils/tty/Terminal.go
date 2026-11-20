@@ -4,6 +4,7 @@ import "encoding/base64"
 import "fmt"
 import "os"
 import "sync"
+
 import "golang.org/x/term"
 
 type Terminal struct {
@@ -60,6 +61,7 @@ func (terminal *Terminal) Enter() error {
 		}
 
 	}
+
 }
 
 func (terminal *Terminal) Leave() {

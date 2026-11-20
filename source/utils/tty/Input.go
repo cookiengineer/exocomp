@@ -101,6 +101,7 @@ func (input *Input) Read() (Key, error) {
 	} else {
 		return Key{Type: KeyEOF}, err
 	}
+
 }
 
 func (input *Input) readSimple(value byte) (Key, error) {
@@ -150,9 +151,10 @@ func (input *Input) readUTF8(first byte) (Key, error) {
 		} else {
 			buffer = append(buffer, next)
 		}
+
 	}
 
-	if utf8.Valid(buffer) {
+	if utf8.Valid(buffer) == true {
 
 		value, _ := utf8.DecodeRune(buffer)
 		return Key{Type: KeyRune, Rune: value}, nil
@@ -187,6 +189,7 @@ func (input *Input) readEscape() (Key, error) {
 		}
 
 	}
+
 }
 
 func (input *Input) readCSI() (Key, error) {
@@ -211,6 +214,7 @@ func (input *Input) readCSI() (Key, error) {
 			}
 
 		}
+
 	}
 
 }
@@ -243,6 +247,7 @@ func (input *Input) readSS3() (Key, error) {
 		}
 
 	}
+
 }
 
 func (input *Input) decodeCSI(parameters string, intermediate byte, final byte) (Key, error) {
@@ -255,7 +260,7 @@ func (input *Input) decodeCSI(parameters string, intermediate byte, final byte) 
 
 			if parameters == "200" || strings.HasPrefix(parameters, "200;") {
 				return input.readPaste()
-			} else if strings.HasPrefix(parameters, "27;") {
+			} else if strings.HasPrefix(parameters, "27;") == true {
 				return decodeModifyOtherKeys(parameters)
 			} else {
 
@@ -329,55 +334,7 @@ func (input *Input) decodeCSI(parameters string, intermediate byte, final byte) 
 			}
 
 		}
-	}
-}
 
-func decodeSGRMouse(parameters string, final byte) (Key, error) {
-
-	if strings.HasPrefix(parameters, "<") == false {
-		return Key{Type: KeyUnknown}, nil
-	} else {
-
-		parts := strings.Split(parameters[1:], ";")
-
-		if len(parts) != 3 {
-			return Key{Type: KeyUnknown}, nil
-		} else {
-
-			button, err0 := strconv.Atoi(parts[0])
-			x, err1 := strconv.Atoi(parts[1])
-			y, err2 := strconv.Atoi(parts[2])
-
-			if err0 != nil || err1 != nil || err2 != nil {
-				return Key{Type: KeyUnknown}, nil
-			} else {
-
-				mouse_button := button & 3
-				mouse_wheel := 0
-
-				if button&64 != 0 {
-
-					mouse_button = -1
-
-					if button&1 == 0 {
-						mouse_wheel = -1
-					} else {
-						mouse_wheel = 1
-					}
-
-				}
-
-				return Key{
-					Type:         KeyMouse,
-					MouseButton:  mouse_button,
-					MouseX:       max(0, x-1),
-					MouseY:       max(0, y-1),
-					MouseRelease: final == 'm' || button == 3,
-					MouseWheel:   mouse_wheel,
-				}, nil
-
-			}
-		}
 	}
 }
 
@@ -412,6 +369,7 @@ func (input *Input) readPaste() (Key, error) {
 			builder.WriteByte(next)
 
 		}
+
 	}
 
 }
@@ -427,7 +385,7 @@ func (input *Input) next(timeout time.Duration) (byte, error) {
 		case err := <-input.errors:
 			return 0, err
 		case <-input.closed:
-			return 0, fmt.Errorf("tty.Input.next: Input closed.")
+			return 0, fmt.Errorf("tty.Input.Read: Input closed.")
 
 		}
 
@@ -443,9 +401,9 @@ func (input *Input) next(timeout time.Duration) (byte, error) {
 	case err := <-input.errors:
 		return 0, err
 	case <-timer.C:
-		return 0, fmt.Errorf("tty.Input.next: Input timeout.")
+		return 0, fmt.Errorf("tty.Input.Read: Input timeout.")
 	case <-input.closed:
-		return 0, fmt.Errorf("tty.Input.next: Input closed.")
+		return 0, fmt.Errorf("tty.Input.Read: Input closed.")
 
 	}
 

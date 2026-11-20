@@ -11,4 +11,5 @@ func PadRight(text string, width int) string {
 	} else {
 		return text + strings.Repeat(" ", width-length)
 	}
+
 }

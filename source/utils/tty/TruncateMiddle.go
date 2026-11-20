@@ -29,6 +29,7 @@ func TruncateMiddle(text string, width int) string {
 				left_width += value_width
 
 			}
+
 		}
 
 		for r := len(runes) - 1; r >= 0; r-- {
@@ -43,6 +44,7 @@ func TruncateMiddle(text string, width int) string {
 				right_width += value_width
 
 			}
+
 		}
 
 		return string(left) + "…" + string(right)

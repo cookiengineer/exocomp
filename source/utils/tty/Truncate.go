@@ -25,6 +25,7 @@ func Truncate(text string, width int) string {
 				used += value_width
 
 			}
+
 		}
 
 		return builder.String()
