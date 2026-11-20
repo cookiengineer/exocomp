@@ -24,8 +24,10 @@ func BuildFakePodman(t *testing.T) string {
 		root := sourceRoot()
 
 		if root == "" {
+
 			fakePodmanErr = fmt.Errorf("Cannot locate the source folder")
 			return
+
 		}
 
 		output := filepath.Join(os.TempDir(), "exocomp-fakepodman-test")
@@ -35,8 +37,10 @@ func BuildFakePodman(t *testing.T) string {
 		data, err := cmd.CombinedOutput()
 
 		if err != nil {
+
 			fakePodmanErr = fmt.Errorf("Cannot build fakepodman: %v: %s", err, strings.TrimSpace(string(data)))
 			return
+
 		}
 
 		fakePodmanPath = output

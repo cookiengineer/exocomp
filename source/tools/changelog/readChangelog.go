@@ -38,7 +38,7 @@ func readChangelog(tool *Changelog) error {
 					return fmt.Errorf("changelog.Read: Cannot parse changelog")
 				}
 
-			} else if os.IsNotExist(err1) {
+			} else if os.IsNotExist(err1) == true {
 
 				tool.contents = make(map[string]map[string][]types.ChangelogEntry)
 				return nil

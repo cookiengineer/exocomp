@@ -79,8 +79,10 @@ func updateAsset(tool *Assets, id string, asset types.Asset, arguments utils_cha
 		for other_id, other := range tool.contents {
 
 			if other_id != id && assetDedupKey(other) == assetDedupKey(asset) {
+
 				conflict = other_id
 				break
+
 			}
 
 		}

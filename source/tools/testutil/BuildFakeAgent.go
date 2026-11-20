@@ -24,8 +24,10 @@ func BuildFakeAgent(t *testing.T) string {
 		root := sourceRoot()
 
 		if root == "" {
+
 			fakeAgentErr = fmt.Errorf("Cannot locate the source folder")
 			return
+
 		}
 
 		output := filepath.Join(os.TempDir(), "exocomp-fake-agent")
@@ -35,8 +37,10 @@ func BuildFakeAgent(t *testing.T) string {
 		data, err := cmd.CombinedOutput()
 
 		if err != nil {
+
 			fakeAgentErr = fmt.Errorf("Cannot build fake agent: %v: %s", err, strings.TrimSpace(string(data)))
 			return
+
 		}
 
 		fakeAgentPath = output

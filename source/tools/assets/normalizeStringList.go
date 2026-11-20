@@ -18,6 +18,7 @@ func normalizeStringList(values []string, maximum int) []string {
 		} else {
 			result = append(result, utils_findings.LimitText(value, maximum))
 		}
+
 	}
 
 	sort.Strings(result)

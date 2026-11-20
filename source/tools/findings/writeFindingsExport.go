@@ -50,4 +50,5 @@ func writeFindingsExport(tool *Findings, export_type string, data []byte, defaul
 	} else {
 		return "", fmt.Errorf("findings.Export: Path is reserved for internal state.")
 	}
+
 }

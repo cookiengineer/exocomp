@@ -18,15 +18,19 @@ func parseNaabuResults(data []byte, in_scope bool) ([]types.Asset, int, error) {
 			parsed := naabuImportLine{}
 
 			if json.Unmarshal(line, &parsed) != nil {
+
 				invalid++
 				continue
+
 			}
 
 			host := utils_strings.FirstNonEmpty(parsed.Host, parsed.IP)
 
 			if host == "" || parsed.Port < 1 || parsed.Port > 65535 {
+
 				invalid++
 				continue
+
 			}
 
 			asset := newImportedAsset(types.AssetTypePort, fmt.Sprintf("%s:%d", host, parsed.Port), "naabu", in_scope)
@@ -52,4 +56,5 @@ func parseNaabuResults(data []byte, in_scope bool) ([]types.Asset, int, error) {
 	} else {
 		return nil, 0, err
 	}
+
 }

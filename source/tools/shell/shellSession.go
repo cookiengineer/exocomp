@@ -85,9 +85,11 @@ func (session *shellSession) appendOutput(data []byte) {
 		session.output = append(session.output, cleaned...)
 
 		if len(session.output) > shellMaxBuffer {
+
 			drop := len(session.output) - shellMaxBuffer
 			session.output = session.output[drop:]
 			session.dropped += int64(drop)
+
 		}
 
 		if session.logFile != nil && session.logTruncated == false {
@@ -136,11 +138,14 @@ func (session *shellSession) read(wait time.Duration, limit int) ([]byte, string
 			session.mutex.Unlock()
 
 			if ready == true {
+
 				timer.Stop()
 				break
+
 			}
 
 			select {
+
 			case <-session.notify:
 			case <-session.done:
 			case <-timer.C:
@@ -148,6 +153,7 @@ func (session *shellSession) read(wait time.Duration, limit int) ([]byte, string
 				data, status, exit_code := session.readLocked(limit)
 				session.mutex.Unlock()
 				return data, status, exit_code
+
 			}
 
 		}
@@ -197,15 +203,19 @@ func (session *shellSession) write(data []byte) (int, error) {
 			size, err := session.pty.Write(data)
 
 			if size > 0 {
+
 				written += size
 				data = data[size:]
+
 			}
 
 			if err == nil {
 				continue
 			} else {
+
 				session.touch()
 				return written, err
+
 			}
 
 		}
@@ -270,8 +280,10 @@ func (session *shellSession) signal(name string) (string, error) {
 		signal, err := utils_shell.SendSignalByName(pid, name)
 
 		if err == nil {
+
 			session.touch()
 			return signal, nil
+
 		} else {
 			return "", fmt.Errorf("Cannot send signal \"%s\".", name)
 		}
@@ -282,7 +294,7 @@ func (session *shellSession) signal(name string) (string, error) {
 
 }
 
-func (session *shellSession) close(force bool) ([]byte, string, int) {
+func (session *shellSession) close(is_force bool) ([]byte, string, int) {
 
 	session.mutex.Lock()
 	status := session.Status
@@ -296,7 +308,7 @@ func (session *shellSession) close(force bool) ([]byte, string, int) {
 
 	if status == "starting" || status == "running" {
 
-		if force == true {
+		if is_force == true {
 
 			_ = utils_shell.KillProcess(pid)
 
@@ -305,14 +317,18 @@ func (session *shellSession) close(force bool) ([]byte, string, int) {
 			_, _ = utils_shell.SendSignalByName(pid, "TERM")
 
 			select {
+
 			case <-session.done:
 			case <-time.After(shellCloseGrace):
 				_ = utils_shell.KillProcess(pid)
 				select {
+
 				case <-session.done:
 				case <-time.After(shellCloseGrace):
 					_ = session.pty.Close()
+
 				}
+
 			}
 
 		}
@@ -320,9 +336,11 @@ func (session *shellSession) close(force bool) ([]byte, string, int) {
 	}
 
 	select {
+
 	case <-session.done:
 	case <-time.After(shellCloseWait):
 		_ = session.pty.Close()
+
 	}
 
 	data, status, exit_code := session.read(0, shellMaxRead)
@@ -330,13 +348,17 @@ func (session *shellSession) close(force bool) ([]byte, string, int) {
 	session.mutex.Lock()
 
 	if session.Status == "starting" || session.Status == "running" {
+
 		session.Status = "closed"
 		status = "closed"
+
 	}
 
 	if session.logFile != nil {
+
 		session.logFile.Close()
 		session.logFile = nil
+
 	}
 
 	session.mutex.Unlock()
@@ -395,8 +417,10 @@ func (session *shellSession) finish(err error) {
 		}
 
 		if session.logFile != nil {
+
 			session.logFile.Close()
 			session.logFile = nil
+
 		}
 
 		session.mutex.Unlock()
@@ -451,8 +475,10 @@ func (session *shellSession) pendingOutput() int {
 func (session *shellSession) notifyOutput() {
 
 	select {
+
 	case session.notify <- struct{}{}:
 	default:
+
 	}
 
 }

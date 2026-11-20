@@ -17,13 +17,17 @@ func parseKatanaResults(data []byte, in_scope bool) ([]types.Asset, int, error) 
 			parsed := katanaImportLine{}
 
 			if json.Unmarshal(line, &parsed) != nil {
+
 				invalid++
 				continue
+
 			}
 
 			if parsed.Request.Endpoint == "" {
+
 				invalid++
 				continue
+
 			}
 
 			asset := newImportedAsset(types.AssetTypeEndpoint, parsed.Request.Endpoint, "katana", in_scope)
@@ -53,4 +57,5 @@ func parseKatanaResults(data []byte, in_scope bool) ([]types.Asset, int, error) 
 	} else {
 		return nil, 0, err
 	}
+
 }

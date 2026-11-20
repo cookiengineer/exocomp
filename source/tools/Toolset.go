@@ -1,6 +1,5 @@
 package tools
 
-import "exocomp/types"
 import "exocomp/tools/agents"
 import "exocomp/tools/assets"
 import "exocomp/tools/bugs"
@@ -14,6 +13,7 @@ import "exocomp/tools/requirements"
 import "exocomp/tools/shell"
 import "exocomp/tools/skills"
 import "exocomp/tools/websites"
+import "exocomp/types"
 import utils_capabilities "exocomp/utils/capabilities"
 import net_url "net/url"
 import "strings"
@@ -23,7 +23,7 @@ func Toolset(
 	sandbox string,
 	model string,
 	url *net_url.URL,
-	debug bool,
+	is_debug bool,
 	allowed_programs []string,
 	allowed_images []string,
 	allowed_tools []string,
@@ -36,7 +36,7 @@ func Toolset(
 
 	for _, tool_name := range allowed_tools {
 
-		if strings.Contains(tool_name, ".") {
+		if strings.Contains(tool_name, ".") == true {
 
 			tmp1 := strings.TrimSpace(tool_name[0:strings.Index(tool_name, ".")])
 			tmp2 := strings.TrimSpace(tool_name[strings.Index(tool_name, ".")+1:])
@@ -63,7 +63,7 @@ func Toolset(
 		switch tool_name {
 
 		case "agents":
-			tool = agents.NewAgents(allowed_methods, playground, sandbox, model, url, debug)
+			tool = agents.NewAgents(allowed_methods, playground, sandbox, model, url, is_debug)
 		case "assets":
 			tool = assets.NewAssets(allowed_methods, playground, sandbox)
 		case "bugs":

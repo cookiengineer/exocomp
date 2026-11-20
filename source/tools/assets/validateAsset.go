@@ -16,6 +16,7 @@ func validateAsset(asset *types.Asset) error {
 	}
 
 	switch asset.Type {
+
 	case types.AssetTypeIP:
 
 		if net.ParseIP(asset.Value) == nil {
@@ -64,4 +65,5 @@ func validateAsset(asset *types.Asset) error {
 	} else {
 		return fmt.Errorf("Invalid port number.")
 	}
+
 }

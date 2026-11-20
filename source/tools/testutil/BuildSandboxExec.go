@@ -25,8 +25,10 @@ func BuildSandboxExec(t *testing.T) string {
 		root := sourceRoot()
 
 		if root == "" {
+
 			sandboxExecErr = fmt.Errorf("Cannot locate the source folder")
 			return
+
 		}
 
 		output := filepath.Join(os.TempDir(), "exocomp-sandbox-test")
@@ -36,8 +38,10 @@ func BuildSandboxExec(t *testing.T) string {
 		data, err := cmd.CombinedOutput()
 
 		if err != nil {
+
 			sandboxExecErr = fmt.Errorf("Cannot build exocomp-sandbox: %v: %s", err, strings.TrimSpace(string(data)))
 			return
+
 		}
 
 		sandboxExecPath = output

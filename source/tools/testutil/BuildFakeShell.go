@@ -23,8 +23,10 @@ func BuildFakeShell(t *testing.T) string {
 		root := sourceRoot()
 
 		if root == "" {
+
 			fakeShellErr = os.ErrNotExist
 			return
+
 		}
 
 		output := filepath.Join(os.TempDir(), "exocomp-fakeshell-test")
@@ -36,8 +38,10 @@ func BuildFakeShell(t *testing.T) string {
 		if err == nil {
 			fakeShellPath = output
 		} else {
+
 			fakeShellErr = err
 			t.Logf("fake shell build output: %s", strings.TrimSpace(string(data)))
+
 		}
 
 	})

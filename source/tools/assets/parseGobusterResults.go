@@ -31,8 +31,10 @@ func parseGobusterResults(data []byte, target string, in_scope bool) ([]types.As
 				}
 
 				if value == "" {
+
 					invalid++
 					continue
+
 				}
 
 				if strings.HasPrefix(value, "http://") == false && strings.HasPrefix(value, "https://") == false {
@@ -56,8 +58,10 @@ func parseGobusterResults(data []byte, target string, in_scope bool) ([]types.As
 				if size_marker := strings.Index(line, "[Size:"); size_marker >= 0 {
 
 					if end := strings.Index(line[size_marker:], "]"); end >= 0 {
+
 						size := strings.TrimSpace(line[size_marker+len("[Size:") : size_marker+end])
 						asset.Props["size"] = size
+
 					}
 
 				}
@@ -65,7 +69,9 @@ func parseGobusterResults(data []byte, target string, in_scope bool) ([]types.As
 				result = append(result, asset)
 
 			}
+
 		}
+
 	}
 
 	return result, invalid, nil

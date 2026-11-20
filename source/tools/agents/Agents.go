@@ -3,14 +3,22 @@ package agents
 import agents_roles "exocomp/agents"
 import "exocomp/schemas"
 import "exocomp/types"
+import utils_chat "exocomp/utils/chat"
+import utils_cli "exocomp/utils/cli"
 import utils_fmt "exocomp/utils/fmt"
+import utils_rand "exocomp/utils/rand"
+import utils_sandbox "exocomp/utils/sandbox"
+import "bytes"
 import "context"
+import "encoding/json"
 import "fmt"
 import "io"
 import net_url "net/url"
+import "os"
 import "os/exec"
 import "slices"
 import "sort"
+import "strings"
 import "sync"
 import "time"
 
@@ -39,7 +47,7 @@ type Agents struct {
 	processes   map[string]*agentProcess
 }
 
-func NewAgents(methods []string, playground string, sandbox string, model string, url *net_url.URL, debug bool) *Agents {
+func NewAgents(methods []string, playground string, sandbox string, model string, url *net_url.URL, is_debug bool) *Agents {
 
 	agents := &Agents{
 		Methods:     methods,
@@ -47,7 +55,7 @@ func NewAgents(methods []string, playground string, sandbox string, model string
 		Sandbox:     sandbox,
 		Model:       model,
 		URL:         url,
-		Debug:       debug,
+		Debug:       is_debug,
 		Timeout:     30 * time.Minute,
 		IdleTimeout: 5 * time.Minute,
 		OnQuit:      nil,
@@ -257,5 +265,664 @@ func (tool *Agents) Schemas() []schemas.Tool {
 	}
 
 	return result
+
+}
+
+// NOTE: Await blocks until the hired agent finished its work. This is
+// deliberate: the planner model would otherwise poll in a hot loop and
+// blow up its limited context window with identical "still working" tool
+// messages. The lifecycle guarantees the done channel always closes
+// (reader EOF -> cmd.Wait() -> finalize, forced by the liveness watchdog).
+func (tool *Agents) Await(name string) (string, error) {
+
+	tool.mutex.Lock()
+	process, running := tool.processes[name]
+	tool.mutex.Unlock()
+
+	if running == true {
+		<-process.done
+	}
+
+	tool.mutex.Lock()
+	agent, ok := tool.contents[name]
+	report := ""
+	status := ""
+
+	if ok == true {
+
+		report = getAgentWorkReport(agent)
+		status = agent.Status
+
+	}
+
+	tool.mutex.Unlock()
+
+	if ok == true {
+
+		if report != "" {
+
+			return fmt.Sprintf("agents.Await: Agent \"%s\"'s Work Report\n===%s\n===", name, report), nil
+
+		} else {
+
+			if status == "fired" {
+				return "", fmt.Errorf("agents.Await: Agent \"%s\" was fired!", name)
+			} else {
+				return "", fmt.Errorf("agents.Await: Agent \"%s\" never finished with a work report!", name)
+			}
+
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Await: Agent \"%s\" didn't work for us!", name)
+	}
+
+}
+
+func (tool *Agents) Fire(name string) (string, error) {
+
+	tool.mutex.Lock()
+	process, running := tool.processes[name]
+	agent, ok := tool.contents[name]
+
+	if ok == true && running == true {
+		agent.Status = "fired"
+	}
+
+	tool.mutex.Unlock()
+
+	if running == true {
+
+		process.cancel()
+		<-process.done
+
+		return fmt.Sprintf("agents.Fire: Agent \"%s\" fired.", name), nil
+
+	} else {
+		return "", fmt.Errorf("agents.Fire: Agent \"%s\" already quit!", name)
+	}
+
+}
+
+func (tool *Agents) GetAgent(name string) *types.Agent {
+
+	sanitized_name := utils_fmt.FormatAgentName(name)
+
+	tool.mutex.Lock()
+	agent, ok := tool.contents[sanitized_name]
+	tool.mutex.Unlock()
+
+	if ok == true {
+		return agent
+	} else {
+		return nil
+	}
+
+}
+
+func (tool *Agents) GetAgentInfo(name string) *types.Agent {
+
+	sanitized_name := utils_fmt.FormatAgentName(name)
+
+	tool.mutex.Lock()
+	agent, ok := tool.contents[sanitized_name]
+	tool.mutex.Unlock()
+
+	if ok == true {
+		return agent.CloneInfo()
+	} else {
+		return nil
+	}
+
+}
+
+func (tool *Agents) GetAgentSnapshot(name string) *types.Agent {
+
+	sanitized_name := utils_fmt.FormatAgentName(name)
+
+	tool.mutex.Lock()
+	agent, ok := tool.contents[sanitized_name]
+	tool.mutex.Unlock()
+
+	if ok == true {
+		return agent.Clone()
+	} else {
+		return nil
+	}
+
+}
+
+func (tool *Agents) GetAgents() []*types.Agent {
+
+	tool.mutex.Lock()
+
+	result := make([]*types.Agent, 0, len(tool.contents))
+
+	for _, agent := range tool.contents {
+		result = append(result, agent.Clone())
+	}
+
+	tool.mutex.Unlock()
+
+	sort.Slice(result, func(a int, b int) bool {
+		return result[a].Name < result[b].Name
+	})
+
+	return result
+
+}
+
+func (tool *Agents) GetNames() []string {
+
+	result := make([]string, 0)
+
+	tool.mutex.Lock()
+	for name, _ := range tool.contents {
+		result = append(result, name)
+	}
+	tool.mutex.Unlock()
+
+	sort.Strings(result)
+
+	return result
+
+}
+
+func (tool *Agents) Hire(role string, prompt string, sandbox string) (string, error) {
+
+	name := utils_rand.AgentName(role)
+
+	tool.mutex.Lock()
+	_, ok := tool.contents[name]
+	tool.mutex.Unlock()
+
+	if ok == false {
+
+		resolved, err0 := utils_sandbox.ResolvePath(tool.Sandbox, sandbox)
+
+		if err0 == nil {
+
+			stat, err1 := os.Stat(resolved)
+
+			if err1 == nil && stat.IsDir() == true {
+				// Do Nothing
+			} else {
+				os.MkdirAll(resolved, 0755)
+			}
+
+			exe, err2 := utils_cli.FindAgentBinary()
+
+			if err2 == nil {
+
+				arguments := []string{
+					fmt.Sprintf("--name=\"%s\"", name),
+					fmt.Sprintf("--role=\"%s\"", role),
+					fmt.Sprintf("--prompt=\"%s\"", prompt),
+					// --temperature set by agent role
+					fmt.Sprintf("--playground=\"%s\"", tool.Sandbox),
+					fmt.Sprintf("--sandbox=\"%s\"", resolved),
+					fmt.Sprintf("--url=\"%s\"", tool.URL.String()),
+				}
+
+				if tool.Debug == true {
+					arguments = append(arguments, "--debug")
+				}
+
+				timeout := tool.Timeout
+
+				if timeout <= 0 {
+					timeout = 30 * time.Minute
+				}
+
+				// NOTE: child's playground is parent's sandbox
+				ctx, cancel := context.WithTimeout(context.Background(), timeout)
+				cmd := exec.CommandContext(ctx, exe, arguments...)
+				cmd.Dir = resolved
+
+				stdin_pipe, err3 := cmd.StdinPipe()
+
+				if err3 == nil {
+
+					// XXX: Use this for debugging
+					// cmd.Stderr = os.Stderr
+
+					stdout_pipe, err4 := cmd.StdoutPipe()
+
+					if err4 == nil {
+
+						err5 := cmd.Start()
+
+						if err5 == nil {
+
+							agent := agents_roles.NewAgent(types.NewConfig(
+								name,
+								role,
+								tool.Model,
+								prompt,
+								0.0, // Don't change temperature
+								tool.Sandbox,
+								resolved,
+								tool.URL,
+								false,
+							))
+
+							if tool.Debug == true {
+								// NOTE: exocomp-agent prints the first system message
+								agent.Messages = make([]*schemas.Message, 0)
+							}
+
+							process := &agentProcess{
+								cmd:         cmd,
+								cancel:      cancel,
+								done:        make(chan struct{}),
+								last_write:  time.Now(),
+								stdin:       stdin_pipe,
+								write_mutex: &sync.Mutex{},
+							}
+
+							tool.mutex.Lock()
+							tool.contents[name] = agent
+							tool.processes[name] = process
+							tool.mutex.Unlock()
+
+							// NOTE: Single reader goroutine owns the child stdout lifecycle. It
+							// reads unbounded lines, appends messages, and on EOF reaps the
+							// process and finalizes the agent status.
+							go readProcess(tool, name, process, stdout_pipe)
+
+							// NOTE: Liveness watchdog kills a child that stops producing output.
+							go watchProcess(tool, process)
+
+							sandbox_path, _ := utils_sandbox.SanitizePath(tool.Sandbox, resolved)
+
+							return fmt.Sprintf("agents.Hire: Agent \"%s\" hired to work in \"%s\" on:\n%s", name, sandbox_path, prompt), nil
+
+						} else {
+
+							stdin_pipe.Close()
+							cancel()
+							return "", fmt.Errorf("agents.Hire: Cannot start agent \"%s\".", name)
+
+						}
+
+					} else {
+
+						stdin_pipe.Close()
+						cancel()
+						return "", fmt.Errorf("agents.Hire: Cannot capture agent output for \"%s\".", name)
+
+					}
+
+				} else {
+
+					cancel()
+					return "", fmt.Errorf("agents.Hire: Cannot capture agent input for \"%s\".", name)
+
+				}
+
+			} else {
+				return "", fmt.Errorf("agents.Hire: exocomp-agent is not installed.")
+			}
+
+		} else {
+			return "", fmt.Errorf("agents.Hire: %s", err0.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Hire: Agent \"%s\" was already hired in the past. Pick a different name.", name)
+	}
+
+}
+
+func (tool *Agents) Inquire(name string) (string, error) {
+
+	tool.mutex.Lock()
+	agent, ok0 := tool.contents[name]
+	tool.mutex.Unlock()
+
+	if ok0 == true {
+
+		tool.mutex.Lock()
+		messages := utils_chat.SummarizeMessages(agent.Messages, true, true, false)
+		tool.mutex.Unlock()
+
+		prompt := strings.Join([]string{
+			"Please summarize the following conversation, the latest messages are the newest ones.",
+			"",
+			messages,
+		}, "\n")
+
+		summary, err0 := tool.summarizeMessages(prompt)
+
+		if err0 == nil {
+
+			tool.mutex.Lock()
+			_, ok1 := tool.processes[name]
+			tool.mutex.Unlock()
+
+			if ok1 == true {
+
+				result := strings.Join([]string{
+					fmt.Sprintf("agents.Inquire: Summary of currently working agent \"%s\"'s work report:", name),
+					strings.TrimSpace(summary),
+				}, "\n")
+
+				return result, nil
+
+			} else {
+
+				result := strings.Join([]string{
+					fmt.Sprintf("agents.Inquire: Summary of already finished agent \"%s\"'s work report:", name),
+					strings.TrimSpace(summary),
+				}, "\n")
+
+				return result, nil
+
+			}
+
+		} else {
+			return "", fmt.Errorf("agents.Inquire: Failed to summarize agent \"%s\"'s work report!", name)
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Inquire: Agent \"%s\" didn't work for us!", name)
+	}
+
+}
+
+func (tool *Agents) List() (string, error) {
+
+	len_content := 0
+
+	tool.mutex.Lock()
+	len_content = len(tool.contents)
+	tool.mutex.Unlock()
+
+	if len_content > 0 {
+
+		lines := make([]string, 0)
+
+		tool.mutex.Lock()
+		for name, agent := range tool.contents {
+
+			status := agent.Status
+
+			if status == "" {
+				status = "unknown"
+			}
+
+			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Type: %s, Status: %s", name, agent.Role, status))
+
+		}
+		tool.mutex.Unlock()
+
+		sort.Strings(lines)
+
+		result := make([]string, 0)
+		result = append(result, fmt.Sprintf("agents.List: %d agents were working for us.", len(lines)))
+
+		for l := 0; l < len(lines); l++ {
+			result = append(result, lines[l])
+		}
+
+		return strings.Join(result, "\n"), nil
+
+	} else {
+		return "", fmt.Errorf("agents.List: No agents are working for us!")
+	}
+
+}
+
+func (tool *Agents) Quit(message string) (string, error) {
+
+	report := fmt.Sprintf("agents.Quit: Work Report\n%s", strings.TrimSpace(message))
+
+	if strings.Contains(strings.ToLower(message), "my work is done") == true {
+
+		if tool.OnQuit != nil {
+			go tool.OnQuit(strings.TrimSpace(message), true)
+		}
+
+		return report, nil
+
+	} else {
+
+		if tool.OnQuit != nil {
+			go tool.OnQuit(strings.TrimSpace(message), false)
+		}
+
+		return report, nil
+
+	}
+
+}
+
+func (tool *Agents) Roles() (string, error) {
+
+	lines := make([]string, 0)
+
+	for _, template := range agents_roles.Roles {
+
+		if template.Role != "planner" {
+			lines = append(lines, fmt.Sprintf("- Role: \"%s\", Description: %s", template.Role, template.Description))
+		}
+
+	}
+
+	sort.Strings(lines)
+
+	result := make([]string, 0)
+	result = append(result, fmt.Sprintf("agents.Roles: %d available agent roles.", len(lines)))
+
+	for l := 0; l < len(lines); l++ {
+		result = append(result, lines[l])
+	}
+
+	return strings.Join(result, "\n"), nil
+
+}
+
+func (tool *Agents) SendMessage(name string, content string) (string, error) {
+
+	sanitized_name := utils_fmt.FormatAgentName(name)
+	message := strings.TrimSpace(content)
+
+	if message != "" {
+
+		tool.mutex.Lock()
+		process, running := tool.processes[sanitized_name]
+		tool.mutex.Unlock()
+
+		if running == true && process != nil && process.stdin != nil {
+
+			payload, err0 := json.Marshal(schemas.Message{
+				Role:    "user",
+				Content: message,
+			})
+
+			if err0 == nil {
+
+				process.write_mutex.Lock()
+				_, err1 := io.WriteString(process.stdin, string(payload)+"\n")
+				process.write_mutex.Unlock()
+
+				if err1 == nil {
+					return fmt.Sprintf("agents.SendMessage: Message sent to agent \"%s\".", sanitized_name), nil
+				} else {
+					return "", fmt.Errorf("agents.SendMessage: Cannot write to agent \"%s\".", sanitized_name)
+				}
+
+			} else {
+				return "", fmt.Errorf("agents.SendMessage: Cannot encode message for agent \"%s\".", sanitized_name)
+			}
+
+		} else {
+			return "", fmt.Errorf("agents.SendMessage: Agent \"%s\" is not working.", sanitized_name)
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.SendMessage: Message must not be empty.")
+	}
+
+}
+
+func (tool *Agents) SetAgent(agent *types.Agent) bool {
+
+	sanitized_name := utils_fmt.FormatAgentName(agent.Name)
+
+	if sanitized_name == agent.Name {
+
+		tool.mutex.Lock()
+		_, ok := tool.contents[sanitized_name]
+		tool.mutex.Unlock()
+
+		if ok == false {
+
+			tool.mutex.Lock()
+			tool.contents[sanitized_name] = agent
+			tool.mutex.Unlock()
+
+			return true
+
+		}
+
+	}
+
+	return false
+
+}
+
+func (tool *Agents) Summarize(messages []*schemas.Message) (string, error) {
+
+	prompt := strings.Join([]string{
+		"Please create a detailed technical summary of the following conversation.",
+		"Preserve the user's goals, decisions, important file paths, symbols, tool results and unfinished work.",
+		"The latest messages are the newest ones.",
+		"",
+		utils_chat.SummarizeMessages(messages, true, true, true),
+	}, "\n")
+
+	summary, err0 := tool.summarizeMessages(prompt)
+
+	if err0 == nil {
+		return summary, nil
+	} else {
+		return "", fmt.Errorf("agents.Switch: Failed to summarize previous conversation.")
+	}
+
+}
+
+func (tool *Agents) summarizeMessages(prompt string) (string, error) {
+
+	tmp, err0 := os.MkdirTemp("/tmp", "exocomp-summarizer-*")
+
+	if err0 == nil {
+
+		exe, err1 := utils_cli.FindAgentBinary()
+
+		if err1 == nil {
+
+			timeout := tool.Timeout
+
+			if timeout <= 0 {
+				timeout = 30 * time.Minute
+			}
+
+			resolved_url := ""
+
+			if tool.URL != nil {
+				resolved_url = tool.URL.String()
+			}
+
+			arguments := []string{
+				fmt.Sprintf("--name=\"%s\"", utils_rand.AgentName("summarizer")),
+				fmt.Sprintf("--role=\"%s\"", "summarizer"),
+				fmt.Sprintf("--model=\"%s\"", tool.Model),
+				fmt.Sprintf("--prompt=\"%s\"", prompt),
+				// --temperature set by agent role
+				// --playground set by cmd.Dir
+				// --sandbox set by cmd.Dir
+				fmt.Sprintf("--url=\"%s\"", resolved_url),
+			}
+
+			if tool.Debug == true {
+				arguments = append(arguments, "--debug")
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
+			defer cancel()
+
+			cmd := exec.CommandContext(ctx, exe, arguments...)
+			cmd.Dir = tmp
+
+			stdout_buffer := bytes.Buffer{}
+			cmd.Stdout = &stdout_buffer
+
+			err2 := cmd.Run()
+
+			if err2 == nil {
+
+				os.RemoveAll(tmp)
+
+				lines := strings.Split(strings.TrimSpace(stdout_buffer.String()), "\n")
+
+				if len(lines) > 0 {
+
+					line := strings.TrimSpace(lines[len(lines)-1])
+					summary := schemas.Message{}
+
+					if strings.HasPrefix(line, "schemas.Message:") == true {
+						line = strings.TrimSpace(line[16:])
+					}
+
+					err3 := json.Unmarshal([]byte(line), &summary)
+
+					if err3 == nil {
+						return strings.TrimSpace(summary.Content), nil
+					} else {
+						return "", fmt.Errorf("agents.Summarize: Cannot parse summary.")
+					}
+
+				} else {
+					return "", fmt.Errorf("agents.Summarize: Cannot parse summary.")
+				}
+
+			} else {
+
+				os.RemoveAll(tmp)
+				return "", fmt.Errorf("agents.Summarize: Cannot summarize messages.")
+
+			}
+
+		} else {
+
+			os.RemoveAll(tmp)
+			return "", fmt.Errorf("agents.Summarize: exocomp-agent is not installed.")
+
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Summarize: Cannot create temporary workspace.")
+	}
+
+}
+
+func (tool *Agents) Switch(role string) (string, error) {
+
+	role = utils_fmt.FormatAgentRole(role)
+
+	template, ok := agents_roles.Roles[role]
+
+	if ok == true && template != nil {
+
+		if tool.OnSwitch != nil {
+			return tool.OnSwitch(role)
+		} else {
+			return "", fmt.Errorf("agents.Switch: Agent profiles can only be switched in the main session.")
+		}
+
+	} else {
+		return "", fmt.Errorf("agents.Switch: Unknown agent role \"%s\".", role)
+	}
 
 }

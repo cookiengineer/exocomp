@@ -19,15 +19,19 @@ func parseHttpxResults(data []byte, target string, in_scope bool) ([]types.Asset
 			parsed := httpxImportLine{}
 
 			if json.Unmarshal(line, &parsed) != nil {
+
 				invalid++
 				continue
+
 			}
 
 			value := utils_strings.FirstNonEmpty(parsed.URL, parsed.Host, parsed.Input)
 
 			if value == "" {
+
 				invalid++
 				continue
+
 			}
 
 			asset_type := types.AssetTypeSubdomain
@@ -75,4 +79,5 @@ func parseHttpxResults(data []byte, target string, in_scope bool) ([]types.Asset
 	} else {
 		return nil, 0, err
 	}
+
 }

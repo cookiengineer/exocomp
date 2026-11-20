@@ -2,12 +2,15 @@ package requirements
 
 import "exocomp/schemas"
 import "exocomp/types"
+import utils_ast "exocomp/utils/ast"
 import utils_fmt "exocomp/utils/fmt"
 import utils_sandbox "exocomp/utils/sandbox"
 import "encoding/json"
 import "fmt"
+import "os"
 import "slices"
 import "sort"
+import "strings"
 import "sync"
 
 type Requirements struct {
@@ -252,5 +255,457 @@ func (tool *Requirements) Schemas() []schemas.Tool {
 	}
 
 	return result
+
+}
+
+func (tool *Requirements) DefineFunc(path string, symbol string, declaration string, behavior string) (string, error) {
+
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			declaration = strings.TrimSpace(declaration)
+
+			prettified := utils_ast.GetSymbol([]byte(strings.Join([]string{
+				"package dummy",
+				declaration,
+			}, "\n")), symbol, "func")
+
+			if prettified != nil {
+
+				readRequirements(tool)
+
+				tool.mutex.Lock()
+
+				_, ok1 := tool.contents[internal_path]
+
+				if ok1 == false {
+					tool.contents[internal_path] = make(map[string]types.Requirement)
+				}
+
+				tool.contents[internal_path][symbol] = types.Requirement{
+					File:        internal_path,
+					Type:        "func",
+					Declaration: prettified.Body,
+					Symbol:      prettified.Name,
+					Behavior:    behavior,
+				}
+
+				tool.mutex.Unlock()
+
+				err4 := writeRequirements(tool)
+
+				if err4 == nil {
+					return fmt.Sprintf("requirements.DefineFunc: Symbol \"%s\" defined as \"%s\"", prettified.Name, prettified.Body), nil
+				} else {
+					return "", fmt.Errorf("requirements.DefineFunc: %s", err4.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("requirements.DefineFunc: Invalid Go syntax. \"func %s (...) (...)\" must be defined!", symbol)
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.DefineFunc: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.DefineFunc: %s", err1.Error())
+	}
+
+}
+
+func (tool *Requirements) DefineInterface(path string, symbol string, declaration string, behavior string) (string, error) {
+
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			declaration = strings.TrimSpace(declaration)
+
+			if strings.HasPrefix(declaration, "interface{") || strings.HasPrefix(declaration, "interface {") {
+				declaration = "type " + symbol + " interface " + strings.TrimSpace(declaration[9:])
+			}
+
+			prettified := utils_ast.GetSymbol([]byte(strings.Join([]string{
+				"package dummy",
+				declaration,
+			}, "\n")), symbol, "interface")
+
+			if prettified != nil {
+
+				readRequirements(tool)
+
+				tool.mutex.Lock()
+
+				_, ok3 := tool.contents[internal_path]
+
+				if ok3 == false {
+					tool.contents[internal_path] = make(map[string]types.Requirement)
+				}
+
+				tool.contents[internal_path][symbol] = types.Requirement{
+					File:        internal_path,
+					Type:        "interface",
+					Declaration: prettified.Body,
+					Symbol:      prettified.Name,
+					Behavior:    behavior,
+				}
+
+				tool.mutex.Unlock()
+
+				err4 := writeRequirements(tool)
+
+				if err4 == nil {
+					return fmt.Sprintf("requirements.DefineInterface: Symbol \"%s\" defined as \"%s\"", prettified.Name, prettified.Body), nil
+				} else {
+					return "", fmt.Errorf("requirements.DefineInterface: %s", err4.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("requirements.DefineInterface: Invalid Go syntax. \"type %s interface { ...}\" must be defined!", symbol)
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.DefineInterface: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.DefineInterface: %s", err1.Error())
+	}
+
+}
+
+func (tool *Requirements) DefineStruct(path string, symbol string, declaration string, behavior string) (string, error) {
+
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			declaration = strings.TrimSpace(declaration)
+
+			if strings.HasPrefix(declaration, "struct{") || strings.HasPrefix(declaration, "struct {") {
+				declaration = "type " + symbol + " struct " + strings.TrimSpace(declaration[6:])
+			}
+
+			prettified := utils_ast.GetSymbol([]byte(strings.Join([]string{
+				"package dummy",
+				declaration,
+			}, "\n")), symbol, "struct")
+
+			if prettified != nil {
+
+				readRequirements(tool)
+
+				tool.mutex.Lock()
+
+				_, ok3 := tool.contents[internal_path]
+
+				if ok3 == false {
+					tool.contents[internal_path] = make(map[string]types.Requirement)
+				}
+
+				tool.contents[internal_path][symbol] = types.Requirement{
+					File:        internal_path,
+					Type:        "struct",
+					Declaration: prettified.Body,
+					Symbol:      prettified.Name,
+					Behavior:    behavior,
+				}
+
+				tool.mutex.Unlock()
+
+				err4 := writeRequirements(tool)
+
+				if err4 == nil {
+					return fmt.Sprintf("requirements.DefineStruct: Symbol \"%s\" defined as \"%s\"", prettified.Name, prettified.Body), nil
+				} else {
+					return "", fmt.Errorf("requirements.DefineStruct: %s", err4.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("requirements.DefineStruct: Invalid Go syntax. \"type %s struct { ...}\" must be defined!", symbol)
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.DefineStruct: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.DefineStruct: %s", err1.Error())
+	}
+
+}
+
+func (tool *Requirements) DefineType(path string, symbol string, declaration string, behavior string) (string, error) {
+
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			declaration = strings.TrimSpace(declaration)
+
+			source := []byte(strings.Join([]string{
+				"package dummy",
+				declaration,
+			}, "\n"))
+
+			type_name, err3 := utils_ast.GetSymbolType(source, symbol)
+
+			if err3 == nil {
+
+				prettified := utils_ast.GetSymbol(source, symbol, type_name)
+
+				if prettified != nil {
+
+					readRequirements(tool)
+
+					tool.mutex.Lock()
+
+					_, ok := tool.contents[internal_path]
+
+					if ok == false {
+						tool.contents[internal_path] = make(map[string]types.Requirement)
+					}
+
+					tool.contents[internal_path][symbol] = types.Requirement{
+						File:        internal_path,
+						Type:        "type",
+						Declaration: prettified.Body,
+						Symbol:      prettified.Name,
+						Behavior:    behavior,
+					}
+
+					tool.mutex.Unlock()
+
+					err4 := writeRequirements(tool)
+
+					if err4 == nil {
+						return fmt.Sprintf("requirements.DefineType: Symbol \"%s\" defined as \"%s\"", prettified.Name, prettified.Body), nil
+					} else {
+						return "", fmt.Errorf("requirements.DefineType: %s", err4.Error())
+					}
+
+				} else {
+					return "", fmt.Errorf("requirements.DefineType: Invalid Go syntax. \"type %s <type>\" must be defined!", symbol)
+				}
+
+			} else {
+				return "", fmt.Errorf("requirements.DefineType: %s", err3.Error())
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.DefineType: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.DefineType: %s", err1.Error())
+	}
+
+}
+
+func (tool *Requirements) List() (string, error) {
+
+	readRequirements(tool)
+
+	lines := make([]string, 0)
+
+	tool.mutex.RLock()
+
+	for _, specifications := range tool.contents {
+
+		for _, specification := range specifications {
+
+			resolved_path, err1 := utils_sandbox.ResolvePath(tool.Playground, specification.File)
+
+			if err1 == nil {
+
+				sandbox_path, err2 := utils_sandbox.SanitizePath(tool.Sandbox, resolved_path)
+
+				if err2 == nil {
+					lines = append(lines, fmt.Sprintf("- File: \"%s\", Symbol: \"%s\", Declaration: \"%s\", Behavior: \"%s\", IsImplemented: %t", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior, specification.IsImplemented))
+				}
+
+			}
+
+		}
+
+	}
+
+	tool.mutex.RUnlock()
+
+	sort.Strings(lines)
+
+	result := make([]string, 0)
+	result = append(result, fmt.Sprintf("requirements.List: %d specifications.", len(lines)))
+
+	for l := 0; l < len(lines); l++ {
+		result = append(result, lines[l])
+	}
+
+	return strings.Join(result, "\n"), nil
+
+}
+
+func (tool *Requirements) Search(path string, symbol string) (string, error) {
+
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		search_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			readRequirements(tool)
+
+			lines := make([]string, 0)
+
+			tool.mutex.RLock()
+
+			for internal_path, specifications := range tool.contents {
+
+				if strings.HasPrefix(internal_path, search_path) == true {
+
+					for internal_symbol, specification := range specifications {
+
+						if symbol != "" {
+
+							matches_symbol := strings.Contains(strings.ToLower(internal_symbol), strings.ToLower(symbol))
+
+							if matches_symbol == true {
+
+								sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, specification.File)
+
+								if err3 == nil {
+									lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
+								}
+
+							}
+
+						} else if symbol == "" {
+
+							sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, specification.File)
+
+							if err3 == nil {
+								lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Declaration: %s, Behavior: %s", sandbox_path, specification.Symbol, specification.Declaration, specification.Behavior))
+							}
+
+						}
+
+					}
+
+				}
+
+			}
+
+			tool.mutex.RUnlock()
+
+			sort.Strings(lines)
+
+			result := make([]string, 0)
+
+			if symbol != "" {
+				result = append(result, fmt.Sprintf("requirements.Search: %s#%s* contains %d specifications.", path, symbol, len(lines)))
+			} else {
+				result = append(result, fmt.Sprintf("requirements.Search: %s#* contains %d specifications.", path, len(lines)))
+			}
+
+			for l := 0; l < len(lines); l++ {
+				result = append(result, lines[l])
+			}
+
+			return strings.Join(result, "\n"), nil
+
+		} else {
+			return "", fmt.Errorf("requirements.Search: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.Search: %s", err1.Error())
+	}
+
+}
+
+func (tool *Requirements) Signoff(path string, symbol string) (string, error) {
+
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			readRequirements(tool)
+
+			tool.mutex.RLock()
+			specification, ok1 := tool.contents[internal_path][symbol]
+			tool.mutex.RUnlock()
+
+			if ok1 == true {
+
+				resolved_path, err3 := utils_sandbox.ResolvePath(tool.Playground, specification.File)
+
+				if err3 == nil {
+
+					source, err4 := os.ReadFile(resolved_path)
+
+					if err4 == nil {
+
+						if utils_ast.HasSymbol(source, specification.Symbol, specification.Type) == true {
+
+							tool.mutex.Lock()
+							specification.IsImplemented = true
+							tool.contents[internal_path][symbol] = specification
+							tool.mutex.Unlock()
+
+							err5 := writeRequirements(tool)
+
+							if err5 == nil {
+								return fmt.Sprintf("requirements.Signoff: %s#%s marked as implemented.", path, symbol), nil
+							} else {
+								return "", fmt.Errorf("requirements.Signoff: %s", err5.Error())
+							}
+
+						} else {
+							return "", fmt.Errorf("requirements.Signoff: Symbol \"%s\" is not implemented in \"%s\" yet.", symbol, path)
+						}
+
+					} else {
+						return "", fmt.Errorf("requirements.Signoff: File \"%s\" does not exist.", path)
+					}
+
+				} else {
+					return "", fmt.Errorf("requirements.Signoff: %s", err3.Error())
+				}
+
+			} else {
+				return "", fmt.Errorf("requirements.Signoff: No specification available for path \"%s\" and symbol \"%s\"", path, symbol)
+			}
+
+		} else {
+			return "", fmt.Errorf("requirements.Signoff: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("requirements.Signoff: %s", err1.Error())
+	}
 
 }

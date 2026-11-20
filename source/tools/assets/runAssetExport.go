@@ -64,4 +64,5 @@ func runAssetExport(tool *Assets, matches []types.Asset, format string, path str
 	} else {
 		return "", fmt.Errorf("assets.Export: Path is reserved for internal state.")
 	}
+
 }

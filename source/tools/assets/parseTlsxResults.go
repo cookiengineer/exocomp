@@ -19,13 +19,17 @@ func parseTlsxResults(data []byte, in_scope bool) ([]types.Asset, int, error) {
 			parsed := tlsxImportLine{}
 
 			if json.Unmarshal(line, &parsed) != nil {
+
 				invalid++
 				continue
+
 			}
 
 			if parsed.Host == "" {
+
 				invalid++
 				continue
+
 			}
 
 			value := utils_strings.FirstNonEmpty(parsed.Serial, parsed.FingerprintHash)
@@ -92,4 +96,5 @@ func parseTlsxResults(data []byte, in_scope bool) ([]types.Asset, int, error) {
 	} else {
 		return nil, 0, err
 	}
+
 }

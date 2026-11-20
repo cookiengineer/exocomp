@@ -38,7 +38,7 @@ func readBugs(tool *Bugs) error {
 					return fmt.Errorf("bugs.Read: Cannot parse bug reports.")
 				}
 
-			} else if os.IsNotExist(err1) {
+			} else if os.IsNotExist(err1) == true {
 
 				tool.contents = make(map[string]map[string]types.Bug)
 				return nil

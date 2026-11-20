@@ -17,13 +17,17 @@ func parseDnsxResults(data []byte, in_scope bool) ([]types.Asset, int, error) {
 			parsed := dnsxImportLine{}
 
 			if json.Unmarshal(line, &parsed) != nil {
+
 				invalid++
 				continue
+
 			}
 
 			if parsed.Host == "" {
+
 				invalid++
 				continue
+
 			}
 
 			asset := newImportedAsset(types.AssetTypeDNSRecord, parsed.Host, "dnsx", in_scope)
@@ -83,4 +87,5 @@ func parseDnsxResults(data []byte, in_scope bool) ([]types.Asset, int, error) {
 	} else {
 		return nil, 0, err
 	}
+
 }

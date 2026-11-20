@@ -32,9 +32,11 @@ func bindEvidenceToFinding(tool *Findings, finding *types.Finding, arguments uti
 				artifact, sha256_value, size, err1 := utils_findings.WriteEvidenceContent(tool.Playground, finding.ID, evidence.ID, filename, evidence.Content)
 
 				if err1 == nil {
+
 					evidence.Artifact = artifact
 					evidence.SHA256 = sha256_value
 					evidence.Size = size
+
 				} else {
 					return fmt.Errorf("findings.BindEvidence: %s", err1.Error())
 				}
@@ -48,9 +50,11 @@ func bindEvidenceToFinding(tool *Findings, finding *types.Finding, arguments uti
 					artifact, sha256_value, size, err2 := utils_findings.CopyEvidenceFile(tool.Playground, finding.ID, evidence.ID, resolved, filepath.Base(resolved))
 
 					if err2 == nil {
+
 						evidence.Artifact = artifact
 						evidence.SHA256 = sha256_value
 						evidence.Size = size
+
 					} else {
 						return fmt.Errorf("findings.BindEvidence: %s", err2.Error())
 					}

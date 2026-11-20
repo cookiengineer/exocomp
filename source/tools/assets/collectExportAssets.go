@@ -3,7 +3,7 @@ package assets
 import "exocomp/types"
 import "strings"
 
-func collectExportAssets(tool *Assets, type_filter string, has_type bool, query_filter string, has_query bool, in_scope_filter bool, has_in_scope bool, tested_filter bool, has_tested bool, limit int) ([]types.Asset, error) {
+func collectExportAssets(tool *Assets, type_filter string, has_type bool, query_filter string, has_query bool, in_scope_filter bool, has_in_scope bool, is_tested_filter bool, has_tested bool, limit int) ([]types.Asset, error) {
 
 	tool.mutex.Lock()
 	defer tool.mutex.Unlock()
@@ -20,7 +20,7 @@ func collectExportAssets(tool *Assets, type_filter string, has_type bool, query_
 				continue
 			} else if has_in_scope == true && asset.InScope != in_scope_filter {
 				continue
-			} else if has_tested == true && asset.Tested != tested_filter {
+			} else if has_tested == true && asset.Tested != is_tested_filter {
 				continue
 			}
 

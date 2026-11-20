@@ -106,10 +106,13 @@ func upsertAsset(tool *Assets, asset types.Asset) (types.Asset, bool, error) {
 			} else {
 				return types.Asset{}, false, fmt.Errorf("Invalid asset.")
 			}
+
 		} else {
 			return types.Asset{}, false, fmt.Errorf("Cannot generate asset ID.")
 		}
+
 	} else {
 		return types.Asset{}, false, err
 	}
+
 }

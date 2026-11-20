@@ -21,6 +21,7 @@ func decodeImportLines(data []byte) ([]json.RawMessage, int, error) {
 			} else {
 				return nil, 0, fmt.Errorf("Cannot parse results.")
 			}
+
 		}
 
 		result := make([]json.RawMessage, 0)
@@ -35,16 +36,20 @@ func decodeImportLines(data []byte) ([]json.RawMessage, int, error) {
 			} else {
 
 				if json.Valid([]byte(line)) == false {
+
 					invalid++
 					continue
+
 				}
 
 				result = append(result, json.RawMessage(line))
 
 			}
+
 		}
 
 		return result, invalid, nil
 
 	}
+
 }

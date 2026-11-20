@@ -16,13 +16,17 @@ func parseUrlfinderResults(data []byte, in_scope bool) ([]types.Asset, int, erro
 			parsed := urlfinderImportLine{}
 
 			if json.Unmarshal(line, &parsed) != nil {
+
 				invalid++
 				continue
+
 			}
 
 			if parsed.URL == "" {
+
 				invalid++
 				continue
+
 			}
 
 			asset := newImportedAsset(types.AssetTypeURL, parsed.URL, "urlfinder", in_scope)
@@ -44,4 +48,5 @@ func parseUrlfinderResults(data []byte, in_scope bool) ([]types.Asset, int, erro
 	} else {
 		return nil, 0, err
 	}
+
 }

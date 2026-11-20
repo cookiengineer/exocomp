@@ -6,6 +6,7 @@ import "fmt"
 func parseAssetResults(format string, data []byte, target string, in_scope bool) ([]types.Asset, int, error) {
 
 	switch format {
+
 	case "httpx":
 		return parseHttpxResults(data, target, in_scope)
 	case "naabu":
@@ -24,6 +25,7 @@ func parseAssetResults(format string, data []byte, target string, in_scope bool)
 		return parseUrlfinderResults(data, in_scope)
 	default:
 		return nil, 0, fmt.Errorf("Unsupported format \"%s\".", format)
+
 	}
 
 }

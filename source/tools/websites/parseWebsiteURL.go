@@ -23,4 +23,5 @@ func parseWebsiteURL(raw string) (*net_url.URL, error) {
 	} else {
 		return nil, fmt.Errorf("websites.ParseURL: Invalid URL \"%s\".", raw)
 	}
+
 }

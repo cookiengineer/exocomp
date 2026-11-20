@@ -6,9 +6,9 @@ import "io/fs"
 
 func sanitizeFilesystemError(namespace string, method string, kind string, path string, err error) (string, error) {
 
-	if errors.Is(err, fs.ErrNotExist) {
+	if errors.Is(err, fs.ErrNotExist) == true {
 		return "", fmt.Errorf("%s.%s: %s \"%s\" does not exist.", namespace, method, kind, path)
-	} else if errors.Is(err, fs.ErrPermission) {
+	} else if errors.Is(err, fs.ErrPermission) == true {
 		return "", fmt.Errorf("%s.%s: %s \"%s\": Permission denied.", namespace, method, kind, path)
 	} else {
 		return "", fmt.Errorf("%s.%s: Cannot access %s \"%s\".", namespace, method, kind, path)

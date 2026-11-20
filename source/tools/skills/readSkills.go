@@ -27,7 +27,7 @@ func readSkills(tool *Skills) error {
 
 				for _, skill_entry := range skills_entries {
 
-					if skill_entry.IsDir() {
+					if skill_entry.IsDir() == true {
 
 						skill_name := skill_entry.Name()
 						skill_path := filepath.Join(tool.Playground, "skills", skill_name, "SKILL.md")
@@ -58,7 +58,7 @@ func readSkills(tool *Skills) error {
 
 													script_name := script_entry.Name()
 
-													if strings.HasSuffix(script_name, ".go") {
+													if strings.HasSuffix(script_name, ".go") == true {
 														skill.Scripts[script_name] = "go"
 													} else {
 														errors = append(errors, fmt.Errorf("skills.Read: Unsupported script \"%s\" in Skill %s", skill_name, script_name))

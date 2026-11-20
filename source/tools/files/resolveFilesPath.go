@@ -8,7 +8,7 @@ import "path/filepath"
 // resolveFilesPath resolves a path inside the sandbox or inside a granted
 // capability scope. The internal .exocomp folder is reserved for tool-managed
 // state and is never accessible through files.*.
-func resolveFilesPath(sandbox string, capabilities *utils_capabilities.Set, path string, write bool) (string, error) {
+func resolveFilesPath(sandbox string, capabilities *utils_capabilities.Set, path string, is_write bool) (string, error) {
 
 	if utils_sandbox.IsReservedPath(sandbox, path) == false {
 
@@ -42,9 +42,9 @@ func resolveFilesPath(sandbox string, capabilities *utils_capabilities.Set, path
 						return "", fmt.Errorf("Path is reserved for internal state.")
 					}
 
-					if write == true && capabilities.CanWrite(canonical) == true {
+					if is_write == true && capabilities.CanWrite(canonical) == true {
 						return canonical, nil
-					} else if write == false && capabilities.CanRead(canonical) == true {
+					} else if is_write == false && capabilities.CanRead(canonical) == true {
 						return canonical, nil
 					}
 

@@ -19,7 +19,7 @@ func handleProcessJSONLine(tool *Agents, name string, line []byte) {
 
 	text := strings.TrimRight(string(line), "\n")
 
-	if strings.HasPrefix(text, "schemas.Message:") {
+	if strings.HasPrefix(text, "schemas.Message:") == true {
 
 		buffer := []byte(text[16:])
 		message := schemas.Message{}
@@ -36,7 +36,7 @@ func handleProcessJSONLine(tool *Agents, name string, line []byte) {
 
 		}
 
-	} else if strings.HasPrefix(text, "types.ContextUsage:") {
+	} else if strings.HasPrefix(text, "types.ContextUsage:") == true {
 
 		buffer := []byte(text[19:])
 		usage := types.ContextUsage{}

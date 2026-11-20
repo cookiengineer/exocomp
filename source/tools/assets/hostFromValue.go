@@ -18,4 +18,5 @@ func hostFromValue(value string) string {
 	} else {
 		return value
 	}
+
 }

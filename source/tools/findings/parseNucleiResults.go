@@ -23,6 +23,7 @@ func parseNucleiResults(data []byte, scan_id string) ([]nucleiImportResult, int,
 			} else {
 				return nil, 0, fmt.Errorf("Cannot parse nuclei results.")
 			}
+
 		} else {
 
 			for _, line := range strings.Split(trimmed, "\n") {
@@ -50,13 +51,17 @@ func parseNucleiResults(data []byte, scan_id string) ([]nucleiImportResult, int,
 				err := json.Unmarshal(line, &parsed)
 
 				if err != nil {
+
 					invalid++
 					continue
+
 				}
 
 				if parsed.TemplateID == "" && parsed.Info.Name == "" && parsed.MatchedAt == "" && parsed.Host == "" {
+
 					invalid++
 					continue
+
 				}
 
 				result = append(result, nucleiImportLineToResult(parsed, scan_id))
@@ -67,4 +72,5 @@ func parseNucleiResults(data []byte, scan_id string) ([]nucleiImportResult, int,
 		return result, invalid, nil
 
 	}
+
 }

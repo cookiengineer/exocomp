@@ -39,4 +39,5 @@ func assetMatchesQuery(asset types.Asset, query string) bool {
 		return false
 
 	}
+
 }

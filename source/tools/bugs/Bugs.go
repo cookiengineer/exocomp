@@ -8,6 +8,7 @@ import "encoding/json"
 import "fmt"
 import "slices"
 import "sort"
+import "strings"
 import "sync"
 
 type Bugs struct {
@@ -184,5 +185,322 @@ func (tool *Bugs) Schemas() []schemas.Tool {
 	}
 
 	return result
+
+}
+
+func (tool *Bugs) Add(path string, symbol string, description string) (string, error) {
+
+	tool.mutex.Lock()
+	defer tool.mutex.Unlock()
+
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			readBugs(tool)
+
+			_, ok1 := tool.contents[internal_path]
+
+			if ok1 == false {
+				tool.contents[internal_path] = make(map[string]types.Bug)
+			}
+
+			_, ok2 := tool.contents[internal_path][symbol]
+
+			if ok2 == false {
+
+				tool.contents[internal_path][symbol] = types.Bug{
+					IsFixed:     false,
+					File:        internal_path,
+					Symbol:      symbol,
+					Description: description,
+				}
+
+				err3 := writeBugs(tool)
+
+				if err3 == nil {
+					return fmt.Sprintf("bugs.Add: Bug report with %d B written.", len(description)), nil
+				} else {
+					return "", fmt.Errorf("bugs.Add: %s", err3.Error())
+				}
+
+			} else {
+
+				bug_report := tool.contents[internal_path][symbol]
+				bug_report.Description = description
+				bug_report.IsFixed = false
+				tool.contents[internal_path][symbol] = bug_report
+
+				err3 := writeBugs(tool)
+
+				if err3 == nil {
+					return fmt.Sprintf("bugs.Add: Bug report with %d B updated.", len(description)), nil
+				} else {
+					return "", fmt.Errorf("bugs.Add: %s", err3.Error())
+				}
+
+			}
+
+		} else {
+			return "", fmt.Errorf("bugs.Add: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("bugs.Add: %s", err1.Error())
+	}
+
+}
+
+func (tool *Bugs) Fix(path string, symbol string) (string, error) {
+
+	tool.mutex.Lock()
+	defer tool.mutex.Unlock()
+
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			readBugs(tool)
+
+			_, ok1 := tool.contents[internal_path]
+
+			if ok1 == true {
+
+				bug_report, ok2 := tool.contents[internal_path][symbol]
+
+				if ok2 == true {
+
+					bug_report.IsFixed = true
+					tool.contents[internal_path][symbol] = bug_report
+
+					err3 := writeBugs(tool)
+
+					if err3 == nil {
+						return fmt.Sprintf("bugs.Fix: Bug report marked as fixed."), nil
+					} else {
+						return "", fmt.Errorf("bugs.Fix: %s", err3.Error())
+					}
+
+				} else {
+					return "", fmt.Errorf("bugs.Fix: No bug report available for path \"%s\" and symbol \"%s\"", path, symbol)
+				}
+
+			} else {
+				return "", fmt.Errorf("bugs.Fix: No bug reports available for path \"%s\".", path)
+			}
+
+		} else {
+			return "", fmt.Errorf("bugs.Fix: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("bugs.Fix: %s", err1.Error())
+	}
+
+}
+
+func (tool *Bugs) List() (string, error) {
+
+	readBugs(tool)
+
+	lines := make([]string, 0)
+
+	tool.mutex.RLock()
+
+	for _, bug_reports := range tool.contents {
+
+		for _, bug_report := range bug_reports {
+
+			if bug_report.IsFixed == false {
+
+				resolved_path, err1 := utils_sandbox.ResolvePath(tool.Playground, bug_report.File)
+
+				if err1 == nil {
+
+					sandbox_path, err2 := utils_sandbox.SanitizePath(tool.Sandbox, resolved_path)
+
+					if err2 == nil {
+						lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description))
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+
+	tool.mutex.RUnlock()
+
+	sort.Strings(lines)
+
+	result := make([]string, 0)
+	result = append(result, fmt.Sprintf("bugs.List: %d unfixed bug reports.", len(lines)))
+
+	for l := 0; l < len(lines); l++ {
+		result = append(result, lines[l])
+	}
+
+	return strings.Join(result, "\n"), nil
+
+}
+
+func (tool *Bugs) Search(path string, symbol string) (string, error) {
+
+	tmp1, err1 := utils_sandbox.ResolvePath(tool.Sandbox, path)
+
+	if err1 == nil {
+
+		internal_path, err2 := utils_sandbox.SanitizePath(tool.Playground, tmp1)
+
+		if err2 == nil {
+
+			readBugs(tool)
+
+			if symbol != "" {
+
+				lines := make([]string, 0)
+
+				tool.mutex.RLock()
+
+				_, ok1 := tool.contents[internal_path]
+
+				if ok1 == true {
+
+					bug_report, ok2 := tool.contents[internal_path][symbol]
+
+					if ok2 == true {
+
+						if bug_report.IsFixed == false {
+
+							sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, bug_report.File)
+
+							if err3 == nil {
+								lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description))
+							}
+
+						}
+
+					}
+
+				}
+
+				tool.mutex.RUnlock()
+
+				sort.Strings(lines)
+
+				result := make([]string, 0)
+				result = append(result, fmt.Sprintf("bugs.Search: %s#%s contains %d bug reports.", path, symbol, len(lines)))
+
+				for l := 0; l < len(lines); l++ {
+					result = append(result, lines[l])
+				}
+
+				return strings.Join(result, "\n"), nil
+
+			} else {
+
+				lines := make([]string, 0)
+
+				tool.mutex.RLock()
+
+				bug_reports, ok1 := tool.contents[internal_path]
+
+				if ok1 == true {
+
+					for _, bug_report := range bug_reports {
+
+						if bug_report.IsFixed == false {
+
+							sandbox_path, err3 := utils_sandbox.SanitizePath(tool.Sandbox, bug_report.File)
+
+							if err3 == nil {
+								lines = append(lines, fmt.Sprintf("- File: %s, Symbol: %s, Description: %s", sandbox_path, bug_report.Symbol, bug_report.Description))
+							}
+
+						}
+
+					}
+
+				}
+
+				tool.mutex.RUnlock()
+
+				sort.Strings(lines)
+
+				result := make([]string, 0)
+				result = append(result, fmt.Sprintf("bugs.Search: %s contains %d bug reports.", path, len(lines)))
+
+				for l := 0; l < len(lines); l++ {
+					result = append(result, lines[l])
+				}
+
+				return strings.Join(result, "\n"), nil
+
+			}
+
+		} else {
+			return "", fmt.Errorf("bugs.Search: %s", err2.Error())
+		}
+
+	} else {
+		return "", fmt.Errorf("bugs.Search: %s", err1.Error())
+	}
+
+}
+
+func (tool *Bugs) Snapshot() ([]types.Bug, error) {
+
+	tool.mutex.Lock()
+	err := readBugs(tool)
+
+	if err == nil {
+
+		result := make([]types.Bug, 0)
+
+		for _, bug_reports := range tool.contents {
+
+			for _, bug_report := range bug_reports {
+
+				if bug_report.IsFixed == false {
+					result = append(result, bug_report)
+				}
+
+			}
+
+		}
+
+		tool.mutex.Unlock()
+
+		sort.Slice(result, func(a int, b int) bool {
+
+			if result[a].File != result[b].File {
+				return result[a].File < result[b].File
+			} else if result[a].Symbol != result[b].Symbol {
+				return result[a].Symbol < result[b].Symbol
+			} else {
+				return result[a].Description < result[b].Description
+			}
+
+		})
+
+		return result, nil
+
+	} else {
+
+		tool.mutex.Unlock()
+
+		return nil, fmt.Errorf("bugs.OpenBugs: %s", err.Error())
+
+	}
 
 }

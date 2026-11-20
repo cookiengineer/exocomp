@@ -17,13 +17,17 @@ func parseSubfinderResults(data []byte, target string, in_scope bool) ([]types.A
 			parsed := subfinderImportLine{}
 
 			if json.Unmarshal(line, &parsed) != nil {
+
 				invalid++
 				continue
+
 			}
 
 			if parsed.Host == "" {
+
 				invalid++
 				continue
+
 			}
 
 			asset_type := types.AssetTypeSubdomain
@@ -49,4 +53,5 @@ func parseSubfinderResults(data []byte, target string, in_scope bool) ([]types.A
 	} else {
 		return nil, 0, err
 	}
+
 }

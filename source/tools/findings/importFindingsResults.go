@@ -47,8 +47,10 @@ func importFindingsResults(tool *Findings, parsed []nucleiImportResult, invalid 
 					}
 
 					if err2 := bindEvidenceToFinding(tool, &result.Finding, evidence); err2 != nil {
+
 						invalid++
 						continue
+
 					}
 
 				}
@@ -67,8 +69,10 @@ func importFindingsResults(tool *Findings, parsed []nucleiImportResult, invalid 
 					}
 
 					if err3 := bindEvidenceToFinding(tool, &result.Finding, evidence); err3 != nil {
+
 						invalid++
 						continue
+
 					}
 
 				}
@@ -76,8 +80,10 @@ func importFindingsResults(tool *Findings, parsed []nucleiImportResult, invalid 
 				if result.Finding.Validate() == true {
 
 					if err4 := writeFinding(tool, result.Finding); err4 == nil {
+
 						seen[importDedupKey(result.Finding)] = true
 						imported++
+
 					} else {
 						return 0, 0, 0, err4
 					}

@@ -71,5 +71,6 @@ func parseFindingEvidence(arguments utils_chat.Arguments) (types.FindingEvidence
 		} else {
 			return types.FindingEvidence{}, false, fmt.Errorf("findings.BindEvidence: Invalid parameter \"kind\" is not a string.")
 		}
+
 	}
 }
