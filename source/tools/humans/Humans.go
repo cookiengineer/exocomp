@@ -65,7 +65,7 @@ func (tool *Humans) Name() string {
 	return "humans"
 }
 
-func (tool *Humans) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Humans) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 
@@ -89,7 +89,7 @@ func (tool *Humans) Call(method string, arguments map[string]interface{}) (strin
 
 				options := make([]string, 0)
 
-				raw_options, ok4 := raw.([]interface{})
+				raw_options, ok4 := raw.([]any)
 
 				if ok4 == true {
 

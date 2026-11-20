@@ -36,7 +36,7 @@ func (tool *Bugs) Name() string {
 	return "bugs"
 }
 
-func (tool *Bugs) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Bugs) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 

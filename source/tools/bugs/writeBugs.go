@@ -23,19 +23,19 @@ func writeBugs(tool *Bugs) error {
 				if err2 == nil {
 					return nil
 				} else {
-					return fmt.Errorf("writeBugs: Cannot persist bug reports")
+					return fmt.Errorf("bugs.Write: Cannot persist bug reports")
 				}
 
 			} else {
-				return fmt.Errorf("writeBugs: Cannot serialize bug reports")
+				return fmt.Errorf("bugs.Write: Cannot serialize bug reports")
 			}
 
 		} else {
-			return fmt.Errorf("writeBugs: %s", err0.Error())
+			return fmt.Errorf("bugs.Write: %s", err0.Error())
 		}
 
 	} else {
-		return fmt.Errorf("writeBugs: Invalid tool playground")
+		return fmt.Errorf("bugs.Write: Invalid tool playground")
 	}
 
 }

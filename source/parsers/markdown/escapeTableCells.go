@@ -14,7 +14,7 @@ func escapeTableCells(cell string) string {
 			in_code = !in_code
 			result += string(ch)
 
-		} else if ch == '|' && !in_code {
+		} else if ch == '|' && in_code == false {
 			result += "\\|"
 		} else {
 			result += string(ch)

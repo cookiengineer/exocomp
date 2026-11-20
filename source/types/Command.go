@@ -29,7 +29,7 @@ func ParseCommand(prompt string) *Command {
 
 func (command *Command) Parse(prompt string) error {
 
-	if strings.HasPrefix(prompt, "/") && strings.Contains(prompt, " ") && !strings.Contains(prompt, "\n") {
+	if strings.HasPrefix(prompt, "/") && strings.Contains(prompt, " ") && strings.Contains(prompt, "\n") == false {
 
 		name := prompt[1:strings.Index(prompt, " ")]
 

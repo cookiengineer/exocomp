@@ -48,11 +48,11 @@ func readAgents(tool *Agents) error {
 									}
 
 								} else {
-									errors = append(errors, fmt.Errorf("Invalid Agent %s: Cannot parse %s", agent_name, agent_filename))
+									errors = append(errors, fmt.Errorf("agents.Read: Cannot parse agent \"%s\" from \"%s\"", agent_name, agent_filename))
 								}
 
 							} else {
-								errors = append(errors, fmt.Errorf("Invalid Agent %s: Cannot parse %s", agent_name, agent_filename))
+								errors = append(errors, fmt.Errorf("agents.Read: Cannot parse agent \"%s\" from \"%s\"", agent_name, agent_filename))
 							}
 
 						}

@@ -96,7 +96,7 @@ func TestAgents_Call_Switch(t *testing.T) {
 		return "agents.Switch: Switched to agent profile.", nil
 	}
 
-	result, err0 := tool.Call("Switch", map[string]interface{}{
+	result, err0 := tool.Call("Switch", map[string]any{
 		"role": "Coder",
 	})
 
@@ -108,7 +108,7 @@ func TestAgents_Call_Switch(t *testing.T) {
 		t.Errorf("Expected a switch report, got %s", result)
 	}
 
-	_, err1 := tool.Call("Switch", map[string]interface{}{
+	_, err1 := tool.Call("Switch", map[string]any{
 		"role": 42,
 	})
 

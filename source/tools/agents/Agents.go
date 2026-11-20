@@ -68,7 +68,7 @@ func (tool *Agents) Name() string {
 	return "agents"
 }
 
-func (tool *Agents) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Agents) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 

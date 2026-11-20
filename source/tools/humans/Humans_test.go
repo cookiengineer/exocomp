@@ -200,13 +200,13 @@ func TestHumans_Call_ArgumentValidation(t *testing.T) {
 
 	tool := NewHumans([]string{"Ask", "Choose"}, ".", ".")
 
-	_, err0 := tool.Call("Ask", map[string]interface{}{})
+	_, err0 := tool.Call("Ask", map[string]any{})
 
 	if err0 == nil || !strings.Contains(err0.Error(), "question") {
 		t.Errorf("Expected missing question error, got %v", err0)
 	}
 
-	_, err1 := tool.Call("Choose", map[string]interface{}{
+	_, err1 := tool.Call("Choose", map[string]any{
 		"question": "Pick one",
 	})
 
@@ -214,16 +214,16 @@ func TestHumans_Call_ArgumentValidation(t *testing.T) {
 		t.Errorf("Expected missing options error, got %v", err1)
 	}
 
-	_, err2 := tool.Call("Choose", map[string]interface{}{
+	_, err2 := tool.Call("Choose", map[string]any{
 		"question": "Pick one",
-		"options":  []interface{}{"a", 42},
+		"options":  []any{"a", 42},
 	})
 
 	if err2 == nil || !strings.Contains(err2.Error(), "options[1]") {
 		t.Errorf("Expected non-string option error, got %v", err2)
 	}
 
-	_, err3 := tool.Call("Invalid", map[string]interface{}{})
+	_, err3 := tool.Call("Invalid", map[string]any{})
 
 	if err3 == nil || !strings.Contains(err3.Error(), "not allowed") {
 		t.Errorf("Expected method not allowed error, got %v", err3)
@@ -246,7 +246,7 @@ func TestHumans_Call_Answer_Unblocks(t *testing.T) {
 
 	id := waitForQuestion(t, tool, 1*time.Second)
 
-	result, err0 := tool.Call("Answer", map[string]interface{}{
+	result, err0 := tool.Call("Answer", map[string]any{
 		"question": id,
 		"answer":   "Alice",
 	})

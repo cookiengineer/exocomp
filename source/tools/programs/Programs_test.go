@@ -399,7 +399,7 @@ func TestPrograms_Call_OptionalArguments(t *testing.T) {
 
 	if tool != nil {
 
-		result1, err1 := tool.Call("Execute", map[string]interface{}{
+		result1, err1 := tool.Call("Execute", map[string]any{
 			"program": "pwd",
 		})
 
@@ -411,9 +411,9 @@ func TestPrograms_Call_OptionalArguments(t *testing.T) {
 			t.Errorf("Expected pwd to be executed without arguments, got %s", result1)
 		}
 
-		result2, err2 := tool.Call("Execute", map[string]interface{}{
+		result2, err2 := tool.Call("Execute", map[string]any{
 			"program":   "pwd",
-			"arguments": []interface{}{},
+			"arguments": []any{},
 		})
 
 		if err2 != nil {
@@ -424,7 +424,7 @@ func TestPrograms_Call_OptionalArguments(t *testing.T) {
 			t.Errorf("Expected pwd to be executed with empty arguments, got %s", result2)
 		}
 
-		_, err3 := tool.Call("Execute", map[string]interface{}{
+		_, err3 := tool.Call("Execute", map[string]any{
 			"program":   "pwd",
 			"arguments": "not-an-array",
 		})

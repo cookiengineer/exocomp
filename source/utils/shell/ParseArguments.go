@@ -19,7 +19,7 @@ func ParseArguments(raw any) ([]string, error) {
 
 			return append([]string{}, values...), nil
 
-		case []interface{}:
+		case []any:
 
 			valid := true
 

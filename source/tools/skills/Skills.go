@@ -59,7 +59,7 @@ func (tool *Skills) Name() string {
 	return "skills"
 }
 
-func (tool *Skills) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Skills) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 
@@ -100,7 +100,7 @@ func (tool *Skills) Call(method string, arguments map[string]interface{}) (strin
 
 				if ok3 == true {
 
-					raw_args, ok4 := raw.([]interface{})
+					raw_args, ok4 := raw.([]any)
 
 					if ok4 == true {
 

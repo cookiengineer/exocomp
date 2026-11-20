@@ -80,7 +80,7 @@ func (message *ConsoleMessage) IsSame(other ConsoleMessage) bool {
 				result = true
 			}
 
-		} else if strings.Contains(message.Value, " of ") && !strings.Contains(other.Value, " of ") {
+		} else if strings.Contains(message.Value, " of ") && strings.Contains(other.Value, " of ") == false {
 
 			words1 := getConsoleMessageWords(message.Value)
 			index1 := slices.Index(words1, "of")

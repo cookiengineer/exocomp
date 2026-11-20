@@ -44,7 +44,7 @@ func (tool *Assets) Name() string {
 	return "assets"
 }
 
-func (tool *Assets) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Assets) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 

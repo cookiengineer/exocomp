@@ -3,7 +3,7 @@ package shell
 import utils_shell "exocomp/utils/shell"
 import "fmt"
 
-func (tool *Shell) callOpen(program string, arguments []string, workdir string, raw map[string]interface{}) (string, error) {
+func (tool *Shell) callOpen(program string, arguments []string, workdir string, raw map[string]any) (string, error) {
 
 	columns, err0 := utils_shell.ParseInt(raw, "columns", shellDefaultColumns)
 

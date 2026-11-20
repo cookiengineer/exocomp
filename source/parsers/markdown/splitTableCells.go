@@ -15,12 +15,12 @@ func splitTableCells(line string) []string {
 			in_code = !in_code
 			current += string(ch)
 
-		} else if ch == '\\' && i+1 < len(line) && line[i+1] == '|' && !in_code {
+		} else if ch == '\\' && i+1 < len(line) && line[i+1] == '|' && in_code == false {
 
 			current += string('|')
 			i++
 
-		} else if ch == '|' && !in_code {
+		} else if ch == '|' && in_code == false {
 
 			cells = append(cells, current)
 			current = ""

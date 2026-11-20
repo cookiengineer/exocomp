@@ -37,7 +37,7 @@ func (tool *Files) Name() string {
 	return "files"
 }
 
-func (tool *Files) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Files) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 

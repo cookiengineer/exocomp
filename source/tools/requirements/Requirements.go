@@ -38,7 +38,7 @@ func (tool *Requirements) Name() string {
 	return "requirements"
 }
 
-func (tool *Requirements) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Requirements) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 

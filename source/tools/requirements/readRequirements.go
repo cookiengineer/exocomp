@@ -53,7 +53,7 @@ func readRequirements(tool *Requirements) error {
 					return nil
 
 				} else {
-					return fmt.Errorf("readRequirements: Cannot parse requirements")
+					return fmt.Errorf("requirements.Read: Cannot parse requirements")
 				}
 
 			} else if os.IsNotExist(err1) {
@@ -61,15 +61,15 @@ func readRequirements(tool *Requirements) error {
 				return nil
 
 			} else {
-				return fmt.Errorf("readRequirements: Cannot read requirements")
+				return fmt.Errorf("requirements.Read: Cannot read requirements")
 			}
 
 		} else {
-			return fmt.Errorf("readRequirements: %s", err0.Error())
+			return fmt.Errorf("requirements.Read: %s", err0.Error())
 		}
 
 	} else {
-		return fmt.Errorf("readRequirements: Invalid tool playground")
+		return fmt.Errorf("requirements.Read: Invalid tool playground")
 	}
 
 }

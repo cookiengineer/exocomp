@@ -39,7 +39,7 @@ func (tool *Programs) Name() string {
 	return "programs"
 }
 
-func (tool *Programs) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Programs) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 
@@ -59,7 +59,7 @@ func (tool *Programs) Call(method string, arguments map[string]interface{}) (str
 
 				if ok2 == true {
 
-					raw_args, ok3 := raw.([]interface{})
+					raw_args, ok3 := raw.([]any)
 
 					if ok3 == true {
 

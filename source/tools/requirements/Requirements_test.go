@@ -435,7 +435,7 @@ func TestRequirements_Call(t *testing.T) {
 
 	if tool != nil {
 
-		result1, err1 := tool.Call("DefineFunc", map[string]interface{}{
+		result1, err1 := tool.Call("DefineFunc", map[string]any{
 			"path":        "./structs/Data.go",
 			"symbol":      "structs.Data.Parse",
 			"declaration": "func (data *structs.Data) Parse(specification *schemas.Input)",
@@ -450,7 +450,7 @@ func TestRequirements_Call(t *testing.T) {
 			t.Errorf("Expected the method to be defined, got %s", result1)
 		}
 
-		result2, err2 := tool.Call("DefineStruct", map[string]interface{}{
+		result2, err2 := tool.Call("DefineStruct", map[string]any{
 			"path":        "./structs/Data.go",
 			"symbol":      "Data",
 			"declaration": "type Data struct {\n\tName string `json:\"name\"`\n}",
@@ -465,7 +465,7 @@ func TestRequirements_Call(t *testing.T) {
 			t.Errorf("Expected the struct to be defined, got %s", result2)
 		}
 
-		result3, err3 := tool.Call("DefineType", map[string]interface{}{
+		result3, err3 := tool.Call("DefineType", map[string]any{
 			"path":        "./structs/IPv4.go",
 			"symbol":      "IPv4",
 			"declaration": "type IPv4 [4]byte",

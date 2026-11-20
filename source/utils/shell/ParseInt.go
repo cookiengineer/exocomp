@@ -3,7 +3,7 @@ package shell
 import "fmt"
 
 // ParseInt parses an optional integer argument.
-func ParseInt(arguments map[string]interface{}, name string, fallback int) (int, error) {
+func ParseInt(arguments map[string]any, name string, fallback int) (int, error) {
 
 	raw, ok := arguments[name]
 

@@ -26,7 +26,7 @@ func (tool *Containers) Name() string {
 	return "containers"
 }
 
-func (tool *Containers) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Containers) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 

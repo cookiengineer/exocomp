@@ -13,11 +13,11 @@ func Parse(raw any) ([]Capability, error) {
 
 		return append([]Capability{}, values...), nil
 
-	case []interface{}:
+	case []any:
 
 		for index, value := range values {
 
-			entry, ok := value.(map[string]interface{})
+			entry, ok := value.(map[string]any)
 
 			if ok == true {
 

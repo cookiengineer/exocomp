@@ -54,7 +54,7 @@ func TestAssets_AddDeduplicates(t *testing.T) {
 		"value":    "API.Example.com",
 		"source":   "manual",
 		"in_scope": true,
-		"tags":     []interface{}{"api"},
+		"tags":     []any{"api"},
 	})
 
 	if err0 != nil {

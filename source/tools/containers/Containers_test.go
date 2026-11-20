@@ -72,7 +72,7 @@ func TestContainers_Call_ArgumentValidation(t *testing.T) {
 
 	if tool != nil {
 
-		_, err1 := tool.Call("Start", map[string]interface{}{"name": "web"})
+		_, err1 := tool.Call("Start", map[string]any{"name": "web"})
 
 		if err1 == nil {
 			t.Errorf("Expected %v to be not nil", err1)
@@ -80,7 +80,7 @@ func TestContainers_Call_ArgumentValidation(t *testing.T) {
 			t.Errorf("Expected method not allowed error, got %v", err1)
 		}
 
-		_, err2 := tool.Call("Create", map[string]interface{}{})
+		_, err2 := tool.Call("Create", map[string]any{})
 
 		if err2 == nil {
 			t.Errorf("Expected %v to be not nil", err2)
@@ -88,7 +88,7 @@ func TestContainers_Call_ArgumentValidation(t *testing.T) {
 			t.Errorf("Expected invalid parameters error, got %v", err2)
 		}
 
-		_, err3 := tool.Call("Create", map[string]interface{}{"image": 123, "name": "web"})
+		_, err3 := tool.Call("Create", map[string]any{"image": 123, "name": "web"})
 
 		if err3 == nil {
 			t.Errorf("Expected %v to be not nil", err3)
@@ -96,7 +96,7 @@ func TestContainers_Call_ArgumentValidation(t *testing.T) {
 			t.Errorf("Expected invalid image error, got %v", err3)
 		}
 
-		_, err4 := tool.Call("Create", map[string]interface{}{"image": "alpine:latest", "name": "web", "arguments": "nope"})
+		_, err4 := tool.Call("Create", map[string]any{"image": "alpine:latest", "name": "web", "arguments": "nope"})
 
 		if err4 == nil {
 			t.Errorf("Expected %v to be not nil", err4)
@@ -104,7 +104,7 @@ func TestContainers_Call_ArgumentValidation(t *testing.T) {
 			t.Errorf("Expected invalid arguments error, got %v", err4)
 		}
 
-		_, err5 := tool.Call("Exec", map[string]interface{}{"name": "web"})
+		_, err5 := tool.Call("Exec", map[string]any{"name": "web"})
 
 		if err5 == nil {
 			t.Errorf("Expected %v to be not nil", err5)
@@ -112,7 +112,7 @@ func TestContainers_Call_ArgumentValidation(t *testing.T) {
 			t.Errorf("Expected invalid command error, got %v", err5)
 		}
 
-		_, err6 := tool.Call("Logs", map[string]interface{}{"name": "web", "tail": "ten"})
+		_, err6 := tool.Call("Logs", map[string]any{"name": "web", "tail": "ten"})
 
 		if err6 == nil {
 			t.Errorf("Expected %v to be not nil", err6)
@@ -178,7 +178,7 @@ func TestContainers_Create(t *testing.T) {
 			t.Errorf("Expected default keepalive command in %q", line2)
 		}
 
-		result3, err3 := tool.Call("Create", map[string]interface{}{
+		result3, err3 := tool.Call("Create", map[string]any{
 			"image": "alpine:latest",
 			"name":  "default",
 		})

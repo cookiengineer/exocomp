@@ -61,7 +61,7 @@ func readSkills(tool *Skills) error {
 													if strings.HasSuffix(script_name, ".go") {
 														skill.Scripts[script_name] = "go"
 													} else {
-														errors = append(errors, fmt.Errorf("Invalid Skill %s: Unsupported script \"%s\"", skill_name, script_name))
+														errors = append(errors, fmt.Errorf("skills.Read: Unsupported script \"%s\" in Skill %s", skill_name, script_name))
 													}
 
 												}
@@ -77,7 +77,7 @@ func readSkills(tool *Skills) error {
 									}
 
 								} else {
-									errors = append(errors, fmt.Errorf("Invalid Skill %s: %s", skill_name, "Cannot parse SKILL.md"))
+									errors = append(errors, fmt.Errorf("skills.Read: Invalid Skill %s: %s", skill_name, "Cannot parse SKILL.md"))
 								}
 
 							}
@@ -96,22 +96,22 @@ func readSkills(tool *Skills) error {
 						error_messages = append(error_messages, strings.TrimSpace(err.Error()))
 					}
 
-					return fmt.Errorf("readSkills: %s", strings.Join(error_messages, " | "))
+					return fmt.Errorf("skills.Read: %s", strings.Join(error_messages, " | "))
 
 				} else {
 					return nil
 				}
 
 			} else {
-				return fmt.Errorf("readSkills: Cannot list skills folder")
+				return fmt.Errorf("skills.Read: Cannot list skills folder")
 			}
 
 		} else {
-			return fmt.Errorf("readSkills: %s", err0.Error())
+			return fmt.Errorf("skills.Read: %s", err0.Error())
 		}
 
 	} else {
-		return fmt.Errorf("readSkills: Invalid tool playground")
+		return fmt.Errorf("skills.Read: Invalid tool playground")
 	}
 
 }

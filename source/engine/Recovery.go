@@ -266,7 +266,7 @@ func (recovery *Recovery) SnapshotBytes(name string, raw []byte) error {
 
 	if strings.Contains(name, ".") == false {
 
-		var tmp interface{}
+		var tmp any
 
 		err0 := json.Unmarshal(raw, &tmp)
 

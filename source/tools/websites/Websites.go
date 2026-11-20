@@ -47,24 +47,33 @@ func NewWebsitesWithCapabilities(
 		Transport: &net_http.Transport{
 			Proxy: net_http.ProxyFromEnvironment,
 			DialContext: func(ctx context.Context, network string, address string) (net.Conn, error) {
+
 				host, _, err0 := net.SplitHostPort(address)
+
 				if err0 != nil {
 					host = address
 				}
+
 				if websites.canConnect(host) == false {
-					return nil, fmt.Errorf("network permission denied")
+					return nil, fmt.Errorf("websites.Fetch: Missing network.Connect permission.")
+				} else {
+					return dialer.DialContext(ctx, network, address)
 				}
-				return dialer.DialContext(ctx, network, address)
+
 			},
 		},
 		CheckRedirect: func(request *net_http.Request, via []*net_http.Request) error {
+
 			if websites.canConnect(request.URL.Hostname()) == false {
-				return fmt.Errorf("network permission denied")
+				return fmt.Errorf("websites.Fetch: Missing network.Connect permission.")
 			}
+
 			if len(via) >= 10 {
-				return fmt.Errorf("stopped after 10 redirects")
+				return fmt.Errorf("websites.Fetch: Stopped after 10 redirects.")
 			}
+
 			return nil
+
 		},
 	}
 
@@ -76,7 +85,7 @@ func (tool *Websites) Name() string {
 	return "websites"
 }
 
-func (tool *Websites) Call(method string, arguments map[string]interface{}) (string, error) {
+func (tool *Websites) Call(method string, arguments map[string]any) (string, error) {
 
 	if tool.HasMethod(method) == true {
 

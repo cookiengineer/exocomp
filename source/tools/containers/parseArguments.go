@@ -10,7 +10,7 @@ func (tool *Containers) parseArguments(raw any) ([]string, error) {
 		return result, nil
 	}
 
-	values, ok := raw.([]interface{})
+	values, ok := raw.([]any)
 
 	if ok == true {
 
