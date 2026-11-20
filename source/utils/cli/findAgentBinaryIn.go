@@ -44,6 +44,7 @@ func findAgentBinaryIn(directory string) (string, error) {
 			}
 
 		}
+
 	}
 
 }
