@@ -24,4 +24,5 @@ func FormatFileSize(bytes int64) string {
 		return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), units[exp])
 
 	}
+
 }

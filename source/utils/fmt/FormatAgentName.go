@@ -22,7 +22,7 @@ func FormatAgentName(input string) string {
 
 	tmp1 := strings.TrimSpace(string(formatted))
 
-	if strings.Contains(tmp1, " ") {
+	if strings.Contains(tmp1, " ") == true {
 
 		tmp2 := strings.Split(tmp1, " ")
 		prename := strings.ToUpper(tmp2[0][0:1]) + strings.ToLower(tmp2[0][1:])

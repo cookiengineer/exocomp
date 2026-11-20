@@ -11,7 +11,7 @@ func FormatMultiLine(input string) string {
 		chr := byte(input[i])
 
 		// isPrintableASCII also filters \t, \r and \n
-		if isPrintableASCII(chr) {
+		if isPrintableASCII(chr) == true {
 			formatted = append(formatted, chr)
 		} else if chr == '\t' || chr == '\n' {
 			formatted = append(formatted, chr)
