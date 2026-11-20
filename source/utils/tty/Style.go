@@ -67,44 +67,45 @@ func (style Style) Sequence(profile ColorProfile) string {
 
 	if profile == ProfileMono {
 		return ""
+	} else {
+
+		builder := strings.Builder{}
+
+		builder.WriteString("\033[0m")
+
+		if style.Attributes&AttrBold != 0 {
+			builder.WriteString("\033[1m")
+		}
+
+		if style.Attributes&AttrDim != 0 {
+			builder.WriteString("\033[2m")
+		}
+
+		if style.Attributes&AttrItalic != 0 {
+			builder.WriteString("\033[3m")
+		}
+
+		if style.Attributes&AttrUnderline != 0 {
+			builder.WriteString("\033[4m")
+		}
+
+		if style.Attributes&AttrReverse != 0 {
+			builder.WriteString("\033[7m")
+		}
+
+		if style.Attributes&AttrStrikethrough != 0 {
+			builder.WriteString("\033[9m")
+		}
+
+		if style.HasForeground == true {
+			builder.WriteString(style.Foreground.Foreground(profile))
+		}
+
+		if style.HasBackground == true {
+			builder.WriteString(style.Background.Background(profile))
+		}
+
+		return builder.String()
+
 	}
-
-	builder := strings.Builder{}
-
-	builder.WriteString("\033[0m")
-
-	if style.Attributes&AttrBold != 0 {
-		builder.WriteString("\033[1m")
-	}
-
-	if style.Attributes&AttrDim != 0 {
-		builder.WriteString("\033[2m")
-	}
-
-	if style.Attributes&AttrItalic != 0 {
-		builder.WriteString("\033[3m")
-	}
-
-	if style.Attributes&AttrUnderline != 0 {
-		builder.WriteString("\033[4m")
-	}
-
-	if style.Attributes&AttrReverse != 0 {
-		builder.WriteString("\033[7m")
-	}
-
-	if style.Attributes&AttrStrikethrough != 0 {
-		builder.WriteString("\033[9m")
-	}
-
-	if style.HasForeground == true {
-		builder.WriteString(style.Foreground.Foreground(profile))
-	}
-
-	if style.HasBackground == true {
-		builder.WriteString(style.Background.Background(profile))
-	}
-
-	return builder.String()
-
 }

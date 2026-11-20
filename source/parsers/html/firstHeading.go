@@ -7,31 +7,32 @@ func firstHeading(node *html_tree.Node) string {
 
 	if node == nil {
 		return ""
-	}
+	} else {
 
-	if node.Type == html_tree.ElementNode {
+		if node.Type == html_tree.ElementNode {
 
-		switch node.Data {
-		case "h1", "h2", "h3":
-			text := strings.TrimSpace(rawText(node))
+			switch node.Data {
+			case "h1", "h2", "h3":
+				text := strings.TrimSpace(rawText(node))
 
-			if text != "" {
-				return text
+				if text != "" {
+					return text
+				}
 			}
+
 		}
 
-	}
+		for child := node.FirstChild; child != nil; child = child.NextSibling {
 
-	for child := node.FirstChild; child != nil; child = child.NextSibling {
+			heading := firstHeading(child)
 
-		heading := firstHeading(child)
+			if heading != "" {
+				return heading
+			}
 
-		if heading != "" {
-			return heading
 		}
 
+		return ""
+
 	}
-
-	return ""
-
 }

@@ -37,28 +37,29 @@ func (terminal *Terminal) Enter() error {
 
 	if terminal.entered == true {
 		return nil
-	}
-
-	state, err := term.MakeRaw(int(terminal.Input.Fd()))
-
-	if err == nil {
-
-		terminal.state = state
-		terminal.entered = true
-		terminal.write("\033[?1049h")
-		terminal.write("\033[?25l")
-		terminal.write("\033[?2004h")
-		terminal.write("\033[?1000h")
-		terminal.write("\033[?1006h")
-		terminal.write("\033[2J\033[H")
-		terminal.Output.Sync()
-
-		return nil
-
 	} else {
-		return fmt.Errorf("tty.Terminal.Enter: %s", err.Error())
-	}
 
+		state, err := term.MakeRaw(int(terminal.Input.Fd()))
+
+		if err == nil {
+
+			terminal.state = state
+			terminal.entered = true
+			terminal.write("\033[?1049h")
+			terminal.write("\033[?25l")
+			terminal.write("\033[?2004h")
+			terminal.write("\033[?1000h")
+			terminal.write("\033[?1006h")
+			terminal.write("\033[2J\033[H")
+			terminal.Output.Sync()
+
+			return nil
+
+		} else {
+			return fmt.Errorf("tty.Terminal.Enter: %s", err.Error())
+		}
+
+	}
 }
 
 func (terminal *Terminal) Leave() {

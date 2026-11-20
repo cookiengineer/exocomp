@@ -303,10 +303,9 @@ func (session *Session) Init() error {
 	// NOTE: First Message is System Prompt
 	if len(session.Agent.Messages) > 0 {
 		return session.inferChatCompletions()
+	} else {
+		return fmt.Errorf("Session.Init: Session is empty, waiting for LLM system prompt.")
 	}
-
-	return fmt.Errorf("Session.Init: Session is empty, waiting for LLM system prompt.")
-
 }
 
 func (session *Session) CallTool(id string, name string, method string, arguments map[string]any) error {
@@ -581,10 +580,9 @@ func (session *Session) GetAdapter(search string) types.Adapter {
 
 	if ok == true {
 		return adapter
+	} else {
+		return nil
 	}
-
-	return nil
-
 }
 
 func (session *Session) GetAdapters() []types.Adapter {
@@ -616,130 +614,132 @@ func (session *Session) GetLastMessage() *schemas.Message {
 
 	if len(session.Agent.Messages) > 0 {
 		return session.Agent.Messages[len(session.Agent.Messages)-1]
+	} else {
+		return nil
 	}
-
-	return nil
-
 }
 
 func (session *Session) GetAgent(name string) *types.Agent {
 
 	if session == nil {
 		return nil
-	}
+	} else {
 
-	if session.Agent != nil {
+		if session.Agent != nil {
 
-		session.mutex.RLock()
-		planner_name := session.Agent.Name
-		agent := (*types.Agent)(nil)
+			session.mutex.RLock()
+			planner_name := session.Agent.Name
+			agent := (*types.Agent)(nil)
 
-		if name == "" || name == planner_name {
-			agent = session.Agent.Clone()
+			if name == "" || name == planner_name {
+				agent = session.Agent.Clone()
+			}
+
+			session.mutex.RUnlock()
+
+			if agent != nil {
+				return agent
+			}
+
 		}
 
-		session.mutex.RUnlock()
+		tool := session.GetTool("agents.List")
 
-		if agent != nil {
-			return agent
+		if tool != nil {
+
+			agents_tool, ok := tool.(*tools_agents.Agents)
+
+			if ok == true {
+				return agents_tool.GetAgentSnapshot(name)
+			}
+
 		}
 
-	}
-
-	tool := session.GetTool("agents.List")
-
-	if tool != nil {
-
-		agents_tool, ok := tool.(*tools_agents.Agents)
-
-		if ok == true {
-			return agents_tool.GetAgentSnapshot(name)
-		}
+		return nil
 
 	}
-
-	return nil
-
 }
 
 func (session *Session) GetAgentInfo(name string) *types.Agent {
 
 	if session == nil {
 		return nil
-	}
+	} else {
 
-	if session.Agent != nil {
+		if session.Agent != nil {
 
-		session.mutex.RLock()
-		planner_name := session.Agent.Name
-		agent := (*types.Agent)(nil)
+			session.mutex.RLock()
+			planner_name := session.Agent.Name
+			agent := (*types.Agent)(nil)
 
-		if name == "" || name == planner_name {
-			agent = session.Agent.CloneInfo()
-		}
+			if name == "" || name == planner_name {
+				agent = session.Agent.CloneInfo()
+			}
 
-		session.mutex.RUnlock()
-
-		if agent != nil {
-			return agent
-		}
-
-	}
-
-	tool := session.GetTool("agents.List")
-
-	if tool != nil {
-
-		agents_tool, ok := tool.(*tools_agents.Agents)
-
-		if ok == true {
-			return agents_tool.GetAgentInfo(name)
-		}
-
-	}
-
-	return nil
-
-}
-
-func (session *Session) GetAgentMessages(name string) ([]*schemas.Message, bool) {
-
-	if session == nil {
-		return []*schemas.Message{}, false
-	}
-
-	if session.Agent != nil {
-
-		session.mutex.RLock()
-		planner_name := session.Agent.Name
-		session.mutex.RUnlock()
-
-		if name == "" || name == planner_name {
-			return session.GetMessages(0), session.IsWaiting()
-		}
-
-	}
-
-	tool := session.GetTool("agents.List")
-
-	if tool != nil {
-
-		agents_tool, ok := tool.(*tools_agents.Agents)
-
-		if ok == true {
-
-			agent := agents_tool.GetAgentSnapshot(name)
+			session.mutex.RUnlock()
 
 			if agent != nil {
-				return agent.Messages, agent.Status == "working"
+				return agent
 			}
 
 		}
 
+		tool := session.GetTool("agents.List")
+
+		if tool != nil {
+
+			agents_tool, ok := tool.(*tools_agents.Agents)
+
+			if ok == true {
+				return agents_tool.GetAgentInfo(name)
+			}
+
+		}
+
+		return nil
+
 	}
+}
 
-	return []*schemas.Message{}, false
+func (session *Session) GetAgentMessages(name string) ([]*schemas.Message, bool) {
 
+	if session != nil {
+
+		if session.Agent != nil {
+
+			session.mutex.RLock()
+			planner_name := session.Agent.Name
+			session.mutex.RUnlock()
+
+			if name == "" || name == planner_name {
+				return session.GetMessages(0), session.IsWaiting()
+			}
+
+		}
+
+		tool := session.GetTool("agents.List")
+
+		if tool != nil {
+
+			agents_tool, ok := tool.(*tools_agents.Agents)
+
+			if ok == true {
+
+				agent := agents_tool.GetAgentSnapshot(name)
+
+				if agent != nil {
+					return agent.Messages, agent.Status == "working"
+				}
+
+			}
+
+		}
+
+		return []*schemas.Message{}, false
+
+	} else {
+		return []*schemas.Message{}, false
+	}
 }
 
 func (session *Session) GetAgents() []*types.Agent {
@@ -748,30 +748,31 @@ func (session *Session) GetAgents() []*types.Agent {
 
 	if session == nil {
 		return result
-	}
+	} else {
 
-	if session.Agent != nil {
+		if session.Agent != nil {
 
-		session.mutex.RLock()
-		result = append(result, session.Agent.Clone())
-		session.mutex.RUnlock()
+			session.mutex.RLock()
+			result = append(result, session.Agent.Clone())
+			session.mutex.RUnlock()
 
-	}
-
-	tool := session.GetTool("agents.List")
-
-	if tool != nil {
-
-		agents_tool, ok := tool.(*tools_agents.Agents)
-
-		if ok == true {
-			result = append(result, agents_tool.GetAgents()...)
 		}
 
+		tool := session.GetTool("agents.List")
+
+		if tool != nil {
+
+			agents_tool, ok := tool.(*tools_agents.Agents)
+
+			if ok == true {
+				result = append(result, agents_tool.GetAgents()...)
+			}
+
+		}
+
+		return result
+
 	}
-
-	return result
-
 }
 
 func (session *Session) GetMessages(from int) []*schemas.Message {
@@ -1059,24 +1060,26 @@ func (session *Session) ReceiveChatResponse(response schemas.Message) error {
 
 func (session *Session) SendAgentMessage(name string, content string) error {
 
-	if session == nil {
-		return fmt.Errorf("Session.SendAgentMessage: No session available.")
-	}
+	if session != nil {
 
-	tool := session.GetTool("agents.List")
+		tool := session.GetTool("agents.List")
 
-	if tool != nil {
+		if tool != nil {
 
-		agents_tool, ok := tool.(*tools_agents.Agents)
+			agents_tool, ok := tool.(*tools_agents.Agents)
 
-		if ok == true {
+			if ok == true {
 
-			_, err := agents_tool.SendMessage(name, content)
+				_, err := agents_tool.SendMessage(name, content)
 
-			if err == nil {
-				return nil
+				if err == nil {
+					return nil
+				} else {
+					return err
+				}
+
 			} else {
-				return err
+				return fmt.Errorf("Session.SendAgentMessage: Agents tool does not exist.")
 			}
 
 		} else {
@@ -1084,9 +1087,8 @@ func (session *Session) SendAgentMessage(name string, content string) error {
 		}
 
 	} else {
-		return fmt.Errorf("Session.SendAgentMessage: Agents tool does not exist.")
+		return fmt.Errorf("Session.SendAgentMessage: No session available.")
 	}
-
 }
 
 func (session *Session) SendChatRequest(request schemas.Message) error {
@@ -1194,55 +1196,56 @@ func (session *Session) SwitchAgent(agent *types.Agent, summary string) error {
 
 	defer session.notifyChange()
 
-	if agent == nil {
-		return fmt.Errorf("Session.SwitchAgent: Invalid agent.")
-	}
+	if agent != nil {
 
-	messages := make([]*schemas.Message, 0)
+		messages := make([]*schemas.Message, 0)
 
-	for _, message := range agent.Messages {
+		for _, message := range agent.Messages {
 
-		if message != nil && message.Role == "system" {
-			messages = append(messages, message)
+			if message != nil && message.Role == "system" {
+				messages = append(messages, message)
+			}
+
 		}
 
+		if strings.TrimSpace(summary) != "" {
+
+			messages = append(messages, &schemas.Message{
+				Role:    "assistant",
+				Content: strings.TrimSpace(summary),
+				Created: schemas.NewDatetime(),
+			})
+
+		}
+
+		session.mutex.Lock()
+
+		agent.Messages = messages
+		session.Agent = agent
+
+		if session.Config != nil {
+
+			session.Config.Update(
+				agent.Name,
+				agent.Role,
+				agent.Model,
+				session.Config.Prompt,
+				agent.Temperature,
+			)
+
+		}
+
+		session.mutex.Unlock()
+
+		if session.Capabilities != nil {
+			session.Capabilities.Clear()
+		}
+
+		return nil
+
+	} else {
+		return fmt.Errorf("Session.SwitchAgent: Invalid agent.")
 	}
-
-	if strings.TrimSpace(summary) != "" {
-
-		messages = append(messages, &schemas.Message{
-			Role:    "assistant",
-			Content: strings.TrimSpace(summary),
-			Created: schemas.NewDatetime(),
-		})
-
-	}
-
-	session.mutex.Lock()
-
-	agent.Messages = messages
-	session.Agent = agent
-
-	if session.Config != nil {
-
-		session.Config.Update(
-			agent.Name,
-			agent.Role,
-			agent.Model,
-			session.Config.Prompt,
-			agent.Temperature,
-		)
-
-	}
-
-	session.mutex.Unlock()
-
-	if session.Capabilities != nil {
-		session.Capabilities.Clear()
-	}
-
-	return nil
-
 }
 
 // SwitchRole summarizes the current conversation, switches to the requested

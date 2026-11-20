@@ -10,52 +10,53 @@ import "path/filepath"
 // state and is never accessible through files.*.
 func resolveFilesPath(sandbox string, capabilities *utils_capabilities.Set, path string, write bool) (string, error) {
 
-	if utils_sandbox.IsReservedPath(sandbox, path) == true {
-		return "", fmt.Errorf("Path is reserved for internal state.")
-	}
+	if utils_sandbox.IsReservedPath(sandbox, path) == false {
 
-	resolved, err0 := utils_sandbox.ResolvePath(sandbox, path)
+		resolved, err0 := utils_sandbox.ResolvePath(sandbox, path)
 
-	if err0 == nil {
+		if err0 == nil {
 
-		return resolved, nil
+			return resolved, nil
 
-	} else if capabilities != nil && filepath.IsAbs(path) == true {
+		} else if capabilities != nil && filepath.IsAbs(path) == true {
 
-		absolute, err1 := filepath.Abs(path)
+			absolute, err1 := filepath.Abs(path)
 
-		if err1 == nil {
+			if err1 == nil {
 
-			canonical, err2 := filepath.EvalSymlinks(absolute)
+				canonical, err2 := filepath.EvalSymlinks(absolute)
 
-			if err2 != nil {
+				if err2 != nil {
 
-				parent, err3 := filepath.EvalSymlinks(filepath.Dir(absolute))
+					parent, err3 := filepath.EvalSymlinks(filepath.Dir(absolute))
 
-				if err3 == nil {
-					canonical = filepath.Join(parent, filepath.Base(absolute))
+					if err3 == nil {
+						canonical = filepath.Join(parent, filepath.Base(absolute))
+					}
+
 				}
 
-			}
+				if canonical != "" {
 
-			if canonical != "" {
+					if utils_sandbox.IsReservedPath(sandbox, canonical) == true {
+						return "", fmt.Errorf("Path is reserved for internal state.")
+					}
 
-				if utils_sandbox.IsReservedPath(sandbox, canonical) == true {
-					return "", fmt.Errorf("Path is reserved for internal state.")
-				}
+					if write == true && capabilities.CanWrite(canonical) == true {
+						return canonical, nil
+					} else if write == false && capabilities.CanRead(canonical) == true {
+						return canonical, nil
+					}
 
-				if write == true && capabilities.CanWrite(canonical) == true {
-					return canonical, nil
-				} else if write == false && capabilities.CanRead(canonical) == true {
-					return canonical, nil
 				}
 
 			}
 
 		}
 
+		return "", err0
+
+	} else {
+		return "", fmt.Errorf("Path is reserved for internal state.")
 	}
-
-	return "", err0
-
 }

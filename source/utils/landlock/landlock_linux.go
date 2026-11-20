@@ -194,48 +194,51 @@ func restrictPaths(policy Policy) error {
 
 	if err0 != nil {
 		return errUnsupported
+	} else {
+
+		access := allAccessFS(abi)
+
+		if access == 0 {
+			return errUnsupported
+		} else {
+
+			ruleset_fd, err1 := createRuleset(abi, access)
+
+			if err1 == nil {
+
+				defer unix.Close(ruleset_fd)
+
+				err2 := addPathRules(ruleset_fd, policy.ReadWrite, access, false)
+
+				if err2 != nil {
+					return err2
+				}
+
+				err3 := addPathRules(ruleset_fd, policy.ReadOnly, readAccessFS()&access, true)
+
+				if err3 != nil {
+					return err3
+				}
+
+				err4 := addPathRules(ruleset_fd, policy.Devices, deviceAccessFS()&access, true)
+
+				if err4 != nil {
+					return err4
+				}
+
+				err5 := unix.Prctl(unix.PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)
+
+				if err5 != nil {
+					return err5
+				}
+
+				return restrictSelf(ruleset_fd, abi)
+
+			} else {
+				return err1
+			}
+		}
 	}
-
-	access := allAccessFS(abi)
-
-	if access == 0 {
-		return errUnsupported
-	}
-
-	ruleset_fd, err1 := createRuleset(abi, access)
-
-	if err1 != nil {
-		return err1
-	}
-
-	defer unix.Close(ruleset_fd)
-
-	err2 := addPathRules(ruleset_fd, policy.ReadWrite, access, false)
-
-	if err2 != nil {
-		return err2
-	}
-
-	err3 := addPathRules(ruleset_fd, policy.ReadOnly, readAccessFS()&access, true)
-
-	if err3 != nil {
-		return err3
-	}
-
-	err4 := addPathRules(ruleset_fd, policy.Devices, deviceAccessFS()&access, true)
-
-	if err4 != nil {
-		return err4
-	}
-
-	err5 := unix.Prctl(unix.PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)
-
-	if err5 != nil {
-		return err5
-	}
-
-	return restrictSelf(ruleset_fd, abi)
-
 }
 
 func restrictSelf(ruleset_fd int, abi int) error {

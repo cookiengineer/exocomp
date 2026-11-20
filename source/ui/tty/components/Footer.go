@@ -200,11 +200,12 @@ func (footer *Footer) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect, elap
 
 			if index >= len(lines) {
 				break
+			} else {
+
+				line := lines[index]
+				buffer.WriteString(textarea_rect.X, textarea_rect.Y+row, utils_tty.Truncate(line.Text, textarea_rect.Width), styles.PromptText)
+
 			}
-
-			line := lines[index]
-			buffer.WriteString(textarea_rect.X, textarea_rect.Y+row, utils_tty.Truncate(line.Text, textarea_rect.Width), styles.PromptText)
-
 		}
 
 	}
@@ -285,105 +286,106 @@ func (footer *Footer) HandleKey(key utils_tty.Key) bool {
 
 	if key.Type == utils_tty.KeyRune && key.Ctrl == true && key.Rune == 's' {
 		return true
-	}
+	} else {
 
-	if footer.Palette.Visible == true {
+		if footer.Palette.Visible == true {
+
+			switch key.Type {
+
+			case utils_tty.KeyArrowUp:
+				footer.Palette.Move(-1)
+				return false
+			case utils_tty.KeyArrowDown:
+				footer.Palette.Move(1)
+				return false
+			case utils_tty.KeyTab:
+				footer.AcceptSuggestion()
+				return false
+			case utils_tty.KeyEscape:
+				footer.Palette.Hide()
+				return false
+			case utils_tty.KeyEnter:
+				footer.AcceptSuggestion()
+				return false
+
+			}
+
+		}
 
 		switch key.Type {
 
-		case utils_tty.KeyArrowUp:
-			footer.Palette.Move(-1)
-			return false
-		case utils_tty.KeyArrowDown:
-			footer.Palette.Move(1)
-			return false
-		case utils_tty.KeyTab:
-			footer.AcceptSuggestion()
-			return false
-		case utils_tty.KeyEscape:
-			footer.Palette.Hide()
-			return false
 		case utils_tty.KeyEnter:
-			footer.AcceptSuggestion()
+
+			footer.Textarea.InsertNewline()
+			footer.RefreshSuggestions()
+
 			return false
 
-		}
+		case utils_tty.KeyTab:
 
-	}
+			if footer.Palette.Visible == true {
+				footer.AcceptSuggestion()
+			} else {
 
-	switch key.Type {
-
-	case utils_tty.KeyEnter:
-
-		footer.Textarea.InsertNewline()
-		footer.RefreshSuggestions()
-
-		return false
-
-	case utils_tty.KeyTab:
-
-		if footer.Palette.Visible == true {
-			footer.AcceptSuggestion()
-		} else {
-
-			footer.Textarea.Insert("    ")
-			footer.RefreshSuggestions()
-
-		}
-
-	case utils_tty.KeyBackspace:
-
-		if footer.Textarea.Backspace() == true {
-			footer.RefreshSuggestions()
-		}
-
-	case utils_tty.KeyDelete:
-		footer.Textarea.Delete()
-		footer.RefreshSuggestions()
-
-	case utils_tty.KeyArrowLeft:
-		footer.Textarea.MoveLeft()
-
-	case utils_tty.KeyArrowRight:
-		footer.Textarea.MoveRight()
-
-	case utils_tty.KeyArrowUp:
-		footer.Textarea.MoveUp()
-
-	case utils_tty.KeyArrowDown:
-		footer.Textarea.MoveDown()
-
-	case utils_tty.KeyHome:
-		footer.Textarea.Home()
-
-	case utils_tty.KeyEnd:
-		footer.Textarea.End()
-
-	case utils_tty.KeyEscape:
-		footer.Palette.Hide()
-
-	case utils_tty.KeyRune:
-
-		if key.Ctrl == true {
-
-			if key.Rune == 'j' {
-
-				footer.Textarea.InsertNewline()
+				footer.Textarea.Insert("    ")
 				footer.RefreshSuggestions()
 
 			}
 
-		} else {
+		case utils_tty.KeyBackspace:
 
-			footer.Textarea.Insert(string(key.Rune))
+			if footer.Textarea.Backspace() == true {
+				footer.RefreshSuggestions()
+			}
+
+		case utils_tty.KeyDelete:
+			footer.Textarea.Delete()
 			footer.RefreshSuggestions()
+
+		case utils_tty.KeyArrowLeft:
+			footer.Textarea.MoveLeft()
+
+		case utils_tty.KeyArrowRight:
+			footer.Textarea.MoveRight()
+
+		case utils_tty.KeyArrowUp:
+			footer.Textarea.MoveUp()
+
+		case utils_tty.KeyArrowDown:
+			footer.Textarea.MoveDown()
+
+		case utils_tty.KeyHome:
+			footer.Textarea.Home()
+
+		case utils_tty.KeyEnd:
+			footer.Textarea.End()
+
+		case utils_tty.KeyEscape:
+			footer.Palette.Hide()
+
+		case utils_tty.KeyRune:
+
+			if key.Ctrl == true {
+
+				if key.Rune == 'j' {
+
+					footer.Textarea.InsertNewline()
+					footer.RefreshSuggestions()
+
+				}
+
+			} else {
+
+				footer.Textarea.Insert(string(key.Rune))
+				footer.RefreshSuggestions()
+
+			}
 
 		}
 
+		return false
+
 	}
-
-	return false
-
 }
 
 func (footer *Footer) RefreshSuggestions() {

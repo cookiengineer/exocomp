@@ -8,8 +8,7 @@ func PadRight(text string, width int) string {
 
 	if length >= width {
 		return text
+	} else {
+		return text + strings.Repeat(" ", width-length)
 	}
-
-	return text + strings.Repeat(" ", width-length)
-
 }

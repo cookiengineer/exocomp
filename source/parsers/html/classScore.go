@@ -8,37 +8,38 @@ func classScore(class string, id string) float64 {
 
 	if combined == "" {
 		return 0
-	}
+	} else {
 
-	score := 0.0
+		score := 0.0
 
-	positive := []string{
-		"article", "content", "post", "story", "entry", "main", "body",
-		"text", "blog", "news", "markdown", "hentry", "page",
-	}
-
-	negative := []string{
-		"comment", "sidebar", "footer", "header", "nav", "menu", "aside",
-		"banner", "advert", "promo", "share", "social", "widget", "related",
-		"copyright", "breadcrumb", "cookie", "popup", "modal", "login", "search",
-	}
-
-	for _, keyword := range positive {
-
-		if strings.Contains(combined, keyword) {
-			score += 25
+		positive := []string{
+			"article", "content", "post", "story", "entry", "main", "body",
+			"text", "blog", "news", "markdown", "hentry", "page",
 		}
 
-	}
-
-	for _, keyword := range negative {
-
-		if strings.Contains(combined, keyword) {
-			score -= 25
+		negative := []string{
+			"comment", "sidebar", "footer", "header", "nav", "menu", "aside",
+			"banner", "advert", "promo", "share", "social", "widget", "related",
+			"copyright", "breadcrumb", "cookie", "popup", "modal", "login", "search",
 		}
 
+		for _, keyword := range positive {
+
+			if strings.Contains(combined, keyword) {
+				score += 25
+			}
+
+		}
+
+		for _, keyword := range negative {
+
+			if strings.Contains(combined, keyword) {
+				score -= 25
+			}
+
+		}
+
+		return score
+
 	}
-
-	return score
-
 }

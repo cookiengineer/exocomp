@@ -208,46 +208,47 @@ func (textarea *Textarea) Wrap(width int) ([]TextareaLine, int, int) {
 
 		if index == len(textarea.runes) {
 			break
+		} else {
+
+			value := textarea.runes[index]
+
+			if value == '\n' {
+
+				lines = append(lines, TextareaLine{
+					Text:         builder.String(),
+					CursorColumn: -1,
+					CursorHere:   false,
+				})
+				builder.Reset()
+				line_width = 0
+				continue
+
+			}
+
+			value_width := utils_tty.RuneWidth(value)
+
+			// NOTE: Tabs render as four columns in the composer, so they wrap like
+			// four spaces even though RuneWidth reports them as zero-width.
+			if value == '\t' {
+				value_width = 4
+			}
+
+			if line_width+value_width > width && line_width > 0 {
+
+				lines = append(lines, TextareaLine{
+					Text:         builder.String(),
+					CursorColumn: -1,
+					CursorHere:   false,
+				})
+				builder.Reset()
+				line_width = 0
+
+			}
+
+			builder.WriteRune(value)
+			line_width += value_width
+
 		}
-
-		value := textarea.runes[index]
-
-		if value == '\n' {
-
-			lines = append(lines, TextareaLine{
-				Text:         builder.String(),
-				CursorColumn: -1,
-				CursorHere:   false,
-			})
-			builder.Reset()
-			line_width = 0
-			continue
-
-		}
-
-		value_width := utils_tty.RuneWidth(value)
-
-		// NOTE: Tabs render as four columns in the composer, so they wrap like
-		// four spaces even though RuneWidth reports them as zero-width.
-		if value == '\t' {
-			value_width = 4
-		}
-
-		if line_width+value_width > width && line_width > 0 {
-
-			lines = append(lines, TextareaLine{
-				Text:         builder.String(),
-				CursorColumn: -1,
-				CursorHere:   false,
-			})
-			builder.Reset()
-			line_width = 0
-
-		}
-
-		builder.WriteRune(value)
-		line_width += value_width
-
 	}
 
 	lines = append(lines, TextareaLine{

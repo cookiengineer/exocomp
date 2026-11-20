@@ -11,12 +11,13 @@ func copyAttributes(source *html_tree.Node, target *Element) {
 
 		if key == "class" || key == "id" || key == "style" || key == "onclick" || key == "onload" || key == "onerror" {
 			continue
-		}
+		} else {
 
-		if key != "" && val != "" {
-			target.SetAttribute(key, val)
-		}
+			if key != "" && val != "" {
+				target.SetAttribute(key, val)
+			}
 
+		}
 	}
 
 }

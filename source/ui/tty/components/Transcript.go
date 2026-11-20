@@ -142,14 +142,15 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 
 			if message == nil {
 				continue
+			} else {
+
+				if len(result) > 0 {
+					result = append(result, transcriptLine{})
+				}
+
+				result = transcript.appendMessage(result, message, content_width)
+
 			}
-
-			if len(result) > 0 {
-				result = append(result, transcriptLine{})
-			}
-
-			result = transcript.appendMessage(result, message, content_width)
-
 		}
 
 		if waiting == true {
@@ -253,23 +254,24 @@ func (transcript *Transcript) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 
 			if span.Text == "" {
 				continue
+			} else {
+
+				remaining := limit - x
+
+				if remaining <= 0 {
+					break
+				}
+
+				text := utils_tty.Truncate(span.Text, remaining)
+
+				if text == "" {
+					break
+				}
+
+				buffer.WriteString(x, rect.Y+line_row, text, span.Style)
+				x += utils_tty.StringWidth(text)
+
 			}
-
-			remaining := limit - x
-
-			if remaining <= 0 {
-				break
-			}
-
-			text := utils_tty.Truncate(span.Text, remaining)
-
-			if text == "" {
-				break
-			}
-
-			buffer.WriteString(x, rect.Y+line_row, text, span.Style)
-			x += utils_tty.StringWidth(text)
-
 		}
 
 	}

@@ -28,41 +28,42 @@ func renderTable(table *Element, document *Document) string {
 
 	if len(rows) == 0 {
 		return ""
-	}
+	} else {
 
-	max_cols := 0
+		max_cols := 0
 
-	for _, row := range rows {
+		for _, row := range rows {
 
-		if len(row) > max_cols {
-			max_cols = len(row)
+			if len(row) > max_cols {
+				max_cols = len(row)
+			}
+
 		}
 
-	}
+		for r := 0; r < len(rows); r++ {
 
-	for r := 0; r < len(rows); r++ {
+			for len(rows[r]) < max_cols {
+				rows[r] = append(rows[r], "")
+			}
 
-		for len(rows[r]) < max_cols {
-			rows[r] = append(rows[r], "")
 		}
 
+		lines := make([]string, 0)
+		lines = append(lines, "| "+strings.Join(rows[0], " | ")+" |")
+
+		separator := make([]string, 0)
+
+		for c := 0; c < max_cols; c++ {
+			separator = append(separator, "---")
+		}
+
+		lines = append(lines, "| "+strings.Join(separator, " | ")+" |")
+
+		for r := 1; r < len(rows); r++ {
+			lines = append(lines, "| "+strings.Join(rows[r], " | ")+" |")
+		}
+
+		return strings.Join(lines, "\n")
+
 	}
-
-	lines := make([]string, 0)
-	lines = append(lines, "| "+strings.Join(rows[0], " | ")+" |")
-
-	separator := make([]string, 0)
-
-	for c := 0; c < max_cols; c++ {
-		separator = append(separator, "---")
-	}
-
-	lines = append(lines, "| "+strings.Join(separator, " | ")+" |")
-
-	for r := 1; r < len(rows); r++ {
-		lines = append(lines, "| "+strings.Join(rows[r], " | ")+" |")
-	}
-
-	return strings.Join(lines, "\n")
-
 }

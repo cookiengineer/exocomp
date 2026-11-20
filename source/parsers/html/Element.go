@@ -82,20 +82,21 @@ func (element *Element) textContent() string {
 
 	if element == nil {
 		return result
-	}
+	} else {
 
-	if len(element.Children) > 0 {
+		if len(element.Children) > 0 {
 
-		for _, child := range element.Children {
-			result += child.textContent()
+			for _, child := range element.Children {
+				result += child.textContent()
+			}
+
+		} else if element.Text != "" {
+			result = element.Text
 		}
 
-	} else if element.Text != "" {
-		result = element.Text
+		return result
+
 	}
-
-	return result
-
 }
 
 // RenderInline renders the element as a single line of markdown, used inside

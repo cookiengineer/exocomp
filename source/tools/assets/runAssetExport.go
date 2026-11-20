@@ -30,37 +30,38 @@ func runAssetExport(tool *Assets, matches []types.Asset, format string, path str
 		sandbox = tool.Playground
 	}
 
-	if utils_sandbox.IsReservedPath(sandbox, path) == true {
-		return "", fmt.Errorf("assets.Export: Path is reserved for internal state.")
-	}
+	if utils_sandbox.IsReservedPath(sandbox, path) == false {
 
-	data, err0 := formatAssets(matches, format)
+		data, err0 := formatAssets(matches, format)
 
-	if err0 == nil {
+		if err0 == nil {
 
-		resolved, display, err1 := writeAssetExportFile(sandbox, path, data)
+			resolved, display, err1 := writeAssetExportFile(sandbox, path, data)
 
-		if err1 == nil {
+			if err1 == nil {
 
-			sum := sha256.Sum256(data)
-			content_type := utils_http.ContentTypeForPath(resolved)
+				sum := sha256.Sum256(data)
+				content_type := utils_http.ContentTypeForPath(resolved)
 
-			return fmt.Sprintf(
-				"assets.Export: format=%s path=\"%s\" count=%d sha256=%s size=%d content_type=%s",
-				format,
-				display,
-				len(matches),
-				hex.EncodeToString(sum[:]),
-				len(data),
-				content_type,
-			), nil
+				return fmt.Sprintf(
+					"assets.Export: format=%s path=\"%s\" count=%d sha256=%s size=%d content_type=%s",
+					format,
+					display,
+					len(matches),
+					hex.EncodeToString(sum[:]),
+					len(data),
+					content_type,
+				), nil
+
+			} else {
+				return "", fmt.Errorf("assets.Export: %s", err1.Error())
+			}
 
 		} else {
-			return "", fmt.Errorf("assets.Export: %s", err1.Error())
+			return "", fmt.Errorf("assets.Export: %s", err0.Error())
 		}
 
 	} else {
-		return "", fmt.Errorf("assets.Export: %s", err0.Error())
+		return "", fmt.Errorf("assets.Export: Path is reserved for internal state.")
 	}
-
 }

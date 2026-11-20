@@ -113,14 +113,15 @@ func parseArguments(arguments []string) (string, []string, []string, bool, strin
 
 	}
 
-	if network != "allow" && network != "deny" {
-		return "", nil, nil, false, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
-	}
+	if network == "allow" || network == "deny" {
 
-	if sandbox != "" && target != "" {
-		return sandbox, read_paths, write_paths, network == "allow", target, target_arguments, nil
+		if sandbox != "" && target != "" {
+			return sandbox, read_paths, write_paths, network == "allow", target, target_arguments, nil
+		} else {
+			return "", nil, nil, false, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
+		}
+
 	} else {
 		return "", nil, nil, false, "", nil, fmt.Errorf("landlock.parseArguments: Invalid argument.")
 	}
-
 }

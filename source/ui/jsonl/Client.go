@@ -61,10 +61,9 @@ func (client *Client) QuitHook(report string, success bool) {
 
 		if client.Renderer.Flushed() == true {
 			break
+		} else {
+			time.Sleep(20 * time.Millisecond)
 		}
-
-		time.Sleep(20 * time.Millisecond)
-
 	}
 
 	os.Stdout.Sync()

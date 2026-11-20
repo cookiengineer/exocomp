@@ -57,36 +57,37 @@ func ColorFromHex(input string) (Color, error) {
 		})
 	}
 
-	if len(value) != 6 && len(value) != 8 {
-		return Color{}, fmt.Errorf("tty.ColorFromHex: Invalid color \"%s\".", input)
-	}
+	if len(value) == 6 || len(value) == 8 {
 
-	red, err1 := strconv.ParseUint(value[0:2], 16, 8)
-	green, err2 := strconv.ParseUint(value[2:4], 16, 8)
-	blue, err3 := strconv.ParseUint(value[4:6], 16, 8)
+		red, err1 := strconv.ParseUint(value[0:2], 16, 8)
+		green, err2 := strconv.ParseUint(value[2:4], 16, 8)
+		blue, err3 := strconv.ParseUint(value[4:6], 16, 8)
 
-	if err1 == nil && err2 == nil && err3 == nil {
+		if err1 == nil && err2 == nil && err3 == nil {
 
-		alpha := uint64(255)
+			alpha := uint64(255)
 
-		if len(value) == 8 {
+			if len(value) == 8 {
 
-			parsed, err4 := strconv.ParseUint(value[6:8], 16, 8)
+				parsed, err4 := strconv.ParseUint(value[6:8], 16, 8)
 
-			if err4 == nil {
-				alpha = parsed
-			} else {
-				return Color{}, fmt.Errorf("tty.ColorFromHex: Invalid color \"%s\".", input)
+				if err4 == nil {
+					alpha = parsed
+				} else {
+					return Color{}, fmt.Errorf("tty.ColorFromHex: Invalid color \"%s\".", input)
+				}
+
 			}
 
-		}
+			return ColorFromInts(uint8(red), uint8(green), uint8(blue), uint8(alpha)), nil
 
-		return ColorFromInts(uint8(red), uint8(green), uint8(blue), uint8(alpha)), nil
+		} else {
+			return Color{}, fmt.Errorf("tty.ColorFromHex: Invalid color \"%s\".", input)
+		}
 
 	} else {
 		return Color{}, fmt.Errorf("tty.ColorFromHex: Invalid color \"%s\".", input)
 	}
-
 }
 
 func (color Color) Hex() string {
@@ -132,46 +133,48 @@ func (color Color) Foreground(profile ColorProfile) string {
 
 	if profile == ProfileMono {
 		return ""
+	} else {
+
+		red := int(math.Round(color.R * 255.0))
+		green := int(math.Round(color.G * 255.0))
+		blue := int(math.Round(color.B * 255.0))
+
+		if profile == ProfileTrueColor {
+			return fmt.Sprintf("\033[38;2;%d;%d;%dm", red, green, blue)
+		} else {
+
+			code := nearestANSI(red, green, blue, profile)
+
+			if code < 16 {
+				return fmt.Sprintf("\033[%dm", 30+code)
+			} else {
+				return fmt.Sprintf("\033[38;5;%dm", code)
+			}
+		}
 	}
-
-	red := int(math.Round(color.R * 255.0))
-	green := int(math.Round(color.G * 255.0))
-	blue := int(math.Round(color.B * 255.0))
-
-	if profile == ProfileTrueColor {
-		return fmt.Sprintf("\033[38;2;%d;%d;%dm", red, green, blue)
-	}
-
-	code := nearestANSI(red, green, blue, profile)
-
-	if code < 16 {
-		return fmt.Sprintf("\033[%dm", 30+code)
-	}
-
-	return fmt.Sprintf("\033[38;5;%dm", code)
-
 }
 
 func (color Color) Background(profile ColorProfile) string {
 
 	if profile == ProfileMono {
 		return ""
+	} else {
+
+		red := int(math.Round(color.R * 255.0))
+		green := int(math.Round(color.G * 255.0))
+		blue := int(math.Round(color.B * 255.0))
+
+		if profile == ProfileTrueColor {
+			return fmt.Sprintf("\033[48;2;%d;%d;%dm", red, green, blue)
+		} else {
+
+			code := nearestANSI(red, green, blue, profile)
+
+			if code < 16 {
+				return fmt.Sprintf("\033[%dm", 40+code)
+			} else {
+				return fmt.Sprintf("\033[48;5;%dm", code)
+			}
+		}
 	}
-
-	red := int(math.Round(color.R * 255.0))
-	green := int(math.Round(color.G * 255.0))
-	blue := int(math.Round(color.B * 255.0))
-
-	if profile == ProfileTrueColor {
-		return fmt.Sprintf("\033[48;2;%d;%d;%dm", red, green, blue)
-	}
-
-	code := nearestANSI(red, green, blue, profile)
-
-	if code < 16 {
-		return fmt.Sprintf("\033[%dm", 40+code)
-	}
-
-	return fmt.Sprintf("\033[48;5;%dm", code)
-
 }

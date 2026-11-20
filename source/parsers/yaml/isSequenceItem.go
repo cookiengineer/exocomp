@@ -6,8 +6,7 @@ func isSequenceItem(text string) bool {
 
 	if strings.HasPrefix(text, "- ") {
 		return true
+	} else {
+		return text == "-"
 	}
-
-	return text == "-"
-
 }

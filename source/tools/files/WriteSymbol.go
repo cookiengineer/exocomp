@@ -24,18 +24,19 @@ func (tool *Files) WriteSymbol(path string, symbol string, declaration string) (
 
 			result := utils_ast.WriteSymbol(source, symbol, declaration, declaration_type)
 
-			if bytes.Equal(result, source) == true {
+			if bytes.Equal(result, source) == false {
+
+				err2 := os.WriteFile(resolved, result, 0666)
+
+				if err2 == nil {
+					return fmt.Sprintf("files.WriteSymbol: File \"%s\" Symbol \"%s\" written.", path, symbol), nil
+				} else {
+					return sanitizeFilesystemError("files", "WriteSymbol", "File", path, err2)
+				}
+
+			} else {
 				return "", fmt.Errorf("files.WriteSymbol: File \"%s\" has no Symbol \"%s\"", path, symbol)
 			}
-
-			err2 := os.WriteFile(resolved, result, 0666)
-
-			if err2 == nil {
-				return fmt.Sprintf("files.WriteSymbol: File \"%s\" Symbol \"%s\" written.", path, symbol), nil
-			} else {
-				return sanitizeFilesystemError("files", "WriteSymbol", "File", path, err2)
-			}
-
 		} else {
 			return sanitizeFilesystemError("files", "WriteSymbol", "File", path, err1)
 		}

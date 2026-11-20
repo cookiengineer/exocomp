@@ -54,14 +54,14 @@ func validateAsset(asset *types.Asset) error {
 
 	}
 
-	if asset.Port < 0 || asset.Port > 65535 {
+	if asset.Port >= 0 && asset.Port <= 65535 {
+
+		if asset.Confidence == "" || asset.Confidence.IsValid() == true {
+			return nil
+		} else {
+			return fmt.Errorf("Invalid confidence \"%s\".", asset.Confidence)
+		}
+	} else {
 		return fmt.Errorf("Invalid port number.")
 	}
-
-	if asset.Confidence != "" && asset.Confidence.IsValid() == false {
-		return fmt.Errorf("Invalid confidence \"%s\".", asset.Confidence)
-	}
-
-	return nil
-
 }

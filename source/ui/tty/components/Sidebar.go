@@ -42,22 +42,20 @@ func (sidebar *Sidebar) Toggle() {
 
 func (sidebar *Sidebar) IsVisible(width int) bool {
 
-	if width <= sidebarBreakpointColumns {
+	if width > sidebarBreakpointColumns {
+		return sidebar.forceVisible
+	} else {
 		return false
 	}
-
-	return sidebar.forceVisible
-
 }
 
 func (sidebar *Sidebar) Width(available int) int {
 
 	if available <= sidebarBreakpointColumns {
 		return 0
+	} else {
+		return min(40, max(28, available/4))
 	}
-
-	return min(40, max(28, available/4))
-
 }
 
 func (sidebar *Sidebar) Height(width int) int {

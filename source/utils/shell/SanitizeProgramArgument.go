@@ -12,38 +12,39 @@ func SanitizeProgramArgument(sandbox string, capabilities *utils_capabilities.Se
 
 	if IsNetworkArgument(argument) == true {
 		return argument, nil
-	}
+	} else {
 
-	if strings.ContainsAny(argument, "/\\") == true {
+		if strings.ContainsAny(argument, "/\\") == true {
 
-		resolved, err0 := utils_sandbox.SanitizePath(sandbox, argument)
+			resolved, err0 := utils_sandbox.SanitizePath(sandbox, argument)
 
-		if err0 == nil {
+			if err0 == nil {
 
-			return resolved, nil
+				return resolved, nil
 
-		} else if capabilities != nil && filepath.IsAbs(argument) == true {
+			} else if capabilities != nil && filepath.IsAbs(argument) == true {
 
-			canonical := utils_capabilities.CanonicalPath(argument)
+				canonical := utils_capabilities.CanonicalPath(argument)
 
-			if capabilities.CanRead(canonical) == true || capabilities.CanWrite(canonical) == true {
-				return canonical, nil
+				if capabilities.CanRead(canonical) == true || capabilities.CanWrite(canonical) == true {
+					return canonical, nil
+				}
+
+			}
+
+			return "", err0
+
+		} else {
+
+			_, err1 := utils_sandbox.CheckPath(sandbox, argument)
+
+			if err1 == nil {
+				return argument, nil
+			} else {
+				return "", err1
 			}
 
 		}
 
-		return "", err0
-
-	} else {
-
-		_, err1 := utils_sandbox.CheckPath(sandbox, argument)
-
-		if err1 == nil {
-			return argument, nil
-		} else {
-			return "", err1
-		}
-
 	}
-
 }

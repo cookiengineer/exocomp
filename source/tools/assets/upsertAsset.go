@@ -17,95 +17,99 @@ func upsertAsset(tool *Assets, asset types.Asset) (types.Asset, bool, error) {
 	asset.Tags = normalizeStringList(asset.Tags, assetsMaxText)
 	asset.Props = normalizeProps(asset.Props)
 
-	if err := validateAsset(&asset); err != nil {
+	if err := validateAsset(&asset); err == nil {
+
+		now := schemas.NewDatetime()
+		key := assetDedupKey(asset)
+
+		for id, existing := range tool.contents {
+
+			if assetDedupKey(existing) != key {
+				continue
+			} else {
+
+				existing.LastSeen = now
+
+				if existing.ParentID == "" && asset.ParentID != "" {
+					existing.ParentID = asset.ParentID
+				}
+
+				if existing.Domain == "" {
+					existing.Domain = asset.Domain
+				}
+
+				if existing.IP == "" {
+					existing.IP = asset.IP
+				}
+
+				if existing.Port == 0 {
+					existing.Port = asset.Port
+				}
+
+				if existing.URL == "" {
+					existing.URL = asset.URL
+				}
+
+				if existing.Endpoint == "" {
+					existing.Endpoint = asset.Endpoint
+				}
+
+				if existing.Source == "" {
+					existing.Source = asset.Source
+				}
+
+				if existing.Confidence == "" {
+					existing.Confidence = asset.Confidence
+				}
+
+				existing.Technology = mergeStringList(existing.Technology, asset.Technology)
+				existing.Tags = mergeStringList(existing.Tags, asset.Tags)
+				existing.Props = mergeProps(existing.Props, asset.Props)
+				existing.InScope = existing.InScope || asset.InScope
+				existing.Tested = existing.Tested || asset.Tested
+
+				tool.contents[id] = existing
+
+				return existing, false, nil
+
+			}
+		}
+
+		asset.ID = utils_findings.NewAssetID()
+
+		if types.IsAssetID(asset.ID) == true {
+
+			if asset.FirstSeen.IsZero() == true {
+				asset.FirstSeen = now
+			}
+
+			asset.LastSeen = now
+
+			if asset.Confidence == "" {
+				asset.Confidence = types.FindingConfidenceObserved
+			}
+
+			if asset.Source == "" {
+				asset.Source = "manual"
+			}
+
+			if asset.ParentID == "" {
+				asset.ParentID = inferAssetParent(tool, asset)
+			}
+
+			if asset.Validate() == true {
+
+				tool.contents[asset.ID] = asset
+
+				return asset, true, nil
+
+			} else {
+				return types.Asset{}, false, fmt.Errorf("Invalid asset.")
+			}
+		} else {
+			return types.Asset{}, false, fmt.Errorf("Cannot generate asset ID.")
+		}
+	} else {
 		return types.Asset{}, false, err
 	}
-
-	now := schemas.NewDatetime()
-	key := assetDedupKey(asset)
-
-	for id, existing := range tool.contents {
-
-		if assetDedupKey(existing) != key {
-			continue
-		}
-
-		existing.LastSeen = now
-
-		if existing.ParentID == "" && asset.ParentID != "" {
-			existing.ParentID = asset.ParentID
-		}
-
-		if existing.Domain == "" {
-			existing.Domain = asset.Domain
-		}
-
-		if existing.IP == "" {
-			existing.IP = asset.IP
-		}
-
-		if existing.Port == 0 {
-			existing.Port = asset.Port
-		}
-
-		if existing.URL == "" {
-			existing.URL = asset.URL
-		}
-
-		if existing.Endpoint == "" {
-			existing.Endpoint = asset.Endpoint
-		}
-
-		if existing.Source == "" {
-			existing.Source = asset.Source
-		}
-
-		if existing.Confidence == "" {
-			existing.Confidence = asset.Confidence
-		}
-
-		existing.Technology = mergeStringList(existing.Technology, asset.Technology)
-		existing.Tags = mergeStringList(existing.Tags, asset.Tags)
-		existing.Props = mergeProps(existing.Props, asset.Props)
-		existing.InScope = existing.InScope || asset.InScope
-		existing.Tested = existing.Tested || asset.Tested
-
-		tool.contents[id] = existing
-
-		return existing, false, nil
-
-	}
-
-	asset.ID = utils_findings.NewAssetID()
-
-	if types.IsAssetID(asset.ID) == false {
-		return types.Asset{}, false, fmt.Errorf("Cannot generate asset ID.")
-	}
-
-	if asset.FirstSeen.IsZero() == true {
-		asset.FirstSeen = now
-	}
-
-	asset.LastSeen = now
-
-	if asset.Confidence == "" {
-		asset.Confidence = types.FindingConfidenceObserved
-	}
-
-	if asset.Source == "" {
-		asset.Source = "manual"
-	}
-
-	if asset.ParentID == "" {
-		asset.ParentID = inferAssetParent(tool, asset)
-	}
-
-	if asset.Validate() == false {
-		return types.Asset{}, false, fmt.Errorf("Invalid asset.")
-	}
-
-	tool.contents[asset.ID] = asset
-
-	return asset, true, nil
-
 }

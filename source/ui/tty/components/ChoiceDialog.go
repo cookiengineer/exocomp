@@ -55,11 +55,12 @@ func (dialog *ChoiceDialog) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect
 
 		if row >= rect.Y+rect.Height-1 {
 			break
+		} else {
+
+			buffer.WriteString(rect.X+2, row, utils_tty.Truncate(line, rect.Width-4), styles.Dialog)
+			row++
+
 		}
-
-		buffer.WriteString(rect.X+2, row, utils_tty.Truncate(line, rect.Width-4), styles.Dialog)
-		row++
-
 	}
 
 	row++
@@ -68,34 +69,35 @@ func (dialog *ChoiceDialog) Render(buffer *utils_tty.Buffer, rect utils_tty.Rect
 
 		if row >= rect.Y+rect.Height-1 {
 			break
-		}
+		} else {
 
-		selected := index == dialog.Selected
-		marker := "[ ]"
+			selected := index == dialog.Selected
+			marker := "[ ]"
 
-		if dialog.Question.Multiple == true {
+			if dialog.Question.Multiple == true {
 
-			if dialog.chosen[index] == true {
+				if dialog.chosen[index] == true {
+					marker = "[x]"
+				}
+
+			} else if selected == true {
 				marker = "[x]"
 			}
 
-		} else if selected == true {
-			marker = "[x]"
+			style := styles.Dialog
+
+			if selected == true {
+
+				style = styles.Selection
+				buffer.Fill(utils_tty.Rect{X: rect.X + 2, Y: row, Width: rect.Width - 4, Height: 1}, ' ', style)
+
+			}
+
+			text := marker + " " + option
+			buffer.WriteString(rect.X+2, row, utils_tty.Truncate(text, rect.Width-4), style)
+			row++
+
 		}
-
-		style := styles.Dialog
-
-		if selected == true {
-
-			style = styles.Selection
-			buffer.Fill(utils_tty.Rect{X: rect.X + 2, Y: row, Width: rect.Width - 4, Height: 1}, ' ', style)
-
-		}
-
-		text := marker + " " + option
-		buffer.WriteString(rect.X+2, row, utils_tty.Truncate(text, rect.Width-4), style)
-		row++
-
 	}
 
 	hint := "↑/↓ select · Ctrl+S submit · Esc cancel"

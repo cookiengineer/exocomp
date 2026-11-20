@@ -11,18 +11,19 @@ func normalizeText(raw string) string {
 
 	if collapsed == "" {
 		return ""
+	} else {
+
+		result := collapsed
+
+		if len(raw) > 0 && isWhitespace(raw[0]) {
+			result = " " + result
+		}
+
+		if len(raw) > 0 && isWhitespace(raw[len(raw)-1]) {
+			result = result + " "
+		}
+
+		return result
+
 	}
-
-	result := collapsed
-
-	if len(raw) > 0 && isWhitespace(raw[0]) {
-		result = " " + result
-	}
-
-	if len(raw) > 0 && isWhitespace(raw[len(raw)-1]) {
-		result = result + " "
-	}
-
-	return result
-
 }

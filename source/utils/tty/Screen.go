@@ -144,33 +144,34 @@ func (screen *Screen) Flush() error {
 
 	if changed == false && screen.hasCursor == true && screen.lastCursorX == screen.cursorX && screen.lastCursorY == screen.cursorY && screen.lastCursorVisible == screen.cursorVisible {
 		return nil
-	}
-
-	if screen.profile != ProfileMono {
-		output.WriteString("\033[0m")
-	}
-
-	if screen.cursorVisible == true {
-
-		output.WriteString(fmt.Sprintf("\033[%d;%dH", screen.cursorY+1, screen.cursorX+1))
-		output.WriteString("\033[?25h")
-
 	} else {
-		output.WriteString("\033[?25l")
+
+		if screen.profile != ProfileMono {
+			output.WriteString("\033[0m")
+		}
+
+		if screen.cursorVisible == true {
+
+			output.WriteString(fmt.Sprintf("\033[%d;%dH", screen.cursorY+1, screen.cursorX+1))
+			output.WriteString("\033[?25h")
+
+		} else {
+			output.WriteString("\033[?25l")
+		}
+
+		output.WriteString("\033[?2026l")
+
+		if output.Len() > 0 {
+			screen.terminal.Write(output.String())
+		}
+
+		screen.previous = screen.buffer.Clone()
+		screen.lastCursorX = screen.cursorX
+		screen.lastCursorY = screen.cursorY
+		screen.lastCursorVisible = screen.cursorVisible
+		screen.hasCursor = true
+
+		return nil
+
 	}
-
-	output.WriteString("\033[?2026l")
-
-	if output.Len() > 0 {
-		screen.terminal.Write(output.String())
-	}
-
-	screen.previous = screen.buffer.Clone()
-	screen.lastCursorX = screen.cursorX
-	screen.lastCursorY = screen.cursorY
-	screen.lastCursorVisible = screen.cursorVisible
-	screen.hasCursor = true
-
-	return nil
-
 }

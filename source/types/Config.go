@@ -233,10 +233,9 @@ func (config *Config) HasProvider(model string) bool {
 
 	if ok == true {
 		return true
+	} else {
+		return false
 	}
-
-	return false
-
 }
 
 func (config *Config) ResolveToken(model string) string {
@@ -275,10 +274,9 @@ func (config *Config) ResolvePricing(model string) (Pricing, bool) {
 
 	if ok == true && provider.Pricing != (Pricing{}) {
 		return provider.Pricing, true
+	} else {
+		return Pricing{}, false
 	}
-
-	return Pricing{}, false
-
 }
 
 func (config *Config) ResolveURL(model string, path string) *net_url.URL {

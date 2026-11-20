@@ -64,16 +64,17 @@ func NewWebsitesWithCapabilities(
 		},
 		CheckRedirect: func(request *net_http.Request, via []*net_http.Request) error {
 
-			if websites.canConnect(request.URL.Hostname()) == false {
+			if websites.canConnect(request.URL.Hostname()) == true {
+
+				if len(via) >= 10 {
+					return fmt.Errorf("websites.Fetch: Stopped after 10 redirects.")
+				}
+
+				return nil
+
+			} else {
 				return fmt.Errorf("websites.Fetch: Missing network.Connect permission.")
 			}
-
-			if len(via) >= 10 {
-				return fmt.Errorf("websites.Fetch: Stopped after 10 redirects.")
-			}
-
-			return nil
-
 		},
 	}
 

@@ -35,22 +35,20 @@ func (sidebar *AgentSidebar) Toggle() {
 
 func (sidebar *AgentSidebar) IsVisible(width int) bool {
 
-	if width <= agentSidebarBreakpointColumns {
+	if width > agentSidebarBreakpointColumns {
+		return sidebar.forceVisible
+	} else {
 		return false
 	}
-
-	return sidebar.forceVisible
-
 }
 
 func (sidebar *AgentSidebar) Width(available int) int {
 
 	if available <= agentSidebarBreakpointColumns {
 		return 0
+	} else {
+		return min(32, max(20, available/5))
 	}
-
-	return min(32, max(20, available/5))
-
 }
 
 func (sidebar *AgentSidebar) Height(width int) int {

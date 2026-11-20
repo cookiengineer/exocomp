@@ -22,30 +22,31 @@ func maskPrivateState(sandbox string) error {
 
 	err0 := os.MkdirAll(private, 0700)
 
-	if err0 != nil {
+	if err0 == nil {
+
+		err1 := unix.Mount("", "/", "", uintptr(unix.MS_REC|unix.MS_PRIVATE), "")
+
+		if err1 == nil {
+
+			err2 := unix.Mount(
+				"tmpfs",
+				private,
+				"tmpfs",
+				uintptr(unix.MS_RDONLY|unix.MS_NOSUID|unix.MS_NODEV),
+				"size=1m",
+			)
+
+			if err2 == nil {
+				return dropPrivileges()
+			} else {
+				return fmt.Errorf("Cannot mask private state folder.")
+			}
+		} else {
+			return fmt.Errorf("Cannot make mount namespace private.")
+		}
+	} else {
 		return err0
 	}
-
-	err1 := unix.Mount("", "/", "", uintptr(unix.MS_REC|unix.MS_PRIVATE), "")
-
-	if err1 != nil {
-		return fmt.Errorf("Cannot make mount namespace private.")
-	}
-
-	err2 := unix.Mount(
-		"tmpfs",
-		private,
-		"tmpfs",
-		uintptr(unix.MS_RDONLY|unix.MS_NOSUID|unix.MS_NODEV),
-		"size=1m",
-	)
-
-	if err2 != nil {
-		return fmt.Errorf("Cannot mask private state folder.")
-	}
-
-	return dropPrivileges()
-
 }
 
 // dropPrivileges clears the capabilities gained from entering the user
@@ -55,21 +56,21 @@ func dropPrivileges() error {
 
 	err0 := unix.Prctl(unix.PR_SET_SECUREBITS, uintptr(securebitsNoRoot|securebitsNoRootLocked), 0, 0, 0)
 
-	if err0 != nil {
+	if err0 == nil {
+
+		for capability := 0; capability <= int(unix.CAP_LAST_CAP); capability++ {
+			_ = unix.Prctl(unix.PR_CAPBSET_DROP, uintptr(capability), 0, 0, 0)
+		}
+
+		data := [2]unix.CapUserData{}
+		err1 := unix.Capset(&unix.CapUserHeader{Version: unix.LINUX_CAPABILITY_VERSION_3}, &data[0])
+
+		if err1 == nil {
+			return nil
+		} else {
+			return fmt.Errorf("Cannot drop capabilities.")
+		}
+	} else {
 		return fmt.Errorf("Cannot set secure bits.")
 	}
-
-	for capability := 0; capability <= int(unix.CAP_LAST_CAP); capability++ {
-		_ = unix.Prctl(unix.PR_CAPBSET_DROP, uintptr(capability), 0, 0, 0)
-	}
-
-	data := [2]unix.CapUserData{}
-	err1 := unix.Capset(&unix.CapUserHeader{Version: unix.LINUX_CAPABILITY_VERSION_3}, &data[0])
-
-	if err1 != nil {
-		return fmt.Errorf("Cannot drop capabilities.")
-	}
-
-	return nil
-
 }

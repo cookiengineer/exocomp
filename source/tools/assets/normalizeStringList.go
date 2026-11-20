@@ -15,10 +15,9 @@ func normalizeStringList(values []string, maximum int) []string {
 
 		if value == "" || slices.Contains(result, value) == true {
 			continue
+		} else {
+			result = append(result, utils_findings.LimitText(value, maximum))
 		}
-
-		result = append(result, utils_findings.LimitText(value, maximum))
-
 	}
 
 	sort.Strings(result)

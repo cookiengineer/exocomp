@@ -20,52 +20,54 @@ func resolvePaths(paths []string) []resolvedPath {
 
 		if path == "" {
 			continue
-		}
-
-		cleaned := filepath.Clean(path)
-
-		if seen[cleaned] == true {
-			continue
-		}
-
-		seen[cleaned] = true
-
-		info, err0 := os.Stat(cleaned)
-
-		if err0 == nil {
-
-			resolved, err1 := filepath.EvalSymlinks(cleaned)
-
-			if err1 != nil {
-				resolved = cleaned
-			}
-
-			result = append(result, resolvedPath{
-				original: cleaned,
-				resolved: resolved,
-				isDir:    info.IsDir(),
-				exists:   true,
-			})
-
 		} else {
 
-			resolved, err2 := filepath.EvalSymlinks(filepath.Dir(cleaned))
+			cleaned := filepath.Clean(path)
 
-			if err2 == nil {
-				resolved = filepath.Join(resolved, filepath.Base(cleaned))
+			if seen[cleaned] == true {
+				continue
 			} else {
-				resolved = cleaned
+
+				seen[cleaned] = true
+
+				info, err0 := os.Stat(cleaned)
+
+				if err0 == nil {
+
+					resolved, err1 := filepath.EvalSymlinks(cleaned)
+
+					if err1 != nil {
+						resolved = cleaned
+					}
+
+					result = append(result, resolvedPath{
+						original: cleaned,
+						resolved: resolved,
+						isDir:    info.IsDir(),
+						exists:   true,
+					})
+
+				} else {
+
+					resolved, err2 := filepath.EvalSymlinks(filepath.Dir(cleaned))
+
+					if err2 == nil {
+						resolved = filepath.Join(resolved, filepath.Base(cleaned))
+					} else {
+						resolved = cleaned
+					}
+
+					result = append(result, resolvedPath{
+						original: cleaned,
+						resolved: resolved,
+						isDir:    true,
+						exists:   false,
+					})
+
+				}
+
 			}
-
-			result = append(result, resolvedPath{
-				original: cleaned,
-				resolved: resolved,
-				isDir:    true,
-				exists:   false,
-			})
-
 		}
-
 	}
 
 	return result

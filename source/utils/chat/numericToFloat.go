@@ -6,8 +6,7 @@ func numericToFloat(v reflect.Value) float64 {
 
 	if isSignedInteger(v.Kind()) {
 		return float64(v.Int())
+	} else {
+		return float64(v.Uint())
 	}
-
-	return float64(v.Uint())
-
 }

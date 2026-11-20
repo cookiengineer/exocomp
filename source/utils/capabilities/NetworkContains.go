@@ -7,12 +7,9 @@ func NetworkContains(scope string, ip net.IP) bool {
 
 	if parsed := net.ParseIP(scope); parsed != nil {
 		return parsed.Equal(ip)
-	}
-
-	if _, network, err := net.ParseCIDR(scope); err == nil {
+	} else if _, network, err := net.ParseCIDR(scope); err == nil {
 		return network.Contains(ip)
+	} else {
+		return false
 	}
-
-	return false
-
 }

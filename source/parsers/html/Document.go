@@ -19,25 +19,26 @@ func NewDocument(file string) *Document {
 
 	if base == "" {
 		return nil
-	}
+	} else {
 
-	base_url, err := net_url.Parse(base)
+		base_url, err := net_url.Parse(base)
 
-	if err == nil {
+		if err == nil {
 
-		document := &Document{
-			URL:    base_url,
-			Title:  "",
-			Body:   make([]*Element, 0),
-			Errors: make([]error, 0),
+			document := &Document{
+				URL:    base_url,
+				Title:  "",
+				Body:   make([]*Element, 0),
+				Errors: make([]error, 0),
+			}
+
+			return document
+
 		}
 
-		return document
+		return nil
 
 	}
-
-	return nil
-
 }
 
 func ParseDocument(file string, bytes []byte) (*Document, error) {
@@ -70,12 +71,11 @@ func (document *Document) AddElement(element *Element) {
 
 func (document *Document) MarshalText() ([]byte, error) {
 
-	if document == nil {
+	if document != nil {
+		return []byte(document.String()), nil
+	} else {
 		return []byte{}, fmt.Errorf("nil document")
 	}
-
-	return []byte(document.String()), nil
-
 }
 
 // Parse converts raw HTML bytes into a normalized Document tree, dropping
@@ -156,32 +156,33 @@ func (document *Document) String() string {
 
 	if document == nil {
 		return ""
-	}
+	} else {
 
-	lines := make([]string, 0)
+		lines := make([]string, 0)
 
-	if document.Title != "" {
+		if document.Title != "" {
 
-		lines = append(lines, "# "+strings.TrimSpace(document.Title))
-		lines = append(lines, "")
-
-	}
-
-	for _, element := range document.Body {
-
-		content := element.Render(document)
-
-		if strings.TrimSpace(content) != "" {
-
-			lines = append(lines, content)
+			lines = append(lines, "# "+strings.TrimSpace(document.Title))
 			lines = append(lines, "")
 
 		}
 
+		for _, element := range document.Body {
+
+			content := element.Render(document)
+
+			if strings.TrimSpace(content) != "" {
+
+				lines = append(lines, content)
+				lines = append(lines, "")
+
+			}
+
+		}
+
+		return strings.TrimSpace(strings.Join(lines, "\n"))
+
 	}
-
-	return strings.TrimSpace(strings.Join(lines, "\n"))
-
 }
 
 // Text returns the plain text content of the document, dropping all markup.
@@ -189,22 +190,23 @@ func (document *Document) Text() string {
 
 	if document == nil {
 		return ""
-	}
+	} else {
 
-	lines := make([]string, 0)
+		lines := make([]string, 0)
 
-	for _, element := range document.Body {
+		for _, element := range document.Body {
 
-		text := strings.TrimSpace(element.textContent())
+			text := strings.TrimSpace(element.textContent())
 
-		if text != "" {
-			lines = append(lines, text)
+			if text != "" {
+				lines = append(lines, text)
+			}
+
 		}
 
+		return strings.Join(lines, "\n")
+
 	}
-
-	return strings.Join(lines, "\n")
-
 }
 
 // walk traverses the parsed HTML tree and builds a simplified Document tree.
@@ -236,39 +238,40 @@ func (document *Document) walk(node *html_tree.Node, current *Element) {
 
 			if name == "" || isSkippedElement(name) {
 				continue
-			}
-
-			if isTransparentElement(name) {
-
-				document.walk(child, current)
-				continue
-
-			}
-
-			element := NewElement(name)
-			copyAttributes(child, element)
-
-			if isBlockElement(name) {
-
-				if current == nil {
-					document.AddElement(element)
-				} else {
-					current.AddChild(element)
-				}
-
-				document.walk(child, element)
-
 			} else {
 
-				if current == nil {
-					current = document.newParagraph()
+				if isTransparentElement(name) {
+
+					document.walk(child, current)
+					continue
+
 				}
 
-				current.AddChild(element)
-				document.walk(child, element)
+				element := NewElement(name)
+				copyAttributes(child, element)
+
+				if isBlockElement(name) {
+
+					if current == nil {
+						document.AddElement(element)
+					} else {
+						current.AddChild(element)
+					}
+
+					document.walk(child, element)
+
+				} else {
+
+					if current == nil {
+						current = document.newParagraph()
+					}
+
+					current.AddChild(element)
+					document.walk(child, element)
+
+				}
 
 			}
-
 		}
 
 	}

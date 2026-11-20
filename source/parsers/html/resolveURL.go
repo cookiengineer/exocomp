@@ -9,18 +9,17 @@ func resolveURL(document *Document, ref string) string {
 
 	if ref == "" {
 		return ref
-	}
-
-	if document == nil || document.URL == nil {
+	} else if document == nil || document.URL == nil {
 		return ref
-	}
-
-	ref_url, err := net_url.Parse(ref)
-
-	if err == nil {
-		return document.URL.ResolveReference(ref_url).String()
 	} else {
-		return ref
-	}
 
+		ref_url, err := net_url.Parse(ref)
+
+		if err == nil {
+			return document.URL.ResolveReference(ref_url).String()
+		} else {
+			return ref
+		}
+
+	}
 }

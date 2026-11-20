@@ -5,16 +5,17 @@ import "strings"
 
 func IsFindingID(value string) bool {
 
-	if len(value) != 12 || strings.HasPrefix(value, "fnd_") == false {
-		return false
-	}
+	if len(value) == 12 && strings.HasPrefix(value, "fnd_") == true {
 
-	_, err := hex.DecodeString(value[4:])
+		_, err := hex.DecodeString(value[4:])
 
-	if err == nil {
-		return true
+		if err == nil {
+			return true
+		} else {
+			return false
+		}
+
 	} else {
 		return false
 	}
-
 }

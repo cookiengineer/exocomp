@@ -33,16 +33,17 @@ func findAgentBinaryIn(directory string) (string, error) {
 
 		if err1 == nil && stat.Mode().IsRegular() == true {
 			return absoluteAgentPath(path)
-		}
-
-		found, err2 := exec.LookPath("exocomp-agent")
-
-		if err2 == nil {
-			return absoluteAgentPath(found)
 		} else {
-			return "", fmt.Errorf("cli.FindAgentBinary: exocomp-agent is not installed.")
-		}
 
+			found, err2 := exec.LookPath("exocomp-agent")
+
+			if err2 == nil {
+				return absoluteAgentPath(found)
+			} else {
+				return "", fmt.Errorf("cli.FindAgentBinary: exocomp-agent is not installed.")
+			}
+
+		}
 	}
 
 }

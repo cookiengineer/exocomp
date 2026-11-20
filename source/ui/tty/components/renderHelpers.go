@@ -84,60 +84,60 @@ func writeFooterSpan(buffer *utils_tty.Buffer, x int, y int, text string, style 
 
 	if remaining <= 0 {
 		return 0
+	} else {
+
+		text = utils_tty.Truncate(text, remaining)
+
+		if text == "" {
+			return 0
+		} else {
+
+			buffer.WriteString(x, y, text, style)
+
+			return utils_tty.StringWidth(text)
+
+		}
 	}
-
-	text = utils_tty.Truncate(text, remaining)
-
-	if text == "" {
-		return 0
-	}
-
-	buffer.WriteString(x, y, text, style)
-
-	return utils_tty.StringWidth(text)
-
 }
 
 func spinnerFrame(elapsed time.Duration) string {
 
 	if len(utils_tty.SpinnerFrames) == 0 {
 		return " "
+	} else {
+
+		index := int(elapsed/(80*time.Millisecond)) % len(utils_tty.SpinnerFrames)
+
+		if index < 0 {
+			index = 0
+		}
+
+		return utils_tty.SpinnerFrames[index]
+
 	}
-
-	index := int(elapsed/(80*time.Millisecond)) % len(utils_tty.SpinnerFrames)
-
-	if index < 0 {
-		index = 0
-	}
-
-	return utils_tty.SpinnerFrames[index]
-
 }
 
 func footerActivity(status string) (string, bool) {
 
 	trimmed := sanitizeFooterStatus(status)
 
-	if trimmed == "" {
+	if trimmed != "" {
+
+		lower := strings.ToLower(trimmed)
+
+		if strings.Contains(lower, "waiting for the llm") || strings.Contains(lower, "session is busy") {
+			return "Agent is working…", true
+		} else if strings.Contains(lower, "answering human question") {
+			return "Sending your answer…", true
+		} else if strings.HasPrefix(lower, "running ") {
+			return trimmed, true
+		} else {
+			return trimmed, false
+		}
+
+	} else {
 		return "Waiting for your instructions", false
 	}
-
-	lower := strings.ToLower(trimmed)
-
-	if strings.Contains(lower, "waiting for the llm") || strings.Contains(lower, "session is busy") {
-		return "Agent is working…", true
-	}
-
-	if strings.Contains(lower, "answering human question") {
-		return "Sending your answer…", true
-	}
-
-	if strings.HasPrefix(lower, "running ") {
-		return trimmed, true
-	}
-
-	return trimmed, false
-
 }
 
 func sanitizeFooterStatus(value string) string {

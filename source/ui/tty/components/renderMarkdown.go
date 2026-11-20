@@ -12,11 +12,12 @@ func renderMarkdown(text string, width int) []transcriptLine {
 
 	if document == nil || (len(document.Errors) > 0 && len(document.Body) == 0) {
 		return renderMarkdownPlain(normalized, width)
+	} else {
+
+		renderer := newMarkdownRenderer(width)
+		renderer.renderDocument(document)
+
+		return renderer.lines
+
 	}
-
-	renderer := newMarkdownRenderer(width)
-	renderer.renderDocument(document)
-
-	return renderer.lines
-
 }

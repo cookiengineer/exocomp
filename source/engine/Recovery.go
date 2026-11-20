@@ -131,10 +131,9 @@ func (recovery *Recovery) HasBackup() bool {
 
 	if err1 == nil && stat.IsDir() == false {
 		return true
+	} else {
+		return false
 	}
-
-	return false
-
 }
 
 func (recovery *Recovery) RestoreAgents() []*types.Agent {

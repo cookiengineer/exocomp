@@ -6,14 +6,14 @@ import "path/filepath"
 // symlink-resolved canonical form.
 func IsCanonicalPath(path string) bool {
 
-	if path == "" || filepath.IsAbs(path) == false {
+	if path != "" && filepath.IsAbs(path) == true {
+
+		if filepath.Clean(path) == path {
+			return CanonicalPath(path) == path
+		} else {
+			return false
+		}
+	} else {
 		return false
 	}
-
-	if filepath.Clean(path) != path {
-		return false
-	}
-
-	return CanonicalPath(path) == path
-
 }

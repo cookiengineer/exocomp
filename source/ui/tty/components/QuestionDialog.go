@@ -56,11 +56,12 @@ func (dialog *QuestionDialog) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 
 		if row >= rect.Y+rect.Height-1 {
 			break
+		} else {
+
+			buffer.WriteString(rect.X+2, row, utils_tty.Truncate(line, rect.Width-4), styles.Dialog)
+			row++
+
 		}
-
-		buffer.WriteString(rect.X+2, row, utils_tty.Truncate(line, rect.Width-4), styles.Dialog)
-		row++
-
 	}
 
 	row++
@@ -94,10 +95,9 @@ func (dialog *QuestionDialog) Render(buffer *utils_tty.Buffer, rect utils_tty.Re
 
 		if line_index >= len(lines) {
 			break
+		} else {
+			buffer.WriteString(input_rect.X+1, input_rect.Y+index, utils_tty.Truncate(lines[line_index].Text, input_rect.Width-2), styles.DialogInput)
 		}
-
-		buffer.WriteString(input_rect.X+1, input_rect.Y+index, utils_tty.Truncate(lines[line_index].Text, input_rect.Width-2), styles.DialogInput)
-
 	}
 
 	dialog.cursorX = input_rect.X + 1 + cursor_column

@@ -166,61 +166,63 @@ func (activity Activity) activePosition(frame int, width int) int {
 
 	if width <= 1 {
 		return 0
-	}
-
-	hold_end := max(0, activity.HoldEnd)
-	hold_start := max(0, activity.HoldStart)
-	forward := width
-	backward := max(1, width-1)
-	total := forward + hold_end + backward + hold_start
-	position := frame % max(1, total)
-
-	if position < forward {
-		return position
-	} else if position < forward+hold_end {
-		return width - 1
-	} else if position < forward+hold_end+backward {
-
-		index := position - forward - hold_end
-		return width - 2 - index
-
 	} else {
-		return 0
-	}
 
+		hold_end := max(0, activity.HoldEnd)
+		hold_start := max(0, activity.HoldStart)
+		forward := width
+		backward := max(1, width-1)
+		total := forward + hold_end + backward + hold_start
+		position := frame % max(1, total)
+
+		if position < forward {
+			return position
+		} else if position < forward+hold_end {
+			return width - 1
+		} else if position < forward+hold_end+backward {
+
+			index := position - forward - hold_end
+			return width - 2 - index
+
+		} else {
+			return 0
+		}
+
+	}
 }
 
 func (activity Activity) Frames(width int) []string {
 
 	if width <= 0 {
 		return []string{}
-	}
+	} else {
 
-	hold_end := max(0, activity.HoldEnd)
-	hold_start := max(0, activity.HoldStart)
-	total := width + hold_end + max(1, width-1) + hold_start
-	frames := make([]string, total)
-	head, _, inactive := activity.glyphs()
+		hold_end := max(0, activity.HoldEnd)
+		hold_start := max(0, activity.HoldStart)
+		total := width + hold_end + max(1, width-1) + hold_start
+		frames := make([]string, total)
+		head, _, inactive := activity.glyphs()
 
-	for frame := 0; frame < total; frame++ {
+		for frame := 0; frame < total; frame++ {
 
-		position := activity.activePosition(frame, width)
-		cells := make([]rune, width)
+			position := activity.activePosition(frame, width)
+			cells := make([]rune, width)
 
-		for index := 0; index < width; index++ {
+			for index := 0; index < width; index++ {
 
-			if index == position {
-				cells[index] = []rune(head)[0]
-			} else {
-				cells[index] = []rune(inactive)[0]
+				if index == position {
+					cells[index] = []rune(head)[0]
+				} else {
+					cells[index] = []rune(inactive)[0]
+				}
+
 			}
+
+			frames[frame] = string(cells)
 
 		}
 
-		frames[frame] = string(cells)
+		return frames
 
 	}
-
-	return frames
-
 }

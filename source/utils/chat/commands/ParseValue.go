@@ -98,21 +98,22 @@ func ParseValue(raw string, property *schemas.ToolFunctionParameterProperty) (an
 
 	if property_type == "null" {
 		return nil, nil
-	}
+	} else {
 
-	if property_type == "array" || property_type == "object" || strings.HasPrefix(value, "[") || strings.HasPrefix(value, "{") {
+		if property_type == "array" || property_type == "object" || strings.HasPrefix(value, "[") || strings.HasPrefix(value, "{") {
 
-		var decoded any
-		err := json.Unmarshal([]byte(value), &decoded)
+			var decoded any
+			err := json.Unmarshal([]byte(value), &decoded)
 
-		if err == nil {
-			return decoded, nil
-		} else {
-			return nil, fmt.Errorf("commands.ParseValue: \"%s\" is not valid JSON.", value)
+			if err == nil {
+				return decoded, nil
+			} else {
+				return nil, fmt.Errorf("commands.ParseValue: \"%s\" is not valid JSON.", value)
+			}
+
 		}
 
+		return parseSchemaLess(value)
+
 	}
-
-	return parseSchemaLess(value)
-
 }

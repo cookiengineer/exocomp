@@ -11,16 +11,17 @@ func ContentTypeForPath(path string) string {
 
 	if result != "" {
 		return result
+	} else {
+
+		extension := strings.ToLower(filepath.Ext(path))
+
+		if extension == ".jsonl" {
+			return "application/x-ndjson"
+		} else if extension == ".log" || extension == ".txt" {
+			return "text/plain"
+		}
+
+		return "application/octet-stream"
+
 	}
-
-	extension := strings.ToLower(filepath.Ext(path))
-
-	if extension == ".jsonl" {
-		return "application/x-ndjson"
-	} else if extension == ".log" || extension == ".txt" {
-		return "text/plain"
-	}
-
-	return "application/octet-stream"
-
 }

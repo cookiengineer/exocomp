@@ -43,72 +43,73 @@ func wrapSpans(spans []transcriptSpan, width int) [][]transcriptSpan {
 
 		if item.Rune == '\r' {
 			continue
-		}
+		} else {
 
-		if item.Rune == '\n' {
+			if item.Rune == '\n' {
 
-			flush()
-			continue
+				flush()
+				continue
 
-		}
-
-		item_width := utils_tty.RuneWidth(item.Rune)
-
-		if item_width <= 0 {
-
-			if len(current) > 0 {
-				current = append(current, item)
 			}
 
-			continue
+			item_width := utils_tty.RuneWidth(item.Rune)
 
-		}
+			if item_width <= 0 {
 
-		if current_width+item_width > width && len(current) > 0 {
+				if len(current) > 0 {
+					current = append(current, item)
+				}
 
-			break_at := -1
+				continue
 
-			for index := len(current) - 1; index >= 0; index-- {
+			}
 
-				if current[index].Rune == ' ' {
+			if current_width+item_width > width && len(current) > 0 {
 
-					break_at = index
-					break
+				break_at := -1
+
+				for index := len(current) - 1; index >= 0; index-- {
+
+					if current[index].Rune == ' ' {
+
+						break_at = index
+						break
+
+					}
+
+				}
+
+				if break_at > 0 {
+
+					line := append([]styledRune{}, current[0:break_at]...)
+					lines = append(lines, line)
+					remainder := current[break_at+1:]
+
+					for len(remainder) > 0 && remainder[0].Rune == ' ' {
+						remainder = remainder[1:]
+					}
+
+					current = append([]styledRune{}, remainder...)
+					current_width = 0
+
+					for _, value := range current {
+						current_width += utils_tty.RuneWidth(value.Rune)
+					}
+
+				} else {
+
+					lines = append(lines, current)
+					current = make([]styledRune, 0)
+					current_width = 0
 
 				}
 
 			}
 
-			if break_at > 0 {
-
-				line := append([]styledRune{}, current[0:break_at]...)
-				lines = append(lines, line)
-				remainder := current[break_at+1:]
-
-				for len(remainder) > 0 && remainder[0].Rune == ' ' {
-					remainder = remainder[1:]
-				}
-
-				current = append([]styledRune{}, remainder...)
-				current_width = 0
-
-				for _, value := range current {
-					current_width += utils_tty.RuneWidth(value.Rune)
-				}
-
-			} else {
-
-				lines = append(lines, current)
-				current = make([]styledRune, 0)
-				current_width = 0
-
-			}
+			current = append(current, item)
+			current_width += item_width
 
 		}
-
-		current = append(current, item)
-		current_width += item_width
-
 	}
 
 	if len(current) > 0 || len(lines) == 0 {

@@ -15,55 +15,57 @@ func parseGobusterResults(data []byte, target string, in_scope bool) ([]types.As
 
 		if line == "" {
 			continue
-		}
+		} else {
 
-		marker := strings.Index(line, " (Status:")
+			marker := strings.Index(line, " (Status:")
 
-		if marker < 0 {
-			continue
-		}
+			if marker < 0 {
+				continue
+			} else {
 
-		value := strings.TrimSpace(line[:marker])
-		status := ""
+				value := strings.TrimSpace(line[:marker])
+				status := ""
 
-		if relative_end := strings.Index(line[marker:], ")"); relative_end >= 0 {
-			status = strings.TrimSpace(line[marker+len(" (Status:") : marker+relative_end])
-		}
+				if relative_end := strings.Index(line[marker:], ")"); relative_end >= 0 {
+					status = strings.TrimSpace(line[marker+len(" (Status:") : marker+relative_end])
+				}
 
-		if value == "" {
-			invalid++
-			continue
-		}
+				if value == "" {
+					invalid++
+					continue
+				}
 
-		if strings.HasPrefix(value, "http://") == false && strings.HasPrefix(value, "https://") == false {
+				if strings.HasPrefix(value, "http://") == false && strings.HasPrefix(value, "https://") == false {
 
-			if target != "" {
-				value = strings.TrimRight(target, "/") + "/" + strings.TrimLeft(value, "/")
+					if target != "" {
+						value = strings.TrimRight(target, "/") + "/" + strings.TrimLeft(value, "/")
+					}
+
+				}
+
+				asset := newImportedAsset(types.AssetTypeEndpoint, value, "gobuster", in_scope)
+				asset.URL = value
+				asset.Endpoint = value
+				asset.Domain = hostFromValue(value)
+				asset.Props = map[string]string{}
+
+				if status != "" {
+					asset.Props["status_code"] = status
+				}
+
+				if size_marker := strings.Index(line, "[Size:"); size_marker >= 0 {
+
+					if end := strings.Index(line[size_marker:], "]"); end >= 0 {
+						size := strings.TrimSpace(line[size_marker+len("[Size:") : size_marker+end])
+						asset.Props["size"] = size
+					}
+
+				}
+
+				result = append(result, asset)
+
 			}
-
 		}
-
-		asset := newImportedAsset(types.AssetTypeEndpoint, value, "gobuster", in_scope)
-		asset.URL = value
-		asset.Endpoint = value
-		asset.Domain = hostFromValue(value)
-		asset.Props = map[string]string{}
-
-		if status != "" {
-			asset.Props["status_code"] = status
-		}
-
-		if size_marker := strings.Index(line, "[Size:"); size_marker >= 0 {
-
-			if end := strings.Index(line[size_marker:], "]"); end >= 0 {
-				size := strings.TrimSpace(line[size_marker+len("[Size:") : size_marker+end])
-				asset.Props["size"] = size
-			}
-
-		}
-
-		result = append(result, asset)
-
 	}
 
 	return result, invalid, nil

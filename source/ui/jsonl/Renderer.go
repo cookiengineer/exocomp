@@ -35,10 +35,9 @@ func (renderer *Renderer) Flushed() bool {
 
 	if renderer.Session != nil && renderer.Session.Agent != nil {
 		return renderer.rendered >= len(renderer.Session.Agent.Messages)
+	} else {
+		return true
 	}
-
-	return true
-
 }
 
 func (renderer *Renderer) RenderLoop() {
@@ -78,23 +77,24 @@ func (renderer *Renderer) RenderMessages(messages []*schemas.Message) {
 
 		if message == nil {
 			continue
+		} else {
+
+			dummy := schemas.Message{
+				Role:    message.Role,
+				Content: message.Content,
+				Created: message.Created,
+			}
+
+			bytes, err := json.Marshal(dummy)
+
+			if err == nil {
+
+				fmt.Fprintf(os.Stdout, "schemas.Message:%s\n", string(bytes))
+				os.Stdout.Sync()
+
+			}
+
 		}
-
-		dummy := schemas.Message{
-			Role:    message.Role,
-			Content: message.Content,
-			Created: message.Created,
-		}
-
-		bytes, err := json.Marshal(dummy)
-
-		if err == nil {
-
-			fmt.Fprintf(os.Stdout, "schemas.Message:%s\n", string(bytes))
-			os.Stdout.Sync()
-
-		}
-
 	}
 
 }

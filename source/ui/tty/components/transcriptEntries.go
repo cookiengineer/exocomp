@@ -185,18 +185,19 @@ func (transcript *Transcript) collapsibleLines(message *schemas.Message, part st
 
 	if strings.TrimSpace(content) == "" {
 		return []transcriptLine{header}
+	} else {
+
+		body := renderMarkdown(content, width)
+
+		if mute == true {
+			body = muteTranscriptLines(body)
+		}
+
+		body = indentTranscriptLines(body, "  ", hint_style)
+
+		return append([]transcriptLine{header}, body...)
+
 	}
-
-	body := renderMarkdown(content, width)
-
-	if mute == true {
-		body = muteTranscriptLines(body)
-	}
-
-	body = indentTranscriptLines(body, "  ", hint_style)
-
-	return append([]transcriptLine{header}, body...)
-
 }
 
 func firstContentLine(content string) string {
@@ -221,32 +222,33 @@ func toolCallPreview(tool_call schemas.ToolCall) string {
 
 	if raw == "" {
 		return ""
-	}
+	} else {
 
-	arguments, err := tool_call.GetArguments()
+		arguments, err := tool_call.GetArguments()
 
-	if err == nil {
+		if err == nil {
 
-		keys := make([]string, 0, len(arguments))
+			keys := make([]string, 0, len(arguments))
 
-		for key := range arguments {
-			keys = append(keys, key)
+			for key := range arguments {
+				keys = append(keys, key)
+			}
+
+			if len(keys) > 0 {
+
+				sort.Strings(keys)
+				key := keys[0]
+				value := fmt.Sprintf("%v", arguments[key])
+
+				return key + "=" + strings.Join(strings.Fields(value), " ")
+
+			}
+
 		}
 
-		if len(keys) > 0 {
-
-			sort.Strings(keys)
-			key := keys[0]
-			value := fmt.Sprintf("%v", arguments[key])
-
-			return key + "=" + strings.Join(strings.Fields(value), " ")
-
-		}
+		return strings.Join(strings.Fields(raw), " ")
 
 	}
-
-	return strings.Join(strings.Fields(raw), " ")
-
 }
 
 func toolCallContent(tool_call schemas.ToolCall) string {
@@ -322,36 +324,39 @@ func muteTranscriptLines(lines []transcriptLine) []transcriptLine {
 
 func (transcript *Transcript) HandleMouse(x int, y int, rect utils_tty.Rect) bool {
 
-	if rect.Width <= 0 || rect.Height <= 0 {
+	if rect.Width > 0 && rect.Height > 0 {
+
+		if x >= rect.X && x < rect.X+rect.Width && y >= rect.Y && y < rect.Y+rect.Height {
+
+			index := transcript.lastStart + (y - rect.Y)
+
+			if index >= 0 && index < len(transcript.cached) {
+
+				line := transcript.cached[index]
+
+				if line.Toggle == nil {
+					return false
+				}
+
+				if transcript.expanded == nil {
+					transcript.expanded = make(map[transcriptToggle]bool)
+				}
+
+				transcript.expanded[*line.Toggle] = !transcript.expanded[*line.Toggle]
+				transcript.anchorIndex = index
+				transcript.anchorOffset = index - transcript.lastStart
+				transcript.hasAnchor = true
+				transcript.cacheDirty = true
+
+				return true
+
+			} else {
+				return false
+			}
+		} else {
+			return false
+		}
+	} else {
 		return false
 	}
-
-	if x < rect.X || x >= rect.X+rect.Width || y < rect.Y || y >= rect.Y+rect.Height {
-		return false
-	}
-
-	index := transcript.lastStart + (y - rect.Y)
-
-	if index < 0 || index >= len(transcript.cached) {
-		return false
-	}
-
-	line := transcript.cached[index]
-
-	if line.Toggle == nil {
-		return false
-	}
-
-	if transcript.expanded == nil {
-		transcript.expanded = make(map[transcriptToggle]bool)
-	}
-
-	transcript.expanded[*line.Toggle] = !transcript.expanded[*line.Toggle]
-	transcript.anchorIndex = index
-	transcript.anchorOffset = index - transcript.lastStart
-	transcript.hasAnchor = true
-	transcript.cacheDirty = true
-
-	return true
-
 }

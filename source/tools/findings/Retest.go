@@ -15,93 +15,94 @@ func (tool *Findings) Retest(id string, arguments utils_chat.Arguments) (string,
 
 		status := types.FindingStatus(strings.ToLower(strings.TrimSpace(status_value)))
 
-		if status.IsValid() == false || status == types.FindingStatusCandidate {
-			return "", fmt.Errorf("findings.Retest: Invalid parameter \"status\".")
-		}
+		if status.IsValid() == true && status != types.FindingStatusCandidate {
 
-		tool.mutex.Lock()
-		defer tool.mutex.Unlock()
+			tool.mutex.Lock()
+			defer tool.mutex.Unlock()
 
-		err0 := readFindingsIndex(tool)
+			err0 := readFindingsIndex(tool)
 
-		if err0 == nil {
+			if err0 == nil {
 
-			finding, err1 := utils_findings.ReadFinding(tool.Playground, id)
+				finding, err1 := utils_findings.ReadFinding(tool.Playground, id)
 
-			if err1 == nil {
+				if err1 == nil {
 
-				if evidence_arguments, ok := arguments.Object("evidence"); ok == true {
+					if evidence_arguments, ok := arguments.Object("evidence"); ok == true {
 
-					err2 := bindEvidenceToFinding(tool, &finding, evidence_arguments)
+						err2 := bindEvidenceToFinding(tool, &finding, evidence_arguments)
 
-					if err2 != nil {
-						return "", fmt.Errorf("findings.Retest: %s", err2.Error())
+						if err2 != nil {
+							return "", fmt.Errorf("findings.Retest: %s", err2.Error())
+						}
+
 					}
 
-				}
-
-				if counterevidence, ok := arguments.String("counterevidence"); ok == true {
-					finding.Counterevidence = utils_findings.LimitText(utils_findings.RedactSecrets(counterevidence), findingsMaxText)
-				}
-
-				if proof_basis_value, ok := arguments.String("proof_basis"); ok == true {
-
-					proof_basis := types.FindingProofBasis(strings.ToLower(strings.TrimSpace(proof_basis_value)))
-
-					if proof_basis.IsValid() == false {
-						return "", fmt.Errorf("findings.Retest: Invalid parameter \"proof_basis\".")
+					if counterevidence, ok := arguments.String("counterevidence"); ok == true {
+						finding.Counterevidence = utils_findings.LimitText(utils_findings.RedactSecrets(counterevidence), findingsMaxText)
 					}
 
-					finding.ProofBasis = proof_basis
+					if proof_basis_value, ok := arguments.String("proof_basis"); ok == true {
 
-				}
+						proof_basis := types.FindingProofBasis(strings.ToLower(strings.TrimSpace(proof_basis_value)))
 
-				if (status == types.FindingStatusFixed || status == types.FindingStatusFalsePositive) && len(finding.Evidence) == 0 && finding.Counterevidence == "" {
-					return "", fmt.Errorf("findings.Retest: Status \"%s\" requires evidence or counterevidence.", status)
-				}
+						if proof_basis.IsValid() == false {
+							return "", fmt.Errorf("findings.Retest: Invalid parameter \"proof_basis\".")
+						}
 
-				if status == types.FindingStatusVerified {
+						finding.ProofBasis = proof_basis
 
-					if finding.ProofBasis != types.FindingProofBasisExecutedLive && finding.ProofBasis != types.FindingProofBasisExecutedLab {
-						return "", fmt.Errorf("findings.Retest: Verified findings require executed_live or executed_lab proof.")
-					} else if len(finding.Evidence) == 0 {
-						return "", fmt.Errorf("findings.Retest: Verified findings require evidence.")
 					}
 
-					finding.Confidence = types.FindingConfidenceObserved
-					finding.VerifiedAt = schemas.NewDatetime()
-
-					if tool.AgentName != "" {
-						finding.VerifiedBy = utils_findings.LimitText(tool.AgentName, findingsMaxTitle)
+					if (status == types.FindingStatusFixed || status == types.FindingStatusFalsePositive) && len(finding.Evidence) == 0 && finding.Counterevidence == "" {
+						return "", fmt.Errorf("findings.Retest: Status \"%s\" requires evidence or counterevidence.", status)
 					}
 
-				}
+					if status == types.FindingStatusVerified {
 
-				finding.Status = status
-				finding.UpdatedAt = schemas.NewDatetime()
+						if finding.ProofBasis != types.FindingProofBasisExecutedLive && finding.ProofBasis != types.FindingProofBasisExecutedLab {
+							return "", fmt.Errorf("findings.Retest: Verified findings require executed_live or executed_lab proof.")
+						} else if len(finding.Evidence) == 0 {
+							return "", fmt.Errorf("findings.Retest: Verified findings require evidence.")
+						}
 
-				if finding.Validate() == true {
+						finding.Confidence = types.FindingConfidenceObserved
+						finding.VerifiedAt = schemas.NewDatetime()
 
-					err2 := writeFinding(tool, finding)
+						if tool.AgentName != "" {
+							finding.VerifiedBy = utils_findings.LimitText(tool.AgentName, findingsMaxTitle)
+						}
 
-					if err2 == nil {
-						return fmt.Sprintf("findings.Retest: Finding \"%s\" marked as %s.", finding.ID, finding.Status), nil
+					}
+
+					finding.Status = status
+					finding.UpdatedAt = schemas.NewDatetime()
+
+					if finding.Validate() == true {
+
+						err2 := writeFinding(tool, finding)
+
+						if err2 == nil {
+							return fmt.Sprintf("findings.Retest: Finding \"%s\" marked as %s.", finding.ID, finding.Status), nil
+						} else {
+							return "", fmt.Errorf("findings.Retest: %s", err2.Error())
+						}
+
 					} else {
-						return "", fmt.Errorf("findings.Retest: %s", err2.Error())
+						return "", fmt.Errorf("findings.Retest: Invalid finding values.")
 					}
 
 				} else {
-					return "", fmt.Errorf("findings.Retest: Invalid finding values.")
+					return "", fmt.Errorf("findings.Retest: %s", err1.Error())
 				}
 
 			} else {
-				return "", fmt.Errorf("findings.Retest: %s", err1.Error())
+				return "", fmt.Errorf("findings.Retest: %s", err0.Error())
 			}
 
 		} else {
-			return "", fmt.Errorf("findings.Retest: %s", err0.Error())
+			return "", fmt.Errorf("findings.Retest: Invalid parameter \"status\".")
 		}
-
 	} else {
 		return "", fmt.Errorf("findings.Retest: Invalid parameter \"status\" is not a string.")
 	}

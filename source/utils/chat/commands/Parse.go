@@ -42,35 +42,37 @@ func ParseRawArguments(raw string) (map[string]string, error) {
 
 		if index >= len(raw) {
 			break
-		}
-
-		key_start := index
-
-		for index < len(raw) && raw[index] != '=' && unicode.IsSpace(rune(raw[index])) == false {
-			index++
-		}
-
-		if index >= len(raw) || raw[index] != '=' {
-			return nil, fmt.Errorf("commands.Parse: Expected \"=\" after parameter \"%s\".", raw[key_start:index])
-		}
-
-		key := strings.TrimSpace(raw[key_start:index])
-		index++
-
-		if key == "" {
-			return nil, fmt.Errorf("commands.Parse: Parameter name is empty.")
-		}
-
-		utils_strings.SkipWhitespace(raw, &index)
-
-		value, err := scanValue(raw, &index)
-
-		if err == nil {
-			result[key] = value
 		} else {
-			return nil, err
-		}
 
+			key_start := index
+
+			for index < len(raw) && raw[index] != '=' && unicode.IsSpace(rune(raw[index])) == false {
+				index++
+			}
+
+			if index < len(raw) && raw[index] == '=' {
+
+				key := strings.TrimSpace(raw[key_start:index])
+				index++
+
+				if key == "" {
+					return nil, fmt.Errorf("commands.Parse: Parameter name is empty.")
+				}
+
+				utils_strings.SkipWhitespace(raw, &index)
+
+				value, err := scanValue(raw, &index)
+
+				if err == nil {
+					result[key] = value
+				} else {
+					return nil, err
+				}
+
+			} else {
+				return nil, fmt.Errorf("commands.Parse: Expected \"=\" after parameter \"%s\".", raw[key_start:index])
+			}
+		}
 	}
 
 	return result, nil

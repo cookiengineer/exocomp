@@ -21,10 +21,9 @@ func ParseCommand(prompt string) *Command {
 
 	if err == nil {
 		return command
+	} else {
+		return nil
 	}
-
-	return nil
-
 }
 
 func (command *Command) Parse(prompt string) error {

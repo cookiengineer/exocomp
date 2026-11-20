@@ -7,28 +7,30 @@ func markdownEndLine(element *parser_markdown.Element) int {
 
 	if element == nil {
 		return 0
-	}
+	} else {
 
-	end := element.Line
+		end := element.Line
 
-	if element.Type == "pre" {
-		return element.Line + strings.Count(element.Text, "\n") + 2
-	}
+		if element.Type == "pre" {
+			return element.Line + strings.Count(element.Text, "\n") + 2
+		} else {
 
-	for _, child := range element.Children {
+			for _, child := range element.Children {
 
-		if child == nil {
-			continue
+				if child == nil {
+					continue
+				}
+
+				child_end := markdownEndLine(child)
+
+				if child_end > end {
+					end = child_end
+				}
+
+			}
+
+			return end
+
 		}
-
-		child_end := markdownEndLine(child)
-
-		if child_end > end {
-			end = child_end
-		}
-
 	}
-
-	return end
-
 }

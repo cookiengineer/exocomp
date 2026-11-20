@@ -7,22 +7,21 @@ func extractTitle(node *html_tree.Node) string {
 
 	if node == nil {
 		return ""
-	}
-
-	if node.Type == html_tree.ElementNode && strings.EqualFold(node.Data, "title") {
+	} else if node.Type == html_tree.ElementNode && strings.EqualFold(node.Data, "title") {
 		return strings.TrimSpace(node.FirstChild.Data)
-	}
+	} else {
 
-	for child := node.FirstChild; child != nil; child = child.NextSibling {
+		for child := node.FirstChild; child != nil; child = child.NextSibling {
 
-		title := extractTitle(child)
+			title := extractTitle(child)
 
-		if title != "" {
-			return title
+			if title != "" {
+				return title
+			}
+
 		}
 
+		return ""
+
 	}
-
-	return ""
-
 }

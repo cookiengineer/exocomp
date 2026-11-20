@@ -14,10 +14,9 @@ func normalizeProps(props map[string]string) map[string]string {
 
 		if key == "" || value == "" {
 			continue
+		} else {
+			result[utils_findings.LimitText(key, assetsMaxText)] = utils_findings.LimitText(value, assetsMaxText)
 		}
-
-		result[utils_findings.LimitText(key, assetsMaxText)] = utils_findings.LimitText(value, assetsMaxText)
-
 	}
 
 	return result

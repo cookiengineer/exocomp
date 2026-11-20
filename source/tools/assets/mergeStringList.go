@@ -11,10 +11,9 @@ func mergeStringList(left []string, right []string) []string {
 
 		if value == "" || slices.Contains(result, value) == true {
 			continue
+		} else {
+			result = append(result, value)
 		}
-
-		result = append(result, value)
-
 	}
 
 	sort.Strings(result)

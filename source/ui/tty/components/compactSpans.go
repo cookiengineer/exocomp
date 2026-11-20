@@ -8,23 +8,24 @@ func compactSpans(spans []transcriptSpan) []transcriptSpan {
 
 		if span.Text == "" {
 			continue
-		}
+		} else {
 
-		if len(result) > 0 {
+			if len(result) > 0 {
 
-			last := result[len(result)-1]
+				last := result[len(result)-1]
 
-			if last.Style.Equals(span.Style) == true {
+				if last.Style.Equals(span.Style) == true {
 
-				result[len(result)-1].Text += span.Text
-				continue
+					result[len(result)-1].Text += span.Text
+					continue
+
+				}
 
 			}
 
+			result = append(result, span)
+
 		}
-
-		result = append(result, span)
-
 	}
 
 	return result

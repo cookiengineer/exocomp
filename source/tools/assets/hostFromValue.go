@@ -15,8 +15,7 @@ func hostFromValue(value string) string {
 
 	if strings.Contains(value, "/") == true {
 		return strings.Split(value, "/")[0]
+	} else {
+		return value
 	}
-
-	return value
-
 }

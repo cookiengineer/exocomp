@@ -51,14 +51,15 @@ func (builder *profileBuilder) addDenyRules(paths []string, operations string) e
 
 	if len(resolved) == 0 {
 		return nil
+	} else {
+
+		filters := pathFilters(resolved)
+
+		builder.addRule(fmt.Sprintf("(deny %s %s)", operations, filters))
+
+		return nil
+
 	}
-
-	filters := pathFilters(resolved)
-
-	builder.addRule(fmt.Sprintf("(deny %s %s)", operations, filters))
-
-	return nil
-
 }
 
 func (builder *profileBuilder) addFileRules(paths []string, operations string, extension_classes []string) error {
@@ -77,34 +78,35 @@ func (builder *profileBuilder) addFileRules(paths []string, operations string, e
 
 	if len(resolved) == 0 {
 		return nil
-	}
+	} else {
 
-	filters := pathFilters(resolved)
+		filters := pathFilters(resolved)
 
-	builder.addRule(fmt.Sprintf("(allow %s %s)", operations, filters))
+		builder.addRule(fmt.Sprintf("(allow %s %s)", operations, filters))
 
-	if len(extension_classes) > 0 {
+		if len(extension_classes) > 0 {
 
-		extension_filters := filters
+			extension_filters := filters
 
-		if len(resolved) > 1 {
-			extension_filters = "(require-any " + filters + ")"
+			if len(resolved) > 1 {
+				extension_filters = "(require-any " + filters + ")"
+			}
+
+			for _, extension_class := range extension_classes {
+
+				builder.addRule(fmt.Sprintf(
+					"(allow file-issue-extension (require-all (extension-class %s) %s))",
+					quoteSBPL(extension_class),
+					extension_filters,
+				))
+
+			}
+
 		}
 
-		for _, extension_class := range extension_classes {
-
-			builder.addRule(fmt.Sprintf(
-				"(allow file-issue-extension (require-all (extension-class %s) %s))",
-				quoteSBPL(extension_class),
-				extension_filters,
-			))
-
-		}
+		return nil
 
 	}
-
-	return nil
-
 }
 
 func (builder *profileBuilder) addProcessExecRules(paths []string) error {
@@ -123,12 +125,13 @@ func (builder *profileBuilder) addProcessExecRules(paths []string) error {
 
 	if len(resolved) == 0 {
 		return nil
+	} else {
+
+		builder.addRule(fmt.Sprintf("(allow process-exec %s)", pathFilters(resolved)))
+
+		return nil
+
 	}
-
-	builder.addRule(fmt.Sprintf("(allow process-exec %s)", pathFilters(resolved)))
-
-	return nil
-
 }
 
 func (builder *profileBuilder) build() (*Profile, error) {

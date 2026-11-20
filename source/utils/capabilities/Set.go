@@ -68,70 +68,73 @@ func (set *Set) List() []Capability {
 
 	if set == nil {
 		return []Capability{}
+	} else {
+
+		set.mutex.RLock()
+		defer set.mutex.RUnlock()
+
+		result := make([]Capability, len(set.capabilities))
+		copy(result, set.capabilities)
+
+		return result
+
 	}
-
-	set.mutex.RLock()
-	defer set.mutex.RUnlock()
-
-	result := make([]Capability, len(set.capabilities))
-	copy(result, set.capabilities)
-
-	return result
-
 }
 
 func (set *Set) CanRead(path string) bool {
 
-	if set == nil {
-		return false
-	}
+	if set != nil {
 
-	canonical := CanonicalPath(path)
+		canonical := CanonicalPath(path)
 
-	set.mutex.RLock()
-	defer set.mutex.RUnlock()
+		set.mutex.RLock()
+		defer set.mutex.RUnlock()
 
-	for _, capability := range set.capabilities {
+		for _, capability := range set.capabilities {
 
-		if capability.Type == CapabilityFilesRead || capability.Type == CapabilityFilesWrite {
+			if capability.Type == CapabilityFilesRead || capability.Type == CapabilityFilesWrite {
 
-			if IsPathWithin(capability.Scope, canonical) == true {
-				return true
+				if IsPathWithin(capability.Scope, canonical) == true {
+					return true
+				}
+
 			}
 
 		}
 
+		return false
+
+	} else {
+		return false
 	}
-
-	return false
-
 }
 
 func (set *Set) CanWrite(path string) bool {
 
-	if set == nil {
-		return false
-	}
+	if set != nil {
 
-	canonical := CanonicalPath(path)
+		canonical := CanonicalPath(path)
 
-	set.mutex.RLock()
-	defer set.mutex.RUnlock()
+		set.mutex.RLock()
+		defer set.mutex.RUnlock()
 
-	for _, capability := range set.capabilities {
+		for _, capability := range set.capabilities {
 
-		if capability.Type == CapabilityFilesWrite {
+			if capability.Type == CapabilityFilesWrite {
 
-			if IsPathWithin(capability.Scope, canonical) == true {
-				return true
+				if IsPathWithin(capability.Scope, canonical) == true {
+					return true
+				}
+
 			}
 
 		}
 
+		return false
+
+	} else {
+		return false
 	}
-
-	return false
-
 }
 
 // AllowsNetworkEgress reports whether any network.Connect capability is
@@ -143,156 +146,163 @@ func (set *Set) AllowsNetworkEgress() bool {
 
 func (set *Set) HasNetwork() bool {
 
-	if set == nil {
-		return false
-	}
+	if set != nil {
 
-	set.mutex.RLock()
-	defer set.mutex.RUnlock()
+		set.mutex.RLock()
+		defer set.mutex.RUnlock()
 
-	for _, capability := range set.capabilities {
+		for _, capability := range set.capabilities {
 
-		if capability.Type == CapabilityNetworkConnect {
-			return true
+			if capability.Type == CapabilityNetworkConnect {
+				return true
+			}
+
 		}
 
+		return false
+
+	} else {
+		return false
 	}
-
-	return false
-
 }
 
 func (set *Set) CanConnect(host string) bool {
 
-	if set == nil {
-		return false
-	}
+	if set != nil {
 
-	host = strings.ToLower(strings.TrimSuffix(strings.TrimSpace(host), "."))
+		host = strings.ToLower(strings.TrimSuffix(strings.TrimSpace(host), "."))
 
-	if host == "" {
-		return false
-	}
+		if host != "" {
 
-	host_ip := net.ParseIP(host)
+			host_ip := net.ParseIP(host)
 
-	set.mutex.RLock()
-	defer set.mutex.RUnlock()
+			set.mutex.RLock()
+			defer set.mutex.RUnlock()
 
-	for _, capability := range set.capabilities {
+			for _, capability := range set.capabilities {
 
-		if capability.Type == CapabilityNetworkConnect {
+				if capability.Type == CapabilityNetworkConnect {
 
-			if host_ip != nil {
+					if host_ip != nil {
 
-				if NetworkContains(capability.Scope, host_ip) == true {
-					return true
+						if NetworkContains(capability.Scope, host_ip) == true {
+							return true
+						}
+
+					} else if capability.Scope == host {
+						return true
+					}
+
 				}
 
-			} else if capability.Scope == host {
-				return true
 			}
 
+			return false
+
+		} else {
+			return false
 		}
-
+	} else {
+		return false
 	}
-
-	return false
-
 }
 
 func (set *Set) CanConnectIP(ip net.IP) bool {
 
-	if set == nil || ip == nil {
-		return false
-	}
+	if set != nil && ip != nil {
 
-	set.mutex.RLock()
-	defer set.mutex.RUnlock()
+		set.mutex.RLock()
+		defer set.mutex.RUnlock()
 
-	for _, capability := range set.capabilities {
+		for _, capability := range set.capabilities {
 
-		if capability.Type == CapabilityNetworkConnect {
+			if capability.Type == CapabilityNetworkConnect {
 
-			if NetworkContains(capability.Scope, ip) == true {
-				return true
+				if NetworkContains(capability.Scope, ip) == true {
+					return true
+				}
+
 			}
 
 		}
 
+		return false
+
+	} else {
+		return false
 	}
-
-	return false
-
 }
 
 func (set *Set) Covers(capability Capability) bool {
 
-	if set == nil {
-		return false
-	}
+	if set != nil {
 
-	normalized, err0 := Normalize(capability)
+		normalized, err0 := Normalize(capability)
 
-	if err0 != nil {
-		return false
-	}
+		if err0 == nil {
 
-	set.mutex.RLock()
-	defer set.mutex.RUnlock()
+			set.mutex.RLock()
+			defer set.mutex.RUnlock()
 
-	for _, existing := range set.capabilities {
+			for _, existing := range set.capabilities {
 
-		if existing.Type == normalized.Type {
+				if existing.Type == normalized.Type {
 
-			if existing.Scope == normalized.Scope {
-				return true
-			} else if (existing.Type == CapabilityFilesRead || existing.Type == CapabilityFilesWrite) && IsPathWithin(existing.Scope, normalized.Scope) == true {
-				return true
+					if existing.Scope == normalized.Scope {
+						return true
+					} else if (existing.Type == CapabilityFilesRead || existing.Type == CapabilityFilesWrite) && IsPathWithin(existing.Scope, normalized.Scope) == true {
+						return true
+					}
+
+				}
+
+				if normalized.Type == CapabilityFilesRead && existing.Type == CapabilityFilesWrite {
+
+					if IsPathWithin(existing.Scope, normalized.Scope) == true {
+						return true
+					}
+
+				}
+
 			}
 
+			return false
+
+		} else {
+			return false
 		}
-
-		if normalized.Type == CapabilityFilesRead && existing.Type == CapabilityFilesWrite {
-
-			if IsPathWithin(existing.Scope, normalized.Scope) == true {
-				return true
-			}
-
-		}
-
+	} else {
+		return false
 	}
-
-	return false
-
 }
 
 func (set *Set) SandboxPaths() ([]string, []string) {
 
 	if set == nil {
 		return []string{}, []string{}
-	}
+	} else {
 
-	read_paths := make([]string, 0)
-	write_paths := make([]string, 0)
+		read_paths := make([]string, 0)
+		write_paths := make([]string, 0)
 
-	set.mutex.RLock()
+		set.mutex.RLock()
 
-	for _, capability := range set.capabilities {
+		for _, capability := range set.capabilities {
 
-		if capability.Type == CapabilityFilesRead {
-			read_paths = append(read_paths, capability.Scope)
-		} else if capability.Type == CapabilityFilesWrite {
-			read_paths = append(read_paths, capability.Scope)
-			write_paths = append(write_paths, capability.Scope)
+			if capability.Type == CapabilityFilesRead {
+				read_paths = append(read_paths, capability.Scope)
+			} else if capability.Type == CapabilityFilesWrite {
+				read_paths = append(read_paths, capability.Scope)
+				write_paths = append(write_paths, capability.Scope)
+			}
+
 		}
 
+		set.mutex.RUnlock()
+
+		return UniquePaths(read_paths), UniquePaths(write_paths)
+
 	}
-
-	set.mutex.RUnlock()
-
-	return UniquePaths(read_paths), UniquePaths(write_paths)
-
 }
 
 func (set *Set) Missing(capabilities []Capability) ([]Capability, error) {
@@ -304,15 +314,16 @@ func (set *Set) Missing(capabilities []Capability) ([]Capability, error) {
 
 		normalized, err0 := Normalize(capability)
 
-		if err0 != nil {
+		if err0 == nil {
+
+			if set.Covers(normalized) == false && seen[normalized.Key()] == false {
+				seen[normalized.Key()] = true
+				missing = append(missing, normalized)
+			}
+
+		} else {
 			return nil, err0
 		}
-
-		if set.Covers(normalized) == false && seen[normalized.Key()] == false {
-			seen[normalized.Key()] = true
-			missing = append(missing, normalized)
-		}
-
 	}
 
 	sort.Slice(missing, func(a int, b int) bool {

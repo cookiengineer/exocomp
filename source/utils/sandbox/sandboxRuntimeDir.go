@@ -13,13 +13,14 @@ func sandboxRuntimeDir(sandbox string) (string, error) {
 
 	absolute, err0 := filepath.Abs(sandbox)
 
-	if err0 != nil {
+	if err0 == nil {
+
+		sum := sha256.Sum256([]byte(absolute))
+		hash := hex.EncodeToString(sum[:])[0:16]
+
+		return filepath.Join(os.TempDir(), "exocomp-runtime", hash), nil
+
+	} else {
 		return "", fmt.Errorf("Cannot resolve sandbox path.")
 	}
-
-	sum := sha256.Sum256([]byte(absolute))
-	hash := hex.EncodeToString(sum[:])[0:16]
-
-	return filepath.Join(os.TempDir(), "exocomp-runtime", hash), nil
-
 }

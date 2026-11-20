@@ -55,36 +55,37 @@ func (agent *Agent) Clone() *Agent {
 
 	if agent == nil {
 		return nil
+	} else {
+
+		clone := *agent
+		clone.Messages = append([]*schemas.Message(nil), agent.Messages...)
+
+		return &clone
+
 	}
-
-	clone := *agent
-	clone.Messages = append([]*schemas.Message(nil), agent.Messages...)
-
-	return &clone
-
 }
 
 func (agent *Agent) CloneInfo() *Agent {
 
 	if agent == nil {
 		return nil
+	} else {
+
+		clone := *agent
+		clone.Messages = nil
+
+		return &clone
+
 	}
-
-	clone := *agent
-	clone.Messages = nil
-
-	return &clone
-
 }
 
 func (agent *Agent) HasTools() bool {
 
 	if len(agent.AllowedTools) > 0 {
 		return true
+	} else {
+		return false
 	}
-
-	return false
-
 }
 
 func (agent *Agent) IsValid() bool {

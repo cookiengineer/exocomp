@@ -79,12 +79,13 @@ func (parser *Parser) ParseMultilineString(parent_indent int) string {
 
 		if line.Indent <= parent_indent {
 			break
+		} else {
+
+			lines = append(lines, strings.TrimSpace(line.Text))
+
+			parser.index++
+
 		}
-
-		lines = append(lines, strings.TrimSpace(line.Text))
-
-		parser.index++
-
 	}
 
 	return strings.Join(lines, "\n")
@@ -180,14 +181,14 @@ func (parser *Parser) Root() (*Node, error) {
 
 	if parser.root != nil {
 		return parser.root, nil
+	} else {
+
+		if parser.err == nil {
+			return nil, errors.New("missing document root node")
+		} else {
+			return nil, parser.err
+		}
 	}
-
-	if parser.err != nil {
-		return nil, parser.err
-	}
-
-	return nil, errors.New("missing document root node")
-
 }
 
 func (parser *Parser) SplitKeyValue(line string) (string, string, bool) {
@@ -198,24 +199,26 @@ func (parser *Parser) SplitKeyValue(line string) (string, string, bool) {
 
 		if line[index] != ':' {
 			continue
-		}
+		} else {
 
-		if index+1 == len(line) {
-			return strings.TrimSpace(line[:index]), "", false
-		}
+			if index+1 != len(line) {
 
-		if line[index+1] == ' ' || line[index+1] == '\t' {
+				if line[index+1] == ' ' || line[index+1] == '\t' {
 
-			value := strings.TrimSpace(line[index+1:])
+					value := strings.TrimSpace(line[index+1:])
 
-			if value != "" {
-				return strings.TrimSpace(line[:index]), value, true
+					if value != "" {
+						return strings.TrimSpace(line[:index]), value, true
+					}
+
+					return strings.TrimSpace(line[:index]), "", false
+
+				}
+
+			} else {
+				return strings.TrimSpace(line[:index]), "", false
 			}
-
-			return strings.TrimSpace(line[:index]), "", false
-
 		}
-
 	}
 
 	return "", "", false
@@ -226,20 +229,18 @@ func (parser *Parser) parseNestedBlock(parent_indent int) (*Node, error) {
 
 	if parser.index >= len(parser.lines) {
 		return nil, nil
+	} else {
+
+		next_line := parser.lines[parser.index]
+
+		if next_line.Indent <= parent_indent {
+			return nil, nil
+		} else if isSequenceItem(next_line.Text) {
+			return parser.ParseArray(next_line.Indent)
+		} else {
+			return parser.ParseObject(next_line.Indent)
+		}
 	}
-
-	next_line := parser.lines[parser.index]
-
-	if next_line.Indent <= parent_indent {
-		return nil, nil
-	}
-
-	if isSequenceItem(next_line.Text) {
-		return parser.ParseArray(next_line.Indent)
-	}
-
-	return parser.ParseObject(next_line.Indent)
-
 }
 
 func (parser *Parser) parseSequenceEntry(expected_indent int) (*Node, error) {
@@ -278,56 +279,56 @@ func (parser *Parser) parseSequenceItem(expected_indent int, content string) (*N
 
 	if isSequenceItem(content) {
 		return parser.parseInlineSequence(expected_indent, content)
-	}
-
-	key, value, has_value := parser.SplitKeyValue(content)
-
-	if key == "" && has_value == false {
-		return &Node{
-			Kind:  ScalarNode,
-			Value: parser.ParseScalar(content),
-		}, nil
-	}
-
-	object := &Node{
-		Kind:           ObjectNode,
-		ObjectChildren: map[string]*Node{},
-	}
-
-	if has_value == true {
-
-		object.ObjectChildren[key] = &Node{
-			Kind:  ScalarNode,
-			Value: parser.ParseScalar(value),
-		}
-
 	} else {
 
-		child, err := parser.parseNestedBlock(expected_indent)
+		key, value, has_value := parser.SplitKeyValue(content)
 
-		if err == nil {
+		if key == "" && has_value == false {
+			return &Node{
+				Kind:  ScalarNode,
+				Value: parser.ParseScalar(content),
+			}, nil
+		}
 
-			if child == nil {
-				child = &Node{
-					Kind:           ObjectNode,
-					ObjectChildren: map[string]*Node{},
-				}
+		object := &Node{
+			Kind:           ObjectNode,
+			ObjectChildren: map[string]*Node{},
+		}
+
+		if has_value == true {
+
+			object.ObjectChildren[key] = &Node{
+				Kind:  ScalarNode,
+				Value: parser.ParseScalar(value),
 			}
 
-			object.ObjectChildren[key] = child
+		} else {
 
+			child, err := parser.parseNestedBlock(expected_indent)
+
+			if err == nil {
+
+				if child == nil {
+					child = &Node{
+						Kind:           ObjectNode,
+						ObjectChildren: map[string]*Node{},
+					}
+				}
+
+				object.ObjectChildren[key] = child
+
+			} else {
+				return nil, err
+			}
+
+		}
+
+		if err := parser.consumeMappingFields(expected_indent, object); err == nil {
+			return object, nil
 		} else {
 			return nil, err
 		}
-
 	}
-
-	if err := parser.consumeMappingFields(expected_indent, object); err != nil {
-		return nil, err
-	}
-
-	return object, nil
-
 }
 
 func (parser *Parser) parseInlineSequence(expected_indent int, content string) (*Node, error) {
@@ -385,24 +386,23 @@ func (parser *Parser) consumeMappingFields(expected_indent int, object *Node) er
 
 		if line.Indent <= expected_indent {
 			break
-		}
-
-		if isSequenceItem(line.Text) {
+		} else if isSequenceItem(line.Text) {
 			break
-		}
+		} else {
 
-		child, err := parser.ParseObject(line.Indent)
+			child, err := parser.ParseObject(line.Indent)
 
-		if err == nil {
+			if err == nil {
 
-			for key, value := range child.ObjectChildren {
-				object.ObjectChildren[key] = value
+				for key, value := range child.ObjectChildren {
+					object.ObjectChildren[key] = value
+				}
+
+			} else {
+				return err
 			}
 
-		} else {
-			return err
 		}
-
 	}
 
 	return nil

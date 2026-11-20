@@ -11,18 +11,19 @@ func IsPathWithin(scope string, path string) bool {
 
 	if path == scope {
 		return true
-	}
+	} else {
 
-	relative, err0 := filepath.Rel(scope, path)
+		relative, err0 := filepath.Rel(scope, path)
 
-	if err0 == nil {
-		if relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) == true {
-			return false
-		} else {
-			return true
+		if err0 == nil {
+			if relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) == true {
+				return false
+			} else {
+				return true
+			}
 		}
+
+		return false
+
 	}
-
-	return false
-
 }

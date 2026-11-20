@@ -32,8 +32,7 @@ func FormatFileMode(mode os.FileMode) string {
 
 	if len(permissions) == 0 {
 		return file_type
+	} else {
+		return fmt.Sprintf("%s (%s)", file_type, strings.Join(permissions, ", "))
 	}
-
-	return fmt.Sprintf("%s (%s)", file_type, strings.Join(permissions, ", "))
-
 }

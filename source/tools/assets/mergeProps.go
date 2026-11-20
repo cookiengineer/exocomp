@@ -12,10 +12,9 @@ func mergeProps(left map[string]string, right map[string]string) map[string]stri
 
 		if value == "" {
 			continue
+		} else {
+			result[key] = value
 		}
-
-		result[key] = value
-
 	}
 
 	return result

@@ -20,10 +20,9 @@ func Seek(raw string, start int, token byte) []byte {
 
 		if chr == token && escaped == false {
 			break
+		} else {
+			escaped = false
 		}
-
-		escaped = false
-
 	}
 
 	return result

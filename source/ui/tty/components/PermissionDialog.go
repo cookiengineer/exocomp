@@ -63,11 +63,12 @@ func (dialog *PermissionDialog) Render(buffer *utils_tty.Buffer, rect utils_tty.
 
 		if row >= rect.Y+rect.Height-1 {
 			break
+		} else {
+
+			buffer.WriteString(rect.X+2, row, utils_tty.Truncate(line, rect.Width-4), styles.Dialog)
+			row++
+
 		}
-
-		buffer.WriteString(rect.X+2, row, utils_tty.Truncate(line, rect.Width-4), styles.Dialog)
-		row++
-
 	}
 
 	row++
@@ -76,28 +77,29 @@ func (dialog *PermissionDialog) Render(buffer *utils_tty.Buffer, rect utils_tty.
 
 		if row >= rect.Y+rect.Height-1 {
 			break
+		} else {
+
+			selected := index == dialog.Selected
+			marker := "[ ]"
+
+			if dialog.chosen[index] == true {
+				marker = "[x]"
+			}
+
+			style := styles.Dialog
+
+			if selected == true {
+
+				style = styles.Selection
+				buffer.Fill(utils_tty.Rect{X: rect.X + 2, Y: row, Width: rect.Width - 4, Height: 1}, ' ', style)
+
+			}
+
+			text := marker + " " + capability.Type + "  " + capability.Scope
+			buffer.WriteString(rect.X+2, row, utils_tty.Truncate(text, rect.Width-4), style)
+			row++
+
 		}
-
-		selected := index == dialog.Selected
-		marker := "[ ]"
-
-		if dialog.chosen[index] == true {
-			marker = "[x]"
-		}
-
-		style := styles.Dialog
-
-		if selected == true {
-
-			style = styles.Selection
-			buffer.Fill(utils_tty.Rect{X: rect.X + 2, Y: row, Width: rect.Width - 4, Height: 1}, ' ', style)
-
-		}
-
-		text := marker + " " + capability.Type + "  " + capability.Scope
-		buffer.WriteString(rect.X+2, row, utils_tty.Truncate(text, rect.Width-4), style)
-		row++
-
 	}
 
 	buffer.WriteString(
@@ -144,14 +146,15 @@ func (dialog *PermissionDialog) HandleKey(key utils_tty.Key) (string, bool, bool
 
 	case utils_tty.KeyRune:
 
-		if key.Ctrl == true && key.Rune == 's' {
+		if key.Ctrl == false || key.Rune != 's' {
+
+			if key.Rune == ' ' && len(dialog.Question.Capabilities) > 0 {
+				dialog.chosen[dialog.Selected] = dialog.chosen[dialog.Selected] == false
+			}
+
+		} else {
 			return dialog.answer(), true, false
 		}
-
-		if key.Rune == ' ' && len(dialog.Question.Capabilities) > 0 {
-			dialog.chosen[dialog.Selected] = dialog.chosen[dialog.Selected] == false
-		}
-
 	case utils_tty.KeyEscape:
 		return "[]", true, false
 

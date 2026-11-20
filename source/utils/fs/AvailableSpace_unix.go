@@ -26,25 +26,26 @@ func AvailableSpace(path string) uint64 {
 
 			if parent == path {
 				break
-			}
-
-			stat := unix.Statfs_t{}
-			err1 := unix.Statfs(parent, &stat)
-
-			if err1 == nil {
-
-				result = uint64(stat.Bavail) * uint64(stat.Bsize)
-				break
-
-			} else if errors.Is(err1, unix.ENOENT) {
-
-				path = parent
-				continue
-
 			} else {
-				break
-			}
 
+				stat := unix.Statfs_t{}
+				err1 := unix.Statfs(parent, &stat)
+
+				if err1 == nil {
+
+					result = uint64(stat.Bavail) * uint64(stat.Bsize)
+					break
+
+				} else if errors.Is(err1, unix.ENOENT) {
+
+					path = parent
+					continue
+
+				} else {
+					break
+				}
+
+			}
 		}
 
 	}

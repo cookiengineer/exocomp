@@ -135,23 +135,25 @@ func (renderer *markdownRenderer) inlineChildren(children []*parser_markdown.Ele
 
 		if child == nil {
 			continue
+		} else {
+
+			spans := renderer.inlineElement(child, default_kind)
+
+			if len(spans) == 0 {
+				continue
+			} else {
+
+				if last_line > 0 && child.Line > last_line {
+					result = append(result, transcriptSpan{Text: "\n", Style: default_style})
+				} else if len(result) > 0 && needsMarkdownSpace(result, spans) == true {
+					result = append(result, transcriptSpan{Text: " ", Style: default_style})
+				}
+
+				result = append(result, spans...)
+				last_line = child.Line
+
+			}
 		}
-
-		spans := renderer.inlineElement(child, default_kind)
-
-		if len(spans) == 0 {
-			continue
-		}
-
-		if last_line > 0 && child.Line > last_line {
-			result = append(result, transcriptSpan{Text: "\n", Style: default_style})
-		} else if len(result) > 0 && needsMarkdownSpace(result, spans) == true {
-			result = append(result, transcriptSpan{Text: " ", Style: default_style})
-		}
-
-		result = append(result, spans...)
-		last_line = child.Line
-
 	}
 
 	return result
@@ -264,28 +266,29 @@ func (renderer *markdownRenderer) renderDocument(document *parser_markdown.Docum
 
 		if element == nil || element.Type == "#text" {
 			continue
-		}
-
-		gap := 0
-
-		if last_line == 0 {
-			gap = element.Line - 1
 		} else {
-			gap = element.Line - last_line - 1
+
+			gap := 0
+
+			if last_line == 0 {
+				gap = element.Line - 1
+			} else {
+				gap = element.Line - last_line - 1
+			}
+
+			if last_line > 0 && (previous_heading == true || isMarkdownHeading(element) == true) {
+				gap = max(gap, 1)
+			}
+
+			for index := 0; index < gap; index++ {
+				renderer.lines = append(renderer.lines, transcriptLine{})
+			}
+
+			renderer.renderBlock(element)
+			last_line = markdownEndLine(element)
+			previous_heading = isMarkdownHeading(element)
+
 		}
-
-		if last_line > 0 && (previous_heading == true || isMarkdownHeading(element) == true) {
-			gap = max(gap, 1)
-		}
-
-		for index := 0; index < gap; index++ {
-			renderer.lines = append(renderer.lines, transcriptLine{})
-		}
-
-		renderer.renderBlock(element)
-		last_line = markdownEndLine(element)
-		previous_heading = isMarkdownHeading(element)
-
 	}
 
 }
@@ -387,17 +390,18 @@ func (renderer *markdownRenderer) renderList(element *parser_markdown.Element) {
 
 		if child == nil || child.Type != "li" {
 			continue
+		} else {
+
+			index++
+			marker := "•"
+
+			if ordered == true {
+				marker = strconv.Itoa(index) + "."
+			}
+
+			renderer.addList("", marker, child.Children, ordered)
+
 		}
-
-		index++
-		marker := "•"
-
-		if ordered == true {
-			marker = strconv.Itoa(index) + "."
-		}
-
-		renderer.addList("", marker, child.Children, ordered)
-
 	}
 
 }
@@ -412,16 +416,17 @@ func (renderer *markdownRenderer) renderBlockquote(element *parser_markdown.Elem
 
 		if child == nil || child.Type == "#text" {
 			continue
-		}
-
-		if child.Type == "p" {
-			spans := renderer.inlineChildren(child.Children, "blockQuote")
-			renderer.appendWrapped(prefix, prefix, spans, false)
 		} else {
-			spans := renderer.inlineElement(child, "blockQuote")
-			renderer.appendWrapped(prefix, prefix, spans, false)
-		}
 
+			if child.Type == "p" {
+				spans := renderer.inlineChildren(child.Children, "blockQuote")
+				renderer.appendWrapped(prefix, prefix, spans, false)
+			} else {
+				spans := renderer.inlineElement(child, "blockQuote")
+				renderer.appendWrapped(prefix, prefix, spans, false)
+			}
+
+		}
 	}
 
 }

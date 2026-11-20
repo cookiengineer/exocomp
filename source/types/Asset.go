@@ -35,16 +35,17 @@ func (asset *Asset) Validate() bool {
 		return false
 	}
 
-	if asset.Confidence != "" && asset.Confidence.IsValid() == false {
+	if asset.Confidence == "" || asset.Confidence.IsValid() == true {
+
+		for _, technology := range asset.Technology {
+			if technology == "" {
+				return false
+			}
+		}
+
+		return true
+
+	} else {
 		return false
 	}
-
-	for _, technology := range asset.Technology {
-		if technology == "" {
-			return false
-		}
-	}
-
-	return true
-
 }

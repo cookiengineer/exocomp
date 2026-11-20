@@ -13,12 +13,9 @@ func inferAssetParent(tool *Assets, asset types.Asset) string {
 
 			if candidate.Type != types.AssetTypeDomain && candidate.Type != types.AssetTypeSubdomain && candidate.Type != types.AssetTypeDNSRecord {
 				continue
-			}
-
-			if strings.EqualFold(candidate.Value, domain) == true {
+			} else if strings.EqualFold(candidate.Value, domain) == true {
 				return candidate.ID
 			}
-
 		}
 
 		parts := strings.Split(domain, ".")

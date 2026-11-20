@@ -636,54 +636,55 @@ func (app *App) handleBuiltin(text string) bool {
 
 	parts := strings.Fields(text)
 
-	if len(parts) == 0 {
-		return false
-	}
+	if len(parts) != 0 {
 
-	switch parts[0] {
+		switch parts[0] {
 
-	case "/help":
-		app.Footer.Clear()
-		names := make([]string, 0)
+		case "/help":
+			app.Footer.Clear()
+			names := make([]string, 0)
 
-		for _, builtin := range components.Builtins {
-			names = append(names, builtin.Name)
+			for _, builtin := range components.Builtins {
+				names = append(names, builtin.Name)
+			}
+
+			app.setStatus("Commands: " + strings.Join(names, " "))
+			return true
+
+		case "/clear":
+			app.Footer.Clear()
+			app.Transcript.Clear()
+			app.setStatus("Cleared the transcript view.")
+			return true
+
+		case "/copy":
+			_ = app.Terminal.Copy(app.Footer.GetText())
+			app.Footer.Clear()
+			app.setStatus("Copied composer through OSC52.")
+			return true
+
+		case "/sidebar":
+			app.Footer.Clear()
+			app.Sidebar.Toggle()
+			return true
+
+		case "/agents":
+			app.Footer.Clear()
+			app.AgentSidebar.Toggle()
+			return true
+
+		case "/quit":
+			app.stop()
+			return true
+
+		default:
+			return false
+
 		}
 
-		app.setStatus("Commands: " + strings.Join(names, " "))
-		return true
-
-	case "/clear":
-		app.Footer.Clear()
-		app.Transcript.Clear()
-		app.setStatus("Cleared the transcript view.")
-		return true
-
-	case "/copy":
-		_ = app.Terminal.Copy(app.Footer.GetText())
-		app.Footer.Clear()
-		app.setStatus("Copied composer through OSC52.")
-		return true
-
-	case "/sidebar":
-		app.Footer.Clear()
-		app.Sidebar.Toggle()
-		return true
-
-	case "/agents":
-		app.Footer.Clear()
-		app.AgentSidebar.Toggle()
-		return true
-
-	case "/quit":
-		app.stop()
-		return true
-
-	default:
+	} else {
 		return false
-
 	}
-
 }
 
 func (app *App) setStatus(value string) {
