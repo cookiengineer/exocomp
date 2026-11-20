@@ -7,18 +7,10 @@ import "os"
 import "sort"
 import "strings"
 
-type jsonDiagnostic struct {
-	File    string `json:"file"`
-	Line    int    `json:"line"`
-	Column  int    `json:"column"`
-	Rule    string `json:"rule"`
-	Message string `json:"message"`
-}
-
 func main() {
 
 	root := flag.String("root", "../source", "source tree to lint")
-	include_tests := flag.Bool("tests", false, "also lint _test.go files")
+	is_including_tests := flag.Bool("tests", false, "also lint _test.go files")
 	rule_filter := flag.String("rules", "", "comma separated rule IDs to run")
 	list := flag.Bool("list", false, "list available rules")
 	json_output := flag.Bool("json", false, "emit JSON diagnostics")
@@ -26,15 +18,19 @@ func main() {
 	flag.Parse()
 
 	if *list == true {
+
 		printRules()
 		return
+
 	}
 
-	context, err0 := Load(*root, *include_tests)
+	context, err0 := Load(*root, *is_including_tests)
 
 	if err0 != nil {
+
 		fmt.Fprintf(os.Stderr, "lint: %s\n", err0.Error())
 		os.Exit(2)
+
 	}
 
 	for _, parse_error := range context.ParseErrors {
@@ -60,21 +56,23 @@ func parseRuleFilter(raw string) map[string]bool {
 
 	if strings.TrimSpace(raw) == "" {
 		return nil
-	}
+	} else {
 
-	result := make(map[string]bool)
+		result := make(map[string]bool)
 
-	for _, entry := range strings.Split(raw, ",") {
+		for _, entry := range strings.Split(raw, ",") {
 
-		trimmed := strings.TrimSpace(entry)
+			trimmed := strings.TrimSpace(entry)
 
-		if trimmed != "" {
-			result[trimmed] = true
+			if trimmed != "" {
+				result[trimmed] = true
+			}
+
 		}
 
-	}
+		return result
 
-	return result
+	}
 
 }
 
@@ -102,79 +100,6 @@ func printRules() {
 	for _, item := range entries {
 		fmt.Printf("%-28s %s\n", item.ID, item.Summary)
 	}
-
-}
-
-// Run executes every rule and returns the sorted, filtered diagnostics.
-func (context *Context) Run(selected map[string]bool) []Diagnostic {
-
-	result := make([]Diagnostic, 0)
-
-	for _, file := range context.Files {
-
-		for _, rule := range fileRules {
-
-			if selected != nil && selected[rule.ID] == false {
-				continue
-			}
-
-			for _, diagnostic := range rule.Check(context, file) {
-
-				diagnostic.Rule = rule.ID
-
-				if file.IsSuppressed(diagnostic.Position.Line, rule.ID) == true {
-					continue
-				}
-
-				result = append(result, diagnostic)
-
-			}
-
-		}
-
-	}
-
-	for _, pkg := range context.Packages {
-
-		for _, rule := range packageRules {
-
-			if selected != nil && selected[rule.ID] == false {
-				continue
-			}
-
-			for _, diagnostic := range rule.Check(context, pkg) {
-
-				diagnostic.Rule = rule.ID
-
-				if context.isSuppressed(diagnostic) == true {
-					continue
-				}
-
-				result = append(result, diagnostic)
-
-			}
-
-		}
-
-	}
-
-	sortDiagnostics(result)
-
-	return result
-
-}
-
-func (context *Context) isSuppressed(diagnostic Diagnostic) bool {
-
-	for _, file := range context.Files {
-
-		if file.Path == diagnostic.Position.Filename {
-			return file.IsSuppressed(diagnostic.Position.Line, diagnostic.Rule)
-		}
-
-	}
-
-	return false
 
 }
 
@@ -227,8 +152,10 @@ func printJSON(diagnostics []Diagnostic) {
 	encoded, err := json.MarshalIndent(output, "", "\t")
 
 	if err != nil {
+
 		fmt.Fprintf(os.Stderr, "lint: %s\n", err.Error())
 		return
+
 	}
 
 	fmt.Println(string(encoded))

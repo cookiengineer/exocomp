@@ -1,24 +1,7 @@
 package main
 
-import "fmt"
 import "go/ast"
-import "go/token"
 import "strconv"
-import "strings"
-
-// FileRule checks a single parsed file.
-type FileRule struct {
-	ID      string
-	Summary string
-	Check   func(*Context, *File) []Diagnostic
-}
-
-// PackageRule checks a whole directory.
-type PackageRule struct {
-	ID      string
-	Summary string
-	Check   func(*Context, *Package) []Diagnostic
-}
 
 var fileRules []FileRule
 var packageRules []PackageRule
@@ -69,67 +52,35 @@ func init() {
 
 }
 
-// Position returns the token position of pos.
-func (file *File) Position(pos token.Pos) token.Position {
-	return file.Fset.Position(pos)
-}
-
-// Line returns the 1-based line of pos.
-func (file *File) Line(pos token.Pos) int {
-	return file.Fset.Position(pos).Line
-}
-
-// Text returns the source slice covered by node.
-func (file *File) Text(node ast.Node) string {
-
-	start := file.Fset.Position(node.Pos()).Offset
-	end := file.Fset.Position(node.End()).Offset
-
-	if start < 0 || end > len(file.Src) || start > end {
-		return ""
-	}
-
-	return strings.TrimSpace(string(file.Src[start:end]))
-
-}
-
-// Diagnostic builds a diagnostic for rule at pos.
-func (file *File) Diagnostic(rule string, pos token.Pos, format string, arguments ...any) Diagnostic {
-	return Diagnostic{
-		Position: file.Position(pos),
-		Rule:     rule,
-		Message:  fmt.Sprintf(format, arguments...),
-	}
-}
-
-// Package.Diagnostic builds a diagnostic anchored to a file position.
-func (pkg *Package) Diagnostic(rule string, file *File, pos token.Pos, format string, arguments ...any) Diagnostic {
-	return file.Diagnostic(rule, pos, format, arguments...)
-}
-
 func isExported(name string) bool {
 
 	if name == "" {
 		return false
+	} else {
+		return name[0] >= 'A' && name[0] <= 'Z'
 	}
-
-	return name[0] >= 'A' && name[0] <= 'Z'
 
 }
 
 func receiverTypeName(expr ast.Expr) string {
 
 	switch typed := expr.(type) {
+
 	case *ast.StarExpr:
 		return receiverTypeName(typed.X)
+
 	case *ast.Ident:
 		return typed.Name
+
 	case *ast.IndexExpr:
 		return receiverTypeName(typed.X)
+
 	case *ast.IndexListExpr:
 		return receiverTypeName(typed.X)
+
 	default:
 		return ""
+
 	}
 
 }
@@ -138,14 +89,16 @@ func importPath(spec *ast.ImportSpec) string {
 
 	if spec == nil || spec.Path == nil {
 		return ""
-	}
-
-	value, err := strconv.Unquote(spec.Path.Value)
-
-	if err == nil {
-		return value
 	} else {
-		return ""
+
+		value, err := strconv.Unquote(spec.Path.Value)
+
+		if err == nil {
+			return value
+		} else {
+			return ""
+		}
+
 	}
 
 }
@@ -170,8 +123,8 @@ func receiverName(field *ast.Field) string {
 
 	if len(field.Names) == 0 {
 		return ""
+	} else {
+		return field.Names[0].Name
 	}
-
-	return field.Names[0].Name
 
 }

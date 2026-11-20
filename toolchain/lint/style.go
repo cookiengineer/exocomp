@@ -48,22 +48,18 @@ func checkAny(_ *Context, file *File) []Diagnostic {
 
 		interface_type, ok := node.(*ast.InterfaceType)
 
-		if ok == false || interface_type.Methods == nil {
-			return true
-		}
+		if ok == true && interface_type.Methods != nil && len(interface_type.Methods.List) == 0 {
 
-		if len(interface_type.Methods.List) != 0 {
-			return true
-		}
+			result = append(
+				result,
+				file.Diagnostic(
+					"style/any",
+					interface_type.Pos(),
+					"use any instead of interface{}",
+				),
+			)
 
-		result = append(
-			result,
-			file.Diagnostic(
-				"style/any",
-				interface_type.Pos(),
-				"use any instead of interface{}",
-			),
-		)
+		}
 
 		return true
 
@@ -82,61 +78,61 @@ func checkBlankBlock(_ *Context, file *File) []Diagnostic {
 
 		block, ok := node.(*ast.BlockStmt)
 
-		if ok == false {
-			return true
-		}
+		if ok == true {
 
-		is_switch_body := switch_bodies[block]
+			is_switch_body := switch_bodies[block]
 
-		if is_switch_body == true {
-			result = append(result, checkCaseBlankLines(file, block)...)
-		}
-
-		if len(block.List) <= 1 {
-			return true
-		}
-
-		open_line := file.Line(block.Lbrace)
-		close_line := file.Line(block.Rbrace)
-
-		if open_line == close_line {
-			return true
-		}
-
-		after := open_line + 1
-
-		if is_switch_body == false && after <= close_line && after-1 < len(file.Lines) {
-
-			line := file.Lines[after-1]
-
-			if strings.TrimSpace(line) != "" && isCommentLine(line) == false {
-				result = append(
-					result,
-					file.Diagnostic(
-						"style/blank-block",
-						block.Lbrace,
-						"multi-statement block needs a blank line after the opening brace",
-					),
-				)
+			if is_switch_body == true {
+				result = append(result, checkCaseBlankLines(file, block)...)
 			}
 
-		}
+			if len(block.List) > 1 {
 
-		before := close_line - 1
+				open_line := file.Line(block.Lbrace)
+				close_line := file.Line(block.Rbrace)
 
-		if before > open_line && before-1 < len(file.Lines) && before-1 >= 0 {
+				if open_line != close_line {
 
-			line := file.Lines[before-1]
+					after := open_line + 1
 
-			if strings.TrimSpace(line) != "" && isCommentLine(line) == false {
-				result = append(
-					result,
-					file.Diagnostic(
-						"style/blank-block",
-						block.Rbrace,
-						"multi-statement block needs a blank line before the closing brace",
-					),
-				)
+					if is_switch_body == false && after <= close_line && after-1 < len(file.Lines) {
+
+						line := file.Lines[after-1]
+
+						if strings.TrimSpace(line) != "" && isCommentLine(line) == false {
+							result = append(
+								result,
+								file.Diagnostic(
+									"style/blank-block",
+									block.Lbrace,
+									"multi-statement block needs a blank line after the opening brace",
+								),
+							)
+						}
+
+					}
+
+					before := close_line - 1
+
+					if before > open_line && before-1 < len(file.Lines) && before-1 >= 0 {
+
+						line := file.Lines[before-1]
+
+						if strings.TrimSpace(line) != "" && isCommentLine(line) == false {
+							result = append(
+								result,
+								file.Diagnostic(
+									"style/blank-block",
+									block.Rbrace,
+									"multi-statement block needs a blank line before the closing brace",
+								),
+							)
+						}
+
+					}
+
+				}
+
 			}
 
 		}
@@ -157,10 +153,13 @@ func collectSwitchBodies(file *File) map[*ast.BlockStmt]bool {
 	ast.Inspect(file.AST, func(node ast.Node) bool {
 
 		switch typed := node.(type) {
+
 		case *ast.SwitchStmt:
 			result[typed.Body] = true
+
 		case *ast.TypeSwitchStmt:
 			result[typed.Body] = true
+
 		}
 
 		return true
@@ -211,15 +210,17 @@ func hasBlankLineAbove(file *File, pos token.Pos) bool {
 
 	if start_line <= 1 {
 		return false
+	} else {
+
+		index := start_line - 2
+
+		if index < 0 || index >= len(file.Lines) {
+			return false
+		} else {
+			return strings.TrimSpace(file.Lines[index]) == ""
+		}
+
 	}
-
-	index := start_line - 2
-
-	if index < 0 || index >= len(file.Lines) {
-		return false
-	}
-
-	return strings.TrimSpace(file.Lines[index]) == ""
 
 }
 
@@ -257,9 +258,9 @@ func clauseStartLine(file *File, pos token.Pos) int {
 
 		if attached == 0 {
 			return line
+		} else {
+			line = attached
 		}
-
-		line = attached
 
 	}
 
@@ -273,14 +274,12 @@ func checkGofmt(_ *Context, file *File) []Diagnostic {
 		return []Diagnostic{
 			file.Diagnostic("style/gofmt", file.AST.Pos(), "cannot format: %s", err.Error()),
 		}
-	}
-
-	if string(formatted) == string(file.Src) {
+	} else if string(formatted) == string(file.Src) {
 		return nil
-	}
-
-	return []Diagnostic{
-		file.Diagnostic("style/gofmt", file.AST.Pos(), "file is not gofmt formatted"),
+	} else {
+		return []Diagnostic{
+			file.Diagnostic("style/gofmt", file.AST.Pos(), "file is not gofmt formatted"),
+		}
 	}
 
 }
@@ -293,47 +292,43 @@ func checkJSONIndent(_ *Context, file *File) []Diagnostic {
 
 		call, ok := node.(*ast.CallExpr)
 
-		if ok == false {
-			return true
+		if ok == true {
+
+			selector, is_selector := call.Fun.(*ast.SelectorExpr)
+
+			if is_selector == true && selector.Sel.Name == "MarshalIndent" {
+
+				ident, is_ident := selector.X.(*ast.Ident)
+
+				if is_ident == true && ident.Name == "json" && len(call.Args) >= 3 {
+
+					literal, is_literal := call.Args[2].(*ast.BasicLit)
+
+					if is_literal == true && literal.Kind == token.STRING {
+
+						value, err := strconv.Unquote(literal.Value)
+
+						if err == nil && value != "\t" {
+
+							result = append(
+								result,
+								file.Diagnostic(
+									"style/json-indent",
+									call.Pos(),
+									"JSON indentation must be a tab, got %q",
+									value,
+								),
+							)
+
+						}
+
+					}
+
+				}
+
+			}
+
 		}
-
-		selector, ok := call.Fun.(*ast.SelectorExpr)
-
-		if ok == false || selector.Sel.Name != "MarshalIndent" {
-			return true
-		}
-
-		ident, ok := selector.X.(*ast.Ident)
-
-		if ok == false || ident.Name != "json" {
-			return true
-		}
-
-		if len(call.Args) < 3 {
-			return true
-		}
-
-		literal, ok := call.Args[2].(*ast.BasicLit)
-
-		if ok == false || literal.Kind != token.STRING {
-			return true
-		}
-
-		value, err := strconv.Unquote(literal.Value)
-
-		if err != nil || value == "\t" {
-			return true
-		}
-
-		result = append(
-			result,
-			file.Diagnostic(
-				"style/json-indent",
-				call.Pos(),
-				"JSON indentation must be a tab, got %q",
-				value,
-			),
-		)
 
 		return true
 
@@ -365,8 +360,10 @@ func camelSegments(name string) []string {
 			next_lower := index+1 < len(runes) && isLowerRune(runes[index+1])
 
 			if previous_upper == false || next_lower == true {
+
 				segments = append(segments, string(current))
 				current = make([]rune, 0)
+
 			}
 
 		}
@@ -387,23 +384,25 @@ func isCamelLocal(name string) bool {
 
 	if camelCasePattern.MatchString(name) == false {
 		return false
-	}
+	} else {
 
-	segments := camelSegments(name)
+		segments := camelSegments(name)
 
-	for _, segment := range segments[1:] {
+		for _, segment := range segments[1:] {
 
-		is_upper := segment == strings.ToUpper(segment)
+			is_upper := segment == strings.ToUpper(segment)
 
-		if is_upper == true && allowedLocalAcronyms[segment] == true {
-			continue
+			if is_upper == true && allowedLocalAcronyms[segment] == true {
+				continue
+			}
+
+			return true
+
 		}
 
-		return true
+		return false
 
 	}
-
-	return false
 
 }
 
@@ -411,93 +410,109 @@ func checkLocalCase(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true {
 		return nil
-	}
+	} else {
 
-	result := make([]Diagnostic, 0)
+		result := make([]Diagnostic, 0)
 
-	report := func(name *ast.Ident) {
+		report := func(name *ast.Ident) {
 
-		if name == nil || name.Name == "_" {
-			return
-		}
-
-		if isCamelLocal(name.Name) == false {
-			return
-		}
-
-		result = append(
-			result,
-			file.Diagnostic(
-				"style/local-case",
-				name.Pos(),
-				"local variable %s uses camelCase; use snake_case",
-				name.Name,
-			),
-		)
-
-	}
-
-	reportList := func(fields *ast.FieldList) {
-
-		if fields == nil {
-			return
-		}
-
-		for _, field := range fields.List {
-			for _, name := range field.Names {
-				report(name)
+			if name == nil || name.Name == "_" {
+				return
 			}
+
+			if isCamelLocal(name.Name) == false {
+				return
+			}
+
+			result = append(
+				result,
+				file.Diagnostic(
+					"style/local-case",
+					name.Pos(),
+					"local variable %s uses camelCase; use snake_case",
+					name.Name,
+				),
+			)
+
 		}
 
-	}
+		report_list := func(fields *ast.FieldList) {
 
-	for _, decl := range file.AST.Decls {
+			if fields == nil {
+				return
+			}
 
-		func_decl, ok := decl.(*ast.FuncDecl)
-
-		if ok == false || func_decl.Body == nil {
-			continue
-		}
-
-		reportList(func_decl.Type.Params)
-
-		ast.Inspect(func_decl.Body, func(node ast.Node) bool {
-
-			switch typed := node.(type) {
-			case *ast.FuncLit:
-				reportList(typed.Type.Params)
-			case *ast.AssignStmt:
-				if typed.Tok != token.DEFINE {
-					return true
-				}
-				for _, left := range typed.Lhs {
-					ident, ok := left.(*ast.Ident)
-					if ok == true {
-						report(ident)
-					}
-				}
-			case *ast.RangeStmt:
-				if typed.Tok != token.DEFINE {
-					return true
-				}
-				if ident, ok := typed.Key.(*ast.Ident); ok == true {
-					report(ident)
-				}
-				if ident, ok := typed.Value.(*ast.Ident); ok == true {
-					report(ident)
-				}
-			case *ast.ValueSpec:
-				for _, name := range typed.Names {
+			for _, field := range fields.List {
+				for _, name := range field.Names {
 					report(name)
 				}
 			}
 
-			return true
+		}
 
-		})
+		for _, decl := range file.AST.Decls {
+
+			func_decl, ok := decl.(*ast.FuncDecl)
+
+			if ok == false || func_decl.Body == nil {
+				continue
+			}
+
+			report_list(func_decl.Type.Params)
+
+			ast.Inspect(func_decl.Body, func(node ast.Node) bool {
+
+				switch typed := node.(type) {
+
+				case *ast.FuncLit:
+					report_list(typed.Type.Params)
+
+				case *ast.AssignStmt:
+
+					if typed.Tok == token.DEFINE {
+
+						for _, left := range typed.Lhs {
+
+							ident, is_ident := left.(*ast.Ident)
+
+							if is_ident == true {
+								report(ident)
+							}
+
+						}
+
+					}
+
+				case *ast.RangeStmt:
+
+					if typed.Tok == token.DEFINE {
+
+						if ident, is_ident := typed.Key.(*ast.Ident); is_ident == true {
+							report(ident)
+						}
+
+						if ident, is_ident := typed.Value.(*ast.Ident); is_ident == true {
+							report(ident)
+						}
+
+					}
+
+				case *ast.ValueSpec:
+
+					for _, name := range typed.Names {
+						report(name)
+					}
+
+				}
+
+				return true
+
+			})
+
+		}
+
+		return result
 
 	}
-
-	return result
 
 }

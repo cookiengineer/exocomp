@@ -54,19 +54,21 @@ func declaredResultType(func_decl *ast.FuncDecl, types map[string]*File) string 
 
 	if func_decl.Type.Results == nil {
 		return ""
-	}
+	} else {
 
-	for _, field := range func_decl.Type.Results.List {
+		for _, field := range func_decl.Type.Results.List {
 
-		name := receiverTypeName(field.Type)
+			name := receiverTypeName(field.Type)
 
-		if name != "" && types[name] != nil {
-			return name
+			if name != "" && types[name] != nil {
+				return name
+			}
+
 		}
 
-	}
+		return ""
 
-	return ""
+	}
 
 }
 
@@ -119,13 +121,11 @@ func ownedTypeName(func_decl *ast.FuncDecl, types map[string]*File) string {
 
 	if longest != "" {
 		return longest
-	}
-
-	if strings.HasPrefix(name, "New") == true || strings.HasPrefix(name, "Parse") == true || strings.HasPrefix(name, "new") == true {
+	} else if strings.HasPrefix(name, "New") == true || strings.HasPrefix(name, "Parse") == true || strings.HasPrefix(name, "new") == true {
 		return declaredResultType(func_decl, types)
+	} else {
+		return ""
 	}
-
-	return ""
 
 }
 
@@ -179,40 +179,42 @@ func checkOneType(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true {
 		return nil
-	}
+	} else {
 
-	names := make([]string, 0)
+		names := make([]string, 0)
 
-	for _, type_spec := range declaredTypes(file) {
+		for _, type_spec := range declaredTypes(file) {
 
-		if isExported(type_spec.Name.Name) == true {
-			names = append(names, type_spec.Name.Name)
+			if isExported(type_spec.Name.Name) == true {
+				names = append(names, type_spec.Name.Name)
+			}
+
 		}
 
-	}
+		result := make([]Diagnostic, 0)
 
-	result := make([]Diagnostic, 0)
+		for index, name := range names {
 
-	for index, name := range names {
+			if index > 0 {
+				result = append(
+					result,
+					file.Diagnostic(
+						"layout/one-type",
+						file.AST.Pos(),
+						"file declares %d exported types (%s); %s belongs in %s.go",
+						len(names),
+						strings.Join(names, ", "),
+						name,
+						name,
+					),
+				)
+			}
 
-		if index > 0 {
-			result = append(
-				result,
-				file.Diagnostic(
-					"layout/one-type",
-					file.AST.Pos(),
-					"file declares %d exported types (%s); %s belongs in %s.go",
-					len(names),
-					strings.Join(names, ", "),
-					name,
-					name,
-				),
-			)
 		}
 
-	}
+		return result
 
-	return result
+	}
 
 }
 
@@ -220,49 +222,55 @@ func checkTypeFile(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true {
 		return nil
-	}
+	} else {
 
-	types := declaredTypes(file)
+		types := declaredTypes(file)
 
-	if len(types) == 0 {
-		return nil
-	}
+		if len(types) == 0 {
+			return nil
+		} else {
 
-	has_exported := false
+			has_exported := false
 
-	for _, type_spec := range types {
+			for _, type_spec := range types {
 
-		if isExported(type_spec.Name.Name) == true {
-			has_exported = true
+				if isExported(type_spec.Name.Name) == true {
+					has_exported = true
+				}
+
+			}
+
+			if has_exported == true {
+				return nil
+			} else {
+
+				base := identifierBaseName(file)
+				result := make([]Diagnostic, 0)
+
+				for _, type_spec := range types {
+
+					if type_spec.Name.Name != base {
+						result = append(
+							result,
+							file.Diagnostic(
+								"layout/type-file",
+								type_spec.Pos(),
+								"unexported type %s must live in %s.go",
+								type_spec.Name.Name,
+								type_spec.Name.Name,
+							),
+						)
+					}
+
+				}
+
+				return result
+
+			}
+
 		}
 
 	}
-
-	if has_exported == true {
-		return nil
-	}
-
-	base := identifierBaseName(file)
-	result := make([]Diagnostic, 0)
-
-	for _, type_spec := range types {
-
-		if type_spec.Name.Name != base {
-			result = append(
-				result,
-				file.Diagnostic(
-					"layout/type-file",
-					type_spec.Pos(),
-					"unexported type %s must live in %s.go",
-					type_spec.Name.Name,
-					type_spec.Name.Name,
-				),
-			)
-		}
-
-	}
-
-	return result
 
 }
 
@@ -270,60 +278,62 @@ func checkOneFunction(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true || file.AST.Name.Name == "main" {
 		return nil
-	}
-
-	if oneFunctionExempt[file.Rel] == true {
+	} else if oneFunctionExempt[file.Rel] == true {
 		return nil
-	}
+	} else {
 
-	candidates := make([]*ast.FuncDecl, 0)
+		candidates := make([]*ast.FuncDecl, 0)
 
-	for _, func_decl := range freeFunctions(file) {
+		for _, func_decl := range freeFunctions(file) {
 
-		if ownedTypeName(func_decl, file.Pkg.Types) == "" {
-			candidates = append(candidates, func_decl)
+			if ownedTypeName(func_decl, file.Pkg.Types) == "" {
+				candidates = append(candidates, func_decl)
+			}
+
+		}
+
+		if len(candidates) <= 1 {
+			return nil
+		} else {
+
+			base := identifierBaseName(file)
+			matching := 0
+
+			for _, func_decl := range candidates {
+
+				if func_decl.Name.Name == base {
+					matching++
+				}
+
+			}
+
+			result := make([]Diagnostic, 0)
+
+			for _, func_decl := range candidates {
+
+				if matching == 1 && func_decl.Name.Name == base {
+					continue
+				}
+
+				result = append(
+					result,
+					file.Diagnostic(
+						"layout/one-function",
+						func_decl.Pos(),
+						"file declares %d free functions; move %s into %s.go",
+						len(candidates),
+						func_decl.Name.Name,
+						func_decl.Name.Name,
+					),
+				)
+
+			}
+
+			return result
+
 		}
 
 	}
-
-	if len(candidates) <= 1 {
-		return nil
-	}
-
-	base := identifierBaseName(file)
-	matching := 0
-
-	for _, func_decl := range candidates {
-
-		if func_decl.Name.Name == base {
-			matching++
-		}
-
-	}
-
-	result := make([]Diagnostic, 0)
-
-	for _, func_decl := range candidates {
-
-		if matching == 1 && func_decl.Name.Name == base {
-			continue
-		}
-
-		result = append(
-			result,
-			file.Diagnostic(
-				"layout/one-function",
-				func_decl.Pos(),
-				"file declares %d free functions; move %s into %s.go",
-				len(candidates),
-				func_decl.Name.Name,
-				func_decl.Name.Name,
-			),
-		)
-
-	}
-
-	return result
 
 }
 
@@ -331,36 +341,40 @@ func checkFunctionFile(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true || file.AST.Name.Name == "main" {
 		return nil
-	}
+	} else {
 
-	candidates := make([]*ast.FuncDecl, 0)
+		candidates := make([]*ast.FuncDecl, 0)
 
-	for _, func_decl := range freeFunctions(file) {
+		for _, func_decl := range freeFunctions(file) {
 
-		if ownedTypeName(func_decl, file.Pkg.Types) == "" {
-			candidates = append(candidates, func_decl)
+			if ownedTypeName(func_decl, file.Pkg.Types) == "" {
+				candidates = append(candidates, func_decl)
+			}
+
 		}
 
-	}
+		if len(candidates) != 1 {
+			return nil
+		} else {
 
-	if len(candidates) != 1 {
-		return nil
-	}
+			base := identifierBaseName(file)
 
-	base := identifierBaseName(file)
+			if candidates[0].Name.Name == base {
+				return nil
+			} else {
+				return []Diagnostic{
+					file.Diagnostic(
+						"layout/function-file",
+						candidates[0].Pos(),
+						"%s must live in %s.go",
+						candidates[0].Name.Name,
+						candidates[0].Name.Name,
+					),
+				}
+			}
 
-	if candidates[0].Name.Name == base {
-		return nil
-	}
+		}
 
-	return []Diagnostic{
-		file.Diagnostic(
-			"layout/function-file",
-			candidates[0].Pos(),
-			"%s must live in %s.go",
-			candidates[0].Name.Name,
-			candidates[0].Name.Name,
-		),
 	}
 
 }
@@ -381,10 +395,10 @@ func checkInit(_ *Context, file *File) []Diagnostic {
 
 	if count <= 1 {
 		return nil
-	}
-
-	return []Diagnostic{
-		file.Diagnostic("layout/init", file.AST.Pos(), "file declares %d init() functions", count),
+	} else {
+		return []Diagnostic{
+			file.Diagnostic("layout/init", file.AST.Pos(), "file declares %d init() functions", count),
+		}
 	}
 
 }
@@ -393,9 +407,7 @@ func checkToolsRoot(_ *Context, file *File) []Diagnostic {
 
 	if path.Dir(file.Rel) != "tools" {
 		return nil
-	}
-
-	if file.Rel != "tools/Toolset.go" && file.Rel != "tools/Toolset_test.go" {
+	} else if file.Rel != "tools/Toolset.go" && file.Rel != "tools/Toolset_test.go" {
 		return []Diagnostic{
 			file.Diagnostic(
 				"layout/tools-root",
@@ -403,9 +415,9 @@ func checkToolsRoot(_ *Context, file *File) []Diagnostic {
 				"source/tools may only contain Toolset.go and Toolset_test.go",
 			),
 		}
+	} else {
+		return nil
 	}
-
-	return nil
 
 }
 
@@ -413,33 +425,37 @@ func checkUtilsMirror(context *Context, file *File) []Diagnostic {
 
 	if strings.HasPrefix(file.Rel, "utils/") == false {
 		return nil
-	}
+	} else {
 
-	parts := strings.Split(file.Rel, "/")
+		parts := strings.Split(file.Rel, "/")
 
-	if len(parts) < 3 {
-		return nil
-	}
+		if len(parts) < 3 {
+			return nil
+		} else {
 
-	name := parts[1]
+			name := parts[1]
 
-	for _, pkg := range context.Packages {
+			for _, pkg := range context.Packages {
 
-		if pkg.Rel == name && pkg.Name == name {
-			return []Diagnostic{
-				file.Diagnostic(
-					"layout/utils-mirror",
-					file.AST.Pos(),
-					"utils/%s duplicates the top-level package %s",
-					name,
-					name,
-				),
+				if pkg.Rel == name && pkg.Name == name {
+					return []Diagnostic{
+						file.Diagnostic(
+							"layout/utils-mirror",
+							file.AST.Pos(),
+							"utils/%s duplicates the top-level package %s",
+							name,
+							name,
+						),
+					}
+				}
+
 			}
+
+			return nil
+
 		}
 
 	}
-
-	return nil
 
 }
 
@@ -538,32 +554,34 @@ func hasPlatformSuffix(base string) bool {
 
 	if len(parts) < 2 {
 		return false
-	}
+	} else {
 
-	known := map[string]bool{
-		"aix": true, "android": true, "darwin": true, "dragonfly": true,
-		"freebsd": true, "illumos": true, "ios": true, "js": true,
-		"linux": true, "netbsd": true, "openbsd": true, "other": true,
-		"plan9": true, "solaris": true, "unix": true, "wasip1": true,
-		"windows": true,
-		"386":     true, "amd64": true, "arm": true, "arm64": true,
-		"loong64": true, "mips": true, "mips64": true, "mips64le": true,
-		"mipsle": true, "ppc64": true, "ppc64le": true, "riscv64": true,
-		"s390x": true, "wasm": true,
-	}
-
-	for index, part := range parts {
-
-		if index == 0 {
-			continue
+		known := map[string]bool{
+			"aix": true, "android": true, "darwin": true, "dragonfly": true,
+			"freebsd": true, "illumos": true, "ios": true, "js": true,
+			"linux": true, "netbsd": true, "openbsd": true, "other": true,
+			"plan9": true, "solaris": true, "unix": true, "wasip1": true,
+			"windows": true,
+			"386":     true, "amd64": true, "arm": true, "arm64": true,
+			"loong64": true, "mips": true, "mips64": true, "mips64le": true,
+			"mipsle": true, "ppc64": true, "ppc64le": true, "riscv64": true,
+			"s390x": true, "wasm": true,
 		}
 
-		if known[part] == false {
-			return false
+		for index, part := range parts {
+
+			if index == 0 {
+				continue
+			}
+
+			if known[part] == false {
+				return false
+			}
+
 		}
 
-	}
+		return true
 
-	return true
+	}
 
 }

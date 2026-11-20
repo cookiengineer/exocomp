@@ -38,18 +38,25 @@ func checkNot(_ *Context, file *File) []Diagnostic {
 	ast.Inspect(file.AST, func(node ast.Node) bool {
 
 		switch typed := node.(type) {
+
 		case *ast.IfStmt:
 			report(typed.Cond)
+
 		case *ast.ForStmt:
 			report(typed.Cond)
+
 		case *ast.AssignStmt:
+
 			for _, value := range typed.Rhs {
 				report(value)
 			}
+
 		case *ast.ValueSpec:
+
 			for _, value := range typed.Values {
 				report(value)
 			}
+
 		}
 
 		return true
@@ -65,29 +72,38 @@ func isBareCondition(expr ast.Expr) (ast.Node, bool) {
 	unwrapped := unwrapParens(expr)
 
 	switch typed := unwrapped.(type) {
+
 	case *ast.Ident:
 
 		if typed.Name == "true" || typed.Name == "false" || typed.Name == "nil" {
 			return nil, false
+		} else {
+			return typed, true
 		}
 
-		return typed, true
 	case *ast.SelectorExpr:
 		return typed, true
+
 	case *ast.CallExpr:
 		return typed, true
+
 	case *ast.IndexExpr:
 		return typed, true
+
 	case *ast.TypeAssertExpr:
 		return typed, true
+
 	case *ast.UnaryExpr:
+
 		if typed.Op == token.NOT {
 			return nil, false
+		} else {
+			return typed, true
 		}
 
-		return typed, true
 	default:
 		return nil, false
+
 	}
 
 }
@@ -119,10 +135,13 @@ func checkBareCondition(_ *Context, file *File) []Diagnostic {
 	ast.Inspect(file.AST, func(node ast.Node) bool {
 
 		switch typed := node.(type) {
+
 		case *ast.IfStmt:
 			report(typed.Cond)
+
 		case *ast.ForStmt:
 			report(typed.Cond)
+
 		}
 
 		return true

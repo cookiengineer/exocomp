@@ -10,29 +10,25 @@ const (
 	groupThird   = 2
 )
 
-type importEntry struct {
-	Path string
-	Spec *ast.ImportSpec
-	Line int
-}
-
 func classifyImport(path string) int {
 
 	if strings.HasPrefix(path, "exocomp/") == true || strings.HasPrefix(path, "exocomp-toolchain/") == true {
 		return groupProject
+	} else {
+
+		first := path
+
+		if index := strings.Index(path, "/"); index >= 0 {
+			first = path[:index]
+		}
+
+		if strings.Contains(first, ".") == true {
+			return groupThird
+		} else {
+			return groupStdlib
+		}
+
 	}
-
-	first := path
-
-	if index := strings.Index(path, "/"); index >= 0 {
-		first = path[:index]
-	}
-
-	if strings.Contains(first, ".") == true {
-		return groupThird
-	}
-
-	return groupStdlib
 
 }
 
@@ -87,90 +83,96 @@ func checkImportGroup(_ *Context, file *File) []Diagnostic {
 
 	if len(entries) == 0 {
 		return nil
-	}
+	} else {
 
-	result := make([]Diagnostic, 0)
+		result := make([]Diagnostic, 0)
 
-	previous := entries[0]
-	seen_stdlib := false
+		previous := entries[0]
+		seen_stdlib := false
 
-	for index := 1; index < len(entries); index++ {
+		for index := 1; index < len(entries); index++ {
 
-		entry := entries[index]
-		group := classifyImport(entry.Path)
-		previous_group := classifyImport(previous.Path)
+			entry := entries[index]
+			group := classifyImport(entry.Path)
+			previous_group := classifyImport(previous.Path)
 
-		if group == groupThird && previous_group != groupThird {
+			if group == groupThird && previous_group != groupThird {
 
-			if entry.Line-previous.Line < 2 {
+				if entry.Line-previous.Line < 2 {
+					result = append(
+						result,
+						file.Diagnostic(
+							"import/group",
+							entry.Spec.Pos(),
+							"missing blank line before the third-party import group",
+						),
+					)
+				}
+
+			} else if group != groupThird && previous_group != groupThird {
+
+				if entry.Line-previous.Line > 1 {
+					result = append(
+						result,
+						file.Diagnostic(
+							"import/group",
+							entry.Spec.Pos(),
+							"project and standard library imports share one block",
+						),
+					)
+				}
+
+			} else if group < previous_group {
 				result = append(
 					result,
 					file.Diagnostic(
 						"import/group",
 						entry.Spec.Pos(),
-						"missing blank line before the third-party import group",
+						"import %q is in the %s group but comes after the %s group",
+						entry.Path,
+						groupName(group),
+						groupName(previous_group),
 					),
 				)
 			}
 
-		} else if group != groupThird && previous_group != groupThird {
-
-			if entry.Line-previous.Line > 1 {
+			if group == groupStdlib {
+				seen_stdlib = true
+			} else if group == groupProject && seen_stdlib == true {
 				result = append(
 					result,
 					file.Diagnostic(
 						"import/group",
 						entry.Spec.Pos(),
-						"project and standard library imports share one block",
+						"project import %q must come before standard library imports",
+						entry.Path,
 					),
 				)
 			}
 
-		} else if group < previous_group {
-			result = append(
-				result,
-				file.Diagnostic(
-					"import/group",
-					entry.Spec.Pos(),
-					"import %q is in the %s group but comes after the %s group",
-					entry.Path,
-					groupName(group),
-					groupName(previous_group),
-				),
-			)
+			previous = entry
+
 		}
 
-		if group == groupStdlib {
-			seen_stdlib = true
-		} else if group == groupProject && seen_stdlib == true {
-			result = append(
-				result,
-				file.Diagnostic(
-					"import/group",
-					entry.Spec.Pos(),
-					"project import %q must come before standard library imports",
-					entry.Path,
-				),
-			)
-		}
-
-		previous = entry
+		return result
 
 	}
-
-	return result
 
 }
 
 func groupName(group int) string {
 
 	switch group {
+
 	case groupProject:
 		return "project"
+
 	case groupStdlib:
 		return "standard library"
+
 	default:
 		return "third-party"
+
 	}
 
 }
@@ -179,44 +181,48 @@ func checkTestingLast(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == false {
 		return nil
-	}
+	} else {
 
-	entries := collectImports(file)
-	last_stdlib := ""
-	last_entry := importEntry{}
+		entries := collectImports(file)
+		last_stdlib := ""
+		last_entry := importEntry{}
 
-	for _, entry := range entries {
+		for _, entry := range entries {
 
-		if classifyImport(entry.Path) != groupStdlib {
-			continue
+			if classifyImport(entry.Path) != groupStdlib {
+				continue
+			}
+
+			last_stdlib = entry.Path
+			last_entry = entry
+
 		}
 
-		last_stdlib = entry.Path
-		last_entry = entry
+		if last_stdlib == "testing" {
+			return nil
+		} else {
 
-	}
+			for _, entry := range entries {
 
-	if last_stdlib == "testing" {
-		return nil
-	}
+				if entry.Path != "testing" {
+					continue
+				}
 
-	for _, entry := range entries {
+				return []Diagnostic{
+					file.Diagnostic(
+						"import/testing-last",
+						last_entry.Spec.Pos(),
+						"testing must be the last standard-library import",
+					),
+				}
 
-		if entry.Path != "testing" {
-			continue
+			}
+
+			return nil
+
 		}
 
-		return []Diagnostic{
-			file.Diagnostic(
-				"import/testing-last",
-				last_entry.Spec.Pos(),
-				"testing must be the last standard-library import",
-			),
-		}
-
 	}
-
-	return nil
 
 }
 
@@ -226,30 +232,32 @@ func checkImportOrder(_ *Context, file *File) []Diagnostic {
 
 	if len(entries) < 2 {
 		return nil
-	}
+	} else {
 
-	result := make([]Diagnostic, 0)
-	previous := entries[0]
+		result := make([]Diagnostic, 0)
+		previous := entries[0]
 
-	for _, entry := range entries[1:] {
+		for _, entry := range entries[1:] {
 
-		if classifyImport(entry.Path) == classifyImport(previous.Path) && previous.Path > entry.Path {
-			result = append(
-				result,
-				file.Diagnostic(
-					"import/order",
-					entry.Spec.Pos(),
-					"import %q must be sorted before %q",
-					entry.Path,
-					previous.Path,
-				),
-			)
+			if classifyImport(entry.Path) == classifyImport(previous.Path) && previous.Path > entry.Path {
+				result = append(
+					result,
+					file.Diagnostic(
+						"import/order",
+						entry.Spec.Pos(),
+						"import %q must be sorted before %q",
+						entry.Path,
+						previous.Path,
+					),
+				)
+			}
+
+			previous = entry
+
 		}
 
-		previous = entry
+		return result
 
 	}
-
-	return result
 
 }

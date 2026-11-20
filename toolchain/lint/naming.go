@@ -39,25 +39,25 @@ func checkFileName(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true {
 		return nil
-	}
+	} else {
 
-	base := fileBaseName(file)
+		base := fileBaseName(file)
 
-	if strings.Contains(base, "_") == false {
-		return nil
-	}
+		if strings.Contains(base, "_") == false {
+			return nil
+		} else if hasPlatformSuffix(base) == true {
+			return nil
+		} else {
+			return []Diagnostic{
+				file.Diagnostic(
+					"naming/file",
+					file.AST.Pos(),
+					"file name %q uses underscores; name it after the identifier it contains",
+					filepath.Base(file.Rel),
+				),
+			}
+		}
 
-	if hasPlatformSuffix(base) == true {
-		return nil
-	}
-
-	return []Diagnostic{
-		file.Diagnostic(
-			"naming/file",
-			file.AST.Pos(),
-			"file name %q uses underscores; name it after the identifier it contains",
-			filepath.Base(file.Rel),
-		),
 	}
 
 }
@@ -66,37 +66,39 @@ func checkFuncNaming(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true {
 		return nil
-	}
+	} else {
 
-	result := make([]Diagnostic, 0)
+		result := make([]Diagnostic, 0)
 
-	for _, decl := range file.AST.Decls {
+		for _, decl := range file.AST.Decls {
 
-		func_decl, ok := decl.(*ast.FuncDecl)
+			func_decl, ok := decl.(*ast.FuncDecl)
 
-		if ok == false {
-			continue
+			if ok == false {
+				continue
+			}
+
+			name := func_decl.Name.Name
+
+			if isExported(name) == true || strings.Contains(name, "_") == false {
+				continue
+			}
+
+			result = append(
+				result,
+				file.Diagnostic(
+					"naming/func",
+					func_decl.Pos(),
+					"unexported function %s uses snake_case; use camelCase",
+					name,
+				),
+			)
+
 		}
 
-		name := func_decl.Name.Name
-
-		if isExported(name) == true || strings.Contains(name, "_") == false {
-			continue
-		}
-
-		result = append(
-			result,
-			file.Diagnostic(
-				"naming/func",
-				func_decl.Pos(),
-				"unexported function %s uses snake_case; use camelCase",
-				name,
-			),
-		)
+		return result
 
 	}
-
-	return result
 
 }
 
@@ -104,37 +106,39 @@ func checkFromNaming(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true {
 		return nil
-	}
+	} else {
 
-	result := make([]Diagnostic, 0)
+		result := make([]Diagnostic, 0)
 
-	for _, func_decl := range freeFunctions(file) {
+		for _, func_decl := range freeFunctions(file) {
 
-		name := func_decl.Name.Name
+			name := func_decl.Name.Name
 
-		if strings.HasPrefix(name, "From") == false || len(name) <= len("From") {
-			continue
+			if strings.HasPrefix(name, "From") == false || len(name) <= len("From") {
+				continue
+			}
+
+			next := name[len("From")]
+
+			if next < 'A' || next > 'Z' {
+				continue
+			}
+
+			result = append(
+				result,
+				file.Diagnostic(
+					"naming/from",
+					func_decl.Pos(),
+					"converter %s must be named <Type>From<Source>",
+					name,
+				),
+			)
+
 		}
 
-		next := name[len("From")]
-
-		if next < 'A' || next > 'Z' {
-			continue
-		}
-
-		result = append(
-			result,
-			file.Diagnostic(
-				"naming/from",
-				func_decl.Pos(),
-				"converter %s must be named <Type>From<Source>",
-				name,
-			),
-		)
+		return result
 
 	}
-
-	return result
 
 }
 
@@ -174,17 +178,19 @@ func isPredicateName(name string) bool {
 
 	if predicateExceptions[name] == true {
 		return false
-	}
+	} else {
 
-	for _, prefix := range predicatePrefixes {
+		for _, prefix := range predicatePrefixes {
 
-		if strings.HasPrefix(name, prefix) == true {
-			return false
+			if strings.HasPrefix(name, prefix) == true {
+				return false
+			}
+
 		}
 
-	}
+		return true
 
-	return true
+	}
 
 }
 
@@ -192,11 +198,13 @@ func isBoolType(expr ast.Expr) bool {
 
 	if expr == nil {
 		return false
+	} else {
+
+		ident, ok := expr.(*ast.Ident)
+
+		return ok == true && ident.Name == "bool"
+
 	}
-
-	ident, ok := expr.(*ast.Ident)
-
-	return ok == true && ident.Name == "bool"
 
 }
 
@@ -204,77 +212,74 @@ func checkBooleanNaming(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true {
 		return nil
-	}
+	} else {
 
-	result := make([]Diagnostic, 0)
+		result := make([]Diagnostic, 0)
 
-	report := func(name *ast.Ident) {
+		report := func(name *ast.Ident) {
 
-		if name == nil || name.Name == "_" {
-			return
-		}
-
-		if isPredicateName(name.Name) == false {
-			return
-		}
-
-		result = append(
-			result,
-			file.Diagnostic(
-				"naming/boolean",
-				name.Pos(),
-				"boolean %s does not read as a predicate; use is_/has_/can_/should_",
-				name.Name,
-			),
-		)
-
-	}
-
-	ast.Inspect(file.AST, func(node ast.Node) bool {
-
-		switch typed := node.(type) {
-		case *ast.FuncDecl:
-
-			if typed.Type.Params == nil {
-				return true
+			if name == nil || name.Name == "_" {
+				return
 			}
 
-			for _, field := range typed.Type.Params.List {
+			if isPredicateName(name.Name) == false {
+				return
+			}
 
-				if isBoolType(field.Type) == false {
-					continue
+			result = append(
+				result,
+				file.Diagnostic(
+					"naming/boolean",
+					name.Pos(),
+					"boolean %s does not read as a predicate; use is_/has_/can_/should_",
+					name.Name,
+				),
+			)
+
+		}
+
+		ast.Inspect(file.AST, func(node ast.Node) bool {
+
+			switch typed := node.(type) {
+
+			case *ast.FuncDecl:
+
+				if typed.Type.Params != nil {
+
+					for _, field := range typed.Type.Params.List {
+
+						if isBoolType(field.Type) == false {
+							continue
+						}
+
+						for _, name := range field.Names {
+							report(name)
+						}
+
+					}
+
 				}
 
-				for _, name := range field.Names {
-					report(name)
+			case *ast.ValueSpec:
+
+				if isBoolType(typed.Type) == true {
+
+					for _, name := range typed.Names {
+						report(name)
+					}
+
 				}
 
 			}
 
-		case *ast.ValueSpec:
+			return true
 
-			if isBoolType(typed.Type) == false {
-				return true
-			}
+		})
 
-			for _, name := range typed.Names {
-				report(name)
-			}
+		return result
 
-		}
+	}
 
-		return true
-
-	})
-
-	return result
-
-}
-
-type methodReference struct {
-	File *File
-	Decl *ast.FuncDecl
-	Name string
 }
 
 func checkReceiverNaming(_ *Context, pkg *Package) []Diagnostic {

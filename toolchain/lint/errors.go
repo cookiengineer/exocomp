@@ -16,31 +16,35 @@ func errorfLiteral(call *ast.CallExpr) (string, bool) {
 
 	if ok == false || selector.Sel.Name != "Errorf" {
 		return "", false
+	} else {
+
+		ident, ok := selector.X.(*ast.Ident)
+
+		if ok == false || ident.Name != "fmt" {
+			return "", false
+		} else if len(call.Args) == 0 {
+			return "", false
+		} else {
+
+			literal, ok := call.Args[0].(*ast.BasicLit)
+
+			if ok == false || literal.Kind != token.STRING {
+				return "", false
+			} else {
+
+				value, err := strconv.Unquote(literal.Value)
+
+				if err == nil {
+					return value, true
+				} else {
+					return "", false
+				}
+
+			}
+
+		}
+
 	}
-
-	ident, ok := selector.X.(*ast.Ident)
-
-	if ok == false || ident.Name != "fmt" {
-		return "", false
-	}
-
-	if len(call.Args) == 0 {
-		return "", false
-	}
-
-	literal, ok := call.Args[0].(*ast.BasicLit)
-
-	if ok == false || literal.Kind != token.STRING {
-		return "", false
-	}
-
-	value, err := strconv.Unquote(literal.Value)
-
-	if err != nil {
-		return "", false
-	}
-
-	return value, true
 
 }
 
@@ -48,9 +52,9 @@ func isPrefixedError(message string) bool {
 
 	if prefixedErrorPattern.MatchString(message) == true {
 		return true
+	} else {
+		return parameterPrefixPattern.MatchString(message)
 	}
-
-	return parameterPrefixPattern.MatchString(message)
 
 }
 
@@ -63,9 +67,8 @@ func errorfExemptions(file *File) map[token.Pos]bool {
 
 	if strings.HasPrefix(file.Rel, "tools/") == false {
 		return exempt
-	}
+	} else if strings.HasPrefix(file.Rel, "tools/testutil/") == true {
 
-	if strings.HasPrefix(file.Rel, "tools/testutil/") == true {
 		ast.Inspect(file.AST, func(node ast.Node) bool {
 
 			call, ok := node.(*ast.CallExpr)
@@ -79,35 +82,38 @@ func errorfExemptions(file *File) map[token.Pos]bool {
 		})
 
 		return exempt
-	}
 
-	for _, decl := range file.AST.Decls {
+	} else {
 
-		func_decl, ok := decl.(*ast.FuncDecl)
+		for _, decl := range file.AST.Decls {
 
-		if ok == false || func_decl.Body == nil {
-			continue
-		}
+			func_decl, ok := decl.(*ast.FuncDecl)
 
-		if isExported(func_decl.Name.Name) == true {
-			continue
-		}
-
-		ast.Inspect(func_decl.Body, func(node ast.Node) bool {
-
-			call, ok := node.(*ast.CallExpr)
-
-			if ok == true {
-				exempt[call.Pos()] = true
+			if ok == false || func_decl.Body == nil {
+				continue
 			}
 
-			return true
+			if isExported(func_decl.Name.Name) == true {
+				continue
+			}
 
-		})
+			ast.Inspect(func_decl.Body, func(node ast.Node) bool {
+
+				call, ok := node.(*ast.CallExpr)
+
+				if ok == true {
+					exempt[call.Pos()] = true
+				}
+
+				return true
+
+			})
+
+		}
+
+		return exempt
 
 	}
-
-	return exempt
 
 }
 
@@ -120,30 +126,24 @@ func checkErrorPrefix(_ *Context, file *File) []Diagnostic {
 
 		call, ok := node.(*ast.CallExpr)
 
-		if ok == false {
-			return true
-		}
+		if ok == true && exempt[call.Pos()] == false {
 
-		if exempt[call.Pos()] == true {
-			return true
-		}
+			message, is_literal := errorfLiteral(call)
 
-		message, ok := errorfLiteral(call)
+			if is_literal == true && isPrefixedError(message) == false {
 
-		if ok == false {
-			return true
-		}
+				result = append(
+					result,
+					file.Diagnostic(
+						"errors/prefix",
+						call.Pos(),
+						"error %q is missing a component prefix such as files.Read:",
+						message,
+					),
+				)
 
-		if isPrefixedError(message) == false {
-			result = append(
-				result,
-				file.Diagnostic(
-					"errors/prefix",
-					call.Pos(),
-					"error %q is missing a component prefix such as files.Read:",
-					message,
-				),
-			)
+			}
+
 		}
 
 		return true
@@ -162,51 +162,47 @@ func checkErrorLowercase(_ *Context, file *File) []Diagnostic {
 
 		call, ok := node.(*ast.CallExpr)
 
-		if ok == false {
-			return true
+		if ok == true {
+
+			message, is_literal := errorfLiteral(call)
+
+			if is_literal == true && message != "" && prefixedErrorPattern.MatchString(message) == true {
+
+				message = stripErrorPrefix(message)
+
+				if message != "" {
+
+					first_word := message
+
+					if index := strings.IndexAny(first_word, " \t"); index >= 0 {
+						first_word = first_word[:index]
+					}
+
+					if strings.ContainsAny(first_word, "-_") == false {
+
+						first := message[0]
+
+						if first >= 'a' && first <= 'z' {
+
+							result = append(
+								result,
+								file.Diagnostic(
+									"errors/lowercase",
+									call.Pos(),
+									"error %q starts with a lowercase letter",
+									message,
+								),
+							)
+
+						}
+
+					}
+
+				}
+
+			}
+
 		}
-
-		message, ok := errorfLiteral(call)
-
-		if ok == false || message == "" {
-			return true
-		}
-
-		if prefixedErrorPattern.MatchString(message) == false {
-			return true
-		}
-
-		message = stripErrorPrefix(message)
-
-		if message == "" {
-			return true
-		}
-
-		first_word := message
-
-		if index := strings.IndexAny(first_word, " \t"); index >= 0 {
-			first_word = first_word[:index]
-		}
-
-		if strings.ContainsAny(first_word, "-_") == true {
-			return true
-		}
-
-		first := message[0]
-
-		if first < 'a' || first > 'z' {
-			return true
-		}
-
-		result = append(
-			result,
-			file.Diagnostic(
-				"errors/lowercase",
-				call.Pos(),
-				"error %q starts with a lowercase letter",
-				message,
-			),
-		)
 
 		return true
 
@@ -223,14 +219,16 @@ func stripErrorPrefix(message string) string {
 
 	if index < 0 {
 		return message
+	} else {
+
+		head := message[:index]
+
+		if prefixedErrorPattern.MatchString(head+":") == true {
+			return message[index+2:]
+		} else {
+			return message
+		}
+
 	}
-
-	head := message[:index]
-
-	if prefixedErrorPattern.MatchString(head+":") == true {
-		return message[index+2:]
-	}
-
-	return message
 
 }

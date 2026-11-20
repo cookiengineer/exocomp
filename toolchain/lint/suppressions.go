@@ -53,19 +53,3 @@ func addSuppression(target map[int]map[string]bool, line int, rule string) {
 	target[line][rule] = true
 
 }
-
-func (file *File) IsSuppressed(line int, rule string) bool {
-
-	rules := file.Suppress[line]
-
-	if rules == nil {
-		return false
-	}
-
-	if rules["all"] == true {
-		return true
-	}
-
-	return rules[rule]
-
-}

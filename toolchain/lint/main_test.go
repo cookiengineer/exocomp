@@ -594,11 +594,13 @@ func TestRules(t *testing.T) {
 			diagnostics := lintRule(t, test_case.Rule, test_case.Files)
 
 			if len(diagnostics) != test_case.Want {
+
 				t.Errorf("Expected %d %s diagnostics, got %d", test_case.Want, test_case.Rule, len(diagnostics))
 
 				for _, diagnostic := range diagnostics {
 					t.Logf("  %s", diagnostic.String())
 				}
+
 			}
 
 		})

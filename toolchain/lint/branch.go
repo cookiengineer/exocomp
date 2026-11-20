@@ -4,13 +4,6 @@ import "go/ast"
 import "go/token"
 import "strings"
 
-// statementList is one slice of statements plus its control-flow depth.
-type statementList struct {
-	Stmts    []ast.Stmt
-	Depth    int
-	Receiver string
-}
-
 // collectStatementLists gathers every statement list in the file with its
 // nesting depth. A function body has depth 0.
 func collectStatementLists(file *File) []statementList {
@@ -37,48 +30,75 @@ func collectStatementLists(file *File) []statementList {
 	walk_statement = func(stmt ast.Stmt, depth int, receiver string) {
 
 		switch typed := stmt.(type) {
+
 		case *ast.BlockStmt:
 			walk_statements(typed.List, depth+1, receiver)
+
 		case *ast.IfStmt:
+
 			walk_statements(typed.Body.List, depth+1, receiver)
 
 			switch alternative := typed.Else.(type) {
+
 			case *ast.IfStmt:
 				walk_statement(alternative, depth, receiver)
+
 			case *ast.BlockStmt:
 				walk_statements(alternative.List, depth+1, receiver)
+
 			}
+
 		case *ast.ForStmt:
 			walk_statements(typed.Body.List, depth, receiver)
+
 		case *ast.RangeStmt:
 			walk_statements(typed.Body.List, depth, receiver)
+
 		case *ast.SwitchStmt:
+
 			for _, clause := range typed.Body.List {
+
 				case_clause, ok := clause.(*ast.CaseClause)
+
 				if ok == true {
 					walk_statements(case_clause.Body, depth+1, receiver)
 				}
+
 			}
+
 		case *ast.TypeSwitchStmt:
+
 			for _, clause := range typed.Body.List {
+
 				case_clause, ok := clause.(*ast.CaseClause)
+
 				if ok == true {
 					walk_statements(case_clause.Body, depth+1, receiver)
 				}
+
 			}
+
 		case *ast.SelectStmt:
+
 			for _, clause := range typed.Body.List {
+
 				comm_clause, ok := clause.(*ast.CommClause)
+
 				if ok == true {
 					walk_statements(comm_clause.Body, depth+1, receiver)
 				}
+
 			}
+
 		case *ast.LabeledStmt:
 			walk_statement(typed.Stmt, depth, receiver)
+
 		case *ast.CaseClause:
 			walk_statements(typed.Body, depth, receiver)
+
 		case *ast.CommClause:
 			walk_statements(typed.Body, depth, receiver)
+
 		}
 
 	}
@@ -96,6 +116,7 @@ func collectStatementLists(file *File) []statementList {
 			}
 
 			walk_statements(func_decl.Body.List, 0, receiver)
+
 		}
 
 	}
@@ -122,69 +143,79 @@ func guardKind(block *ast.BlockStmt) string {
 
 	if len(block.List) == 0 {
 		return ""
-	}
+	} else {
 
-	kind := ""
+		kind := ""
 
-	for _, stmt := range block.List {
+		for _, stmt := range block.List {
 
-		switch typed := stmt.(type) {
-		case *ast.ReturnStmt:
-			if len(typed.Results) > 0 {
-				if kind == "" || kind == "bare" {
-					kind = "value"
+			switch typed := stmt.(type) {
+
+			case *ast.ReturnStmt:
+
+				if len(typed.Results) > 0 {
+
+					if kind == "" || kind == "bare" {
+						kind = "value"
+					}
+
+				} else if kind == "" {
+					kind = "bare"
 				}
-			} else if kind == "" {
-				kind = "bare"
-			}
-		case *ast.BranchStmt:
-			if typed.Tok == token.FALLTHROUGH {
+
+			case *ast.BranchStmt:
+
+				if typed.Tok == token.FALLTHROUGH {
+					return ""
+				} else if kind == "" {
+					kind = "loop"
+				}
+
+			case *ast.ExprStmt:
+
+				call, ok := typed.X.(*ast.CallExpr)
+
+				if ok == false {
+					return ""
+				} else if isFatalCall(call) == false {
+					return ""
+				} else if kind == "" {
+					kind = "fatal"
+				}
+
+			default:
 				return ""
-			}
-			if kind == "" {
-				kind = "loop"
-			}
-		case *ast.ExprStmt:
 
-			call, ok := typed.X.(*ast.CallExpr)
-
-			if ok == false {
-				return ""
 			}
 
-			if isFatalCall(call) == false {
-				return ""
-			}
-
-			if kind == "" {
-				kind = "fatal"
-			}
-		default:
-			return ""
 		}
 
-	}
+		return kind
 
-	return kind
+	}
 
 }
 
 func isFatalCall(call *ast.CallExpr) bool {
 
 	switch typed := call.Fun.(type) {
+
 	case *ast.Ident:
 		return typed.Name == "panic"
+
 	case *ast.SelectorExpr:
 
 		name := typed.Sel.Name
 
 		if name == "Exit" {
 			return true
+		} else {
+			return strings.HasPrefix(name, "Fatal") == true || strings.HasPrefix(name, "Skip") == true
 		}
 
-		return strings.HasPrefix(name, "Fatal") == true || strings.HasPrefix(name, "Skip") == true
 	default:
 		return false
+
 	}
 
 }
@@ -195,18 +226,10 @@ func isValueGuard(stmt ast.Stmt) bool {
 
 	if ok == false || if_stmt.Else != nil {
 		return false
+	} else {
+		return guardKind(if_stmt.Body) == "value"
 	}
 
-	return guardKind(if_stmt.Body) == "value"
-
-}
-
-type guardRun struct {
-	Stmts   []ast.Stmt
-	Start   int
-	End     int
-	HasTail bool
-	Depth   int
 }
 
 func collectGuardRuns(file *File) []guardRun {
@@ -224,8 +247,10 @@ func collectGuardRuns(file *File) []guardRun {
 		for index < len(list.Stmts) {
 
 			if isValueGuard(list.Stmts[index]) == false || isReceiverNilGuard(list.Stmts[index], list.Receiver) == true {
+
 				index++
 				continue
+
 			}
 
 			end := index
@@ -256,29 +281,31 @@ func checkGuard(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true {
 		return nil
-	}
+	} else {
 
-	result := make([]Diagnostic, 0)
+		result := make([]Diagnostic, 0)
 
-	for _, run := range collectGuardRuns(file) {
+		for _, run := range collectGuardRuns(file) {
 
-		if run.HasTail == false || run.End-run.Start != 1 {
-			continue
+			if run.HasTail == false || run.End-run.Start != 1 {
+				continue
+			}
+
+			result = append(
+				result,
+				file.Diagnostic(
+					"branch/guard",
+					run.Stmts[run.Start].Pos(),
+					"guard clause has %d statements after it; invert it into a positive branch",
+					len(run.Stmts)-1-run.Start,
+				),
+			)
+
 		}
 
-		result = append(
-			result,
-			file.Diagnostic(
-				"branch/guard",
-				run.Stmts[run.Start].Pos(),
-				"guard clause has %d statements after it; invert it into a positive branch",
-				len(run.Stmts)-1-run.Start,
-			),
-		)
+		return result
 
 	}
-
-	return result
 
 }
 
@@ -286,29 +313,31 @@ func checkGuardChain(_ *Context, file *File) []Diagnostic {
 
 	if file.IsTest == true {
 		return nil
-	}
+	} else {
 
-	result := make([]Diagnostic, 0)
+		result := make([]Diagnostic, 0)
 
-	for _, run := range collectGuardRuns(file) {
+		for _, run := range collectGuardRuns(file) {
 
-		if run.HasTail == false || run.End-run.Start < 2 {
-			continue
+			if run.HasTail == false || run.End-run.Start < 2 {
+				continue
+			}
+
+			result = append(
+				result,
+				file.Diagnostic(
+					"branch/guard-chain",
+					run.Stmts[run.Start].Pos(),
+					"%d consecutive guards; use one } else if { chain",
+					run.End-run.Start,
+				),
+			)
+
 		}
 
-		result = append(
-			result,
-			file.Diagnostic(
-				"branch/guard-chain",
-				run.Stmts[run.Start].Pos(),
-				"%d consecutive guards; use one } else if { chain",
-				run.End-run.Start,
-			),
-		)
+		return result
 
 	}
-
-	return result
 
 }
 
@@ -318,31 +347,35 @@ func isReceiverNilGuard(stmt ast.Stmt, receiver string) bool {
 
 	if receiver == "" {
 		return false
+	} else {
+
+		if_stmt, ok := stmt.(*ast.IfStmt)
+
+		if ok == false {
+			return false
+		} else {
+
+			binary, is_binary := unwrapParens(if_stmt.Cond).(*ast.BinaryExpr)
+
+			if is_binary == false || (binary.Op != token.EQL && binary.Op != token.NEQ) {
+				return false
+			} else {
+
+				left, left_ok := unwrapParens(binary.X).(*ast.Ident)
+				right, right_ok := unwrapParens(binary.Y).(*ast.Ident)
+
+				if left_ok == false || right_ok == false {
+					return false
+				} else if left.Name == receiver && right.Name == "nil" {
+					return true
+				} else {
+					return right.Name == receiver && left.Name == "nil"
+				}
+
+			}
+
+		}
+
 	}
-
-	if_stmt, ok := stmt.(*ast.IfStmt)
-
-	if ok == false {
-		return false
-	}
-
-	binary, ok := unwrapParens(if_stmt.Cond).(*ast.BinaryExpr)
-
-	if ok == false || (binary.Op != token.EQL && binary.Op != token.NEQ) {
-		return false
-	}
-
-	left, left_ok := unwrapParens(binary.X).(*ast.Ident)
-	right, right_ok := unwrapParens(binary.Y).(*ast.Ident)
-
-	if left_ok == false || right_ok == false {
-		return false
-	}
-
-	if left.Name == receiver && right.Name == "nil" {
-		return true
-	}
-
-	return right.Name == receiver && left.Name == "nil"
 
 }
