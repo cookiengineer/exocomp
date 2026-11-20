@@ -2,7 +2,7 @@ package strings
 
 func IsNumber(value string) bool {
 
-	var result bool = true
+	var is_number bool = true
 
 	for v := 0; v < len(value); v++ {
 
@@ -16,13 +16,13 @@ func IsNumber(value string) bool {
 			continue
 		} else {
 
-			result = false
+			is_number = false
 			break
 
 		}
 
 	}
 
-	return result
+	return is_number
 
 }

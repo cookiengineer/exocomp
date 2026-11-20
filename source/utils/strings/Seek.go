@@ -23,6 +23,7 @@ func Seek(raw string, start int, token byte) []byte {
 		} else {
 			escaped = false
 		}
+
 	}
 
 	return result

@@ -7,16 +7,16 @@ func ToASCIIName(value string) string {
 	tmp := ToASCII(value)
 
 	var filtered string
-	var last_was_dash bool = false
+	var is_last_dash bool = false
 
 	for _, chunk := range tmp {
 
 		if chunk == 32 || chunk == 45 || chunk == 58 || chunk == 59 || chunk == 95 {
 
-			if last_was_dash == false {
+			if is_last_dash == false {
 
 				filtered += "-"
-				last_was_dash = true
+				is_last_dash = true
 
 			}
 
@@ -28,7 +28,7 @@ func ToASCIIName(value string) string {
 
 			// Digits
 			filtered += string(chunk)
-			last_was_dash = false
+			is_last_dash = false
 
 		} else if chunk >= 58 && chunk <= 64 {
 
@@ -38,7 +38,7 @@ func ToASCIIName(value string) string {
 
 			// Uppercase letters
 			filtered += string(chunk)
-			last_was_dash = false
+			is_last_dash = false
 
 		} else if chunk >= 91 && chunk <= 96 {
 
@@ -48,7 +48,7 @@ func ToASCIIName(value string) string {
 
 			// Lowercase letters
 			filtered += string(chunk)
-			last_was_dash = false
+			is_last_dash = false
 
 		} else if chunk >= 123 && chunk <= 126 {
 

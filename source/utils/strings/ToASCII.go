@@ -1,7 +1,7 @@
 package strings
 
-import "encoding/json"
 import _ "embed"
+import "encoding/json"
 import "strings"
 
 //go:embed ToASCII.UTF8.json

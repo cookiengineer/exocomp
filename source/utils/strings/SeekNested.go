@@ -21,7 +21,7 @@ func SeekNested(raw string, start int, start_token byte, close_token byte) []byt
 		}
 
 		if chr == '"' && escaped == false {
-			in_string = !in_string
+			in_string = (in_string == false)
 		}
 
 		if in_string == false {
