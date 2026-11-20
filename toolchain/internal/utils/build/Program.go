@@ -1,4 +1,4 @@
-package main
+package build
 
 type Program struct {
 	Name       string `json:"name"`

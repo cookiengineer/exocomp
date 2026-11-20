@@ -1,4 +1,4 @@
-package main
+package build
 
 import utils_files "exocomp-toolchain/internal/utils/files"
 import "fmt"

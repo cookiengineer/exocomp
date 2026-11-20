@@ -1,4 +1,4 @@
-package main
+package clean
 
 import utils_assets "exocomp-toolchain/internal/utils/assets"
 import "fmt"

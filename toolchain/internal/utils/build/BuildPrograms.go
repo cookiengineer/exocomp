@@ -1,6 +1,5 @@
-package main
+package build
 
-import utils_build "exocomp-toolchain/internal/utils/build"
 import "fmt"
 import "os"
 import "path/filepath"
@@ -51,7 +50,7 @@ func BuildPrograms(base_dir string, operating_system string, architecture string
 
 				} else {
 
-					err2 := utils_build.Build(folder, program.Source, cache_output, []string{}, operating_system, architecture)
+					err2 := Build(folder, program.Source, cache_output, []string{}, operating_system, architecture)
 
 					if err2 == nil {
 

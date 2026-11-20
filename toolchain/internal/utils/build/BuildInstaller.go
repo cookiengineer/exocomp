@@ -1,6 +1,5 @@
-package main
+package build
 
-import utils_build "exocomp-toolchain/internal/utils/build"
 import "fmt"
 import "os"
 import "path/filepath"
@@ -15,7 +14,7 @@ func BuildInstaller(base_dir string, operating_system string, architecture strin
 	if err0 == nil {
 
 		output := filepath.Join(build_dir, operating_system, "exocomp-installer")
-		err1 := utils_build.Build(installer_dir, "./cmds/exocomp-installer/main.go", output, []string{}, operating_system, architecture)
+		err1 := Build(installer_dir, "./cmds/exocomp-installer/main.go", output, []string{}, operating_system, architecture)
 		path, _ := filepath.Rel(base_dir, output)
 
 		if err1 == nil {

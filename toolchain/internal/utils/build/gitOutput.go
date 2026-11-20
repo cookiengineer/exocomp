@@ -1,4 +1,4 @@
-package main
+package build
 
 import "os/exec"
 import "strings"

@@ -1,5 +1,6 @@
 package main
 
+import "exocomp-toolchain/internal/utils/clean"
 import utils_root "exocomp-toolchain/internal/utils/root"
 import "fmt"
 import "os"
@@ -10,7 +11,7 @@ func main() {
 
 	if err0 == nil {
 
-		err1 := Clean(base_dir)
+		err1 := clean.Clean(base_dir)
 
 		if err1 != nil {
 

@@ -13,13 +13,13 @@ quick:
 	$(TOOLCHAIN) run ./build --quick --arch=$(ARCH)
 
 linux:
-	$(TOOLCHAIN) run ./build linux --arch=$(ARCH)
+	$(TOOLCHAIN) run ./build --arch=$(ARCH) linux
 
 darwin:
-	$(TOOLCHAIN) run ./build darwin --arch=$(ARCH)
+	$(TOOLCHAIN) run ./build --arch=$(ARCH) darwin
 
 windows:
-	$(TOOLCHAIN) run ./build windows --arch=$(ARCH)
+	$(TOOLCHAIN) run ./build --arch=$(ARCH) windows
 
 webapp:
 	$(TOOLCHAIN) run ./build-webapp

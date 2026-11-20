@@ -1,4 +1,4 @@
-package main
+package test
 
 import "exocomp/schemas"
 import "encoding/json"

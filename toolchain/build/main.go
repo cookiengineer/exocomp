@@ -1,164 +1,72 @@
 package main
 
-import utils_assets "exocomp-toolchain/internal/utils/assets"
-import utils_root "exocomp-toolchain/internal/utils/root"
+import "exocomp-toolchain/internal/utils/build"
+import "exocomp-toolchain/internal/utils/root"
 import "exocomp-toolchain/internal/utils/webapp"
+import "flag"
 import "fmt"
 import "os"
 import "runtime"
 import "strings"
 
-func buildPlatform(base_dir string, operating_system string, architecture string, is_building_programs bool, is_building_installer bool) {
-
-	fmt.Fprint(os.Stdout, "\n")
-	fmt.Fprintf(os.Stdout, "== Build %s ==\n", operating_system)
-
-	utils_assets.ClearAssets(base_dir)
-	BuildExocomps(base_dir, operating_system, architecture)
-
-	if is_building_programs == true {
-
-		err := BuildPrograms(base_dir, operating_system, architecture)
-
-		if err != nil {
-
-			fmt.Fprintf(os.Stderr, "!! Error: %s\n", err.Error())
-			os.Exit(1)
-
-		}
-
-	}
-
-	if is_building_installer == true {
-		BuildInstaller(base_dir, operating_system, architecture)
-	}
-
-}
-
 func main() {
 
-	base_dir, err0 := utils_root.GetRoot()
+	architecture := flag.String("arch", runtime.GOARCH, "target architecture")
+	quick := flag.Bool("quick", false, "build only for the current operating system")
+	no_agent_programs := flag.Bool("no-agent-programs", false, "skip agent program binaries")
+	no_installer := flag.Bool("no-installer", false, "skip the installer binary")
 
-	architecture := runtime.GOARCH
-	build_linux := true
-	build_darwin := true
-	build_windows := true
-	build_agent_programs := true
-	build_installer := true
+	flag.Parse()
 
-	if len(os.Args) > 1 {
+	target := strings.TrimSpace(flag.Arg(0))
+	operating_systems := []string{"linux", "darwin", "windows"}
 
-		tmp1 := strings.TrimSpace(os.Args[1])
+	if target != "" {
 
-		switch tmp1 {
+		if target != "linux" && target != "darwin" && target != "windows" {
 
-		case "linux":
-			build_darwin = false
-			build_windows = false
-
-		case "darwin":
-			build_linux = false
-			build_windows = false
-
-		case "windows":
-			build_linux = false
-			build_darwin = false
-
-		case "--quick":
-
-			build_agent_programs = false
-			build_installer = false
-
-			if runtime.GOOS == "linux" {
-
-				build_darwin = false
-				build_windows = false
-
-			} else if runtime.GOOS == "darwin" {
-
-				build_linux = false
-				build_windows = false
-
-			} else if runtime.GOOS == "windows" {
-
-				build_linux = false
-				build_darwin = false
-
-			}
+			fmt.Fprintf(os.Stderr, "!! Error: Unknown operating system \"%s\"\n", target)
+			os.Exit(2)
 
 		}
 
-		for _, argument := range os.Args[1:] {
+		operating_systems = []string{target}
 
-			flag := strings.TrimSpace(strings.ToLower(argument))
+	} else if *quick == true {
 
-			if strings.HasPrefix(flag, "--arch=") == true {
+		switch runtime.GOOS {
 
-				value := strings.TrimSpace(flag[len("--arch="):])
-
-				if value != "" {
-					architecture = value
-				}
-
-			} else {
-
-				switch flag {
-
-				case "--no-agent-programs":
-					build_agent_programs = false
-
-				case "--no-installer":
-					build_installer = false
-
-				case "--quick":
-					build_agent_programs = false
-					build_installer = false
-
-				}
-
-			}
+		case "linux", "darwin", "windows":
+			operating_systems = []string{runtime.GOOS}
 
 		}
 
 	}
 
-	if err0 == nil {
+	is_building_programs := *no_agent_programs == false && *quick == false
+	is_building_installer := *no_installer == false && *quick == false
 
-		fmt.Fprint(os.Stdout, "\n")
-		fmt.Fprint(os.Stdout, "== Build Web App ==\n")
+	base_dir, err0 := root.GetRoot()
 
-		webapp.BuildWebApp(base_dir)
+	if err0 != nil {
 
-		if build_agent_programs == true {
-
-			fmt.Fprint(os.Stdout, "\n")
-			fmt.Fprint(os.Stdout, "== Clone programs ==\n")
-
-			err := ClonePrograms(base_dir)
-
-			if err != nil {
-
-				fmt.Fprintf(os.Stderr, "!! Error: %s\n", err.Error())
-				os.Exit(1)
-
-			}
-
-		}
-
-		if build_linux == true {
-			buildPlatform(base_dir, "linux", architecture, build_agent_programs, build_installer)
-		}
-
-		if build_darwin == true {
-			buildPlatform(base_dir, "darwin", architecture, build_agent_programs, build_installer)
-		}
-
-		if build_windows == true {
-			buildPlatform(base_dir, "windows", architecture, build_agent_programs, build_installer)
-		}
-
-	} else {
 		fmt.Fprintf(os.Stderr, "!! Error: %s\n", err0.Error())
+		os.Exit(1)
+
+	}
+
+	fmt.Fprint(os.Stdout, "\n")
+	fmt.Fprint(os.Stdout, "== Build Web App ==\n")
+
+	webapp.BuildWebApp(base_dir)
+
+	err1 := build.BuildTargets(base_dir, operating_systems, *architecture, is_building_programs, is_building_installer)
+
+	if err1 != nil {
+
+		fmt.Fprintf(os.Stderr, "!! Error: %s\n", err1.Error())
+		os.Exit(1)
+
 	}
 
 }

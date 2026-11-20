@@ -33,7 +33,9 @@ toolchain module.
 
 Flag parsing for every toolchain command lives in that command's `main.go`.
 Internal packages receive already-parsed values and do not import `flag` or
-read `os.Args`.
+read `os.Args`. Command implementations live under
+`toolchain/internal/utils/<name>/`; command folders contain only `main.go` and
+CLI-only files.
 
 A diagnostic is suppressed with `//nolint:<rule>` on the same line or the line
 above. Comma-separated rules and `//nolint:all` are supported.

@@ -16,9 +16,10 @@ packages, so parallel agents can work without conflicting.
 | `toolchain/` | `exocomp-toolchain` | Build, test and lint programs |
 
 The `toolchain/` module keeps each command in its own `main` package:
-`build/`, `build-webapp/`, `clean/`, `install/`, `test/` and `lint/`. Shared
-helpers live under `internal/utils/<domain>/`; web app build actions live under
-`internal/utils/webapp/`.
+`build/`, `build-webapp/`, `clean/`, `install/`, `test/` and `lint/`. Command
+folders contain the `main.go` CLI wrapper; implementations live under
+`internal/utils/<name>/`: `build`, `clean`, `install`, `test`, `lint` and the
+web app build actions in `webapp`.
 
 ## Source Layout
 
