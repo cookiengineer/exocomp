@@ -7,7 +7,7 @@ func toUpperCase(raw string) string {
 	check := strings.ToLower(raw)
 
 	// NOTE: Dirty Hack for stupid LLMs
-	if strings.HasPrefix(check, "define") {
+	if strings.HasPrefix(check, "define") == true {
 
 		tmp2 := strings.TrimSpace(raw[6:])
 

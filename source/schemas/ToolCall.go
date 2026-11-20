@@ -16,7 +16,7 @@ func (toolcall *ToolCall) GetID() (string, error) {
 
 func (toolcall *ToolCall) GetName() (string, error) {
 
-	if strings.Contains(toolcall.Function.Name, ".") {
+	if strings.Contains(toolcall.Function.Name, ".") == true {
 
 		tmp := strings.Split(toolcall.Function.Name, ".")
 
@@ -43,7 +43,7 @@ func (toolcall *ToolCall) GetName() (string, error) {
 
 func (toolcall *ToolCall) GetMethod() (string, error) {
 
-	if strings.Contains(toolcall.Function.Name, ".") {
+	if strings.Contains(toolcall.Function.Name, ".") == true {
 
 		tmp := strings.Split(toolcall.Function.Name, ".")
 
