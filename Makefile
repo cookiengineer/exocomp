@@ -2,39 +2,45 @@ GO ?= go
 ARCH ?= $(shell $(GO) env GOARCH)
 TOOLCHAIN := $(GO) -C toolchain
 
-.PHONY: all build quick linux darwin windows webapp lint test test-integration install clean
+.PHONY: all build quick linux darwin windows webapp lint lint-toolchain test test-toolchain test-integration install clean
 
 all: build
 
 build:
-	$(TOOLCHAIN) run build.go --arch=$(ARCH)
+	$(TOOLCHAIN) run ./build --arch=$(ARCH)
 
 quick:
-	$(TOOLCHAIN) run build.go --quick --arch=$(ARCH)
+	$(TOOLCHAIN) run ./build --quick --arch=$(ARCH)
 
 linux:
-	$(TOOLCHAIN) run build.go linux --arch=$(ARCH)
+	$(TOOLCHAIN) run ./build linux --arch=$(ARCH)
 
 darwin:
-	$(TOOLCHAIN) run build.go darwin --arch=$(ARCH)
+	$(TOOLCHAIN) run ./build darwin --arch=$(ARCH)
 
 windows:
-	$(TOOLCHAIN) run build.go windows --arch=$(ARCH)
+	$(TOOLCHAIN) run ./build windows --arch=$(ARCH)
 
 webapp:
-	$(TOOLCHAIN) run build-webapp.go
+	$(TOOLCHAIN) run ./build-webapp
 
 lint:
 	$(TOOLCHAIN) run ./lint
 
+lint-toolchain:
+	$(TOOLCHAIN) run ./lint -root .
+
 test:
 	$(GO) -C source test ./...
 
+test-toolchain:
+	$(TOOLCHAIN) test ./...
+
 test-integration:
-	$(TOOLCHAIN) run test.go
+	$(TOOLCHAIN) run ./test
 
 install:
-	$(TOOLCHAIN) run install.go
+	$(TOOLCHAIN) run ./install
 
 clean:
-	$(TOOLCHAIN) run clean.go
+	$(TOOLCHAIN) run ./clean
