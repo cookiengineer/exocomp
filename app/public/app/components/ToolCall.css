@@ -18,8 +18,8 @@ tool-call {
 	font-weight: normal;
 	user-select: none;
 	border: none;
-	color: var(--aside-color, #ffffff);
-	background: var(--aside-background, #303040);
+	color: var(--main-color, #eeeeee);
+	background: var(--background-raised-high, #1e1e1e);
 	text-align: left;
 	z-index: 100;
 }

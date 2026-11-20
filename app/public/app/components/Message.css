@@ -3,12 +3,14 @@
  * Message component - a single chat message.
  */
 
-:root {
-	--message-system: #c19d01;
-	--message-assistant: #3465a4;
-	--message-tool: #c80101;
-	--message-user: #4e9906;
-	--message-reasoning: #75507b;
+body {
+	--message-system: var(--feedback-warning);
+	--message-assistant: var(--feedback-info);
+	--message-assistant-label: var(--main-color);
+	--message-tool: var(--feedback-error);
+	--message-tool-label: var(--text-muted);
+	--message-user: var(--feedback-success);
+	--message-reasoning: var(--feedback-thinking);
 }
 
 message-list article {
@@ -41,7 +43,7 @@ message-list article[data-role="assistant"]::before {
 	font-size: 16px;
 	font-weight: normal;
 	line-height: 24px;
-	color: var(--message-assistant);
+	color: var(--message-assistant-label);
 }
 
 message-list article[data-role="assistant"] > details.reasoning {
@@ -49,7 +51,7 @@ message-list article[data-role="assistant"] > details.reasoning {
 	padding: 8px 12px;
 	border-left: 4px solid var(--message-reasoning);
 	border-radius: 4px;
-	background: rgba(117, 80, 123, 0.12);
+	background: var(--feedback-thinking-background);
 }
 
 message-list article[data-role="assistant"] > details.reasoning > summary {
@@ -70,7 +72,7 @@ message-list article[data-role="assistant"] > details.reasoning[open] > summary:
 
 message-list article[data-role="assistant"] > details.reasoning > *:not(summary) {
 	margin-top: 8px;
-	color: #a8a0b0;
+	color: var(--text-muted);
 	font-size: 16px;
 	line-height: 22px;
 }
@@ -80,7 +82,7 @@ message-list article[data-role="assistant"] > details.reasoning:last-child {
 }
 
 message-list article[data-role="tool"] {
-	background: #303030;
+	background: var(--background-raised);
 	border-left: 0px;
 }
 
@@ -177,29 +179,94 @@ message-list article > pre {
 	text-align: left;
 }
 
+/* Markdown colors, matching the TTY markdown styles. */
+message-list article h1,
+message-list article h2,
+message-list article h3,
+message-list article h4,
+message-list article h5,
+message-list article h6 {
+	color: var(--markdown-heading);
+}
+
+message-list article a {
+	color: var(--markdown-link-text);
+	text-decoration: underline;
+}
+
+message-list article strong {
+	color: var(--markdown-strong);
+}
+
+message-list article em {
+	color: var(--markdown-emphasis);
+}
+
+message-list article del {
+	color: var(--text-muted);
+}
+
+message-list article blockquote {
+	margin: 0px 0px 1em 0px;
+	padding: 0px 0px 0px 12px;
+	color: var(--markdown-block-quote);
+	border-left: 4px solid var(--border-base);
+	font-style: italic;
+}
+
+message-list article hr {
+	margin: 1em 0px;
+	border: 0px;
+	border-top: 1px solid var(--markdown-horizontal-rule);
+}
+
+message-list article :not(pre) > code {
+	padding: 1px 4px;
+	color: var(--markdown-code);
+	background: var(--background-raised-high);
+	border-radius: 4px;
+}
+
+message-list article[data-role="assistant"] > pre,
+message-list article[data-role="user"] > pre {
+	padding: 8px 12px;
+	color: var(--markdown-code-block);
+	background: var(--background-raised);
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+message-list article > ul > li::before {
+	color: var(--markdown-list-item);
+}
+
+message-list article > ol > li::marker {
+	color: var(--markdown-list-enumeration);
+}
+
 /* Collapsible system, reasoning, tool and tool-call entries. */
 message-list article > details.message-collapse {
 	margin: 0px 0px 1em 0px;
 	padding: 8px 12px;
 	border-left: 4px solid var(--message-tool);
 	border-radius: 4px;
-	background: rgba(200, 1, 1, 0.08);
+	background: var(--feedback-error-background);
 }
 
 message-list article > details.message-collapse.reasoning {
 	border-left-color: var(--message-reasoning);
-	background: rgba(117, 80, 123, 0.12);
+	background: var(--feedback-thinking-background);
 }
 
 message-list article > details.message-collapse.system {
 	border-left-color: var(--message-system);
-	background: rgba(193, 157, 1, 0.08);
+	background: var(--feedback-warning-background);
 }
 
 message-list article > details.message-collapse.tool-output,
 message-list article > details.message-collapse.tool-call {
 	border-left-color: var(--message-tool);
-	background: rgba(200, 1, 1, 0.08);
+	background: var(--feedback-error-background);
 }
 
 message-list article > details.message-collapse > summary {
@@ -222,7 +289,7 @@ message-list article > details.message-collapse > summary::-webkit-details-marke
 message-list article > details.message-collapse > summary::before {
 	flex-shrink: 0;
 	content: "\25B8 ";
-	color: #a8a0b0;
+	color: var(--text-muted);
 }
 
 message-list article > details.message-collapse[open] > summary::before {
@@ -238,7 +305,7 @@ message-list article > details.message-collapse > summary > .preview {
 	min-width: 0px;
 	margin-left: 0.35em;
 	overflow: hidden;
-	color: #a8a0b0;
+	color: var(--text-muted);
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
@@ -253,7 +320,7 @@ message-list article > details.message-collapse.system > summary > .type {
 
 message-list article > details.message-collapse.tool-output > summary > .type,
 message-list article > details.message-collapse.tool-call > summary > .type {
-	color: var(--message-tool);
+	color: var(--message-tool-label);
 }
 
 message-list article > details.message-collapse.tool-output > summary > .preview,
@@ -279,7 +346,7 @@ message-list article > details.message-collapse.tool-call > pre {
 
 message-list article > details.message-collapse.reasoning > *:not(summary) {
 	margin-top: 8px;
-	color: #a8a0b0;
+	color: var(--text-muted);
 	font-size: 16px;
 	line-height: 22px;
 }
@@ -302,7 +369,7 @@ message-list article[data-role="thinking"] {
 	color: var(--message-reasoning);
 	border-left: 4px solid var(--message-reasoning);
 	border-radius: 4px;
-	background: rgba(117, 80, 123, 0.12);
+	background: var(--feedback-thinking-background);
 }
 
 message-list article[data-role="thinking"] .spinner {

@@ -3,56 +3,96 @@ package colors
 import utils_tty "exocomp/utils/tty"
 
 var (
-	TextBase  = hex("#eeeeee")
+	// Shared palette. Each exported name maps to the same CSS custom property
+	// in app/public/app/theme.css, e.g. MainColor -> --main-color.
+	MainColor      = hex("#eeeeee")
+	MainBackground = hex("#0a0a0a")
+
 	TextMuted = hex("#808080")
 
-	TextActionPrimaryBase     = hex("#eeeeee")
-	TextActionPrimaryDisabled = hex("#808080")
-	TextActionPrimaryFocused  = hex("#0a0a0a")
-	TextActionPrimarySelected = hex("#fab283")
-
-	TextActionSecondaryBase    = hex("#808080")
-	TextActionSecondaryHovered = hex("#eeeeee")
-
-	TextActionDestructiveBase     = hex("#0a0a0a")
-	TextActionDestructiveDisabled = hex("#808080")
-
-	TextFormFieldBase     = hex("#eeeeee")
-	TextFormFieldHovered  = hex("#fab283")
-	TextFormFieldFocused  = hex("#fab283")
-	TextFormFieldPressed  = hex("#fab283")
-	TextFormFieldDisabled = hex("#808080")
-	TextFormFieldSelected = hex("#fab283")
-
-	TextFeedbackErrorBase    = hex("#e06c75")
-	TextFeedbackWarningBase  = hex("#f5a742")
-	TextFeedbackSuccessBase  = hex("#7fd88f")
-	TextFeedbackInfoBase     = hex("#56b6c2")
-	TextFeedbackThinkingBase = hex("#9d7cd8")
-
-	BackgroundBase       = hex("#0a0a0a")
-	BackgroundRaisedBase = hex("#141414")
+	BackgroundRaised     = hex("#141414")
 	BackgroundRaisedHigh = hex("#1e1e1e")
 	BackgroundRaisedMax  = hex("#4c4c4c")
 	BackgroundComposer   = hex("#0f0f0f")
 
-	BackgroundActionPrimaryBase     = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
-	BackgroundActionPrimaryHovered  = hex("#141414")
-	BackgroundActionPrimaryFocused  = hex("#fab283")
-	BackgroundActionPrimarySelected = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
-	BackgroundActionSecondaryBase   = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
-	BackgroundActionDestructiveBase = hex("#e06c75")
+	BorderBase     = hex("#484848")
+	ScrollbarThumb = hex("#606060")
 
-	BackgroundFormFieldBase = hex("#0a0a0a")
+	Accent     = hex("#fab283")
+	AccentText = hex("#0a0a0a")
 
-	BackgroundFeedbackErrorBase   = hex("#0a0a0a")
-	BackgroundFeedbackWarningBase = hex("#0a0a0a")
-	BackgroundFeedbackSuccessBase = hex("#0a0a0a")
-	BackgroundFeedbackInfoBase    = hex("#0a0a0a")
+	FeedbackError    = hex("#e06c75")
+	FeedbackWarning  = hex("#f5a742")
+	FeedbackSuccess  = hex("#7fd88f")
+	FeedbackInfo     = hex("#56b6c2")
+	FeedbackThinking = hex("#9d7cd8")
 
-	BorderBase    = hex("#484848")
-	ScrollbarBase = hex("#606060")
+	ActionPrimaryBackgroundBase     = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
+	ActionPrimaryBackgroundHovered  = BackgroundRaised
+	ActionPrimaryBackgroundFocused  = Accent
+	ActionPrimaryBackgroundSelected = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
+	ActionSecondaryBackgroundBase   = utils_tty.NewColor(0.0, 0.0, 0.0, 0.0)
+	ActionDestructiveBackgroundBase = FeedbackError
 
+	TextActionSecondaryBase       = TextMuted
+	TextActionSecondaryHovered    = MainColor
+	TextActionDestructiveBase     = AccentText
+	TextActionDestructiveDisabled = TextMuted
+
+	// Gooey-compatible role tokens. These names are identical to the CSS
+	// variables used by the Web UI.
+	HeaderColor      = MainColor
+	HeaderBackground = MainBackground
+
+	AsideColor      = MainColor
+	AsideBackground = BackgroundRaised
+
+	ArticleColor      = MainColor
+	ArticleBackground = BackgroundRaised
+	ArticleBorder     = BorderBase
+
+	FooterColor      = MainColor
+	FooterBackground = BackgroundComposer
+
+	ButtonDefaultColor       = MainColor
+	ButtonDefaultBackground  = BackgroundRaised
+	ButtonDefaultBorder      = BorderBase
+	ButtonFocusColor         = Accent
+	ButtonFocusBackground    = BackgroundRaisedHigh
+	ButtonDisabledColor      = TextMuted
+	ButtonDisabledBackground = MainBackground
+
+	InputDefaultColor       = MainColor
+	InputDefaultBackground  = MainBackground
+	InputDefaultBorder      = BorderBase
+	InputFocusColor         = Accent
+	InputFocusBackground    = MainBackground
+	InputHoverColor         = Accent
+	InputPressedColor       = Accent
+	InputSelectedColor      = Accent
+	InputInvalidColor       = FeedbackError
+	InputInvalidBackground  = MainBackground
+	InputActiveBackground   = Accent
+	InputDisabledColor      = TextMuted
+	InputDisabledBackground = MainBackground
+
+	PalettePrimaryColor        = AccentText
+	PalettePrimaryBackground   = Accent
+	PaletteSecondaryColor      = AccentText
+	PaletteSecondaryBackground = FeedbackError
+
+	Palette1Color  = Accent
+	Palette2Color  = FeedbackThinking
+	Palette3Color  = FeedbackInfo
+	Palette4Color  = FeedbackSuccess
+	Palette5Color  = FeedbackWarning
+	Palette6Color  = FeedbackError
+	Palette7Color  = hex("#e5c07b")
+	Palette8Color  = hex("#828bb8")
+	Palette9Color  = hex("#4fd6be")
+	Palette10Color = hex("#c53b53")
+
+	// Diff colors.
 	DiffTextAdded      = hex("#4fd6be")
 	DiffTextRemoved    = hex("#c53b53")
 	DiffTextContext    = hex("#828bb8")
@@ -60,7 +100,7 @@ var (
 
 	DiffBackgroundAdded   = hex("#20303b")
 	DiffBackgroundRemoved = hex("#37222c")
-	DiffBackgroundContext = hex("#141414")
+	DiffBackgroundContext = BackgroundRaised
 
 	DiffHighlightAdded   = hex("#b8db87")
 	DiffHighlightRemoved = hex("#e26a75")
@@ -69,31 +109,34 @@ var (
 	DiffLineNumberBackgroundAdded   = hex("#1b2b34")
 	DiffLineNumberBackgroundRemoved = hex("#2d1f26")
 
-	SyntaxComment     = hex("#808080")
-	SyntaxKeyword     = hex("#9d7cd8")
-	SyntaxFunction    = hex("#fab283")
-	SyntaxVariable    = hex("#e06c75")
-	SyntaxString      = hex("#7fd88f")
-	SyntaxNumber      = hex("#f5a742")
+	// Syntax colors.
+	SyntaxComment     = TextMuted
+	SyntaxKeyword     = FeedbackThinking
+	SyntaxFunction    = Accent
+	SyntaxVariable    = FeedbackError
+	SyntaxString      = FeedbackSuccess
+	SyntaxNumber      = FeedbackWarning
 	SyntaxType        = hex("#e5c07b")
-	SyntaxOperator    = hex("#56b6c2")
-	SyntaxPunctuation = hex("#eeeeee")
+	SyntaxOperator    = FeedbackInfo
+	SyntaxPunctuation = MainColor
 
-	MarkdownText            = hex("#eeeeee")
-	MarkdownHeading         = hex("#9d7cd8")
-	MarkdownLink            = hex("#fab283")
-	MarkdownLinkText        = hex("#56b6c2")
-	MarkdownCode            = hex("#7fd88f")
+	// Markdown colors.
+	MarkdownText            = MainColor
+	MarkdownHeading         = FeedbackThinking
+	MarkdownLink            = Accent
+	MarkdownLinkText        = FeedbackInfo
+	MarkdownCode            = FeedbackSuccess
 	MarkdownBlockQuote      = hex("#e5c07b")
 	MarkdownEmphasis        = hex("#e5c07b")
-	MarkdownStrong          = hex("#f5a742")
-	MarkdownHorizontalRule  = hex("#808080")
-	MarkdownListItem        = hex("#fab283")
-	MarkdownListEnumeration = hex("#56b6c2")
-	MarkdownImage           = hex("#fab283")
-	MarkdownImageText       = hex("#56b6c2")
-	MarkdownCodeBlock       = hex("#eeeeee")
+	MarkdownStrong          = FeedbackWarning
+	MarkdownHorizontalRule  = TextMuted
+	MarkdownListItem        = Accent
+	MarkdownListEnumeration = FeedbackInfo
+	MarkdownImage           = Accent
+	MarkdownImageText       = FeedbackInfo
+	MarkdownCodeBlock       = MainColor
 
-	DialogBackgroundBase                 = hex("#141414")
-	DialogBackgroundActionPrimaryHovered = hex("#1e1e1e")
+	// Dialog colors.
+	DialogBackgroundBase                 = ArticleBackground
+	DialogBackgroundActionPrimaryHovered = BackgroundRaisedHigh
 )

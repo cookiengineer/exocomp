@@ -1,10 +1,11 @@
 
 /* Exocomp App styles.
  *
- * Gooey's own theme is loaded via `/design/index.css`; this file only contains
- * the App-specific layout and imports the styles of the custom components.
+ * Gooey's own theme is loaded via `/design/index.css`; this file loads the
+ * Exocomp theme override and imports the styles of the custom components.
  */
 
+@import url("./theme.css");
 @import url("./components/AgentList.css");
 @import url("./components/ToolCall.css");
 @import url("./components/MessageList.css");
@@ -36,8 +37,8 @@ dialog div[data-name="errors"] b {
 	font-size: 16px;
 	font-style: normal;
 	font-weight: normal;
-	color: #ff3333;
-	background: #303030;
-	border: 1px solid #ff3333;
+	color: var(--feedback-error);
+	background: var(--background-raised-high);
+	border: 1px solid var(--feedback-error);
 	border-radius: 4px;
 }

@@ -1,0 +1,234 @@
+/*
+ * Exocomp theme.
+ *
+ * This file is the Web UI counterpart of source/ui/tty/colors/Colors.go.
+ * Shared palette names are identical on both sides: MainColor is
+ * --main-color, FooterBackground is --footer-background, and so on.
+ *
+ * Gooey owns the role variables (`--header-*`, `--aside-*`, `--article-*`,
+ * `--footer-*`, `--button-*`, `--input-*`, `--palette-*`). They are aliases of
+ * the shared palette below so both UIs change from the same values.
+ */
+
+html {
+	color-scheme: dark;
+}
+
+body {
+
+	/* Shared palette. */
+	--main-color: #eeeeee;
+	--main-background: #0a0a0a;
+
+	--text-muted: #808080;
+
+	--background-raised: #141414;
+	--background-raised-high: #1e1e1e;
+	--background-raised-max: #4c4c4c;
+	--background-composer: #0f0f0f;
+
+	--border-base: #484848;
+	--scrollbar-thumb: #606060;
+
+	--accent: #fab283;
+	--accent-text: #0a0a0a;
+
+	--feedback-error: #e06c75;
+	--feedback-warning: #f5a742;
+	--feedback-success: #7fd88f;
+	--feedback-info: #56b6c2;
+	--feedback-thinking: #9d7cd8;
+
+	--feedback-error-background: rgba(224, 108, 117, 0.08);
+	--feedback-warning-background: rgba(245, 167, 66, 0.08);
+	--feedback-success-background: rgba(127, 216, 143, 0.08);
+	--feedback-info-background: rgba(86, 182, 194, 0.08);
+	--feedback-thinking-background: rgba(157, 124, 216, 0.12);
+
+	/* Markdown palette. */
+	--markdown-text: var(--main-color);
+	--markdown-heading: var(--feedback-thinking);
+	--markdown-link: var(--accent);
+	--markdown-link-text: var(--feedback-info);
+	--markdown-code: var(--feedback-success);
+	--markdown-block-quote: #e5c07b;
+	--markdown-emphasis: #e5c07b;
+	--markdown-strong: var(--feedback-warning);
+	--markdown-horizontal-rule: var(--text-muted);
+	--markdown-list-item: var(--accent);
+	--markdown-list-enumeration: var(--feedback-info);
+	--markdown-image: var(--accent);
+	--markdown-image-text: var(--feedback-info);
+	--markdown-code-block: var(--main-color);
+
+	/* Diff palette. */
+	--diff-text-added: #4fd6be;
+	--diff-text-removed: #c53b53;
+	--diff-text-context: #828bb8;
+	--diff-text-hunk-header: #828bb8;
+
+	--diff-background-added: #20303b;
+	--diff-background-removed: #37222c;
+	--diff-background-context: var(--background-raised);
+
+	--diff-highlight-added: #b8db87;
+	--diff-highlight-removed: #e26a75;
+
+	--diff-line-number-text: #8f8f8f;
+	--diff-line-number-background-added: #1b2b34;
+	--diff-line-number-background-removed: #2d1f26;
+
+	/* Syntax palette. */
+	--syntax-comment: var(--text-muted);
+	--syntax-keyword: var(--feedback-thinking);
+	--syntax-function: var(--accent);
+	--syntax-variable: var(--feedback-error);
+	--syntax-string: var(--feedback-success);
+	--syntax-number: var(--feedback-warning);
+	--syntax-type: #e5c07b;
+	--syntax-operator: var(--feedback-info);
+	--syntax-punctuation: var(--main-color);
+
+	/* Dialog surfaces. */
+	--dialog-background-base: var(--article-background);
+	--dialog-background-action-primary-hovered: var(--background-raised-high);
+
+	/* Action and form states used by the TTY UI. */
+	--action-primary-background-base: transparent;
+	--action-primary-background-hovered: var(--background-raised);
+	--action-primary-background-focused: var(--accent);
+	--action-primary-background-selected: transparent;
+	--action-secondary-background-base: transparent;
+	--action-destructive-background-base: var(--feedback-error);
+
+	--text-action-secondary-base: var(--text-muted);
+	--text-action-secondary-hovered: var(--main-color);
+	--text-action-destructive-base: var(--accent-text);
+	--text-action-destructive-disabled: var(--text-muted);
+
+	/* Gooey role aliases. */
+	--header-color: var(--main-color);
+	--header-background: var(--main-background);
+
+	--aside-color: var(--main-color);
+	--aside-background: var(--background-raised);
+
+	--article-color: var(--main-color);
+	--article-background: var(--background-raised);
+	--article-border: var(--border-base);
+
+	--footer-color: var(--main-color);
+	--footer-background: var(--background-composer);
+
+	--button-default-color: var(--main-color);
+	--button-default-background: var(--background-raised);
+	--button-default-border: var(--border-base);
+
+	--button-focus-color: var(--accent);
+	--button-focus-background: var(--background-raised-high);
+
+	--button-disabled-color: var(--text-muted);
+	--button-disabled-background: var(--main-background);
+
+	--input-default-color: var(--main-color);
+	--input-default-background: var(--main-background);
+	--input-default-border: var(--border-base);
+
+	--input-focus-color: var(--accent);
+	--input-focus-background: var(--main-background);
+
+	--input-invalid-color: var(--feedback-error);
+	--input-invalid-background: var(--main-background);
+
+	--input-active-background: var(--accent);
+
+	--input-disabled-color: var(--text-muted);
+	--input-disabled-background: var(--main-background);
+
+	--palette-primary-color: var(--accent-text);
+	--palette-primary-background: var(--accent);
+	--palette-secondary-color: var(--accent-text);
+	--palette-secondary-background: var(--feedback-error);
+
+	--palette-1-color: var(--accent);
+	--palette-2-color: var(--feedback-thinking);
+	--palette-3-color: var(--feedback-info);
+	--palette-4-color: var(--feedback-success);
+	--palette-5-color: var(--feedback-warning);
+	--palette-6-color: var(--feedback-error);
+	--palette-7-color: #e5c07b;
+	--palette-8-color: #828bb8;
+	--palette-9-color: #4fd6be;
+	--palette-10-color: #c53b53;
+
+	--palette-1-background: rgba(250, 178, 131, 0.5);
+	--palette-2-background: rgba(157, 124, 216, 0.5);
+	--palette-3-background: rgba(86, 182, 194, 0.5);
+	--palette-4-background: rgba(127, 216, 143, 0.5);
+	--palette-5-background: rgba(245, 167, 66, 0.5);
+	--palette-6-background: rgba(224, 108, 117, 0.5);
+	--palette-7-background: rgba(229, 192, 123, 0.5);
+	--palette-8-background: rgba(130, 139, 184, 0.5);
+	--palette-9-background: rgba(79, 214, 190, 0.5);
+	--palette-10-background: rgba(197, 59, 83, 0.5);
+
+	scrollbar-color: var(--scrollbar-thumb) var(--background-raised);
+
+}
+
+::selection {
+	color: var(--accent-text);
+	background: var(--accent);
+}
+
+::-webkit-scrollbar {
+	width: 12px;
+	height: 12px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--background-raised, #141414);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-thumb, #606060);
+	border: 2px solid var(--background-raised, #141414);
+	border-radius: 6px;
+}
+
+/* Match the rule below the TTY header. */
+body > header {
+	border-bottom: 1px solid var(--border-base);
+}
+
+/* TTY dialogs use the article surface with an info-colored title. */
+dialog article h3 {
+	color: var(--feedback-info);
+	background: var(--article-background);
+	border-bottom: 1px solid var(--border-base);
+}
+
+dialog article footer {
+	background: var(--article-background);
+}
+
+/* TTY sidebar entries are flat; the selected entry uses the accent color. */
+aside ul li {
+	background: transparent;
+	border-color: transparent;
+}
+
+aside ul li:hover {
+	background: var(--background-raised-high);
+	border-color: var(--border-base);
+}
+
+aside ul li[data-state="active"] {
+	background: transparent;
+	border-color: transparent;
+}
+
+aside ul li[data-state="active"] a {
+	color: var(--accent);
+	font-weight: bold;
+}

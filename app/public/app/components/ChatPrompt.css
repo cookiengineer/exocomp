@@ -51,6 +51,10 @@ chat-prompt textarea {
 	field-sizing: content;
 }
 
+chat-prompt textarea:focus {
+	border-color: var(--feedback-success);
+}
+
 chat-prompt textarea[disabled] {
 	opacity: 0.5;
 	cursor: not-allowed;

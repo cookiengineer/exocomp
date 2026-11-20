@@ -1,6 +1,15 @@
 
 # TODO
 
+# Web UI Problems
+
+- Summary/Details elements are broken, and have nested paddings/offsets.
+- System and Tool messages are rendered wrong
+- User messages need bold "User" label
+- Header needs to look like Terminal UI, but with Hire Agent button top right
+- Prompt field in footer needs to be reworked to have border on left side
+- Make prompt field have tool call border color when message looks like tool call starting with "/"
+
 ## source/engine/Session
 
 - No finish_reason handling implemented. schemas.Choice.FinishReason is parsed but never read. A length-truncated response with an incomplete tool_calls block is silently accepted. mini re-prompts with guidance.
