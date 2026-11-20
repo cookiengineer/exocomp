@@ -13,10 +13,10 @@ func prepareSandboxDirectories(directories []string) error {
 
 		if err != nil {
 
-			if errors.Is(err, fs.ErrPermission) {
-				return fmt.Errorf("sandbox.prepareSandboxDirectories: Permission denied.")
+			if errors.Is(err, fs.ErrPermission) == true {
+				return fmt.Errorf("sandbox.PrepareSandboxDirectories: Permission denied.")
 			} else {
-				return fmt.Errorf("sandbox.prepareSandboxDirectories: Cannot prepare sandbox.")
+				return fmt.Errorf("sandbox.PrepareSandboxDirectories: Cannot prepare sandbox.")
 			}
 
 		}

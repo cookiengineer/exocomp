@@ -97,8 +97,8 @@ func TestSanitizeSandboxPathEscapeAttempts(t *testing.T) {
 
 	if err1 == nil {
 		t.Errorf("Expected \"%s\" to be not nil", err1)
-	} else if err1.Error() != "Invalid path \"..\": Attempt to escape sandbox" {
-		t.Errorf("Expected \"%s\" to be \"%s\"", err1.Error(), "Invalid path \"..\": Attempt to escape sandbox")
+	} else if err1.Error() != "sandbox.CheckPath: Invalid path \"..\": Attempt to escape sandbox" {
+		t.Errorf("Expected \"%s\" to be \"%s\"", err1.Error(), "sandbox.CheckPath: Invalid path \"..\": Attempt to escape sandbox")
 	}
 
 	if result2 != "" {
@@ -107,8 +107,8 @@ func TestSanitizeSandboxPathEscapeAttempts(t *testing.T) {
 
 	if err2 == nil {
 		t.Errorf("Expected \"%s\" to be not nil", err2)
-	} else if err2.Error() != "Invalid path \"../../first/second\": Attempt to escape sandbox" {
-		t.Errorf("Expected \"%s\" to be \"%s\"", err2.Error(), "Invalid path \"../../first/second\": Attempt to escape sandbox")
+	} else if err2.Error() != "sandbox.CheckPath: Invalid path \"../../first/second\": Attempt to escape sandbox" {
+		t.Errorf("Expected \"%s\" to be \"%s\"", err2.Error(), "sandbox.CheckPath: Invalid path \"../../first/second\": Attempt to escape sandbox")
 	}
 
 	if result3 != "" {
@@ -117,8 +117,8 @@ func TestSanitizeSandboxPathEscapeAttempts(t *testing.T) {
 
 	if err3 == nil {
 		t.Errorf("Expected \"%s\" to be not nil", err3)
-	} else if err3.Error() != "Invalid path \"../../etc\": Attempt to escape sandbox" {
-		t.Errorf("Expected \"%s\" to be \"%s\"", err3.Error(), "Invalid path \"../../etc\": Attempt to escape sandbox")
+	} else if err3.Error() != "sandbox.CheckPath: Invalid path \"../../etc\": Attempt to escape sandbox" {
+		t.Errorf("Expected \"%s\" to be \"%s\"", err3.Error(), "sandbox.CheckPath: Invalid path \"../../etc\": Attempt to escape sandbox")
 	}
 
 	if result4 != "" {
@@ -127,8 +127,8 @@ func TestSanitizeSandboxPathEscapeAttempts(t *testing.T) {
 
 	if err4 == nil {
 		t.Errorf("Expected \"%s\" to be not nil", err4)
-	} else if err4.Error() != "Invalid path \"/etc/secret\": Attempt to escape sandbox" {
-		t.Errorf("Expected \"%s\" to be \"%s\"", err4.Error(), "Invalid path \"/etc/secret\": Attempt to escape sandbox")
+	} else if err4.Error() != "sandbox.CheckPath: Invalid path \"/etc/secret\": Attempt to escape sandbox" {
+		t.Errorf("Expected \"%s\" to be \"%s\"", err4.Error(), "sandbox.CheckPath: Invalid path \"/etc/secret\": Attempt to escape sandbox")
 	}
 
 }

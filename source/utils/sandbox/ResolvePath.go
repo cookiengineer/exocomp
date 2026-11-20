@@ -37,11 +37,11 @@ func ResolvePath(sandbox string, file_path string) (string, error) {
 				}
 
 			} else {
-				return "", fmt.Errorf("Invalid path \"%s\": Cannot create parent folder", relative)
+				return "", fmt.Errorf("sandbox.ResolvePath: Invalid path \"%s\": Cannot create parent folder", relative)
 			}
 
 		} else {
-			return "", fmt.Errorf("Invalid path \"%s\": Invalid sandbox \"%s\"", file_path, sandbox)
+			return "", fmt.Errorf("sandbox.ResolvePath: Invalid path \"%s\": Invalid sandbox \"%s\"", file_path, sandbox)
 		}
 
 	} else {

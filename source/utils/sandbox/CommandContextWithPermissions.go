@@ -102,10 +102,12 @@ func CommandContextWithPermissions(ctx context.Context, sandbox string, program 
 			} else {
 				return nil, err1
 			}
+
 		} else {
 			return nil, fmt.Errorf("sandbox.CommandContext: Sandboxing is not supported on this system.")
 		}
 	} else {
 		return nil, fmt.Errorf("sandbox.CommandContext: Program doesn't exist.")
 	}
+
 }

@@ -36,7 +36,7 @@ func CheckPath(sandbox string, file_path string) (string, error) {
 		if len(file_path) > len(sandbox) && strings.HasPrefix(file_path, sandbox+string(os.PathSeparator)) {
 			file_path = "." + string(os.PathSeparator) + strings.TrimSpace(file_path[len(sandbox):])
 		} else {
-			return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", file_path)
+			return "", fmt.Errorf("sandbox.CheckPath: Invalid path \"%s\": Attempt to escape sandbox", file_path)
 		}
 
 	}
@@ -55,9 +55,9 @@ func CheckPath(sandbox string, file_path string) (string, error) {
 			if err2 == nil {
 
 				if relative == ".." {
-					return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", relative)
+					return "", fmt.Errorf("sandbox.CheckPath: Invalid path \"%s\": Attempt to escape sandbox", relative)
 				} else if len(relative) >= 3 && relative[0:3] == ".."+string(os.PathSeparator) {
-					return "", fmt.Errorf("Invalid path \"%s\": Attempt to escape sandbox", relative)
+					return "", fmt.Errorf("sandbox.CheckPath: Invalid path \"%s\": Attempt to escape sandbox", relative)
 				} else {
 
 					err3 := CheckSymlinks(sandbox_root, relative)
@@ -71,15 +71,15 @@ func CheckPath(sandbox string, file_path string) (string, error) {
 				}
 
 			} else {
-				return "", fmt.Errorf("Invalid path \"%s\": Cannot resolve sandbox path", relative)
+				return "", fmt.Errorf("sandbox.CheckPath: Invalid path \"%s\": Cannot resolve sandbox path", relative)
 			}
 
 		} else {
-			return "", fmt.Errorf("Invalid path \"%s\": Invalid sandbox \"%s\"", file_path, sandbox)
+			return "", fmt.Errorf("sandbox.CheckPath: Invalid path \"%s\": Invalid sandbox \"%s\"", file_path, sandbox)
 		}
 
 	} else {
-		return "", fmt.Errorf("Invalid path \"%s\": Cannot resolve file path", file_path)
+		return "", fmt.Errorf("sandbox.CheckPath: Invalid path \"%s\": Cannot resolve file path", file_path)
 	}
 
 }

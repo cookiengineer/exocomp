@@ -12,11 +12,11 @@ import "syscall"
 // and executing the target. The private network namespace is the only network
 // boundary on Linux: landlock cannot match individual hosts, so a granted
 // network.Connect capability keeps the helper in the host network namespace.
-func prepareSandboxCommand(cmd *exec.Cmd, network bool) {
+func prepareSandboxCommand(cmd *exec.Cmd, has_network bool) {
 
 	clone_flags := uintptr(syscall.CLONE_NEWUSER | syscall.CLONE_NEWNS)
 
-	if network == false {
+	if has_network == false {
 		clone_flags = clone_flags | uintptr(syscall.CLONE_NEWNET)
 	}
 

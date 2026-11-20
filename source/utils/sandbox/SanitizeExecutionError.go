@@ -11,7 +11,7 @@ func SanitizeExecutionError(namespace string, method string, kind string, name s
 
 	title := strings.ToUpper(kind[0:1]) + kind[1:]
 
-	if errors.Is(err, fs.ErrPermission) {
+	if errors.Is(err, fs.ErrPermission) == true {
 		return "", fmt.Errorf("%s.%s: Invalid %s \"%s\": Permission denied.", namespace, method, kind, name)
 	} else if errors.Is(err, fs.ErrNotExist) || strings.Contains(err.Error(), "executable file not found") {
 		return "", fmt.Errorf("%s.%s: Invalid %s \"%s\": Program doesn't exist.", namespace, method, kind, name)

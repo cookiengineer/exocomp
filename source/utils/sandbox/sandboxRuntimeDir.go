@@ -21,6 +21,7 @@ func sandboxRuntimeDir(sandbox string) (string, error) {
 		return filepath.Join(os.TempDir(), "exocomp-runtime", hash), nil
 
 	} else {
-		return "", fmt.Errorf("Cannot resolve sandbox path.")
+		return "", fmt.Errorf("sandbox.SandboxRuntimeDir: Cannot resolve sandbox path.")
 	}
+
 }
