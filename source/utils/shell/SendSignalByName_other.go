@@ -15,22 +15,31 @@ func SendSignalByName(pid int, name string) (string, error) {
 
 	case "INT":
 		signal = syscall.SIGINT
+
 	case "TERM":
 		signal = syscall.SIGTERM
+
 	case "HUP":
 		signal = syscall.SIGHUP
+
 	case "QUIT":
 		signal = syscall.SIGQUIT
+
 	case "KILL":
 		signal = syscall.SIGKILL
+
 	case "TSTP":
 		signal = syscall.SIGTSTP
+
 	case "CONT":
 		signal = syscall.SIGCONT
+
 	case "USR1":
 		signal = syscall.SIGUSR1
+
 	case "USR2":
 		signal = syscall.SIGUSR2
+
 	default:
 		return "", fmt.Errorf("shell.SendSignalByName: Invalid signal \"%s\".", name)
 

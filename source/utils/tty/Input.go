@@ -231,16 +231,22 @@ func (input *Input) readSS3() (Key, error) {
 
 		case 'A':
 			return Key{Type: KeyArrowUp}, nil
+
 		case 'B':
 			return Key{Type: KeyArrowDown}, nil
+
 		case 'C':
 			return Key{Type: KeyArrowRight}, nil
+
 		case 'D':
 			return Key{Type: KeyArrowLeft}, nil
+
 		case 'H':
 			return Key{Type: KeyHome}, nil
+
 		case 'F':
 			return Key{Type: KeyEnd}, nil
+
 		default:
 			return Key{Type: KeyUnknown}, nil
 
@@ -272,16 +278,22 @@ func (input *Input) decodeCSI(parameters string, intermediate byte, final byte) 
 
 					case 1, 7:
 						return Key{Type: KeyHome}, nil
+
 					case 2:
 						return Key{Type: KeyInsert}, nil
+
 					case 3:
 						return Key{Type: KeyDelete}, nil
+
 					case 4, 8:
 						return Key{Type: KeyEnd}, nil
+
 					case 5:
 						return Key{Type: KeyPageUp}, nil
+
 					case 6:
 						return Key{Type: KeyPageDown}, nil
+
 					default:
 						return Key{Type: KeyUnknown}, nil
 
@@ -316,18 +328,25 @@ func (input *Input) decodeCSI(parameters string, intermediate byte, final byte) 
 
 			case 'A':
 				return Key{Type: KeyArrowUp, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 			case 'B':
 				return Key{Type: KeyArrowDown, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 			case 'C':
 				return Key{Type: KeyArrowRight, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 			case 'D':
 				return Key{Type: KeyArrowLeft, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 			case 'H':
 				return Key{Type: KeyHome, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 			case 'F':
 				return Key{Type: KeyEnd, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 			case 'Z':
 				return Key{Type: KeyTab, Shift: true}, nil
+
 			default:
 				return Key{Type: KeyUnknown}, nil
 

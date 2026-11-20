@@ -19,8 +19,10 @@ func Usage(options_mode []string) {
 	for _, mode := range []string{"web", "terminal"} {
 
 		if slices.Contains(options_mode, mode) == true {
+
 			example_mode = mode
 			break
+
 		}
 
 	}

@@ -8,6 +8,7 @@ func isUnsignedInteger(k reflect.Kind) bool {
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		return true
+
 	default:
 		return false
 

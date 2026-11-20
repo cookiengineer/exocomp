@@ -29,12 +29,16 @@ func decodeCSIU(parameters string) (Key, error) {
 
 		case 9:
 			return Key{Type: KeyTab, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 		case 13:
 			return Key{Type: KeyEnter, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 		case 27:
 			return Key{Type: KeyEscape, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 		case 127:
 			return Key{Type: KeyBackspace, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 		default:
 			return Key{Type: KeyRune, Rune: rune(code), Shift: shift, Alt: alt, Ctrl: ctrl}, nil
 

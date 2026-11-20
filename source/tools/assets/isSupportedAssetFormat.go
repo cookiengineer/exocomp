@@ -6,6 +6,7 @@ func isSupportedAssetFormat(format string) bool {
 
 	case "httpx", "naabu", "subfinder", "dnsx", "tlsx", "katana", "gobuster", "urlfinder":
 		return true
+
 	default:
 		return false
 

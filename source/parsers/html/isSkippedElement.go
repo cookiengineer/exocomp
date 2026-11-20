@@ -8,6 +8,7 @@ func isSkippedElement(name string) bool {
 		"iframe", "svg", "canvas", "template", "object", "embed", "audio", "video",
 		"form", "input", "button", "select", "option", "textarea", "label", "fieldset":
 		return true
+
 	default:
 		return false
 

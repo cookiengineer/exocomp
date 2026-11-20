@@ -155,6 +155,7 @@ func (dialog *PermissionDialog) HandleKey(key utils_tty.Key) (string, bool, bool
 		} else {
 			return dialog.answer(), true, false
 		}
+
 	case utils_tty.KeyEscape:
 		return "[]", true, false
 

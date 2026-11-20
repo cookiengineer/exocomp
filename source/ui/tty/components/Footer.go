@@ -296,15 +296,19 @@ func (footer *Footer) HandleKey(key utils_tty.Key) bool {
 			case utils_tty.KeyArrowUp:
 				footer.Palette.Move(-1)
 				return false
+
 			case utils_tty.KeyArrowDown:
 				footer.Palette.Move(1)
 				return false
+
 			case utils_tty.KeyTab:
 				footer.AcceptSuggestion()
 				return false
+
 			case utils_tty.KeyEscape:
 				footer.Palette.Hide()
 				return false
+
 			case utils_tty.KeyEnter:
 				footer.AcceptSuggestion()
 				return false

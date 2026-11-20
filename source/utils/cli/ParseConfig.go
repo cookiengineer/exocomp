@@ -121,6 +121,7 @@ func ParseConfig(arguments []string) *types.Config {
 			flag := strings.TrimSpace(argument[2:])
 
 			switch flag {
+
 			case "debug":
 				debug = true
 			}

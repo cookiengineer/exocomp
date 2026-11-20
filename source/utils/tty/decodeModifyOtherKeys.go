@@ -20,8 +20,10 @@ func decodeModifyOtherKeys(parameters string) (Key, error) {
 
 			case 9:
 				return Key{Type: KeyTab, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 			case 13:
 				return Key{Type: KeyEnter, Shift: shift, Alt: alt, Ctrl: ctrl}, nil
+
 			default:
 				return Key{Type: KeyRune, Rune: rune(code), Shift: shift, Alt: alt, Ctrl: ctrl}, nil
 

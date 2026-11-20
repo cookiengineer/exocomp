@@ -14,10 +14,13 @@ func (basis FindingProofBasis) IsValid() bool {
 
 	case FindingProofBasisExecutedLive:
 		return true
+
 	case FindingProofBasisExecutedLab:
 		return true
+
 	case FindingProofBasisStaticUnexecuted:
 		return true
+
 	default:
 		return false
 

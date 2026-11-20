@@ -19,6 +19,7 @@ func isBasicType(expr ast.Expr) bool {
 			"complex64", "complex128",
 			"string":
 			return true
+
 		default:
 			return false
 

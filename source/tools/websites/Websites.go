@@ -186,8 +186,10 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 	switch format {
 
 	case "markdown", "text", "html":
+
 	case "":
 		format = "markdown"
+
 	default:
 		format = ""
 
@@ -243,8 +245,10 @@ func (tool *Websites) Fetch(url_str string, user_agent string, format string) (s
 
 							case "html":
 								content = string(bytes)
+
 							case "text":
 								content = getWebsiteText(url, bytes)
+
 							default:
 								content = getWebsiteMarkdown(url, bytes)
 

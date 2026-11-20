@@ -14,10 +14,13 @@ func (confidence FindingConfidence) IsValid() bool {
 
 	case FindingConfidenceObserved:
 		return true
+
 	case FindingConfidenceInferred:
 		return true
+
 	case FindingConfidenceUnverified:
 		return true
+
 	default:
 		return false
 

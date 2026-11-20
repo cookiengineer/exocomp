@@ -8,6 +8,7 @@ func isTransparentElement(name string) bool {
 		"figure", "figcaption", "address", "details", "summary", "dialog",
 		"thead", "tbody", "tfoot", "colgroup", "caption", "dl", "dt", "dd":
 		return true
+
 	default:
 		return false
 

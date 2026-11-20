@@ -16,14 +16,19 @@ func (status FindingStatus) IsValid() bool {
 
 	case FindingStatusCandidate:
 		return true
+
 	case FindingStatusVerified:
 		return true
+
 	case FindingStatusFixed:
 		return true
+
 	case FindingStatusFalsePositive:
 		return true
+
 	case FindingStatusAcceptedRisk:
 		return true
+
 	default:
 		return false
 

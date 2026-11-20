@@ -13,6 +13,7 @@ func firstHeading(node *html_tree.Node) string {
 		if node.Type == html_tree.ElementNode {
 
 			switch node.Data {
+
 			case "h1", "h2", "h3":
 				text := strings.TrimSpace(rawText(node))
 

@@ -50,8 +50,10 @@ func (arguments Arguments) Int(key string) (int, bool) {
 
 		case float64:
 			return int(typed), true
+
 		case int:
 			return typed, true
+
 		default:
 			return 0, false
 
@@ -74,6 +76,7 @@ func (arguments Arguments) Map(key string) (map[string]string, bool) {
 
 		case map[string]string:
 			return typed, true
+
 		case map[string]any:
 
 			result := make(map[string]string, len(typed))
@@ -136,6 +139,7 @@ func (arguments Arguments) Strings(key string) ([]string, bool) {
 
 		case []string:
 			return typed, true
+
 		case []any:
 
 			result := make([]string, 0, len(typed))

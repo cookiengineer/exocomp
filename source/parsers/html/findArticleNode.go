@@ -30,14 +30,19 @@ func findArticleNode(root *html_tree.Node) *html_tree.Node {
 
 				case "p":
 					own = 1 + commaScore(text) + math.Min(float64(len(text))/100.0, 3.0)
+
 				case "pre", "blockquote":
 					own = 1 + float64(len(text))/200.0
+
 				case "h1", "h2", "h3", "h4", "h5", "h6":
 					own = 1
+
 				case "li", "td", "th":
 					own = 0.5
+
 				case "article", "main":
 					own = 10
+
 				case "nav", "header", "footer", "aside":
 					own = -5
 
@@ -72,6 +77,7 @@ func findArticleNode(root *html_tree.Node) *html_tree.Node {
 			} else {
 
 				switch node.Data {
+
 				case "html", "head":
 					continue
 				}

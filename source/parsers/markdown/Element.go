@@ -30,12 +30,16 @@ func NewElement(typ string) *Element {
 
 	case "div", "figure", "figcaption", "p":
 		element.is_block_element = true
+
 	case "pre":
 		element.is_block_element = true
+
 	case "article", "dialog", "footer", "header", "main":
 		element.is_block_element = true
+
 	case "blockquote", "hr":
 		element.is_block_element = true
+
 	default:
 		element.is_block_element = false
 

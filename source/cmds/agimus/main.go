@@ -75,6 +75,7 @@ func main() {
 		tmp1 := strings.TrimSpace(os.Args[1])
 
 		switch tmp1 {
+
 		case "connect":
 			mode = "connect"
 		}
@@ -95,6 +96,7 @@ func main() {
 		tmp1 := strings.TrimSpace(os.Args[1])
 
 		switch tmp1 {
+
 		case "connect":
 			mode = "connect"
 		}

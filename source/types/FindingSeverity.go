@@ -16,14 +16,19 @@ func (severity FindingSeverity) IsValid() bool {
 
 	case FindingSeverityCritical:
 		return true
+
 	case FindingSeverityHigh:
 		return true
+
 	case FindingSeverityMedium:
 		return true
+
 	case FindingSeverityLow:
 		return true
+
 	case FindingSeverityInfo:
 		return true
+
 	default:
 		return false
 

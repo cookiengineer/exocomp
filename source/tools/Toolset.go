@@ -64,28 +64,40 @@ func Toolset(
 
 		case "agents":
 			tool = agents.NewAgents(allowed_methods, playground, sandbox, model, url, is_debug)
+
 		case "assets":
 			tool = assets.NewAssets(allowed_methods, playground, sandbox)
+
 		case "bugs":
 			tool = bugs.NewBugs(allowed_methods, playground, sandbox)
+
 		case "changelog":
 			tool = changelog.NewChangelog(allowed_methods, playground, sandbox)
+
 		case "containers":
 			tool = containers.NewContainers(allowed_methods, playground, sandbox, allowed_images)
+
 		case "files":
 			tool = files.NewFilesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
+
 		case "findings":
 			tool = findings.NewFindings(allowed_methods, playground, sandbox, agent_name)
+
 		case "humans":
 			tool = humans.NewHumansWithCapabilities(allowed_methods, playground, sandbox, agent_name, capabilities)
+
 		case "programs":
 			tool = programs.NewProgramsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
+
 		case "requirements":
 			tool = requirements.NewRequirements(allowed_methods, playground, sandbox)
+
 		case "shell":
 			tool = shell.NewShellWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
+
 		case "skills":
 			tool = skills.NewSkillsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, allowed_tools, capabilities)
+
 		case "websites":
 			tool = websites.NewWebsitesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
 

@@ -19,20 +19,28 @@ func (kind FindingEvidenceKind) IsValid() bool {
 
 	case FindingEvidenceKindCommandOutput:
 		return true
+
 	case FindingEvidenceKindHTTPRequest:
 		return true
+
 	case FindingEvidenceKindHTTPResponse:
 		return true
+
 	case FindingEvidenceKindArtifact:
 		return true
+
 	case FindingEvidenceKindNote:
 		return true
+
 	case FindingEvidenceKindUnitTest:
 		return true
+
 	case FindingEvidenceKindPoc:
 		return true
+
 	case FindingEvidenceKindTestRun:
 		return true
+
 	default:
 		return false
 
@@ -46,8 +54,10 @@ func (kind FindingEvidenceKind) IsReproduction() bool {
 
 	case FindingEvidenceKindUnitTest:
 		return true
+
 	case FindingEvidenceKindPoc:
 		return true
+
 	default:
 		return false
 

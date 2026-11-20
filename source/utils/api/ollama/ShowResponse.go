@@ -21,8 +21,10 @@ func (response *ShowResponse) ContextLength() int {
 
 				case int:
 					result = tmp
+
 				case int64:
 					result = int(tmp)
+
 				case float64:
 					result = int(tmp)
 
@@ -52,8 +54,10 @@ func (response *ShowResponse) EmbeddingLength() int {
 
 				case int:
 					result = tmp
+
 				case int64:
 					result = int(tmp)
+
 				case float64:
 					result = int(tmp)
 

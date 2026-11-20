@@ -22,8 +22,10 @@ func main() {
 		tmp := strings.TrimSpace(argument)
 
 		if strings.HasPrefix(tmp, "--") == false || tmp == "--help" {
+
 			show_usage = true
 			break
+
 		}
 
 	}
