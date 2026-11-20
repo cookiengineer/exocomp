@@ -1,8 +1,8 @@
 package containers
 
 import "exocomp/schemas"
-import "encoding/json"
 import _ "embed"
+import "encoding/json"
 
 //go:embed Containers.json
 var containersJSON []byte

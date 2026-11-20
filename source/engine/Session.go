@@ -4,6 +4,7 @@ import "exocomp/adapters"
 import "exocomp/agents"
 import "exocomp/schemas"
 import "exocomp/tools"
+import tools_agents "exocomp/tools/agents"
 import "exocomp/types"
 import utils_capabilities "exocomp/utils/capabilities"
 import utils_chat "exocomp/utils/chat"
@@ -176,7 +177,7 @@ func (session *Session) InstallAgents(agents []*types.Agent) {
 
 		if tool != nil {
 
-			agents_tool, ok := tool.(*tools.Agents)
+			agents_tool, ok := tool.(*tools_agents.Agents)
 
 			if ok == true {
 
@@ -649,7 +650,7 @@ func (session *Session) GetAgent(name string) *types.Agent {
 
 	if tool != nil {
 
-		agents_tool, ok := tool.(*tools.Agents)
+		agents_tool, ok := tool.(*tools_agents.Agents)
 
 		if ok == true {
 			return agents_tool.GetAgentSnapshot(name)
@@ -689,7 +690,7 @@ func (session *Session) GetAgentInfo(name string) *types.Agent {
 
 	if tool != nil {
 
-		agents_tool, ok := tool.(*tools.Agents)
+		agents_tool, ok := tool.(*tools_agents.Agents)
 
 		if ok == true {
 			return agents_tool.GetAgentInfo(name)
@@ -723,7 +724,7 @@ func (session *Session) GetAgentMessages(name string) ([]*schemas.Message, bool)
 
 	if tool != nil {
 
-		agents_tool, ok := tool.(*tools.Agents)
+		agents_tool, ok := tool.(*tools_agents.Agents)
 
 		if ok == true {
 
@@ -761,7 +762,7 @@ func (session *Session) GetAgents() []*types.Agent {
 
 	if tool != nil {
 
-		agents_tool, ok := tool.(*tools.Agents)
+		agents_tool, ok := tool.(*tools_agents.Agents)
 
 		if ok == true {
 			result = append(result, agents_tool.GetAgents()...)
@@ -1066,7 +1067,7 @@ func (session *Session) SendAgentMessage(name string, content string) error {
 
 	if tool != nil {
 
-		agents_tool, ok := tool.(*tools.Agents)
+		agents_tool, ok := tool.(*tools_agents.Agents)
 
 		if ok == true {
 
@@ -1254,7 +1255,7 @@ func (session *Session) SwitchRole(role string) (string, error) {
 
 		if tool != nil {
 
-			agents_tool, ok := tool.(*tools.Agents)
+			agents_tool, ok := tool.(*tools_agents.Agents)
 
 			if ok == true {
 
@@ -1639,7 +1640,7 @@ func (session *Session) rebindAgentsTool() {
 
 		if tool != nil {
 
-			agents_tool, ok := tool.(*tools.Agents)
+			agents_tool, ok := tool.(*tools_agents.Agents)
 
 			if ok == true {
 				agents_tool.OnSwitch = session.onSwitch

@@ -1,8 +1,8 @@
 package humans
 
 import "exocomp/schemas"
-import "encoding/json"
 import _ "embed"
+import "encoding/json"
 
 //go:embed Humans.json
 var humansJSON []byte

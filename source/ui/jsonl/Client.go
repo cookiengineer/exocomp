@@ -2,7 +2,7 @@ package jsonl
 
 import "exocomp/engine"
 import "exocomp/schemas"
-import "exocomp/tools"
+import "exocomp/tools/agents"
 import "exocomp/types"
 import "bufio"
 import "encoding/json"
@@ -41,7 +41,7 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 	if tool != nil {
 
-		agents_tool, ok := tool.(*tools.Agents)
+		agents_tool, ok := tool.(*agents.Agents)
 
 		if ok == true {
 			agents_tool.OnQuit = client.QuitHook

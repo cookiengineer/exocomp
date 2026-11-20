@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/types"
+import "exocomp/tools/agents"
 import "exocomp/tools/assets"
 import "exocomp/tools/bugs"
 import "exocomp/tools/changelog"
@@ -10,10 +11,10 @@ import "exocomp/tools/findings"
 import "exocomp/tools/humans"
 import "exocomp/tools/programs"
 import "exocomp/tools/requirements"
+import "exocomp/tools/shell"
 import "exocomp/tools/skills"
 import "exocomp/tools/websites"
 import utils_capabilities "exocomp/utils/capabilities"
-import _ "embed"
 import net_url "net/url"
 import "strings"
 
@@ -62,7 +63,7 @@ func Toolset(
 		switch tool_name {
 
 		case "agents":
-			tool = NewAgents(allowed_methods, playground, sandbox, model, url, debug)
+			tool = agents.NewAgents(allowed_methods, playground, sandbox, model, url, debug)
 		case "assets":
 			tool = assets.NewAssets(allowed_methods, playground, sandbox)
 		case "bugs":
@@ -82,7 +83,7 @@ func Toolset(
 		case "requirements":
 			tool = requirements.NewRequirements(allowed_methods, playground, sandbox)
 		case "shell":
-			tool = NewShellWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
+			tool = shell.NewShellWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
 		case "skills":
 			tool = skills.NewSkillsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, allowed_tools, capabilities)
 		case "websites":

@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/schemas"
+import "exocomp/tools/agents"
 import "exocomp/tools/assets"
 import "exocomp/tools/bugs"
 import "exocomp/tools/changelog"
@@ -10,6 +11,7 @@ import "exocomp/tools/findings"
 import "exocomp/tools/humans"
 import "exocomp/tools/programs"
 import "exocomp/tools/requirements"
+import "exocomp/tools/shell"
 import "exocomp/tools/skills"
 import "exocomp/tools/websites"
 import "encoding/json"
@@ -19,7 +21,7 @@ import "testing"
 func TestToolSchemas_DoNotMentionInternalState(t *testing.T) {
 
 	schema_groups := [][]schemas.Tool{
-		AgentsSchema,
+		agents.AgentsSchema,
 		assets.AssetsSchema,
 		bugs.BugsSchema,
 		changelog.ChangelogSchema,
@@ -29,7 +31,7 @@ func TestToolSchemas_DoNotMentionInternalState(t *testing.T) {
 		humans.HumansSchema,
 		programs.ProgramsSchema,
 		requirements.RequirementsSchema,
-		ShellSchema,
+		shell.ShellSchema,
 		skills.SkillsSchema,
 		websites.WebsitesSchema,
 	}

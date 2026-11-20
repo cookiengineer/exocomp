@@ -2,16 +2,12 @@ package websites
 
 import "exocomp/schemas"
 import utils_fmt "exocomp/utils/fmt"
-import "exocomp/types"
 import utils_capabilities "exocomp/utils/capabilities"
 import "context"
 import "fmt"
-import "io"
 import net_http "net/http"
 import "net"
 import "slices"
-import "sort"
-import "strings"
 import "time"
 
 type Websites struct {
@@ -80,41 +76,6 @@ func (tool *Websites) Name() string {
 	return "websites"
 }
 
-func (tool *Websites) canConnect(host string) bool {
-
-	if tool.Capabilities != nil && tool.Capabilities.HasNetwork() == true {
-
-		if tool.Capabilities.CanConnect(host) == true {
-			return true
-		}
-
-		if net.ParseIP(host) == nil {
-
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-
-			addresses, err0 := net.DefaultResolver.LookupIPAddr(ctx, host)
-
-			if err0 == nil {
-
-				for _, address := range addresses {
-
-					if tool.Capabilities.CanConnectIP(address.IP) == true {
-						return true
-					}
-
-				}
-
-			}
-
-		}
-
-	}
-
-	return false
-
-}
-
 func (tool *Websites) Call(method string, arguments map[string]interface{}) (string, error) {
 
 	if tool.HasMethod(method) == true {
@@ -172,108 +133,6 @@ func (tool *Websites) Call(method string, arguments map[string]interface{}) (str
 
 }
 
-func (tool *Websites) Fetch(url_str string, user_agent string, format string) (string, error) {
-
-	format = strings.ToLower(strings.TrimSpace(format))
-
-	switch format {
-
-	case "markdown", "text", "html":
-	case "":
-		format = "markdown"
-	default:
-		format = ""
-
-	}
-
-	if format != "" {
-
-		url, err0 := parseWebsiteURL(url_str)
-
-		if err0 == nil {
-
-			useragent, err1 := getWebsiteUserAgent(user_agent)
-
-			if err1 == nil {
-
-				if tool.canConnect(url.Hostname()) == false {
-					return "", fmt.Errorf("websites.Fetch: Missing network.Connect permission for \"%s\". Request it with humans.AskPermission.", url.Hostname())
-				}
-
-				request, err2 := net_http.NewRequest(net_http.MethodGet, url.String(), nil)
-
-				if err2 == nil {
-
-					request.Header = useragent.Header()
-
-					accept := request.Header.Get("Accept")
-					accept_language := request.Header.Get("Accept-Language")
-
-					if accept == "" {
-						accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-					}
-
-					if accept_language == "" {
-						accept_language = "en-US,en;q=0.9"
-					}
-
-					request.Header.Set("Accept", accept)
-					request.Header.Set("Accept-Language", accept_language)
-
-					response, err3 := tool.client.Do(request)
-
-					if err3 == nil {
-
-						defer response.Body.Close()
-
-						bytes, err4 := io.ReadAll(io.LimitReader(response.Body, 16*1024*1024))
-
-						if err4 == nil {
-
-							content := ""
-
-							switch format {
-
-							case "html":
-								content = string(bytes)
-							case "text":
-								content = getWebsiteText(url, bytes)
-							default:
-								content = getWebsiteMarkdown(url, bytes)
-
-							}
-
-							return strings.Join([]string{
-								fmt.Sprintf("websites.Fetch: URL \"%s\" (%s) contents", url.String(), response.Status),
-								strings.TrimSpace(content),
-							}, "\n"), nil
-
-						} else {
-							return "", fmt.Errorf("websites.Fetch: Cannot read HTTP response body.")
-						}
-
-					} else {
-						return "", fmt.Errorf("websites.Fetch: URL \"%s\" is unreachable.", url.String())
-					}
-
-				} else {
-					return "", fmt.Errorf("websites.Fetch: Invalid URL \"%s\".", url.String())
-				}
-
-			} else {
-				return "", fmt.Errorf("websites.Fetch: %s", err1.Error())
-			}
-
-		} else {
-			return "", fmt.Errorf("websites.Fetch: %s", err0.Error())
-		}
-
-	} else {
-		return "", fmt.Errorf("websites.Fetch: Invalid parameter \"format\" must be \"markdown\", \"text\" or \"html\".")
-	}
-
-}
-
 func (tool *Websites) GetContent(id string) (any, error) {
 	return nil, nil
 }
@@ -284,33 +143,6 @@ func (tool *Websites) GetContentIdentifiers() []string {
 
 func (tool *Websites) HasMethod(method string) bool {
 	return slices.Contains(tool.Methods, method) == true
-}
-
-func (tool *Websites) List() (string, error) {
-
-	names := make([]string, 0)
-
-	for _, useragent := range types.UserAgents {
-		names = append(names, useragent.Name)
-	}
-
-	sort.Strings(names)
-
-	lines := make([]string, 0)
-	lines = append(lines, fmt.Sprintf("websites.List: %d User-Agent presets available.", len(names)))
-
-	for _, name := range names {
-
-		useragent := types.GetUserAgent(name)
-
-		if useragent != nil {
-			lines = append(lines, fmt.Sprintf("- Name: \"%s\", Platform: %s, Mobile: %t", useragent.Name, useragent.Platform, useragent.Mobile))
-		}
-
-	}
-
-	return strings.Join(lines, "\n"), nil
-
 }
 
 func (tool *Websites) Schemas() []schemas.Tool {
@@ -330,103 +162,5 @@ func (tool *Websites) Schemas() []schemas.Tool {
 	}
 
 	return result
-
-}
-
-func (tool *Websites) Stat(url_str string, user_agent string) (string, error) {
-
-	url, err0 := parseWebsiteURL(url_str)
-
-	if err0 == nil {
-
-		useragent, err1 := getWebsiteUserAgent(user_agent)
-
-		if err1 == nil {
-
-			if tool.canConnect(url.Hostname()) == false {
-				return "", fmt.Errorf("websites.Stat: Missing network.Connect permission for \"%s\". Request it with humans.AskPermission.", url.Hostname())
-			}
-
-			var response *net_http.Response = nil
-
-			request_head, err2 := net_http.NewRequest(net_http.MethodHead, url.String(), nil)
-
-			if err2 == nil {
-
-				request_head.Header = useragent.Header()
-
-				response_head, err3 := tool.client.Do(request_head)
-
-				if err3 == nil {
-
-					io.Copy(io.Discard, response_head.Body)
-					response_head.Body.Close()
-
-					// NOTE: Falls through for response handling
-					response = response_head
-
-				} else {
-
-					// Some servers reject HEAD, fall back to a body-less GET
-					request_get, err4 := net_http.NewRequest(net_http.MethodGet, url.String(), nil)
-
-					if err4 == nil {
-
-						request_get.Header = useragent.Header()
-
-						response_get, err5 := tool.client.Do(request_get)
-
-						if err5 == nil {
-
-							io.Copy(io.Discard, response_get.Body)
-							response_get.Body.Close()
-
-							// NOTE: Falls through for response handling
-							response = response_get
-
-						} else {
-							return "", fmt.Errorf("websites.Stat: URL \"%s\" is unreachable.", url.String())
-						}
-
-					} else {
-						return "", fmt.Errorf("websites.Stat: Invalid URL \"%s\".", url.String())
-					}
-
-				}
-
-			} else {
-				return "", fmt.Errorf("websites.Stat: Invalid URL \"%s\".", url.String())
-			}
-
-			if response != nil {
-
-				lines := make([]string, 0)
-				lines = append(lines, fmt.Sprintf("websites.Stat: %s (%s)", url.String(), response.Status))
-
-				keys := make([]string, 0)
-
-				for key, _ := range response.Header {
-					keys = append(keys, key)
-				}
-
-				sort.Strings(keys)
-
-				for _, key := range keys {
-					lines = append(lines, fmt.Sprintf("%s: %s", key, strings.Join(response.Header[key], ", ")))
-				}
-
-				return strings.Join(lines, "\n"), nil
-
-			} else {
-				return "", fmt.Errorf("websites.Stat: URL \"%s\" gave no HTTP Response. Maybe a connection error?", url.String())
-			}
-
-		} else {
-			return "", fmt.Errorf("websites.Stat: %s", err1.Error())
-		}
-
-	} else {
-		return "", fmt.Errorf("websites.Stat: %s", err0.Error())
-	}
 
 }

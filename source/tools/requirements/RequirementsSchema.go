@@ -1,8 +1,8 @@
 package requirements
 
 import "exocomp/schemas"
-import "encoding/json"
 import _ "embed"
+import "encoding/json"
 
 //go:embed Requirements.json
 var requirementsJSON []byte

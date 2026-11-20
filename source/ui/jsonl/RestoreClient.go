@@ -1,7 +1,7 @@
 package jsonl
 
 import "exocomp/engine"
-import "exocomp/tools"
+import "exocomp/tools/agents"
 
 func RestoreClient(session *engine.Session) *Client {
 
@@ -20,7 +20,7 @@ func RestoreClient(session *engine.Session) *Client {
 
 	if tool != nil {
 
-		agents_tool, ok := tool.(*tools.Agents)
+		agents_tool, ok := tool.(*agents.Agents)
 
 		if ok == true {
 			agents_tool.OnQuit = client.QuitHook

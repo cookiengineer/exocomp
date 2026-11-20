@@ -1,8 +1,8 @@
 package skills
 
 import "exocomp/schemas"
-import "encoding/json"
 import _ "embed"
+import "encoding/json"
 
 //go:embed Skills.json
 var skillsJSON []byte

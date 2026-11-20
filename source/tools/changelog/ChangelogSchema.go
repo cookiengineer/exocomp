@@ -1,8 +1,8 @@
 package changelog
 
 import "exocomp/schemas"
-import "encoding/json"
 import _ "embed"
+import "encoding/json"
 
 //go:embed Changelog.json
 var changelogJSON []byte
