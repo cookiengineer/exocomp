@@ -25,7 +25,7 @@ func getFileSymbols(file *ast.File, fileset *token.FileSet, with_private bool) m
 
 				declaration := strings.TrimSpace(buffer.String())
 
-				if strings.Contains(declaration, "{\n") {
+				if strings.Contains(declaration, "{\n") == true {
 					declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
 				}
 
@@ -46,7 +46,7 @@ func getFileSymbols(file *ast.File, fileset *token.FileSet, with_private bool) m
 
 				declaration := strings.TrimSpace(buffer.String())
 
-				if strings.Contains(declaration, "{\n") {
+				if strings.Contains(declaration, "{\n") == true {
 					declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
 				}
 
@@ -79,7 +79,7 @@ func getFileSymbols(file *ast.File, fileset *token.FileSet, with_private bool) m
 
 						declaration := strings.TrimSpace(buffer.String())
 
-						if strings.Contains(declaration, "{\n") {
+						if strings.Contains(declaration, "{\n") == true {
 							declaration = strings.TrimSpace(declaration[0:strings.Index(declaration, "{\n")])
 						}
 

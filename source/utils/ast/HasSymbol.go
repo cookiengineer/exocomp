@@ -37,4 +37,5 @@ func HasSymbol(source []byte, symbol string, expected_type string) bool {
 	} else {
 		return false
 	}
+
 }

@@ -58,4 +58,5 @@ func GetSymbolType(source []byte, symbol string) (string, error) {
 	} else {
 		return "", fmt.Errorf("ast.GetSymbolType: Invalid Go syntax. \"type %s <type>\" must be defined.", symbol)
 	}
+
 }
