@@ -36,7 +36,7 @@ func AvailableSpace(path string) uint64 {
 					result = uint64(stat.Bavail) * uint64(stat.Bsize)
 					break
 
-				} else if errors.Is(err1, unix.ENOENT) {
+				} else if errors.Is(err1, unix.ENOENT) == true {
 
 					path = parent
 					continue
@@ -46,6 +46,7 @@ func AvailableSpace(path string) uint64 {
 				}
 
 			}
+
 		}
 
 	}

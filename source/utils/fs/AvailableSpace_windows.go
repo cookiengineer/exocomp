@@ -54,7 +54,7 @@ func AvailableSpace(path string) uint64 {
 						result = uint64(free_bytes_available)
 						break
 
-					} else if errors.Is(err3, windows.ERROR_PATH_NOT_FOUND) {
+					} else if errors.Is(err3, windows.ERROR_PATH_NOT_FOUND) == true {
 
 						path = parent
 						continue

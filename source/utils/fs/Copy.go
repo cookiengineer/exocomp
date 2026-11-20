@@ -12,9 +12,9 @@ func Copy(source string, target string) error {
 
 		if stat.Mode()&os.ModeSymlink != 0 {
 
-			return fmt.Errorf("Symbolic links are not allowed.")
+			return fmt.Errorf("fs.Copy: Symbolic links are not allowed.")
 
-		} else if stat.IsDir() {
+		} else if stat.IsDir() == true {
 
 			return CopyAll(source, target)
 

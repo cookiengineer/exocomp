@@ -12,32 +12,34 @@ func CopyAll(source string, target string) error {
 
 		if stat.Mode()&os.ModeSymlink != 0 {
 
-			return fmt.Errorf("Symbolic links are not allowed.")
+			return fmt.Errorf("fs.CopyAll: Symbolic links are not allowed.")
 
-		} else if stat.IsDir() {
+		} else if stat.IsDir() == true {
 
 			err0 := filepath.WalkDir(source, func(path string, entry os.DirEntry, err1 error) error {
 
 				if err1 == nil {
 
-					if entry.Type()&os.ModeSymlink != 0 {
-						return nil
-					}
+					if entry.Type()&os.ModeSymlink == 0 {
 
-					relative, err2 := filepath.Rel(source, path)
+						relative, err2 := filepath.Rel(source, path)
 
-					if err2 == nil {
+						if err2 == nil {
 
-						resolved := filepath.Join(target, relative)
+							resolved := filepath.Join(target, relative)
 
-						if entry.IsDir() {
-							return os.MkdirAll(resolved, 0755)
+							if entry.IsDir() == true {
+								return os.MkdirAll(resolved, 0755)
+							} else {
+								return Copy(path, resolved)
+							}
+
 						} else {
-							return Copy(path, resolved)
+							return err2
 						}
 
 					} else {
-						return err2
+						return nil
 					}
 
 				} else {
