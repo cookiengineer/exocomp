@@ -327,12 +327,42 @@ if err == nil {
   file that owns the data, ideally one `init()` per file.
 
 ```text
-source/types/Config.go        // type Config, NewConfig, ParseConfig, methods
-source/types/Pricing.go       // type Pricing
+source/types/Config.go             // type Config, NewConfig, ParseConfig, methods
+source/types/Pricing.go            // type Pricing
 source/utils/fmt/FormatAgentName.go
-source/utils/tty/Color.go     // type Color, NewColor, ColorFromInts, methods
-source/tools/Agents.go        // type Agents, methods, private agentProcess
+source/utils/tty/Color.go          // type Color, NewColor, ColorFromInts, methods
+source/tools/agents/Agents.go      // type Agents, interface methods
+source/tools/agents/Hire.go        // func (tool *Agents) Hire(...)
+source/tools/agents/readAgents.go  // unexported helper
 ```
+
+## Tool Packages
+
+Every tool lives in its own package below `source/tools/<namespace>/`, where
+`<namespace>` is the plural tool namespace the model sees (`agents.*`,
+`files.*`, `findings.*`, ...). `source/tools` itself contains only
+`Toolset.go`.
+
+- `<Type>.go` holds the tool type, its constructors, the `types.Tool` interface
+  methods (`Name`, `Call`, `GetContent`, `GetContentIdentifiers`,
+  `HasMethod`, `Schemas`) and `MarshalJSON`.
+- Every other exported method lives in its own `<Method>.go`, for example
+  `tools/files/Read.go` and `tools/findings/Import.go`. This is the documented
+  exception to "all methods live in the type's file": a tool type is a
+  namespace, not a single behaviour, and keeping `Import`, `Export`, `Verify`
+  or `Execute` beside the type would recreate a thousand-line file.
+- Unexported helpers use a lowercase file named after the function:
+  `tools/assets/validateAsset.go`.
+- Implementation-detail types get their own lowercase or `CamelCase` file:
+  `tools/findings/nucleiImportLine.go`, `tools/shell/shellSession.go`.
+- Each tool's JSON schema sits next to its type: `tools/files/Files.json`.
+- Tool packages must not import each other. Behaviour shared by two tools
+  belongs in a `utils/*` package, not in a sibling tool package.
+- Shared test binaries and sandbox helpers live in `source/tools/testutil`.
+  Test files import it; they do not duplicate the builders.
+- A tool package may alias the top-level role package as
+  `agents_roles "exocomp/agents"` when it is also named `agents`.
+
 
 ## Utility Ownership: Capabilities and Shell Helpers
 
@@ -343,10 +373,14 @@ or tool-specific behavior.
 |:--------|:------|
 | Wire and data types such as `Capability` and `Question` | `source/types` |
 | Capability validation, path matching, network matching, and the capability `Set` | `source/utils/capabilities` |
+| Tool-call argument accessors | `source/utils/chat` |
 | Generic shell parsing, formatting, terminal filtering, process groups, signals, and shell environments | `source/utils/shell` |
-| Finding IDs, text limits, redaction, sorting, query matching, evidence storage, index persistence, and report rendering | `source/utils/findings` |
-| Tool result formatting and tool-specific path adapters | `source/tools` |
+| Finding and asset IDs, text limits, redaction, sorting, query matching, evidence storage, index persistence, and report rendering | `source/utils/findings` |
+| MIME content types | `source/utils/http` |
+| Order-preserving string slice helpers | `source/utils/slices` |
+| Tool result formatting and tool-specific path adapters | `source/tools/<namespace>` |
 | Sandbox process execution and shared sandbox path validation | `source/utils/sandbox` |
+| Shared test binaries and sandbox test helpers | `source/tools/testutil` |
 
 ### Capabilities
 
@@ -378,8 +412,8 @@ Examples:
 - `capabilities.IsPathDenied(path)` belongs in
   `utils/capabilities/IsPathDenied.go`.
 - `capabilities.Parse(raw)` belongs in `utils/capabilities/Parse.go`.
-- `tools.resolveFilesPath(...)` stays in `tools`, because it combines sandbox
-  path resolution with the capability API.
+- `tools.resolveFilesPath(...)` stays in `tools/files`, because it combines
+  sandbox path resolution with the capability API.
 
 ### Shell helpers
 
@@ -396,26 +430,38 @@ a specific tool result:
 - `PrepareProcess`
 - `SendSignalByName`
 - `KillProcess`
+- `IsNetworkArgument` and `SanitizeProgramArgument` for capability-aware
+  program arguments
 
 The `Shell` tool itself, its PTY session lifecycle, session state, and
-`shellSession` type stay in `source/tools/Shell.go`.
+`shellSession` type stay in `source/tools/shell/`.
 
-`tools/sanitizeShellArguments.go` also stays in `tools`, because it bridges
-capability-aware program argument rules with the shell tool.
+`source/tools/shell/sanitizeShellArguments.go` also stays in that package,
+because it bridges the capability-aware program argument rules with the shell
+tool.
 
 ### Findings helpers
 
-`source/utils/findings` owns finding domain logic and persistence:
+`source/utils/findings` owns finding and asset domain logic and persistence:
 
-- `NewFindingID` and `NewEvidenceID`
+- `NewFindingID`, `NewEvidenceID` and `NewAssetID`
 - `LimitText`, `LimitIdentifiers` and `RedactSecrets`
 - `SeverityRank`, `SortSummaries`, `MatchesQuery` and `BuildReport`
 - `ReadIndex`, `WriteIndex`, `ReadFinding`, `WriteFinding` and `ReadAll`
+- `ReadAssetsIndex`, `WriteAssetsIndex` and `NormalizeAssetValue`
 - `EvidenceArtifactPath`, `WriteEvidenceContent` and `CopyEvidenceFile`
+- `ReadScanArtifactFile`, `ReadScanArtifact` and `WriteScanArtifact`
 
 The `Findings` tool, its argument parsing, cache, mutex, result formatting and
-`findings.*` error prefixes stay in `source/tools/Findings.go` and its tool
+`findings.*` error prefixes stay in `source/tools/findings/` and its tool
 helpers. `utils/findings` must not import `tools` or know the tool name.
+
+### Shared tool arguments
+
+`source/utils/chat` owns the `Arguments` type and its typed accessors
+(`Bool`, `Float`, `Has`, `Int`, `Map`, `Object`, `String`, `Strings`). Tool
+packages decode `map[string]any` into `chat.Arguments` instead of repeating
+type assertions.
 
 ### Dependency direction
 
@@ -435,9 +481,10 @@ tools
 engine
 ```
 
-`tools` may import `utils/capabilities`, `utils/findings`, `utils/shell`, and
-`utils/sandbox`.
-`engine` may import `utils/capabilities`.
+`tools` may import `utils/capabilities`, `utils/chat`, `utils/findings`,
+`utils/http`, `utils/shell`, and `utils/sandbox`.
+Tool packages must not import each other; shared behaviour belongs in `utils`.
+`engine` may import `utils/capabilities` and individual tool packages.
 `utils/capabilities` should only depend on `types` and the standard library.
 `utils/sandbox` owns sandbox paths and process execution and must not import
 `utils/findings`, `utils/shell` or `tools`.
@@ -455,11 +502,12 @@ belongs behind a small interface/callback rather than a reverse import.
 - `CheckSymlinks`
 - `ResolvePath`
 - `SanitizePath`
+- `IsReservedPath` for the internal `.exocomp` folder
+- `SanitizeExecutionError` for subprocess failures
 
 `tools` must not add another sandbox path resolver. Tool-specific adapters such
-as `tools.resolveFilesPath`, `tools.displayFilesPath`, and
-`tools.sanitizeProgramArgument` call the `utils/sandbox` helpers and combine
-them with their own tool behavior.
+as `tools/files/resolveFilesPath.go` and `tools/files/displayFilesPath.go` call
+the `utils/sandbox` helpers and combine them with their own tool behavior.
 
 `utils/shell.ResolveWorkdir` uses `utils_sandbox.CheckPath`.
 

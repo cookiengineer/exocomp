@@ -20,7 +20,7 @@ exocomp-web web --role=planner --model="codestral:22b" --temperature=0.7;
 ### Multi-Agent Usage
 
 The default `planner` agent is allowed to hire contracting sub-agents with the
-[Agents](../source/tools/Agents.go) tool.
+[Agents](../source/tools/agents/Agents.go) tool.
 
 Multi agent communication works with a sub process hierarchy, where each process
 works in their own sandbox with the `jsonl` frontend and their own agent type and

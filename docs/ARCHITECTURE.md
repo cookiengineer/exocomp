@@ -206,23 +206,49 @@ Container isolation is enforced by the tool itself:
 
 ```
 source/
+  actions/       CLI actions (config dump, usage text)
+  adapters/      Provider-specific request/response transforms
   agents/        Role templates (*.yaml) and prompt/message rendering
   parsers/
     html/        HTML to markdown/text conversion
     markdown/    Shared markdown parser for the web and TTY frontends
-  tools/         Tool implementations and JSON schemas
+    yaml/        YAML parser used by the config and role loaders
+  providers/     Provider presets (URL, models, pricing)
+  tools/         Toolset wiring (Toolset.go) and one package per tool
+    agents/        agents.*      contractor lifecycle and profile switch
+    assets/        assets.*      recon asset inventory
+    bugs/          bugs.*        discovered bug reports
+    changelog/     changelog.*   development changelog
+    containers/    containers.*  podman containers
+    files/         files.*       sandboxed file and folder access
+    findings/      findings.*    findings, evidence and reports
+    humans/        humans.*      questions and temporary capabilities
+    programs/      programs.*    installed program execution
+    requirements/  requirements.* implementation specifications
+    shell/         shell.*       interactive PTY sessions
+    skills/        skills.*      Agent Skills
+    websites/      websites.*    Reader Mode fetching
+    testutil/      Shared test binaries and sandbox helpers
   types/         Shared types (Agent, Config, Asset, Bug, ChangelogEntry, Finding, Requirement, ...)
   schemas/       Wire types (Message, ToolCall, ChatRequest/Response, ...)
-  utils/         Shared helpers (ast, chat, cli, findings, fmt, fs, http, api adapters, ...)
+  utils/         Shared helpers (ast, capabilities, chat, cli, findings, fmt, fs,
+                 http, landlock, podman, rand, sandbox, seatbelt, shell, slices,
+                 strings, tty)
   ui/
     jsonl/       Child-process frontend with JSONL over stdin/stdout
     tty/         Interactive terminal frontend (the human's planner)
     web/         Web frontend + REST API (the human's planner)
   cmds/
+    agimus/          Easter egg TTY entry point
     exocomp/         UI dispatcher (config | terminal)
     exocomp-agent/   Child-process entry point (JSONL only)
     exocomp-web/     Web server entry point (config | web)
+    exocomp-sandbox/ Landlock / Seatbelt helper spawned by the sandbox
 ```
+
+`source/tools/Toolset.go` is the only file in the `tools` package. It imports
+each tool package and returns the allowed tools for a role, so `engine` depends
+on `tools` plus the individual tool packages it type-asserts.
 
 `parsers/markdown` owns only syntax and the `Document`/`Element` AST. The web
 app renders that AST to safe HTML in `app/utils/html`, while the TTY renders it
@@ -274,7 +300,7 @@ Agent state is tracked on [types.Agent](../source/types/Agent.go) via the
 | `failed`   | Exited without a work report (non-zero, killed) |
 | `fired`    | Killed via `agents.Fire`                        |
 
-Lifecycle is owned by the [Agents tool](../source/tools/Agents.go):
+Lifecycle is owned by the [Agents tool](../source/tools/agents/Agents.go):
 
 **agents.Hire(role, prompt, sandbox)**:
 
@@ -342,7 +368,8 @@ keyed by their namespace (the part before the first `.`).
 - `assets.*` stores a deduplicated inventory under `<playground>/.exocomp/assets/index.json`. `assets.Import` parses httpx, naabu, subfinder, dnsx, tlsx, katana, gobuster and urlfinder artifacts. `assets.Export` writes host lists, URL lists or JSON into `./work`.
 - There is no `scans.*` tool. Agents run the preshipped Go scanner binaries directly through `programs.Execute` or `shell.*` and write structured artifacts under `./work/scans/`. The importers consume those artifacts so the model never parses raw scanner output. Tool-managed state stays private in `.exocomp` and is only accessed through import/export methods.
 
-Each tool's LLM-facing contract lives in its embedded JSON schema at `tools/*.json`
+Each tool's LLM-facing contract lives in its embedded JSON schema next to the
+tool, e.g. `tools/files/Files.json`
 with precise parameter descriptions and syntax examples.
 
 Role separation is enforced by *capability*, not by the prompt alone.
@@ -386,8 +413,8 @@ DNS names and IPs).
 
 | File | Purpose |
 |:-----|:--------|
-| `source/tools/sanitizeFilesystemError.go` | Maps `os.*` filesystem errors to `does not exist.` / `Permission denied.` / `Cannot access ...`, using the relative path. |
-| `source/tools/sanitizeExecutionError.go` | Maps subprocess errors from `programs.Execute` / `skills.Execute` to `Permission denied.` / `Program doesn't exist.` / `exited with an error.` |
+| `source/tools/files/sanitizeFilesystemError.go` | Maps `os.*` filesystem errors to `does not exist.` / `Permission denied.` / `Cannot access ...`, using the relative path. |
+| `source/utils/sandbox/SanitizeExecutionError.go` | Maps subprocess errors from `programs.Execute` / `skills.Execute` to `Permission denied.` / `Program doesn't exist.` / `exited with an error.` |
 
 ### How to add a tool
 
@@ -398,7 +425,7 @@ DNS names and IPs).
    `sanitizeExecutionError(namespace, method, kind, name, result, err)`.
 4. On any HTTP failure, return a fixed message that omits dial/DNS/IP details.
 5. Add a test that asserts the error contains no absolute path, `/tmp/`, IP
-   address or `resolved` path (see `source/tools/*_test.go`).
+   address or `resolved` path (see `source/tools/*/*_test.go`).
 
 ## Session Loop
 

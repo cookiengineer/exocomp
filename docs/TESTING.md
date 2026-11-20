@@ -67,8 +67,8 @@ EXOCOMP_PODMAN_TEST=1 go test -run TestContainers_Integration -v ./
 ### Live Agents Tool
 
 Testing the live `agents` tool comes with certain limitations because of how the
-`go test` workflow is designed. The `tools/Agents_main_test.go` builds a
-standalone binary of `cmds/exocomp/main.go` that is injected into `tools/Agents.go`
+`go test` workflow is designed. The `tools/agents/Agents_main_test.go` builds a
+standalone binary of `cmds/exocomp/main.go` that is injected into `tools/agents/Agents.go`
 via environment variable. This is unavoidable due to otherwise cyclic
 dependencies.
 

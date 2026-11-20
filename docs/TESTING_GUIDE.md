@@ -27,9 +27,11 @@ live-LLM and llama-server workflows). This guide is about how to *write* them.
 
 - One `_test.go` file per source file, named after it:
   `Files.go` -> `Files_test.go`, `GetSymbol.go` -> `GetSymbol_test.go`.
-- Larger tools split their tests across several files by concern:
-  `Agents_test.go`, `Agents_lifecycle_test.go`, `Agents_quit_test.go`,
-  `Agents_main_test.go`, `Agents_list_test.go`.
+- Larger tools split their tests across several files by concern inside the
+  tool package:
+  `tools/agents/Agents_test.go`, `tools/agents/Agents_lifecycle_test.go`,
+  `tools/agents/Agents_quit_test.go`, `tools/agents/Agents_main_test.go`,
+  `tools/agents/Agents_list_test.go`.
 - Test functions are named `Test<Type>_<Method>`, optionally with a scenario
   suffix:
 
@@ -259,8 +261,9 @@ Tests that would otherwise require spawning a real agent use a fake binary:
 - `source/tools/testdata/fakeagent/main.go` is a tiny `main` that prints
   `schemas.Message:` JSON lines and exits, driven by the `EXOCOMP_FAKE_SCENARIO`
   environment variable.
-- `buildFakeAgent` (in `Agents_lifecycle_test.go`) builds it once via
-  `sync.Once` and `newTestAgents` injects it through `t.Setenv("EXOCOMP_AGENT", ...)`.
+- `testutil.BuildFakeAgent` (in `source/tools/testutil/BuildFakeAgent.go`)
+  builds it once via `sync.Once` and `newTestAgents` injects it through
+  `t.Setenv("EXOCOMP_AGENT", ...)`.
 - Add new scenarios to `fakeagent/main.go` when a test needs a different
   behaviour (e.g. `summarize` for `agents.Inquire`).
 
@@ -295,10 +298,10 @@ cd /path/to/exocomp/source;
 go test ./...;
 
 # Run a single package
-go test ./tools/;
+go test ./tools/...;
 
 # Run a specific test
-go test ./tools/ -run 'TestFiles_Read' -v;
+go test ./tools/files/ -run 'TestFiles_Read' -v;
 
 # Vet before you're done
 go vet ./...;
