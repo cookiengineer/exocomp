@@ -1,4 +1,4 @@
-package tools
+package assets
 
 import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"

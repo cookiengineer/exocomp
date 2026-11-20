@@ -1,8 +1,8 @@
-package tools
+package assets
 
 import "exocomp/schemas"
-import "encoding/json"
 import _ "embed"
+import "encoding/json"
 
 //go:embed Assets.json
 var assetsJSON []byte

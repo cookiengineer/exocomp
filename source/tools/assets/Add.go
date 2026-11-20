@@ -1,20 +1,30 @@
-package tools
+package assets
 
-import "exocomp/schemas"
 import "exocomp/types"
 import utils_chat "exocomp/utils/chat"
 import utils_findings "exocomp/utils/findings"
 import "fmt"
 import "strings"
 
-func updateAsset(tool *Assets, id string, asset types.Asset, arguments utils_chat.Arguments) (string, error) {
+func (tool *Assets) Add(arguments utils_chat.Arguments) (string, error) {
 
-	if type_value, ok := arguments.String("type"); ok == true {
-		asset.Type = types.AssetType(strings.ToLower(strings.TrimSpace(type_value)))
+	type_value, has_type := arguments.String("type")
+	value, has_value := arguments.String("value")
+
+	if has_type == false || has_value == false {
+		return "", fmt.Errorf("assets.Add: Invalid parameters \"type\" and \"value\" are required.")
 	}
 
-	if value, ok := arguments.String("value"); ok == true {
-		asset.Value = value
+	asset := types.Asset{
+		Type:       types.AssetType(strings.ToLower(strings.TrimSpace(type_value))),
+		Value:      value,
+		Technology: make([]string, 0),
+		Props:      make(map[string]string),
+		Tags:       make([]string, 0),
+	}
+
+	if asset.Type.IsValid() == false {
+		return "", fmt.Errorf("assets.Add: Invalid asset type \"%s\".", type_value)
 	}
 
 	if parent_id, ok := arguments.String("parent_id"); ok == true {
@@ -72,36 +82,22 @@ func updateAsset(tool *Assets, id string, asset types.Asset, arguments utils_cha
 	asset.Value = utils_findings.NormalizeAssetValue(asset.Type, asset.Value)
 	asset.Value = utils_findings.LimitText(utils_findings.RedactSecrets(asset.Value), assetsMaxValue)
 
-	if err := validateAsset(&asset); err == nil {
+	if err := validateAsset(&asset); err != nil {
+		return "", fmt.Errorf("assets.Add: %s", err.Error())
+	}
 
-		conflict := ""
+	stored, created, err := storeAsset(tool, asset)
 
-		for other_id, other := range tool.contents {
+	if err == nil {
 
-			if other_id != id && assetDedupKey(other) == assetDedupKey(asset) {
-				conflict = other_id
-				break
-			}
-
-		}
-
-		if conflict == "" {
-
-			asset.LastSeen = schemas.NewDatetime()
-			tool.contents[id] = asset
-
-			if err1 := writeAssetsIndex(tool); err1 == nil {
-				return fmt.Sprintf("assets.Update: Asset \"%s\" updated.", id), nil
-			} else {
-				return "", fmt.Errorf("assets.Update: %s", err1.Error())
-			}
-
+		if created == true {
+			return fmt.Sprintf("assets.Add: Asset \"%s\" created.", stored.ID), nil
 		} else {
-			return "", fmt.Errorf("assets.Update: Asset value conflicts with \"%s\".", conflict)
+			return fmt.Sprintf("assets.Add: Asset \"%s\" updated.", stored.ID), nil
 		}
 
 	} else {
-		return "", fmt.Errorf("assets.Update: %s", err.Error())
+		return "", fmt.Errorf("assets.Add: %s", err.Error())
 	}
 
 }

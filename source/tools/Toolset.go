@@ -1,6 +1,7 @@
 package tools
 
 import "exocomp/types"
+import "exocomp/tools/assets"
 import "exocomp/tools/bugs"
 import "exocomp/tools/changelog"
 import "exocomp/tools/containers"
@@ -63,7 +64,7 @@ func Toolset(
 		case "agents":
 			tool = NewAgents(allowed_methods, playground, sandbox, model, url, debug)
 		case "assets":
-			tool = NewAssets(allowed_methods, playground, sandbox)
+			tool = assets.NewAssets(allowed_methods, playground, sandbox)
 		case "bugs":
 			tool = bugs.NewBugs(allowed_methods, playground, sandbox)
 		case "changelog":

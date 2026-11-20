@@ -1,4 +1,4 @@
-package tools
+package assets
 
 import "exocomp/types"
 
