@@ -45,14 +45,14 @@ func formatError(request *http.Request, message string) (string, []byte) {
 </html>
 `, message))
 
-	if strings.Contains(request.URL.Path, "/api/") {
+	if strings.Contains(request.URL.Path, "/api/") == true {
 
 		content_type = "application/json; charset=utf-8"
 		payload, _ = json.MarshalIndent(map[string]string{
 			"error": message,
 		}, "", "\t")
 
-	} else if strings.HasSuffix(request.URL.Path, ".json") {
+	} else if strings.HasSuffix(request.URL.Path, ".json") == true {
 
 		content_type = "application/json; charset=utf-8"
 		payload, _ = json.MarshalIndent(map[string]string{

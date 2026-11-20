@@ -4,8 +4,8 @@ import "exocomp/engine"
 import "exocomp/schemas"
 import "exocomp/ui/web/handlers"
 import "encoding/json"
-import "net/http"
 import "io"
+import "net/http"
 import "strconv"
 
 func CallTool(session *engine.Session, request *http.Request, response http.ResponseWriter) {

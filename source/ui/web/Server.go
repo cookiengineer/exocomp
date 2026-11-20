@@ -1,14 +1,14 @@
 package web
 
 import "exocomp/engine"
+import "exocomp/types"
 import routes_parameters "exocomp/ui/web/routes/parameters"
 import routes_session "exocomp/ui/web/routes/session"
-import "exocomp/types"
 import utils_http "exocomp/utils/http"
 import "embed"
 import "fmt"
-import "net/http"
 import "io/fs"
+import "net/http"
 import net_url "net/url"
 import "os"
 import "os/signal"
@@ -32,26 +32,6 @@ func NewServer(agent *types.Agent, config *types.Config) *Server {
 	session.InstallAdapters()
 
 	agents := session.Recovery.RestoreAgents()
-
-	session.InstallAgents(agents)
-	session.BindAgents(session.SwitchRole)
-
-	url, _ := net_url.Parse("http://localhost:3000/")
-
-	return &Server{
-		Session: session,
-		URL:     url,
-		handler: utils_http.NewHandler(
-			http.NotFoundHandler(),
-		),
-	}
-
-}
-
-func RestoreServer(session *engine.Session, agents []*types.Agent) *Server {
-
-	session.InstallTools()
-	session.InstallAdapters()
 
 	session.InstallAgents(agents)
 	session.BindAgents(session.SwitchRole)
@@ -142,6 +122,7 @@ func (server *Server) Init() {
 	case sig := <-signals:
 
 		switch sig {
+
 		case syscall.SIGABRT:
 
 			server.Destroy()

@@ -3,8 +3,8 @@ package handlers
 import "exocomp/engine"
 import "bytes"
 import "compress/gzip"
-import "net/http"
 import "mime"
+import "net/http"
 import "path"
 import "strconv"
 import "strings"
@@ -50,7 +50,7 @@ func ServeFile(session *engine.Session, request *http.Request, response http.Res
 
 		accept_encoding := request.Header.Get("Accept-Encoding")
 
-		if strings.Contains(accept_encoding, "gzip") {
+		if strings.Contains(accept_encoding, "gzip") == true {
 
 			var buffer bytes.Buffer
 
