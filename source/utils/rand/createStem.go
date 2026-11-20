@@ -32,7 +32,7 @@ func createStem(role string) string {
 
 	for from, to := range phoneticStabilizers {
 
-		if strings.Contains(role, from) {
+		if strings.Contains(role, from) == true {
 			role = strings.ReplaceAll(role, from, to)
 		}
 

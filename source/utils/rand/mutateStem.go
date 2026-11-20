@@ -45,7 +45,7 @@ func mutateStem(stem string, randomizer *rand.Rand) string {
 
 	case 4:
 
-		if strings.HasSuffix(stem, "r") {
+		if strings.HasSuffix(stem, "r") == true {
 			stem += "i"
 		}
 
