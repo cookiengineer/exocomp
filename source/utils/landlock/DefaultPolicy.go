@@ -1,5 +1,6 @@
 package landlock
 
+import utils_slices "exocomp/utils/slices"
 import "path/filepath"
 
 // DefaultPolicy returns the default sandbox access rules for target.
@@ -50,9 +51,9 @@ func DefaultPolicy(sandbox string, target string, extra_read []string, extra_wri
 	}
 
 	return Policy{
-		ReadWrite: uniquePaths(read_write),
-		ReadOnly:  uniquePaths(read_only),
-		Devices:   uniquePaths(devices),
+		ReadWrite: utils_slices.UniqueStrings(read_write),
+		ReadOnly:  utils_slices.UniqueStrings(read_only),
+		Devices:   utils_slices.UniqueStrings(devices),
 	}
 
 }

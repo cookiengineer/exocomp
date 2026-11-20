@@ -2,6 +2,7 @@ package tools
 
 import "exocomp/types"
 import utils_findings "exocomp/utils/findings"
+import utils_strings "exocomp/utils/strings"
 import "encoding/json"
 import "fmt"
 import "net/url"
@@ -230,7 +231,7 @@ func parseHttpxResults(data []byte, target string, in_scope bool) ([]types.Asset
 			continue
 		}
 
-		value := firstNonEmpty(parsed.URL, parsed.Host, parsed.Input)
+		value := utils_strings.FirstNonEmpty(parsed.URL, parsed.Host, parsed.Input)
 
 		if value == "" {
 			invalid++
@@ -300,7 +301,7 @@ func parseNaabuResults(data []byte, in_scope bool) ([]types.Asset, int, error) {
 			continue
 		}
 
-		host := firstNonEmpty(parsed.Host, parsed.IP)
+		host := utils_strings.FirstNonEmpty(parsed.Host, parsed.IP)
 
 		if host == "" || parsed.Port < 1 || parsed.Port > 65535 {
 			invalid++
@@ -479,7 +480,7 @@ func parseTlsxResults(data []byte, in_scope bool) ([]types.Asset, int, error) {
 			continue
 		}
 
-		value := firstNonEmpty(parsed.Serial, parsed.FingerprintHash)
+		value := utils_strings.FirstNonEmpty(parsed.Serial, parsed.FingerprintHash)
 
 		if value == "" {
 			value = fmt.Sprintf("%s:%d", parsed.Host, parsed.Port)
@@ -754,20 +755,6 @@ func newImportedAsset(asset_type types.AssetType, value string, source string, i
 		Confidence: types.FindingConfidenceObserved,
 		InScope:    in_scope,
 	}
-}
-
-func firstNonEmpty(values ...string) string {
-
-	for _, value := range values {
-
-		if strings.TrimSpace(value) != "" {
-			return strings.TrimSpace(value)
-		}
-
-	}
-
-	return ""
-
 }
 
 func hostFromValue(value string) string {

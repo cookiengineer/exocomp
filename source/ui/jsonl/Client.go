@@ -159,13 +159,11 @@ func (client *Client) InputLoop() {
 
 			if role == "user" || role == "assistant" {
 
-				if strings.HasPrefix(prompt, "/") && strings.Contains(prompt, " ") && !strings.Contains(prompt, "\n") {
+				command := types.ParseCommand(prompt)
 
-					command := types.ParseCommand(prompt)
+				if command != nil {
 
-					if command != nil {
-						client.Session.CallTool("", command.Name, command.Method, command.Arguments)
-					}
+					client.Session.CallTool("", command.Name, command.Method, command.Arguments)
 
 				} else if strings.HasPrefix(prompt, "{") && strings.HasSuffix(prompt, "}") {
 

@@ -1,5 +1,6 @@
 package components
 
+import utils_tty "exocomp/utils/tty"
 import "strings"
 
 type Textarea struct {
@@ -224,7 +225,13 @@ func (textarea *Textarea) Wrap(width int) ([]TextareaLine, int, int) {
 
 		}
 
-		value_width := runeWidth(value)
+		value_width := utils_tty.RuneWidth(value)
+
+		// NOTE: Tabs render as four columns in the composer, so they wrap like
+		// four spaces even though RuneWidth reports them as zero-width.
+		if value == '\t' {
+			value_width = 4
+		}
 
 		if line_width+value_width > width && line_width > 0 {
 

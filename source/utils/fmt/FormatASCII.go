@@ -1,18 +1,10 @@
 package fmt
 
-import "encoding/json"
-import _ "embed"
+import utils_strings "exocomp/utils/strings"
 import "strings"
 
-//go:embed FormatASCII.json
-var embeddedUTF8Table []byte
-
-var utf8Table map[string][]uint16
-
-func init() {
-	json.Unmarshal(embeddedUTF8Table, &utf8Table)
-}
-
+// FormatASCII transliterates non-ASCII characters to their ASCII equivalents
+// while preserving tabs and newlines, so multi-line prompts keep their shape.
 func FormatASCII(value string) string {
 
 	tmp := strings.TrimSpace(value)
@@ -20,9 +12,9 @@ func FormatASCII(value string) string {
 
 	for _, character := range tmp {
 
-		mapped := lookup(uint16(character))
-
-		if mapped != "" {
+		if character == '\t' || character == '\n' {
+			filtered += string(character)
+		} else if mapped := utils_strings.Transliterate(character); mapped != "" {
 			filtered += mapped
 		}
 
