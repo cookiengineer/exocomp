@@ -134,6 +134,7 @@ func (recovery *Recovery) HasBackup() bool {
 	} else {
 		return false
 	}
+
 }
 
 func (recovery *Recovery) RestoreAgents() []*types.Agent {

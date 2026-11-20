@@ -12,6 +12,8 @@ import "encoding/json"
 import "fmt"
 import "io"
 import net_http "net/http"
+import "os"
+import "path/filepath"
 import "sort"
 import "strings"
 import "sync"
@@ -83,13 +85,15 @@ func NewSessionWithRecovery(agent *types.Agent, config *types.Config) (*Session,
 
 	recovery := NewRecovery(config.Playground)
 
-	if recovery.HasBackup() {
+	if recovery.HasBackup() == true {
 
 		session = recovery.RestoreSession()
 
 		if session != nil {
+
 			session.Console.Info("Restored Session from Backup")
 			return session, true
+
 		}
 
 		session = NewSession(agent, config)
@@ -133,11 +137,13 @@ func (session *Session) Backup() {
 
 // BindAgents binds the agent switch hook to the agents tool. The hook is
 // retained so it can be rebound after SwitchRole replaces the tool set.
-func (session *Session) BindAgents(onSwitch func(role string) (string, error)) {
+func (session *Session) BindAgents(on_switch func(role string) (string, error)) {
 
-	if session != nil && onSwitch != nil {
-		session.onSwitch = onSwitch
+	if session != nil && on_switch != nil {
+
+		session.onSwitch = on_switch
 		session.rebindAgentsTool()
+
 	}
 
 }
@@ -153,7 +159,7 @@ func (session *Session) InstallAdapters() {
 
 		adapterset := make([]types.Adapter, 0)
 
-		if session.Config.HasProvider(session.Agent.Model) {
+		if session.Config.HasProvider(session.Agent.Model) == true {
 
 			adapterset = adapters.Adapterset(
 				session.Config.ResolveURL(session.Agent.Model, ""),
@@ -208,7 +214,7 @@ func (session *Session) InstallTools() {
 			session.Capabilities = utils_capabilities.NewSet()
 		}
 
-		if session.Agent.HasTools() {
+		if session.Agent.HasTools() == true {
 
 			toolset = tools.Toolset(
 				session.Config.Playground,
@@ -306,6 +312,7 @@ func (session *Session) Init() error {
 	} else {
 		return fmt.Errorf("Session.Init: Session is empty, waiting for LLM system prompt.")
 	}
+
 }
 
 func (session *Session) CallTool(id string, name string, method string, arguments map[string]any) error {
@@ -456,7 +463,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 			session.Agent.Messages = append(session.Agent.Messages, tmp)
 			session.mutex.Unlock()
 
-			if strings.HasPrefix(content, "Error:") {
+			if strings.HasPrefix(content, "Error:") == true {
 				return fmt.Errorf("%s", content)
 			} else {
 				return nil
@@ -501,7 +508,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 			session.Agent.Messages = append(session.Agent.Messages, tmp)
 			session.mutex.Unlock()
 
-			if strings.HasPrefix(content, "Error:") {
+			if strings.HasPrefix(content, "Error:") == true {
 				return fmt.Errorf("%s", content)
 			} else {
 				return nil
@@ -533,7 +540,7 @@ func (session *Session) CallTool(id string, name string, method string, argument
 			session.Agent.Messages = append(session.Agent.Messages, tmp)
 			session.mutex.Unlock()
 
-			if strings.HasPrefix(content, "Error:") {
+			if strings.HasPrefix(content, "Error:") == true {
 				return fmt.Errorf("%s", content)
 			} else {
 				return nil
@@ -583,6 +590,7 @@ func (session *Session) GetAdapter(search string) types.Adapter {
 	} else {
 		return nil
 	}
+
 }
 
 func (session *Session) GetAdapters() []types.Adapter {
@@ -617,6 +625,7 @@ func (session *Session) GetLastMessage() *schemas.Message {
 	} else {
 		return nil
 	}
+
 }
 
 func (session *Session) GetAgent(name string) *types.Agent {
@@ -773,6 +782,7 @@ func (session *Session) GetAgents() []*types.Agent {
 		return result
 
 	}
+
 }
 
 func (session *Session) GetMessages(from int) []*schemas.Message {
@@ -1246,6 +1256,7 @@ func (session *Session) SwitchAgent(agent *types.Agent, summary string) error {
 	} else {
 		return fmt.Errorf("Session.SwitchAgent: Invalid agent.")
 	}
+
 }
 
 // SwitchRole summarizes the current conversation, switches to the requested
@@ -1651,6 +1662,43 @@ func (session *Session) rebindAgentsTool() {
 
 		}
 
+	}
+
+}
+
+func SessionFromFolder(source string, config *types.Config) (*Session, string, error) {
+
+	bytes, err1 := os.ReadFile(filepath.Join(source, ".exocomp", "session.json"))
+
+	if err1 == nil {
+
+		backup, err2 := ParseSession(bytes)
+
+		if err2 == nil {
+
+			old_playground := ""
+
+			if backup.Config != nil {
+				old_playground = backup.Config.Playground
+			}
+
+			if config != nil {
+
+				backup.Config.Name = config.Name
+				backup.Config.Role = config.Role
+				backup.Config.Playground = config.Playground
+				backup.Config.Sandbox = config.Sandbox
+
+			}
+
+			return RestoreSession(backup.Config.Playground, *backup), old_playground, nil
+
+		} else {
+			return nil, "", err2
+		}
+
+	} else {
+		return nil, "", err1
 	}
 
 }

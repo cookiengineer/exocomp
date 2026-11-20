@@ -20,7 +20,7 @@ func RestoreAgents(folder string, old_playground string, new_playground string) 
 
 			filename := entry.Name()
 
-			if strings.HasSuffix(filename, ".json") {
+			if strings.HasSuffix(filename, ".json") == true {
 
 				agentname := strings.TrimSpace(filename[0 : len(filename)-5])
 
