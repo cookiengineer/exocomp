@@ -38,6 +38,7 @@ func (renderer *Renderer) Flushed() bool {
 	} else {
 		return true
 	}
+
 }
 
 func (renderer *Renderer) RenderLoop() {

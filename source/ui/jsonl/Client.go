@@ -53,11 +53,11 @@ func NewClient(agent *types.Agent, config *types.Config) *Client {
 
 }
 
-func (client *Client) QuitHook(report string, success bool) {
+func (client *Client) QuitHook(report string, is_success bool) {
 
 	deadline := time.Now().Add(5 * time.Second)
 
-	for time.Now().Before(deadline) {
+	for time.Now().Before(deadline) == true {
 
 		if client.Renderer.Flushed() == true {
 			break
@@ -68,7 +68,7 @@ func (client *Client) QuitHook(report string, success bool) {
 
 	os.Stdout.Sync()
 
-	if success == true {
+	if is_success == true {
 		os.Exit(0)
 	} else {
 		os.Exit(1)
@@ -149,7 +149,7 @@ func (client *Client) InputLoop() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 
-	for scanner.Scan() {
+	for scanner.Scan() == true {
 
 		role := client.role
 		prompt := strings.TrimSpace(scanner.Text())
