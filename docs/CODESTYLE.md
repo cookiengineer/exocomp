@@ -279,13 +279,23 @@ if ok == true {
 - Error cases belong in `} else {` branches.
 - Error messages must be prefixed with the tool or component name, for example
   `agents.Switch: ...`, `files.Read: ...`, `Session.SwitchAgent: ...`.
-- The component prefix is mandatory, including for shared helpers. When the
-  component is a parameter, build the prefix from it instead of hard-coding a
-  different name:
+- A message carries exactly one prefix. Helpers must not add their own prefix
+  when the caller already wraps the result, because that produces
+  `assets.Add: assets.Validate: Invalid asset type.` instead of
+  `assets.Add: Invalid asset type.`.
+- Concretely: exported functions and methods, and everything under
+  `utils/`, `types/`, `schemas/`, `parsers/`, `engine/` and `agents/`, must
+  prefix their own errors. Unexported helpers inside a `tools/<namespace>`
+  package rely on the caller's prefix. Helpers under `tools/testutil` are
+  exempt because their messages only reach `t.Fatal`.
+- When the component is a parameter, build the prefix from it instead of
+  hard-coding a different name:
 
   ```go
   return "", fmt.Errorf("%s.%s: Invalid path \"%s\".", tool, method, path)
   ```
+
+  The method may be a placeholder as well: `fmt.Errorf("agents.%s: %s", method, message)`.
 
 - Never return a bare lowercase message such as `invalid command ...`.
 - Keep error messages deterministic and short.
@@ -631,6 +641,27 @@ go build ./...;
 go test ./...;
 go vet ./...;
 ```
+
+From the repository root, `make lint` runs the codestyle linter over
+`source/`:
+
+```bash
+make lint;
+
+# one rule at a time
+go -C toolchain run ./lint -rules layout/method-file;
+
+# include test files
+go -C toolchain run ./lint -tests;
+
+# list every rule
+go -C toolchain run ./lint -list;
+```
+
+The linter is `toolchain/lint` and parses with `go/parser` and `go/ast`. It
+implements the rules in this document as errors. `//nolint:<rule>` on a line
+or the line above suppresses a diagnostic; use it only for the documented
+exceptions.
 
 Do not reformat unrelated files. A diff should remain focused on the change
 being made.

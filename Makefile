@@ -2,7 +2,7 @@ GO ?= go
 ARCH ?= $(shell $(GO) env GOARCH)
 TOOLCHAIN := $(GO) -C toolchain
 
-.PHONY: all build quick linux darwin windows webapp test test-integration install clean
+.PHONY: all build quick linux darwin windows webapp lint test test-integration install clean
 
 all: build
 
@@ -23,6 +23,9 @@ windows:
 
 webapp:
 	$(TOOLCHAIN) run build-webapp.go
+
+lint:
+	$(TOOLCHAIN) run ./lint
 
 test:
 	$(GO) -C source test ./...
