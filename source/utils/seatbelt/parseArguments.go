@@ -25,16 +25,16 @@ func parseArguments(arguments []string) (string, []string, []string, bool, strin
 
 		} else if argument == "--" {
 			after_separator = true
-		} else if strings.HasPrefix(argument, "--sandbox=") {
+		} else if strings.HasPrefix(argument, "--sandbox=") == true {
 			sandbox = strings.TrimSpace(argument[len("--sandbox="):])
-		} else if strings.HasPrefix(argument, "--read=") {
+		} else if strings.HasPrefix(argument, "--read=") == true {
 			read_paths = append(read_paths, strings.TrimSpace(argument[len("--read="):]))
-		} else if strings.HasPrefix(argument, "--write=") {
+		} else if strings.HasPrefix(argument, "--write=") == true {
 			write_paths = append(write_paths, strings.TrimSpace(argument[len("--write="):]))
-		} else if strings.HasPrefix(argument, "--network=") {
+		} else if strings.HasPrefix(argument, "--network=") == true {
 			network = strings.TrimSpace(argument[len("--network="):])
 		} else {
-			return "", nil, nil, false, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
+			return "", nil, nil, false, "", nil, fmt.Errorf("seatbelt.ParseArguments: Invalid argument.")
 		}
 
 	}
@@ -44,10 +44,11 @@ func parseArguments(arguments []string) (string, []string, []string, bool, strin
 		if sandbox != "" && target != "" {
 			return sandbox, read_paths, write_paths, network == "allow", target, target_arguments, nil
 		} else {
-			return "", nil, nil, false, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
+			return "", nil, nil, false, "", nil, fmt.Errorf("seatbelt.ParseArguments: Invalid argument.")
 		}
 
 	} else {
-		return "", nil, nil, false, "", nil, fmt.Errorf("seatbelt.parseArguments: Invalid argument.")
+		return "", nil, nil, false, "", nil, fmt.Errorf("seatbelt.ParseArguments: Invalid argument.")
 	}
+
 }

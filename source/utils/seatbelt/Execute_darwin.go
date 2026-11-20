@@ -46,33 +46,45 @@ func Execute(arguments []string) int {
 						if err5 == nil {
 							return 0
 						} else {
+
 							fmt.Fprint(os.Stderr, "seatbelt.Execute: Cannot execute program.\n")
 							return 126
+
 						}
 
 					} else {
+
 						fmt.Fprint(os.Stderr, "seatbelt.Execute: Cannot apply sandbox confinement.\n")
 						return 125
+
 					}
 
 				} else {
+
 					fmt.Fprint(os.Stderr, "seatbelt.Execute: Sandboxing is not supported on this system.\n")
 					return 125
+
 				}
 
 			} else {
+
 				fmt.Fprint(os.Stderr, "seatbelt.Execute: Invalid arguments.\n")
 				return 2
+
 			}
 
 		} else {
+
 			fmt.Fprint(os.Stderr, "seatbelt.Execute: Invalid arguments.\n")
 			return 2
+
 		}
 
 	} else {
+
 		fmt.Fprint(os.Stderr, "seatbelt.Execute: Invalid arguments.\n")
 		return 2
+
 	}
 
 }

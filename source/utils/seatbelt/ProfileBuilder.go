@@ -6,21 +6,21 @@ import "strings"
 const maxProfileSize = 65535
 const resolverSocket = "/private/var/run/mDNSResponder"
 
-type profileBuilder struct {
+type ProfileBuilder struct {
 	imports     []string
 	rules       []string
 	seenImports map[string]bool
 }
 
-func newProfileBuilder() *profileBuilder {
-	return &profileBuilder{
+func NewProfileBuilder() *ProfileBuilder {
+	return &ProfileBuilder{
 		imports:     make([]string, 0),
 		rules:       make([]string, 0),
 		seenImports: make(map[string]bool, 0),
 	}
 }
 
-func (builder *profileBuilder) addImport(profile string) {
+func (builder *ProfileBuilder) addImport(profile string) {
 
 	if builder.seenImports[profile] == false {
 
@@ -31,11 +31,11 @@ func (builder *profileBuilder) addImport(profile string) {
 
 }
 
-func (builder *profileBuilder) addRule(rule string) {
+func (builder *ProfileBuilder) addRule(rule string) {
 	builder.rules = append(builder.rules, rule)
 }
 
-func (builder *profileBuilder) addDenyRules(paths []string, operations string) error {
+func (builder *ProfileBuilder) addDenyRules(paths []string, operations string) error {
 
 	for _, path := range paths {
 
@@ -60,9 +60,10 @@ func (builder *profileBuilder) addDenyRules(paths []string, operations string) e
 		return nil
 
 	}
+
 }
 
-func (builder *profileBuilder) addFileRules(paths []string, operations string, extension_classes []string) error {
+func (builder *ProfileBuilder) addFileRules(paths []string, operations string, extension_classes []string) error {
 
 	for _, path := range paths {
 
@@ -107,9 +108,10 @@ func (builder *profileBuilder) addFileRules(paths []string, operations string, e
 		return nil
 
 	}
+
 }
 
-func (builder *profileBuilder) addProcessExecRules(paths []string) error {
+func (builder *ProfileBuilder) addProcessExecRules(paths []string) error {
 
 	for _, path := range paths {
 
@@ -132,9 +134,10 @@ func (builder *profileBuilder) addProcessExecRules(paths []string) error {
 		return nil
 
 	}
+
 }
 
-func (builder *profileBuilder) build() (*Profile, error) {
+func (builder *ProfileBuilder) build() (*Profile, error) {
 
 	source_builder := strings.Builder{}
 

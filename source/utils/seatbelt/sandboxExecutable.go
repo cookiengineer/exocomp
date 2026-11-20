@@ -21,7 +21,7 @@ func sandboxExecutable() (string, error) {
 		if err1 == nil {
 			return path, nil
 		} else {
-			return "", fmt.Errorf("seatbelt.sandboxExecutable: sandbox-exec is not installed.")
+			return "", fmt.Errorf("seatbelt.SandboxExecutable: sandbox-exec is not installed.")
 		}
 
 	}

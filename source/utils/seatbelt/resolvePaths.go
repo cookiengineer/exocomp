@@ -1,15 +1,7 @@
 package seatbelt
 
-import "fmt"
 import "os"
 import "path/filepath"
-
-type resolvedPath struct {
-	original string
-	resolved string
-	isDir    bool
-	exists   bool
-}
 
 func resolvePaths(paths []string) []resolvedPath {
 
@@ -67,67 +59,8 @@ func resolvePaths(paths []string) []resolvedPath {
 				}
 
 			}
+
 		}
-	}
-
-	return result
-
-}
-
-func pathFilter(resolved_path resolvedPath) string {
-
-	if resolved_path.exists == true {
-
-		matcher := "subpath"
-
-		if resolved_path.isDir == false {
-			matcher = "literal"
-		}
-
-		if resolved_path.original == resolved_path.resolved {
-			return fmt.Sprintf("(%s %s)", matcher, quoteSBPL(resolved_path.original))
-		} else {
-			return fmt.Sprintf(
-				"(require-any (%s %s) (%s %s))",
-				matcher, quoteSBPL(resolved_path.original),
-				matcher, quoteSBPL(resolved_path.resolved),
-			)
-		}
-
-	} else {
-
-		if resolved_path.original == resolved_path.resolved {
-			return fmt.Sprintf(
-				"(require-any (literal %s) (subpath %s))",
-				quoteSBPL(resolved_path.original),
-				quoteSBPL(resolved_path.original),
-			)
-		} else {
-			return fmt.Sprintf(
-				"(require-any (literal %s) (subpath %s) (literal %s) (subpath %s))",
-				quoteSBPL(resolved_path.original),
-				quoteSBPL(resolved_path.original),
-				quoteSBPL(resolved_path.resolved),
-				quoteSBPL(resolved_path.resolved),
-			)
-		}
-
-	}
-
-}
-
-func pathFilters(paths []resolvedPath) string {
-
-	result := ""
-
-	for index, resolved_path := range paths {
-
-		if index > 0 {
-			result = result + " "
-		}
-
-		result = result + pathFilter(resolved_path)
-
 	}
 
 	return result

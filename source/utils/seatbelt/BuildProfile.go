@@ -5,7 +5,7 @@ import "fmt"
 // BuildProfile compiles the policy into a complete SBPL sandbox profile.
 func BuildProfile(policy Policy) (*Profile, error) {
 
-	builder := newProfileBuilder()
+	builder := NewProfileBuilder()
 
 	builder.addImport("bsd.sb")
 	builder.addRule("(allow process-fork)")
