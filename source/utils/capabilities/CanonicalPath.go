@@ -25,6 +25,9 @@ func CanonicalPath(path string) string {
 			} else {
 				return absolute
 			}
+
 		}
+
 	}
+
 }

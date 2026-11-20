@@ -11,8 +11,10 @@ func UniquePaths(paths []string) []string {
 	for _, path := range paths {
 
 		if seen[path] == false {
+
 			seen[path] = true
 			result = append(result, path)
+
 		}
 
 	}

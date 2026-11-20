@@ -44,8 +44,10 @@ func (set *Set) Grant(capabilities []Capability) error {
 		for _, existing := range set.capabilities {
 
 			if existing.Key() == capability.Key() {
+
 				found = true
 				break
+
 			}
 
 		}
@@ -202,6 +204,7 @@ func (set *Set) CanConnect(host string) bool {
 		} else {
 			return false
 		}
+
 	} else {
 		return false
 	}
@@ -271,6 +274,7 @@ func (set *Set) Covers(capability Capability) bool {
 		} else {
 			return false
 		}
+
 	} else {
 		return false
 	}
@@ -292,8 +296,10 @@ func (set *Set) SandboxPaths() ([]string, []string) {
 			if capability.Type == CapabilityFilesRead {
 				read_paths = append(read_paths, capability.Scope)
 			} else if capability.Type == CapabilityFilesWrite {
+
 				read_paths = append(read_paths, capability.Scope)
 				write_paths = append(write_paths, capability.Scope)
+
 			}
 
 		}
@@ -317,13 +323,16 @@ func (set *Set) Missing(capabilities []Capability) ([]Capability, error) {
 		if err0 == nil {
 
 			if set.Covers(normalized) == false && seen[normalized.Key()] == false {
+
 				seen[normalized.Key()] = true
 				missing = append(missing, normalized)
+
 			}
 
 		} else {
 			return nil, err0
 		}
+
 	}
 
 	sort.Slice(missing, func(a int, b int) bool {

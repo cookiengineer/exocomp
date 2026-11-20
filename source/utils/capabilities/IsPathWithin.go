@@ -26,4 +26,5 @@ func IsPathWithin(scope string, path string) bool {
 		return false
 
 	}
+
 }

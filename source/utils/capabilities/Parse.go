@@ -27,11 +27,11 @@ func Parse(raw any) ([]Capability, error) {
 				if ok1 == true && ok2 == true {
 					result = append(result, Capability{Type: capability_type, Scope: scope})
 				} else {
-					return nil, fmt.Errorf("Invalid parameter \"capabilities[%d]\" must contain string \"type\" and \"scope\".", index)
+					return nil, fmt.Errorf("capabilities.Parse: Invalid parameter \"capabilities[%d]\" must contain string \"type\" and \"scope\".", index)
 				}
 
 			} else {
-				return nil, fmt.Errorf("Invalid parameter \"capabilities[%d]\" is not an object.", index)
+				return nil, fmt.Errorf("capabilities.Parse: Invalid parameter \"capabilities[%d]\" is not an object.", index)
 			}
 
 		}
@@ -39,7 +39,7 @@ func Parse(raw any) ([]Capability, error) {
 		return result, nil
 
 	default:
-		return nil, fmt.Errorf("Invalid parameter \"capabilities\" is not an array of capabilities.")
+		return nil, fmt.Errorf("capabilities.Parse: Invalid parameter \"capabilities\" is not an array of capabilities.")
 
 	}
 
