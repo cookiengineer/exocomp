@@ -1,4 +1,4 @@
-package tools
+package requirements
 
 import "exocomp/types"
 import utils_sandbox "exocomp/utils/sandbox"

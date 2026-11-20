@@ -1,4 +1,4 @@
-package tools
+package requirements
 
 import "exocomp/schemas"
 import "encoding/json"

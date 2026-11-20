@@ -1,7 +1,7 @@
 package session
 
 import "exocomp/engine"
-import "exocomp/tools"
+import "exocomp/tools/changelog"
 import "exocomp/ui/web/handlers"
 import "encoding/json"
 import "net/http"
@@ -15,7 +15,7 @@ func Changelog(session *engine.Session, request *http.Request, response http.Res
 
 		if tool != nil {
 
-			changelog_tool, ok := tool.(*tools.Changelog)
+			changelog_tool, ok := tool.(*changelog.Changelog)
 
 			if ok == true {
 

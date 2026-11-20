@@ -1,4 +1,4 @@
-package tools
+package requirements
 
 import "encoding/json"
 import "os"

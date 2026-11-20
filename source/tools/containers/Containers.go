@@ -1,4 +1,4 @@
-package tools
+package containers
 
 import "exocomp/schemas"
 import utils_podman "exocomp/utils/podman"

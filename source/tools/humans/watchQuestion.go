@@ -1,4 +1,4 @@
-package tools
+package humans
 
 func watchQuestion(tool *Humans, question string, state *questionState) {
 

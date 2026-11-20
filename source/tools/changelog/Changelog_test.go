@@ -1,4 +1,4 @@
-package tools
+package changelog
 
 import "os"
 import "path/filepath"

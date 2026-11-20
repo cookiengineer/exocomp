@@ -1,4 +1,4 @@
-package tools
+package containers
 
 import "exocomp/tools/testutil"
 import "encoding/json"

@@ -1,4 +1,4 @@
-package tools
+package bugs
 
 import "os"
 import "path/filepath"

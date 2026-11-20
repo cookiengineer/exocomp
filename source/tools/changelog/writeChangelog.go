@@ -1,4 +1,4 @@
-package tools
+package changelog
 
 import utils_sandbox "exocomp/utils/sandbox"
 import "encoding/json"

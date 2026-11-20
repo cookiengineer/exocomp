@@ -1,7 +1,7 @@
 package session
 
 import "exocomp/engine"
-import "exocomp/tools"
+import "exocomp/tools/bugs"
 import "exocomp/ui/web/handlers"
 import "encoding/json"
 import "net/http"
@@ -15,7 +15,7 @@ func Bugs(session *engine.Session, request *http.Request, response http.Response
 
 		if tool != nil {
 
-			bug_tool, ok := tool.(*tools.Bugs)
+			bug_tool, ok := tool.(*bugs.Bugs)
 
 			if ok == true {
 

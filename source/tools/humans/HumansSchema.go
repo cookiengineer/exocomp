@@ -1,4 +1,4 @@
-package tools
+package humans
 
 import "exocomp/schemas"
 import "encoding/json"

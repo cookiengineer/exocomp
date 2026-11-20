@@ -1,7 +1,8 @@
 package components
 
 import "exocomp/engine"
-import "exocomp/tools"
+import "exocomp/tools/bugs"
+import "exocomp/tools/changelog"
 import "exocomp/types"
 import "exocomp/ui/tty/styles"
 import utils_tty "exocomp/utils/tty"
@@ -82,13 +83,13 @@ func (sidebar *Sidebar) Refresh(now time.Time, force bool) {
 	sidebar.lastRefresh = now
 
 	changelog_entries := make([]types.ChangelogEntry, 0)
-	bugs := make([]types.Bug, 0)
+	bug_entries := make([]types.Bug, 0)
 
 	tool := sidebar.Session.GetTool("changelog")
 
 	if tool != nil {
 
-		changelog_tool, ok := tool.(*tools.Changelog)
+		changelog_tool, ok := tool.(*changelog.Changelog)
 
 		if ok == true {
 
@@ -106,14 +107,14 @@ func (sidebar *Sidebar) Refresh(now time.Time, force bool) {
 
 	if tool != nil {
 
-		bugs_tool, ok := tool.(*tools.Bugs)
+		bugs_tool, ok := tool.(*bugs.Bugs)
 
 		if ok == true {
 
 			open_bugs, err := bugs_tool.Snapshot()
 
 			if err == nil {
-				bugs = open_bugs
+				bug_entries = open_bugs
 			}
 
 		}
@@ -150,11 +151,11 @@ func (sidebar *Sidebar) Refresh(now time.Time, force bool) {
 
 	}
 
-	if len(bugs) > 0 {
+	if len(bug_entries) > 0 {
 
 		lines = append(lines, sidebarLine{Text: "OPEN BUGS", Style: styles.SidebarSection})
 
-		for _, bug := range bugs {
+		for _, bug := range bug_entries {
 
 			title := fmt.Sprintf("%s:%s", bug.File, bug.Symbol)
 

@@ -1,7 +1,7 @@
 package session
 
 import "exocomp/engine"
-import "exocomp/tools"
+import "exocomp/tools/requirements"
 import "exocomp/ui/web/handlers"
 import "encoding/json"
 import "net/http"
@@ -15,7 +15,7 @@ func Requirements(session *engine.Session, request *http.Request, response http.
 
 		if tool != nil {
 
-			requirements_tool, ok := tool.(*tools.Requirements)
+			requirements_tool, ok := tool.(*requirements.Requirements)
 
 			if ok == true {
 

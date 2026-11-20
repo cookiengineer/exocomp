@@ -1,4 +1,4 @@
-package tools
+package humans
 
 import "strings"
 import "testing"

@@ -1,4 +1,4 @@
-package tools
+package changelog
 
 import "exocomp/schemas"
 import "exocomp/types"

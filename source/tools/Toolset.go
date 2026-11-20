@@ -1,8 +1,13 @@
 package tools
 
 import "exocomp/types"
+import "exocomp/tools/bugs"
+import "exocomp/tools/changelog"
+import "exocomp/tools/containers"
 import "exocomp/tools/files"
+import "exocomp/tools/humans"
 import "exocomp/tools/programs"
+import "exocomp/tools/requirements"
 import "exocomp/tools/skills"
 import "exocomp/tools/websites"
 import utils_capabilities "exocomp/utils/capabilities"
@@ -59,21 +64,21 @@ func Toolset(
 		case "assets":
 			tool = NewAssets(allowed_methods, playground, sandbox)
 		case "bugs":
-			tool = NewBugs(allowed_methods, playground, sandbox)
+			tool = bugs.NewBugs(allowed_methods, playground, sandbox)
 		case "changelog":
-			tool = NewChangelog(allowed_methods, playground, sandbox)
+			tool = changelog.NewChangelog(allowed_methods, playground, sandbox)
 		case "containers":
-			tool = NewContainers(allowed_methods, playground, sandbox, allowed_images)
+			tool = containers.NewContainers(allowed_methods, playground, sandbox, allowed_images)
 		case "files":
 			tool = files.NewFilesWithCapabilities(allowed_methods, playground, sandbox, capabilities)
 		case "findings":
 			tool = NewFindings(allowed_methods, playground, sandbox, agent_name)
 		case "humans":
-			tool = NewHumansWithCapabilities(allowed_methods, playground, sandbox, agent_name, capabilities)
+			tool = humans.NewHumansWithCapabilities(allowed_methods, playground, sandbox, agent_name, capabilities)
 		case "programs":
 			tool = programs.NewProgramsWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
 		case "requirements":
-			tool = NewRequirements(allowed_methods, playground, sandbox)
+			tool = requirements.NewRequirements(allowed_methods, playground, sandbox)
 		case "shell":
 			tool = NewShellWithCapabilities(allowed_methods, playground, sandbox, allowed_programs, capabilities)
 		case "skills":

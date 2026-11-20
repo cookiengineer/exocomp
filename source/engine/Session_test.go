@@ -1,7 +1,7 @@
 package engine
 
 import "exocomp/schemas"
-import "exocomp/tools"
+import "exocomp/tools/humans"
 import "exocomp/types"
 import "encoding/json"
 import "fmt"
@@ -293,7 +293,7 @@ func TestSession_ChangesNotifyToolCalls(t *testing.T) {
 func TestSession_CallTool_HumansAnswer_NoPanic(t *testing.T) {
 
 	session := newTestSession()
-	tool := tools.NewHumans([]string{"Ask", "Choose"}, ".", ".")
+	tool := humans.NewHumans([]string{"Ask", "Choose"}, ".", ".")
 	session.SetTool(tool)
 
 	done := make(chan struct{})

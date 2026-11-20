@@ -1,8 +1,13 @@
 package tools
 
 import "exocomp/schemas"
+import "exocomp/tools/bugs"
+import "exocomp/tools/changelog"
+import "exocomp/tools/containers"
 import "exocomp/tools/files"
+import "exocomp/tools/humans"
 import "exocomp/tools/programs"
+import "exocomp/tools/requirements"
 import "exocomp/tools/skills"
 import "exocomp/tools/websites"
 import "encoding/json"
@@ -14,14 +19,14 @@ func TestToolSchemas_DoNotMentionInternalState(t *testing.T) {
 	schema_groups := [][]schemas.Tool{
 		AgentsSchema,
 		AssetsSchema,
-		BugsSchema,
-		ChangelogSchema,
-		ContainersSchema,
+		bugs.BugsSchema,
+		changelog.ChangelogSchema,
+		containers.ContainersSchema,
 		files.FilesSchema,
 		FindingsSchema,
-		HumansSchema,
+		humans.HumansSchema,
 		programs.ProgramsSchema,
-		RequirementsSchema,
+		requirements.RequirementsSchema,
 		ShellSchema,
 		skills.SkillsSchema,
 		websites.WebsitesSchema,

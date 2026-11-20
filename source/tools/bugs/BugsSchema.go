@@ -1,4 +1,4 @@
-package tools
+package bugs
 
 import "exocomp/schemas"
 import "encoding/json"

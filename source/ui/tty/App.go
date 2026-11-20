@@ -2,7 +2,7 @@ package tty
 
 import "exocomp/engine"
 import "exocomp/schemas"
-import "exocomp/tools"
+import "exocomp/tools/humans"
 import "exocomp/types"
 import "exocomp/ui/tty/components"
 import "exocomp/ui/tty/styles"
@@ -262,7 +262,7 @@ func (app *App) checkHuman() {
 
 	if tool != nil {
 
-		humans_tool, ok := tool.(*tools.Humans)
+		humans_tool, ok := tool.(*humans.Humans)
 
 		if ok == true {
 
