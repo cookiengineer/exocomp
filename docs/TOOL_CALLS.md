@@ -1,22 +1,22 @@
+# Tool Calls
 
-# Tool Calls in Practice
+A tool call is an exchange between the model and
+[engine.Session](../source/engine/Session.go). Tool names are always
+`namespace.Method` (for example `files.Read` or `agents.Await`).
 
-A tool call is a multi-step exchange between the LLM and the [Session](../source/engine/Session.go).
-Tool names are always `namespace.Method` (e.g. `files.Read`, `agents.Await`).
+## 1. Assistant Requests a Tool Call
 
-## 1. Assistant requests a Tool Call
-
-The model returns an assistant message carrying one or more `tool_calls`:
+The model returns an assistant message with one or more `tool_calls`:
 
 ```json
 {
-    "role":    "assistant",
+    "role": "assistant",
     "content": "Let me read the file first",
     "tool_calls": [{
-        "id":   "call_0",
+        "id": "call_0",
         "type": "function",
         "function": {
-            "name":      "files.Read",
+            "name": "files.Read",
             "arguments": {
                 "path": "./utils/Parse.go"
             }
@@ -25,60 +25,59 @@ The model returns an assistant message carrying one or more `tool_calls`:
 }
 ```
 
-`arguments` is a JSON object whose keys match the tool's parameter schema. The
-`id` links the tool result back to this call.
+`arguments` is a JSON object whose keys match the tool schema. `id` links the
+result back to this call.
 
-## 2. Session executes the Tool Call
+## 2. Session Executes the Call
 
-[Session.ReceiveChatResponse](../source/engine/Session.go) parses each
-`tool_calls` entry, resolves the namespace via `Session.GetTool`, and calls
-`Tool.Call(method, arguments)`. Tool implementations live in
-[source/tools](../source/tools/).
+[Session.ReceiveChatResponse](../source/engine/Session.go) passes each entry to
+`CallTool`. `CallTool` resolves the namespace through `Session.GetTool`, checks
+`HasMethod`, and calls `Tool.Call(method, arguments)`.
 
-## 3. Session appends the Tool result
+Tool implementations live below [`source/tools`](../source/tools/).
 
-The result (or an `Error: ...` string) is appended as a `tool` message carrying
-the same `tool_call_id` and `tool_name`:
+## 3. Session Appends the Tool Result
+
+The result or an `Error: ...` string is appended as a `tool` message with the
+same `tool_call_id` and `tool_name`:
 
 ```json
 {
-    "role":         "tool",
-    "content":      "files.Read: ./utils/Parse.go\npackage utils\n\nfunc Parse(...) { ... }",
+    "role": "tool",
+    "content": "files.Read: File \"./utils/Parse.go\" contents\npackage utils\n\nfunc Parse(...) { ... }",
     "tool_call_id": "call_0",
-    "tool_name":    "files.Read"
+    "tool_name": "files.Read"
 }
 ```
 
-## 4. Assistant responds with a reasoned message
+A failure uses a short, deterministic message:
 
-```json
-{
-    "role":    "assistant",
-    "content": "There is a bug at line 123. I propose a fix."
-}
+```text
+files.Read: File "./x.go" does not exist.
 ```
 
-## 5. User responds
+## 4. Assistant Continues
 
-```json
-{
-    "role":    "user",
-    "content": "Yes, please fix it for me."
-}
-```
+The model receives the tool message and responds with its next action or
+answer. A user message can follow at any point.
 
-## Blocking calls
+## Blocking Calls
 
-`agents.Await` blocks inside `CallTool` until the hired agent finishes, so the
-next inference happens only after the agent's work report is available. Other
-tools return immediately.
+These calls block inside `CallTool` until an external event resolves them:
 
-## Sanitized tool errors
+| Tool | Waits for |
+|:-----|:----------|
+| `agents.Await` | The hired agent to finish and return a work report. |
+| `humans.Ask` | A free-form answer. |
+| `humans.Choose` | One selected choice. |
+| `humans.AskPermission` | A capability decision. |
 
-Tool error messages are sanitized before they reach the model (see
-[Tool Error Message Sandboxing](ARCHITECTURE.md#tool-error-message-sandboxing)).
-A failing tool returns a short, deterministic message that uses a relative path,
-e.g. `files.Read: File "./x.go" does not exist.`, instead of the raw Go error
-string. This prevents leaking host information such as the absolute path in an
-ENOENT `*PathError`, the `os.Executable()` path, `/tmp/...` temp dirs, or the
-DNS/IP details of `net/http` dial errors.
+All other tools return immediately.
+
+## Sanitized Tool Errors
+
+Tool errors are sanitized before they reach the model. See
+[Tool Error Message Sandboxing](./ARCHITECTURE.md#tool-error-message-sandboxing).
+A failing tool uses a relative path and a fixed message instead of the raw Go
+error, so absolute paths, temp directories, executable paths and DNS/IP details
+are not exposed.

@@ -1,65 +1,56 @@
-
 # Servers
 
-Exocomp supports the following inference servers:
+Exocomp supports these inference servers through the OpenAI-compatible API:
 
 - [llama.cpp](../source/utils/api/llamacpp)
 - [ollama](../source/utils/api/ollama)
-- [vllm](../source/utils/api/vllm)
+- [vLLM](../source/utils/api/vllm)
 
-Support for a new inference server requires the following API endpoints:
+A server must provide:
 
-- `http://server:port/v1/chat/completions` support
-- `http://server:port/v1/models` support
-- [types.Config](../source/types/Config.go) `GetContextLength(model)` support via custom `utils/api` adapter
+- `http://server:port/v1/chat/completions`
+- `http://server:port/v1/models`
+- context-length discovery through the matching `utils/api` adapter
 
-## ollama Usage
+## ollama
 
-[ollama](https://ollama.com) has been tested and can be used as an inference server.
-
-Known limitations:
-
-- `32k` context length and unavoidable input pruning, despite environment variable and request options field.
+Start ollama and pull the models:
 
 ```bash
-# Start and setup ollama
 ollama serve;
-
-# Pull models
 ollama pull deepseek-v4-pro:cloud;
 ollama pull huihui_ai/Qwen3.8-abliterated:27b;
 ```
 
-```bash
-cd /path/to/exocomp;
-
-# Run exocomp with external server
-go run ./cmds/exocomp/main.go web --role=planner --url="http://ollama_server_ip:11434/v1";
-```
-
-## llama.cpp Usage
-
-[llama.cpp](https://github.com/ggml-org/llama.cpp) has been tested and can be used as an inference server.
-
-Recommended hardware requirements:
-
-- `32GB VRAM GPU` with at least `Vulkan` support
-- `80GB HDD space` for models
+`quickstart-ollama.sh` sets `OLLAMA_CONTEXT_LENGTH` from available memory. Start
+Exocomp against the ollama endpoint:
 
 ```bash
 cd /path/to/exocomp;
+make quick;
 
-# Install llama.ccp and LLM models
-bash install-deps.sh;
-
-# Run exocomp with internal server
-go run ./cmds/exocomp/main.go web --role=planner;
+cd /path/to/project;
+/path/to/exocomp/build/<operating-system>/exocomp-web web --role=planner --url="http://ollama_server_ip:11434/v1";
 ```
 
-Full llama.cpp server parameters:
+## llama.cpp
+
+Install `llama-server` and the model separately. Exocomp does not download
+either. See the [llama.cpp repository](https://github.com/ggml-org/llama.cpp).
+
+Build Exocomp and start it with the default local endpoint:
 
 ```bash
-# On systems with less than 48GB of VRAM
+cd /path/to/exocomp;
+make quick;
+
+cd /path/to/project;
+/path/to/exocomp/build/<operating-system>/exocomp-web web --role=planner;
+```
+
+Server parameters for a machine with less than 48 GB of VRAM:
+
+```bash
 llama-server \
 	--models-dir ./models \
 	--gpu-layers all \
@@ -73,21 +64,19 @@ llama-server \
 	--no-webui \
 	--no-webui-mcp-proxy \
 	--jinja \
-    --port=11434;
+	--port 11434;
+```
 
-# On systems with at least 48GB of VRAM
-llama-server \
-	--models-dir ./models \
-	--gpu-layers all \
-	--ctx-size 262144 \
-	--batch-size 2048 \
-	--ubatch-size 512 \
-	--cache-type-k q8_0 \
-	--cache-type-v q8_0 \
-	--flash-attn auto \
-	--no-slots \
-	--no-webui \
-	--no-webui-mcp-proxy \
-	--jinja \
-    --port=11434;
+For at least 48 GB of VRAM, raise `--ctx-size` to `262144`, `--batch-size` to
+`2048` and `--ubatch-size` to `512`.
+
+## vLLM
+
+vLLM is supported through the same OpenAI-compatible endpoints. The example
+container definition and Python requirements are in [`docs/docker`](./docker/).
+The example container listens on `5000`; a default vLLM server uses `8000`.
+
+```bash
+cd /path/to/project;
+/path/to/exocomp/build/<operating-system>/exocomp-web web --role=planner --url="http://vllm_server_ip:5000/v1";
 ```

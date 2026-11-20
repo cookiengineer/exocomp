@@ -1,81 +1,56 @@
-
 # Testing
 
-### Requirements
+## Unit Tests
 
-Testing the live `agents` tool requires a [llama.cpp](https://github.com/ggml-org/llama.cpp)
-`llama-server` instance running. All other tests run without a server.
-
-```bash
-# For 48GB of VRAM use
-# --ctx-size 262144
-
-# Start llama.cpp server
-llama-server \
-	--model "Huihui-Qwen3.8-27B-abliterated.Q4_K_M.gguf" \
-	--alias "huihui_ai/Qwen3.8-abliterated:27b" \
-	--gpu-layers all \
-	--ctx-size 32768 \
-	--batch-size 512 \
-	--ubatch-size 128 \
-	--cache-type-k q8_0 \
-	--cache-type-v q8_0 \
-	--flash-attn auto \
-	--no-slots \
-	--no-webui \
-	--no-webui-mcp-proxy \
-	--jinja \
-	--port 11434;
-```
-
-### Unit Tests
+Run the deterministic test suite from the repository root:
 
 ```bash
-cd /path/to/exocomp/source;
-
-# Test everything (no LLM required)
-go test -v ./...;
+make test;
 ```
 
-This includes the deterministic agent lifecycle tests, which build a fake agent
-binary ([testdata/fakeagent](../source/tools/testdata/fakeagent/main.go)) and
-inject it via the `EXOCOMP_AGENT` environment variable, so the parent-side
-`agents.Hire` / `agents.Await` / `agents.Fire` lifecycle is exercised without a
-live LLM.
+`make test` runs `go -C source test ./...` and needs no network or LLM. It
+includes the agent lifecycle tests, which build the fake agent in
+[`source/tools/testdata/fakeagent`](../source/tools/testdata/fakeagent/main.go)
+and inject it through `EXOCOMP_AGENT`.
 
-The `programs` and `skills` execution tests require Linux with landlock support
-or macOS with `/usr/bin/sandbox-exec`. They build the
-[exocomp-sandbox](../source/cmds/exocomp-sandbox/main.go) helper once and inject
-it via `EXOCOMP_SANDBOX`. On other platforms, and without a usable platform
-sandbox, these execution tests are skipped because the sandboxed execution path
-intentionally refuses to run.
-
-The `containers` tests do not need a real podman installation. They build a
-[fake podman](../source/tools/testdata/fakepodman/main.go) binary once and inject
-it via `EXOCOMP_PODMAN`, so container argument construction, label scoping and
-error sanitization stay deterministic and offline. The fake also records its
-arguments through `EXOCOMP_FAKE_PODMAN_ARGS` for assertions.
-
-A real podman integration test is available but skipped by default. It pulls
-`docker.io/library/alpine:latest` and needs network access:
+The toolchain module has its own tests:
 
 ```bash
-cd /path/to/exocomp/source/tools;
-EXOCOMP_PODMAN_TEST=1 go test -run TestContainers_Integration -v ./
+make test-toolchain;
 ```
 
-### Live Agents Tool
+Use the targeted commands below only for checks that `make test` does not cover.
 
-Testing the live `agents` tool comes with certain limitations because of how the
-`go test` workflow is designed. The `tools/agents/Agents_main_test.go` builds a
-standalone binary of `cmds/exocomp/main.go` that is injected into `tools/agents/Agents.go`
-via environment variable. This is unavoidable due to otherwise cyclic
-dependencies.
+The `programs` and `skills` execution tests need Linux with landlock or macOS
+with `/usr/bin/sandbox-exec`. They build `exocomp-sandbox` once and inject it
+through `EXOCOMP_SANDBOX`. Without a usable platform sandbox those tests are
+skipped.
+
+The `containers` tests use the fake podman binary in
+[`source/tools/testdata/fakepodman`](../source/tools/testdata/fakepodman/main.go)
+and need no real podman. A real integration test is skipped by default:
 
 ```bash
-# Run multi-agent unit tests against a live llama-server
-cd /path/to/exocomp/source/tools;
-
-go clean -testcache;
-go test -tags=agents -v ./
+EXOCOMP_PODMAN_TEST=1 go -C source/tools test -run TestContainers_Integration -v ./containers;
 ```
+
+It needs a working rootless podman installation and network access.
+
+## Live Agent Tests
+
+The live suite is behind `//go:build agents` and is not part of `make test`:
+
+```bash
+go -C source/tools/agents test -tags=agents -v ./;
+```
+
+It is a local development workflow. `Agents_main_test.go` builds the child
+binary and starts a llama-server from `source/tools/third_party`, so review the
+paths at the top of that file before running it. The expected model is
+`huihui_ai/Qwen3.8-abliterated:27b` at `Q4_K_M` quantization. See
+[SERVERS.md](./SERVERS.md) for server parameters.
+
+## Writing Tests
+
+See [TESTING_GUIDE.md](./TESTING_GUIDE.md) for file naming, setup, fixtures,
+assertions and the offline fake-binary conventions.

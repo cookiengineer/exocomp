@@ -1,8 +1,14 @@
 # Toolchain Programs
 
-The build toolchain clones, pins and builds the external CLI programs that are
-shipped with Exocomp. The list is defined once in
-[toolchain/programs.json](../toolchain/programs.json).
+The `toolchain/` module builds the external CLI programs and provides the
+build, test and lint entry points. The program list is defined once in
+[`toolchain/programs.json`](../toolchain/programs.json).
+
+Each command is a `main` package under its own folder:
+`toolchain/build/`, `toolchain/build-webapp/`, `toolchain/clean/`,
+`toolchain/install/`, `toolchain/test/` and `toolchain/lint/`.
+Shared helpers live under `toolchain/internal/utils/<domain>/`; the web app
+build actions live under `toolchain/internal/utils/webapp/`.
 
 ## Manifest
 
@@ -23,54 +29,67 @@ Every entry describes one installed binary:
 | `name` | Installed binary name and `allowed-programs` entry. |
 | `folder` | Folder name below `vendor/`. Entries may share a folder. |
 | `repository` | Git repository URL. |
-| `version` | Pinned tag. The build fails if the checked-out commit differs. |
+| `version` | Pinned tag. |
 | `source` | Go package path passed to `go build`, relative to the repository. |
 
-## Build
+## Make Targets
+
+Run these from the repository root. The definitions live in the
+[`Makefile`](../Makefile).
+
+| Target | Action |
+|:-------|:-------|
+| `make` | Build the web app, clone and build programs, build all exocomp binaries and the installer. |
+| `make quick` | Build the web app and host-platform binaries only. Skips programs and the installer. |
+| `make linux` | Build for Linux. |
+| `make darwin` | Build for macOS. |
+| `make windows` | Build for Windows. |
+| `make webapp` | Build only the WASM web app. |
+| `make lint` | Run the codestyle linter for `source/`. |
+| `make lint-toolchain` | Run the codestyle linter for `toolchain/`. |
+| `make test` | Run the `source/` unit tests. |
+| `make test-toolchain` | Run the `toolchain/` module tests. |
+| `make test-integration` | Check for and start a local llama-server. The test steps are still incomplete. |
+| `make install` | Run the installer. |
+| `make clean` | Remove generated assets and `build/<operating-system>/`. |
+
+Cross-build another architecture with `ARCH`:
 
 ```bash
-make linux
-make darwin
-make windows
-
-# Cross-build for another architecture
-make linux ARCH=arm64
+make linux ARCH=arm64;
 ```
 
+## Build and Cache
+
 `ClonePrograms` checks out every pinned tag below `vendor/`. `BuildPrograms`
-builds each entry into the per-target cache:
+builds each entry into:
 
 ```text
 build/cache/<operating-system>/<architecture>/<name>
 ```
 
 A cached binary is reused when its sidecar `.version` file matches the pinned
-manifest version. A missing or stale cache entry is built lazily with
+manifest version. A missing or stale entry is built lazily with
 `GOOS=<operating-system>`, `GOARCH=<architecture>` and `CGO_ENABLED=0`.
 
-Every cached binary is then copied into `installer/assets/programs/<name>` so
-the installer embeds the correct platform and architecture. Exocomp's own
-binaries are still rebuilt for each make invocation and written under
-`build/<operating-system>/`.
+Every cached binary is copied into `installer/assets/programs/<name>` so the
+installer embeds the correct platform and architecture. Exocomp's own binaries
+are rebuilt on every make invocation and written under `build/<operating-system>/`.
 
-`make clean` removes generated assets and `build/<operating-system>/` but
-leaves `build/cache/` intact. Remove `build/cache/<operating-system>/<architecture>/`
+`make clean` removes generated assets and `build/<operating-system>/` but leaves
+`build/cache/` intact. Remove `build/cache/<operating-system>/<architecture>/`
 manually to force a full program rebuild.
 
-Adding a program requires:
+## Adding a Program
 
-1. adding a pinned manifest entry,
-2. adding the binary to the relevant `allowed-programs` list in
-   `source/agents/*.yaml`,
-3. rebuilding the installer.
-
-The toolchain builds with `CGO_ENABLED=0`. `GOARCH` defaults to the host
-architecture and can be overridden with `ARCH=<goarch>` on the make command or
-`--arch=<goarch>` on the toolchain command.
+1. Add a pinned manifest entry.
+2. Add the binary to the relevant `allowed-programs` list in
+   `source/agents/*.yaml`.
+3. Rebuild with `make`.
 
 ## Gobuster
 
-`gobuster` (`v3.8.2`) is the chosen content/parameter fuzzer. It is pinned in
-`toolchain/programs.json` and allowed for the `webscanner` role. Agents run it
-directly with `-o results.txt`; `assets.Import` parses the text lines into
-`endpoint` assets. No wrapper program is required.
+Gobuster `v3.8.2` is pinned in `toolchain/programs.json` and allowed for the
+`webscanner` role. Agents run it directly with `-o results.txt`. `assets.Import`
+parses the text lines into `endpoint` assets and keeps the status and size
+properties from each line.
