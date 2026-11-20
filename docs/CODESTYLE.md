@@ -81,6 +81,26 @@ map entries that cannot occur), validation that must happen before any useful
 work, or when nesting would exceed three levels. They are not a substitute for
 the positive-first shape.
 
+Test-support guards that abort the test (`t.Fatalf`, `t.Skip`) and loop control
+(`break`, `continue`) may stay as early exits when wrapping the remaining block
+in an `else` would not add a positive branch. Void functions whose only
+statement in the guard is a bare `return` keep the early return, because the
+`else` branch would be empty.
+
+A run of consecutive terminal guards should be written as one flat
+`} else if {` chain rather than as sibling `if` statements followed by a
+trailing return:
+
+```go
+if value == 0x0d {
+	return Key{Type: KeyEnter}, nil
+} else if value == 0x09 {
+	return Key{Type: KeyTab}, nil
+} else {
+	return Key{Type: KeyUnknown}, nil
+}
+```
+
 ## Formatting
 
 - Use **tabs** for indentation in Go and JSON files. YAML uses two spaces.
